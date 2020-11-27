@@ -54,6 +54,43 @@ def traverse_and_print_values(cursor, src, output_path='./tree.ast', depth=0):
     return
 
 
+def get_code(node):
+    code = ''
+    for token in node.get_tokens():
+        code += token.spelling + ' '
+    return code
+
+
+def full_compare_nodes(node1, node2):
+    first_cond = (node1.kind == node2.kind)
+    second_cond = (node1.spelling == node2.spelling)
+    node1_len = len(list(node1.get_children()))
+    node2_len = len(list(node2.get_children()))
+    third_cond = (node1_len == node2_len)
+    fourth_cond = (get_code(node1) == get_code(node2))
+    return first_cond and second_cond and third_cond and fourth_cond
+
+
+def full_compare(cursor1, cursor2, src):
+    children1 = list(cursor1.get_children())
+    children2 = list(cursor2.get_children())
+    len1 = len(children1)
+    len2 = len(children2)
+    if len1 != len2:
+        print('Different count of nodes.')
+        return False
+    for index in range(len1):
+        loc1 = children1[index].location.file
+        loc2 = children2[index].location.file
+        if (str(loc1).split('/')[-1] == src.split('/')[-1]
+           and str(loc2).split('/')[-1] == src.split('/')[-1]
+           and children1[index].kind not in IGNORE
+           and children2[index].kind not in IGNORE):
+            if not full_compare_nodes(children1[index], children2[index]):
+                return False
+    return True
+
+
 if __name__ == '__main__':
     filename = 'cpp/test.cpp'
     output_path = "tree.ast"
@@ -62,6 +99,7 @@ if __name__ == '__main__':
         filename = sys.argv[1]
 
     cursor = get_cursor_from_file(filename)
+    cursor2 = get_cursor_from_file('cpp/header.h')
     if cursor:
         if len(sys.argv) > 2:
             output_path = sys.argv[2]
@@ -72,3 +110,4 @@ if __name__ == '__main__':
             os.remove(output_path)
 
         traverse_and_print_values(cursor, filename, output_path)
+        print(full_compare(cursor, cursor2, filename))
