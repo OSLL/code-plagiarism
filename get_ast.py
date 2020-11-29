@@ -43,10 +43,10 @@ def traverse_and_print_values(cursor, src, output_path='./tree.ast', depth=0):
         if (str(child.location.file).split('/')[-1] == src.split('/')[-1]
            and child.kind not in IGNORE):
             output = (str('|  ' * depth) +
-                      str(child.kind) + " '" +
+                      repr(child.kind).split('.')[-1] + " '" +
                       str(child.spelling) + "' " + '\n')
             # str(len(list(child.get_children()))) + '\n')
-            # print(output)
+            print(output)
 
             with open(output_path, 'a') as output_file:
                 output_file.write(output)
@@ -71,7 +71,7 @@ def full_compare_nodes(node1, node2):
     return first_cond and second_cond and third_cond and fourth_cond
 
 
-def full_compare(cursor1, cursor2, src):
+def full_compare(cursor1, cursor2, src1, src2):
     children1 = list(cursor1.get_children())
     children2 = list(cursor2.get_children())
     len1 = len(children1)
@@ -82,8 +82,8 @@ def full_compare(cursor1, cursor2, src):
     for index in range(len1):
         loc1 = children1[index].location.file
         loc2 = children2[index].location.file
-        if (str(loc1).split('/')[-1] == src.split('/')[-1]
-           and str(loc2).split('/')[-1] == src.split('/')[-1]
+        if (str(loc1).split('/')[-1] == src1.split('/')[-1]
+           and str(loc2).split('/')[-1] == src2.split('/')[-1]
            and children1[index].kind not in IGNORE
            and children2[index].kind not in IGNORE):
             if not full_compare_nodes(children1[index], children2[index]):
@@ -91,23 +91,54 @@ def full_compare(cursor1, cursor2, src):
     return True
 
 
+def is_same_structure(tree1, tree2, src1, src2):
+    children1 = list(tree1.get_children())
+    children2 = list(tree2.get_children())
+    len1 = len(children1)
+    len2 = len(children2)
+    if len1 != len2:
+        print('Different count of nodes.')
+        return False
+    for i in range(len1):
+        loc1 = children1[i].location.file
+        loc2 = children2[i].location.file
+        if (str(loc1).split('/')[-1] == src1.split('/')[-1]
+           and str(loc2).split('/')[-1] == src1.split('/')[-1]
+           and children1[i].kind not in IGNORE
+           and children2[i].kind not in IGNORE):
+            if not is_same_structure(children1[i], children2[i]):
+                return False
+    return True
+
+
 if __name__ == '__main__':
-    filename = 'cpp/test.cpp'
-    output_path = "tree.ast"
+    filename = 'cpp/test1.cpp'
+    filename2 = 'cpp/test2.cpp'
+    output_path_first = "tree_first.ast"
+    output_path_second = "tree_second.ast"
 
     if len(sys.argv) > 1:
         filename = sys.argv[1]
 
     cursor = get_cursor_from_file(filename)
-    cursor2 = get_cursor_from_file('cpp/header.h')
+    cursor2 = get_cursor_from_file(filename2)
     if cursor:
         if len(sys.argv) > 2:
-            output_path = sys.argv[2]
+            filename2 = sys.argv[2]
+        elif len(sys.argv) > 3:
+            output_path = sys.argv[3]
         else:
-            output_path = str(sys.argv[1].split('/')[-1].split('.')[0])+".ast"
+            output_path = str(filename.split('/')[-1].split('.')[0])+".ast"
 
         if os.path.isfile(output_path):
             os.remove(output_path)
 
-        traverse_and_print_values(cursor, filename, output_path)
-        print(full_compare(cursor, cursor2, filename))
+        print('First tree: ')
+        traverse_and_print_values(cursor, filename, output_path_first)
+        print('Second tree: ')
+        traverse_and_print_values(cursor2, filename2, output_path_second)
+        print('Same Structure:',
+              is_same_structure(cursor, cursor2, filename,
+                                filename2), '\n')
+        print('Is same:', full_compare(cursor, cursor2,
+                                       filename, filename2))

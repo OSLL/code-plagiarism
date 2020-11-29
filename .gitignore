@@ -32,3 +32,5 @@
 *.app
 
 test.ast
+tree_first.ast
+tree_second.ast
