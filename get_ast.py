@@ -1,5 +1,7 @@
 import os
 import sys
+import numpy as np
+import pandas as pd
 from clang.cindex import CursorKind, Index, TranslationUnit
 # from clang.cindex import *
 
@@ -47,6 +49,10 @@ def traverse_and_print_values(cursor, src, output_path='./tree.ast', depth=0):
                       str(child.spelling) + "' " + '\n')
             # str(len(list(child.get_children()))) + '\n')
             print(output)
+
+            if child.kind == CursorKind.UNEXPOSED_EXPR:
+            	for token in child.get_tokens():
+            		print(token.spelling)
 
             with open(output_path, 'a') as output_file:
                 output_file.write(output)
@@ -111,6 +117,44 @@ def is_same_structure(tree1, tree2, src1, src2):
     return True
 
 
+def get_not_ignored(tree, src):
+    children = list(tree.get_children())
+    length = len(children)
+    parsed_nodes = []
+    for i in range(length):
+        loc = children[i].location.file
+        if (str(loc).split('/')[-1] == src.split('/')[-1]
+            and children[i].kind not in IGNORE):
+            parsed_nodes.append(children[i])
+    return parsed_nodes
+
+
+# tree is parsed.
+def get_count_of_nodes(tree):
+    count = 0
+    children = list(tree.get_children())
+    length = len(children)
+    count += length
+    for i in range(length):
+        count += get_count_of_nodes(children[i])
+    
+    return count
+
+
+# node1 and node2 are parsed.
+def stupid_compare_nodes(node1, node2):
+    same = 0
+    children1 = list(node1.get_children())
+    children2 = list(node2.get_children())
+    len1 = len(children1)
+    len2 = len(children2)
+    same += min(len1, len2)
+    for i in range(min(len1, len2)):
+        same += stupid_compare_nodes(children1[i], children2[i])
+        
+    return same
+
+
 if __name__ == '__main__':
     filename = 'cpp/test1.cpp'
     filename2 = 'cpp/test2.cpp'
@@ -141,4 +185,38 @@ if __name__ == '__main__':
               is_same_structure(cursor, cursor2, filename,
                                 filename2), '\n')
         print('Is same:', full_compare(cursor, cursor2,
-                                       filename, filename2))
+                                       filename, filename2), '\n')
+
+        parsed_nodes1 = get_not_ignored(cursor, filename)
+        parsed_nodes2 = get_not_ignored(cursor2, filename2)
+        len1 = len(parsed_nodes1)
+        len2 = len(parsed_nodes2)
+        array = np.zeros((len1, len2))
+        indexes = []
+        columns = []
+        for i in range(len1):
+            indexes.append(parsed_nodes1[i].spelling)
+            for j in range(len2):
+                count_nodes1 = get_count_of_nodes(parsed_nodes1[i])
+                count_nodes2 = get_count_of_nodes(parsed_nodes2[j])
+                compare_result = stupid_compare_nodes(parsed_nodes1[i], 
+                                                      parsed_nodes2[j])
+                result = compare_result / (count_nodes1 + count_nodes2 
+                         - compare_result)
+                array[i][j] = result
+                # print(parsed_nodes1[i].spelling, '{:.2%} %'.format(result))
+
+        for j in range(len2):
+            columns.append(parsed_nodes2[j].spelling)
+
+        table = pd.DataFrame(array, index=indexes, columns=columns)
+        print(table)
+
+        same_struct_metric = 0
+        for i in range(min(len1, len2)):
+        	ind = np.unravel_index(np.argmax(array, axis=None), array.shape)
+        	same_struct_metric += array[ind]
+        	array[ind] = 0
+        same_struct_metric /= max(len1, len2)
+        print()
+        print('Structure is same by {:2%}'.format(same_struct_metric))

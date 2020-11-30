@@ -3,7 +3,7 @@
 // #include <iostream>
 using namespace std;
 
-int func(int a){
+int func(int a, float b=5.0){
     if(a > 18){
         return 1;
     }
