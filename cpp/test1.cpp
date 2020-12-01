@@ -1,4 +1,4 @@
-float Hello(int step, int head){
+float Hello(float step, int head){
 	return step * step;
 }
 
@@ -6,6 +6,10 @@ int go(int hood)
 {
 	bool table;
 	return hood + hood;
+}
+
+void isTrue(void){
+	return True;
 }
 
 int main(){
