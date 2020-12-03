@@ -192,15 +192,47 @@ def stupid_compare_nodes(node1, node2):
     return same
 
 
-def getn_count_nodes(length, indexes, axis, children):
-    add = [indexes[i][axis] for i in range(length)]
+# axis = 0 - iteration on row
+# axi = 1 - iteration on column
+def getn_count_nodes(len_min, len_max, indexes, axis, children):
+    add = [indexes[i][axis] for i in range(len_min)]
 
     count = 0
-    for i in range(length):
+    for i in range(len_max):
         if i not in add:
             count += get_count_of_nodes(children[i]) + 1
 
     return count
+
+
+def calculate_metric(children1, children2, len1, len2, array):
+    same_struct_metric = (0, 0)
+    indexes = []
+    for i in range(min(len1, len2)):
+        ind = find_max_index(array, len1, len2)
+        indexes.append(ind)
+        same_struct_metric = (same_struct_metric[0] +
+                              array[ind][0],
+                              same_struct_metric[1] +
+                              array[ind][1])
+        for i in range(len2):
+            array[ind[0]][i] = (0, 0)
+        for j in range(len1):
+            array[j][ind[1]] = (0, 0)
+    
+    same_struct_metric = (same_struct_metric[0] + 1,
+                          same_struct_metric[1] + 1)
+
+    not_count = 0
+    if len1 > len2:
+        not_count = getn_count_nodes(len2, len1, indexes, 0, children1)
+    elif len2 > len1:
+        not_count = getn_count_nodes(len1, len2, indexes, 1, children2)
+
+    same_struct_metric = (same_struct_metric[0],
+                          same_struct_metric[1] + not_count)
+
+    return same_struct_metric
 
 
 # Nodes are parsed and turn in list
@@ -218,55 +250,32 @@ def smart_compare_nodes(tree1, tree2):
         return (1, (get_count_of_nodes(tree1) + 1))
 
     array = np.zeros((len1, len2), dtype=object)
-    indexes = []
-    columns = []
+    # indexes = []
+    # columns = []
 
     for i in range(len1):
-        indexes.append(children1[i].spelling)
+        # indexes.append(children1[i].spelling)
         for j in range(len2):
             result = smart_compare_nodes(children1[i],
                                          children2[j])
             array[i][j] = result
             # print(repr(array[i][j]))
 
-    for j in range(len2):
-        columns.append(children2[j].spelling)
+    # for j in range(len2):
+    #    columns.append(children2[j].spelling)
 
     # table = pd.DataFrame(array, index=indexes, columns=columns)
     # print()
     # print(table)
-
-    same_struct_metric = (0, 0)
-    indexes = []
-    for i in range(min(len1, len2)):
-        ind = np.unravel_index(np.argmax(array), array.shape)
-        indexes.append(ind)
-        if same_struct_metric[0] == 0:
-            same_struct_metric = array[ind]
-        else:
-            same_struct_metric = (same_struct_metric[0] +
-                                  array[ind][0],
-                                  same_struct_metric[1] +
-                                  array[ind][1])
-        # print('index:', ind[0], ind[1])
-        for i in range(len2):
-            array[ind[0]][i] = (0, 0)
-        for j in range(len1):
-            array[j][ind[1]] = (0, 0)
-    same_struct_metric = (same_struct_metric[0] + 1,
-                          same_struct_metric[1] + 1)
-
-    not_count = 0
-    if len1 > len2:
-        not_count = getn_count_nodes(len2, indexes, 0, children1)
-    elif len2 > len1:
-        not_count = getn_count_nodes(len1, indexes, 1, children2)
-    # print('Not counted:', not_count)
-    same_struct_metric = (same_struct_metric[0],
-                          same_struct_metric[1] + not_count)
+    
+    same_struct_metric = calculate_metric(children1, 
+    	                                  children2, 
+    	                                  len1, 
+    	                                  len2, 
+    	                                  array)
 
     # print('Structure is same by {:.2%}'.format(same_struct_metric[0] /
-    #                                            same_struct_metric[1]))
+    #                                           same_struct_metric[1]))
     return same_struct_metric
 
 
@@ -288,30 +297,33 @@ def find_max_index(array, len1, len2):
 if __name__ == '__main__':
     filename = 'cpp/test1.cpp'
     filename2 = 'cpp/test2.cpp'
-    output_path_first = "tree_first.ast"
-    output_path_second = "tree_second.ast"
 
-    if len(sys.argv) > 1:
+    if len(sys.argv) > 4:
         filename = sys.argv[1]
+        filename2 = sys.argv[2]
+        output_path_first = sys.argv[3]
+        output_path_second = sys.argv[4]
+    elif len(sys.argv) > 3:
+        filename = sys.argv[1]
+        filename2 = sys.argv[2]
+        output_path_first = sys.argv[3]
+    elif len(sys.argv) > 2:
+        filename = sys.argv[1]
+        filename2 = sys.argv[2]
+    elif len(sys.argv) > 1:
+        filename = sys.argv[1]
+    output_path_first = str(filename.split('/')[-1].split('.')[0])+".ast"
+    output_path_second = str(filename2.split('/')[-1].split('.')[0])+".ast"
 
     cursor = get_cursor_from_file(filename)
     cursor2 = get_cursor_from_file(filename2)
-    if cursor:
-        if len(sys.argv) > 2:
-            filename2 = sys.argv[2]
-        elif len(sys.argv) > 3:
-            output_path = sys.argv[3]
-        else:
-            output_path = str(filename.split('/')[-1].split('.')[0])+".ast"
+    if cursor and cursor2:
+        if os.path.isfile(output_path_first):
+            os.remove(output_path_first)
+        if os.path.isfile(output_path_second):
+            os.remove(output_path_second)
 
-        if os.path.isfile(output_path):
-            os.remove(output_path)
-
-        # print('First tree: ')
-        open(output_path_first, 'w').close()
         traverse_and_print_values(cursor, filename, output_path_first)
-        # print('Second tree: ')
-        open(output_path_second, 'w').close()
         traverse_and_print_values(cursor2, filename2, output_path_second)
         print('Same Structure:',
               is_same_structure(cursor, cursor2, filename,
@@ -342,33 +354,11 @@ if __name__ == '__main__':
         print()
         print(table)
 
-        same_struct_metric = (0, 0)
-        indexes = []
-        for i in range(min(len1, len2)):
-            ind = find_max_index(array, len1, len2)
-            # ind = np.unravel_index(np.argmax(array), array.shape)
-            indexes.append(ind)
-            if same_struct_metric[0] == 0:
-                same_struct_metric = array[ind]
-            else:
-                same_struct_metric = (same_struct_metric[0] +
-                                      array[ind][0],
-                                      same_struct_metric[1] +
-                                      array[ind][1])
-            for i in range(len2):
-                array[ind[0]][i] = (0, 0)
-            for j in range(len1):
-                array[j][ind[1]] = (0, 0)
-        same_struct_metric = (same_struct_metric[0] + 1,
-                              same_struct_metric[1] + 1)
-        not_count = 0
-        if len1 > len2:
-            not_count = getn_count_nodes(len2, indexes, 0, parsed_nodes1)
-        elif len2 > len1:
-            not_count = getn_count_nodes(len1, indexes, 1, parsed_nodes2)
-        # print('Not counted:', not_count)
-        same_struct_metric = (same_struct_metric[0],
-                              same_struct_metric[1] + not_count)
+        same_struct_metric = calculate_metric(parsed_nodes1, 
+    	                                      parsed_nodes2, 
+    	                                      len1, 
+    	                                      len2, 
+    	                                      array)
         print()
         print('Structure is same by {:.2%}'.format(same_struct_metric[0] /
                                                    same_struct_metric[1]))
