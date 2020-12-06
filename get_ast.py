@@ -47,12 +47,7 @@ def traverse_and_print_values(cursor, src, output_path='./tree.ast', depth=0):
             output = (str('|  ' * depth) +
                       repr(child.kind).split('.')[-1] + " '" +
                       str(child.spelling) + "' " + '\n')
-            # str(len(list(child.get_children()))) + '\n')
             # print(output)
-
-            # if child.kind == CursorKind.UNEXPOSED_EXPR:
-            #    for token in child.get_tokens():
-            #        print(token.spelling)
 
             with open(output_path, 'a') as output_file:
                 output_file.write(output)
@@ -61,6 +56,10 @@ def traverse_and_print_values(cursor, src, output_path='./tree.ast', depth=0):
 
 
 def get_code(node):
+    '''
+        Function return code which place in node as string
+        @param node - clang.cindex.Cursor object
+    '''
     code = ''
     for token in node.get_tokens():
         code += token.spelling + ' '
@@ -68,6 +67,12 @@ def get_code(node):
 
 
 def full_compare_nodes(node1, node2):
+    '''
+        Function compare to nodes in their top level and will
+        return true if all conditions will true
+        @param node1 - clang.cindex.Cursor object
+        @param node2 - clang.cindex.Cursor object
+    '''
     first_cond = (node1.kind == node2.kind)
     second_cond = (node1.spelling == node2.spelling)
     node1_len = len(list(node1.get_children()))
@@ -78,6 +83,13 @@ def full_compare_nodes(node1, node2):
 
 
 def full_compare(cursor1, cursor2, src1, src2):
+    '''
+        Function compare two trees on full compliance
+        @param cursor1 - clang.cindex.Cursor object
+        @param cursor2 - clang.cindex.Cursor object
+        @param src1 - str path to first file
+        @param src2 - str path to second file
+    '''
     children1 = list(cursor1.get_children())
     children2 = list(cursor2.get_children())
     len1 = len(children1)
@@ -98,6 +110,13 @@ def full_compare(cursor1, cursor2, src1, src2):
 
 
 def is_same_structure(tree1, tree2, src1, src2):
+    '''
+        Function compare two trees on full compliance of structures
+        @param cursor1 - clang.cindex.Cursor object
+        @param cursor2 - clang.cindex.Cursor object
+        @param src1 - str path to first file
+        @param src2 - str path to second file
+    '''
     children1 = list(tree1.get_children())
     children2 = list(tree2.get_children())
     len1 = len(children1)
@@ -118,6 +137,11 @@ def is_same_structure(tree1, tree2, src1, src2):
 
 
 def get_not_ignored(tree, src):
+    '''
+        Function helps to discard unnecessary nodes such as imports
+        @param tree - clang.cindex.Cursor object
+        @param src - str path to file
+    '''
     children = list(tree.get_children())
     length = len(children)
     parsed_nodes = []
@@ -131,6 +155,10 @@ def get_not_ignored(tree, src):
 
 # tree is parsed.
 def get_count_of_nodes(tree):
+    '''
+        Get count of nodes of tree without head
+        @param tree - clang.cindex.Cursor object
+    '''
     count = 0
     children = list(tree.get_children())
     length = len(children)
@@ -142,6 +170,16 @@ def get_count_of_nodes(tree):
 
 
 def same_by(tree1, tree2, src1, src2):
+    '''
+        Function which return percent of compliance two trees
+        Small functions with big compliance add big contribution
+        what bad
+        Function waits delete
+        @param tree1 - clang.cindex.Cursor object
+        @param tree2 - clang.cindex.Cursor object
+        @param src1 - str path to first file
+        @param src2 - str path to second file
+    '''
     parsed_nodes1 = get_not_ignored(tree1, src1)
     parsed_nodes2 = get_not_ignored(tree2, src2)
     len1 = len(parsed_nodes1)
@@ -172,14 +210,20 @@ def same_by(tree1, tree2, src1, src2):
     for i in range(min(len1, len2)):
         ind = np.unravel_index(np.argmax(array, axis=None), array.shape)
         same_struct_metric += array[ind]
-        array[ind] = 0
+        array[ind[0]] = 0
+        array[:, ind[1]] = 0
     same_struct_metric /= max(len1, len2)
     print()
-    print('Structure is same by {:2%}'.format(same_struct_metric))
+    print('Structure is same by {:.2%}'.format(same_struct_metric))
 
 
-# node1 and node2 are parsed.
 def stupid_compare_nodes(node1, node2):
+    '''
+        Works with same by, read documentation above
+        node1 and node2 are parsed
+        @param node1 - clang.cindex.Curosr object
+        @param node2 - clang.cindex.Curosr object
+    '''
     same = 0
     children1 = list(node1.get_children())
     children2 = list(node2.get_children())
@@ -192,9 +236,16 @@ def stupid_compare_nodes(node1, node2):
     return same
 
 
-# axis = 0 - iteration on row
-# axi = 1 - iteration on column
 def getn_count_nodes(len_min, len_max, indexes, axis, children):
+    '''
+        Function return count of not accounted nodes
+        @param len_min - length of less node
+        @param len_max - length of longer node
+        @param indexes - indexes of metrics taken into account list of tuples
+        @param axis - if 0 then iteration on row
+        if 1 then iteration on column
+        @param children - list of nodes of type clang.cindex.Cursor object
+    '''
     add = [indexes[i][axis] for i in range(len_min)]
 
     count = 0
@@ -206,6 +257,14 @@ def getn_count_nodes(len_min, len_max, indexes, axis, children):
 
 
 def calculate_metric(children1, children2, len1, len2, array):
+    '''
+        Function calculate percent of compliance from matrix
+        @param children1 - list of nodes of type clang.cindex.Cursor object
+        @param children2 - list of nodes of type clang.cindex.Cursor object
+        @param len1 - count of nodes in children1
+        @param len2 - count of nodes in children2
+        @param array - matrix of compliance
+    '''
     same_struct_metric = (0, 0)
     indexes = []
     for i in range(min(len1, len2)):
@@ -219,7 +278,7 @@ def calculate_metric(children1, children2, len1, len2, array):
             array[ind[0]][i] = (0, 0)
         for j in range(len1):
             array[j][ind[1]] = (0, 0)
-    
+
     same_struct_metric = (same_struct_metric[0] + 1,
                           same_struct_metric[1] + 1)
 
@@ -235,8 +294,13 @@ def calculate_metric(children1, children2, len1, len2, array):
     return same_struct_metric
 
 
-# Nodes are parsed and turn in list
 def smart_compare_nodes(tree1, tree2):
+    '''
+        Function for compare two trees
+        @param tree1 - clang.cindex.Cursor object
+        @param tree2 - clang.cindex.Cursor object
+        tree1 and tree2 are parsed
+    '''
     children1 = list(tree1.get_children())
     children2 = list(tree2.get_children())
     len1 = len(children1)
@@ -267,12 +331,12 @@ def smart_compare_nodes(tree1, tree2):
     # table = pd.DataFrame(array, index=indexes, columns=columns)
     # print()
     # print(table)
-    
-    same_struct_metric = calculate_metric(children1, 
-    	                                  children2, 
-    	                                  len1, 
-    	                                  len2, 
-    	                                  array)
+
+    same_struct_metric = calculate_metric(children1,
+                                          children2,
+                                          len1,
+                                          len2,
+                                          array)
 
     # print('Structure is same by {:.2%}'.format(same_struct_metric[0] /
     #                                           same_struct_metric[1]))
@@ -280,6 +344,12 @@ def smart_compare_nodes(tree1, tree2):
 
 
 def find_max_index(array, len1, len2):
+    '''
+        Function for finding index of max element in matrix
+        @param array - matrix of compliance
+        @param len1 - number of nodes in children1
+        @param len2 - number of nodes in children2
+    '''
     maximum = 0
     index = (0, 0)
     for i in range(len1):
@@ -330,12 +400,13 @@ if __name__ == '__main__':
                                 filename2), '\n')
         print('Is same:', full_compare(cursor, cursor2,
                                        filename, filename2), '\n')
-        same_by(cursor, cursor2, filename, filename2)
+        # same_by(cursor, cursor2, filename, filename2)
 
         parsed_nodes1 = get_not_ignored(cursor, filename)
         parsed_nodes2 = get_not_ignored(cursor2, filename2)
         len1 = len(parsed_nodes1)
         len2 = len(parsed_nodes2)
+
         array = np.zeros((len1, len2), dtype=object)
         indexes = []
         columns = []
@@ -354,11 +425,11 @@ if __name__ == '__main__':
         print()
         print(table)
 
-        same_struct_metric = calculate_metric(parsed_nodes1, 
-    	                                      parsed_nodes2, 
-    	                                      len1, 
-    	                                      len2, 
-    	                                      array)
+        same_struct_metric = calculate_metric(parsed_nodes1,
+                                              parsed_nodes2,
+                                              len1,
+                                              len2,
+                                              array)
         print()
         print('Structure is same by {:.2%}'.format(same_struct_metric[0] /
                                                    same_struct_metric[1]))
