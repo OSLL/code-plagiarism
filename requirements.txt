@@ -1,0 +1,5 @@
+numpy
+pandas
+ccsyspath
+clang
+libclang

@@ -2,7 +2,9 @@ import os
 import sys
 import numpy as np
 import pandas as pd
+import ccsyspath
 from clang.cindex import CursorKind, Index, TranslationUnit
+from time import perf_counter
 # from clang.cindex import *
 
 IGNORE = [CursorKind.PREPROCESSING_DIRECTIVE,
@@ -385,8 +387,13 @@ if __name__ == '__main__':
     output_path_first = str(filename.split('/')[-1].split('.')[0])+".ast"
     output_path_second = str(filename2.split('/')[-1].split('.')[0])+".ast"
 
-    cursor = get_cursor_from_file(filename)
-    cursor2 = get_cursor_from_file(filename2)
+    args = '-x c++ --std=c++11'.split()
+    syspath = ccsyspath.system_include_paths('clang++')
+    incargs = [b'-I' + inc for inc in syspath]
+    args = args + incargs
+
+    cursor = get_cursor_from_file(filename, args)
+    cursor2 = get_cursor_from_file(filename2, args)
     if cursor and cursor2:
         if os.path.isfile(output_path_first):
             os.remove(output_path_first)
@@ -402,6 +409,7 @@ if __name__ == '__main__':
                                        filename, filename2), '\n')
         # same_by(cursor, cursor2, filename, filename2)
 
+        start = perf_counter()
         parsed_nodes1 = get_not_ignored(cursor, filename)
         parsed_nodes2 = get_not_ignored(cursor2, filename2)
         len1 = len(parsed_nodes1)
@@ -430,6 +438,9 @@ if __name__ == '__main__':
                                               len1,
                                               len2,
                                               array)
+        end = perf_counter()
+
         print()
         print('Structure is same by {:.2%}'.format(same_struct_metric[0] /
                                                    same_struct_metric[1]))
+        print('Time:', end - start)

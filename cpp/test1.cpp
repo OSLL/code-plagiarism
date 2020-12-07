@@ -1,4 +1,7 @@
+#include <iostream>
+
 float Hello(float step, int head){
+	std::cout << "Hello Worlds";
 	return step * step;
 }
 
