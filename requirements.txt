@@ -1,5 +1,5 @@
-numpy
-pandas
-ccsyspath
-clang
-libclang
+numpy==1.19.4
+pandas==1.0.5
+ccsyspath=1.1.0
+clang==11.0
+libclang==10.0.1.0

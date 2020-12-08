@@ -366,9 +366,45 @@ def find_max_index(array, len1, len2):
     return index
 
 
+def ast_compare(cursor1, cursor2, filename1, filename2):
+    parsed_nodes1 = get_not_ignored(cursor1, filename1)
+    parsed_nodes2 = get_not_ignored(cursor2, filename2)
+    len1 = len(parsed_nodes1)
+    len2 = len(parsed_nodes2)
+
+    array = np.zeros((len1, len2), dtype=object)
+    indexes = []
+    columns = []
+    for i in range(len1):
+        indexes.append(parsed_nodes1[i].spelling)
+        for j in range(len2):
+            result = smart_compare_nodes(parsed_nodes1[i],
+                                         parsed_nodes2[j])
+            array[i][j] = result
+    for j in range(len2):
+        columns.append(parsed_nodes2[j].spelling)
+
+    table = pd.DataFrame(array, index=indexes, columns=columns)
+    print()
+    print(table)
+
+    same_struct_metric = calculate_metric(parsed_nodes1,
+                                          parsed_nodes2,
+                                          len1,
+                                          len2,
+                                          array)
+
+    print()
+    print('Structure is same by {:.2%}'.format(same_struct_metric[0] /
+                                               same_struct_metric[1]))
+    return same_struct_metric
+
+
 if __name__ == '__main__':
     filename = 'cpp/test1.cpp'
     filename2 = 'cpp/test2.cpp'
+    output_path_first = str(filename.split('/')[-1].split('.')[0])+".ast"
+    output_path_second = str(filename2.split('/')[-1].split('.')[0])+".ast"
 
     if len(sys.argv) > 4:
         filename = sys.argv[1]
@@ -384,14 +420,11 @@ if __name__ == '__main__':
         filename2 = sys.argv[2]
     elif len(sys.argv) > 1:
         filename = sys.argv[1]
-    output_path_first = str(filename.split('/')[-1].split('.')[0])+".ast"
-    output_path_second = str(filename2.split('/')[-1].split('.')[0])+".ast"
 
     args = '-x c++ --std=c++11'.split()
     syspath = ccsyspath.system_include_paths('clang++')
     incargs = [b'-I' + inc for inc in syspath]
     args = args + incargs
-
     cursor = get_cursor_from_file(filename, args)
     cursor2 = get_cursor_from_file(filename2, args)
     if cursor and cursor2:
@@ -410,37 +443,39 @@ if __name__ == '__main__':
         # same_by(cursor, cursor2, filename, filename2)
 
         start = perf_counter()
-        parsed_nodes1 = get_not_ignored(cursor, filename)
-        parsed_nodes2 = get_not_ignored(cursor2, filename2)
-        len1 = len(parsed_nodes1)
-        len2 = len(parsed_nodes2)
+        ast_compare(cursor, cursor2, filename, filename2)
+        print('Time:', perf_counter() - start)
 
-        array = np.zeros((len1, len2), dtype=object)
-        indexes = []
-        columns = []
+    matrix_compliance = np.zeros((12, 12))
+    indexes_cpp = []
+    columns_cpp = []
+    start_eval = perf_counter()
+    for row in range(1, 13):
+        filename = 'cpp/dataset/sample' + str(row) + '.cpp'
+        indexes_cpp.append(filename.split('/')[-1])
+        for col in range(1, 13):
+            filename2 = 'cpp/dataset/sample' + str(col) + '.cpp'
+            if row == 1:
+                columns_cpp.append(filename2.split('/')[-1])
+            if row == col:
+                matrix_compliance[row - 1][col - 1] = 1.0
+                continue
+            if row > col:
+                continue
 
-        for i in range(len1):
-            indexes.append(parsed_nodes1[i].spelling)
-            for j in range(len2):
-                result = smart_compare_nodes(parsed_nodes1[i],
-                                             parsed_nodes2[j])
-                array[i][j] = result
+            cursor = get_cursor_from_file(filename, args)
+            cursor2 = get_cursor_from_file(filename2, args)
+            if cursor and cursor2:
+                start = perf_counter()
+                res = ast_compare(cursor, cursor2, filename, filename2)
+                print('Time:', perf_counter() - start)
 
-        for j in range(len2):
-            columns.append(parsed_nodes2[j].spelling)
+                percent = round(res[0] / res[1], 3)
+                matrix_compliance[row - 1][col - 1] = percent
+                matrix_compliance[col - 1][row - 1] = percent
 
-        table = pd.DataFrame(array, index=indexes, columns=columns)
-        print()
-        print(table)
-
-        same_struct_metric = calculate_metric(parsed_nodes1,
-                                              parsed_nodes2,
-                                              len1,
-                                              len2,
-                                              array)
-        end = perf_counter()
-
-        print()
-        print('Structure is same by {:.2%}'.format(same_struct_metric[0] /
-                                                   same_struct_metric[1]))
-        print('Time:', end - start)
+    print()
+    print('Time for all', perf_counter() - start_eval)
+    same_cpp = pd.DataFrame(matrix_compliance, index=indexes_cpp,
+                            columns=columns_cpp)
+    same_cpp.to_csv('test.csv', sep=';')
