@@ -3,7 +3,7 @@ import sys
 import numpy as np
 import pandas as pd
 import ccsyspath
-from clang.cindex import CursorKind, Index, TranslationUnit
+from clang.cindex import CursorKind, Index, TranslationUnit, TokenKind
 from time import perf_counter
 # from clang.cindex import *
 
@@ -400,6 +400,39 @@ def ast_compare(cursor1, cursor2, filename1, filename2):
     return same_struct_metric
 
 
+def get_operators_frequency(tree1, tree2):
+    '''
+        Function estimates frequency of operators in tree
+        @param tree1 - clang.cindex.Cursor object
+        @param tree2 - clang.cindex.Cursor object
+        returns an object with 3 lists like
+        (operators:['>','<', ..], frequencies:[ [ 1, 0, 2, ..], [2, 1, 1, ..] ], operators_counter = [3, 7])
+    '''
+    trees = [tree1, tree2]
+    operators = ['+', '-', '*', '/', '%',               # Arithmetic Operators
+                 '+=', '-=', '*=', '/=', '%=', '=',     # Assignment Operators
+                 '!', '&&', '||',                       # Logical Operators
+                 '!=', '==', '<=', '>=', '<', '>',      # Relational Operators
+                 '^', '&', '|', '<<', '>>', '~'         # Bitwise Operators
+                 ]
+    frequencies = [[0] * len(operators), [0] * len(operators)]
+    operators_counter = [0, 0]
+
+    for i in range(len(trees)):
+        child = trees[i]
+        tokens = child.get_tokens()
+        for token in tokens:
+            if token.kind == TokenKind.PUNCTUATION and token.spelling in operators:
+                frequencies[i][operators.index(token.spelling)] += 1
+                operators_counter[i] += 1
+
+        # раскомментить для возвращения доли каждого опратора, а не не его количества
+        # for j in range(len(operators)):
+        #     frequencies[i][j] /= operators_counter[i]
+
+    return (operators, frequencies, operators_counter)
+
+
 if __name__ == '__main__':
     filename = 'cpp/test1.cpp'
     filename2 = 'cpp/test2.cpp'
@@ -444,7 +477,24 @@ if __name__ == '__main__':
 
         start = perf_counter()
         ast_compare(cursor, cursor2, filename, filename2)
-        print('Time:', perf_counter() - start)
+
+
+        (op, fr, co) = get_operators_frequency(cursor, cursor2)
+
+        end = perf_counter()
+
+        print()
+        print('Operators freq analysis')
+        print(
+            '{: <7}  total  {: >7}\n-----------------------'.format(co[0], co[1]))
+        for i in range(len(op)):
+            if fr[0][i] > 0 or fr[1][i] > 0:
+                fr[0][i] /= co[0]
+                fr[1][i] /= co[1]
+                print(
+                    '{:-7.2%}    {:4s}{:-7.2%}  '.format(fr[0][i], op[i], fr[1][i]))
+
+        print('\nTime:', perf_counter() - start, '\n')
 
     matrix_compliance = np.zeros((12, 12))
     indexes_cpp = []

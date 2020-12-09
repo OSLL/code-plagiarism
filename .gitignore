@@ -31,4 +31,9 @@
 *.out
 *.app
 
+# Output files
 *.ast
+*.csv
+
+# Developmnt environmemt
+.vscode
