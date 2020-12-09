@@ -366,7 +366,17 @@ def find_max_index(array, len1, len2):
     return index
 
 
-def ast_compare(cursor1, cursor2, filename1, filename2):
+def ast_compare(cursor1, cursor2, filename1, filename2, output=False):
+    '''
+        Function compares structure of two ast and return how they are
+        same in percent
+        @param cursor1- clang.cindex.Cursor object
+        @param cursor2 - clang.cindex.Cursor object
+        @param filename1 - name first file plus path to it from folder
+        with get_ast.py
+        @param filename2 - name second file plus path to it from folder
+        with get_ast.py
+    '''
     parsed_nodes1 = get_not_ignored(cursor1, filename1)
     parsed_nodes2 = get_not_ignored(cursor2, filename2)
     len1 = len(parsed_nodes1)
@@ -384,9 +394,10 @@ def ast_compare(cursor1, cursor2, filename1, filename2):
     for j in range(len2):
         columns.append(parsed_nodes2[j].spelling)
 
-    table = pd.DataFrame(array, index=indexes, columns=columns)
-    print()
-    print(table)
+    if output:
+        table = pd.DataFrame(array, index=indexes, columns=columns)
+        print()
+        print(table)
 
     same_struct_metric = calculate_metric(parsed_nodes1,
                                           parsed_nodes2,
@@ -394,9 +405,10 @@ def ast_compare(cursor1, cursor2, filename1, filename2):
                                           len2,
                                           array)
 
-    print()
-    print('Structure is same by {:.2%}'.format(same_struct_metric[0] /
-                                               same_struct_metric[1]))
+    if output:
+        print()
+        print('Structure is same by {:.2%}'.format(same_struct_metric[0] /
+                                                   same_struct_metric[1]))
     return same_struct_metric
 
 
@@ -406,7 +418,9 @@ def get_operators_frequency(tree1, tree2):
         @param tree1 - clang.cindex.Cursor object
         @param tree2 - clang.cindex.Cursor object
         returns an object with 3 lists like
-        (operators:['>','<', ..], frequencies:[ [ 1, 0, 2, ..], [2, 1, 1, ..] ], operators_counter = [3, 7])
+        (operators:['>','<', ..],
+        frequencies:[ [ 1, 0, 2, ..], [2, 1, 1, ..] ],
+        operators_counter = [3, 7])
     '''
     trees = [tree1, tree2]
     operators = ['+', '-', '*', '/', '%',               # Arithmetic Operators
@@ -422,15 +436,41 @@ def get_operators_frequency(tree1, tree2):
         child = trees[i]
         tokens = child.get_tokens()
         for token in tokens:
-            if token.kind == TokenKind.PUNCTUATION and token.spelling in operators:
+            if (token.kind == TokenKind.PUNCTUATION and
+               token.spelling in operators):
                 frequencies[i][operators.index(token.spelling)] += 1
                 operators_counter[i] += 1
 
-        # раскомментить для возвращения доли каждого опратора, а не не его количества
+        # раскомментить для возвращения доли каждого опратора,
+        # а не его количества
         # for j in range(len(operators)):
         #     frequencies[i][j] /= operators_counter[i]
 
     return (operators, frequencies, operators_counter)
+
+
+def print_freq_analysis(op, fr, co):
+    print()
+    print('Operators freq analysis')
+    print('{: <7}  total  {: >7}\n-----------------------'.format(co[0],
+                                                                  co[1]))
+    for i in range(len(op)):
+        if fr[0][i] > 0 or fr[1][i] > 0:
+            fr[0][i] /= co[0]
+            fr[1][i] /= co[1]
+            print('{:-7.2%}    {:4s}{:-7.2%}  '.format(fr[0][i], op[i],
+                                                       fr[1][i]))
+
+
+def get_freq_percent(op, fr, co):
+    percent_of_same = [0, 0]
+    for i in range(len(op)):
+        if fr[0][i] > 0 or fr[1][i] > 0:
+            percent_of_same[0] += min(fr[0][i], fr[1][i])
+            percent_of_same[1] += max(fr[0][i], fr[1][i])
+    if percent_of_same[1] == 0:
+        return 0.0
+    return percent_of_same[0] / percent_of_same[1]
 
 
 if __name__ == '__main__':
@@ -466,35 +506,18 @@ if __name__ == '__main__':
         if os.path.isfile(output_path_second):
             os.remove(output_path_second)
 
-        traverse_and_print_values(cursor, filename, output_path_first)
-        traverse_and_print_values(cursor2, filename2, output_path_second)
-        print('Same Structure:',
-              is_same_structure(cursor, cursor2, filename,
-                                filename2), '\n')
-        print('Is same:', full_compare(cursor, cursor2,
-                                       filename, filename2), '\n')
+        # traverse_and_print_values(cursor, filename, output_path_first)
+        # traverse_and_print_values(cursor2, filename2, output_path_second)
+        # print('Same Structure:',
+        #      is_same_structure(cursor, cursor2, filename,
+        #                        filename2), '\n')
+        # print('Is same:', full_compare(cursor, cursor2,
+        #                                filename, filename2), '\n')
         # same_by(cursor, cursor2, filename, filename2)
 
-        start = perf_counter()
-        ast_compare(cursor, cursor2, filename, filename2)
-
-
-        (op, fr, co) = get_operators_frequency(cursor, cursor2)
-
-        end = perf_counter()
-
-        print()
-        print('Operators freq analysis')
-        print(
-            '{: <7}  total  {: >7}\n-----------------------'.format(co[0], co[1]))
-        for i in range(len(op)):
-            if fr[0][i] > 0 or fr[1][i] > 0:
-                fr[0][i] /= co[0]
-                fr[1][i] /= co[1]
-                print(
-                    '{:-7.2%}    {:4s}{:-7.2%}  '.format(fr[0][i], op[i], fr[1][i]))
-
-        print('\nTime:', perf_counter() - start, '\n')
+        # ast_compare(cursor, cursor2, filename, filename2)
+        # (op, fr, co) = get_operators_frequency(cursor, cursor2)
+        # print_freq_analysis(op, fr, co)
 
     matrix_compliance = np.zeros((12, 12))
     indexes_cpp = []
@@ -518,14 +541,25 @@ if __name__ == '__main__':
             if cursor and cursor2:
                 start = perf_counter()
                 res = ast_compare(cursor, cursor2, filename, filename2)
-                print('Time:', perf_counter() - start)
 
                 percent = round(res[0] / res[1], 3)
                 matrix_compliance[row - 1][col - 1] = percent
                 matrix_compliance[col - 1][row - 1] = percent
 
+                if percent >= 0.8:
+                    print()
+                    print('+'*40)
+                    print('May be similar:', filename.split('/')[-1],
+                          filename2.split('/')[-1])
+                    ast_compare(cursor, cursor2, filename, filename2, True)
+                    (op, fr, co) = get_operators_frequency(cursor, cursor2)
+                    print('Operators match percentage:')
+                    print('{:.2%}'.format(get_freq_percent(op, fr, co)))
+                    print_freq_analysis(op, fr, co)
+                    print('+'*22)
+
     print()
     print('Time for all', perf_counter() - start_eval)
     same_cpp = pd.DataFrame(matrix_compliance, index=indexes_cpp,
                             columns=columns_cpp)
-    same_cpp.to_csv('test.csv', sep=';')
+    same_cpp.to_csv('same_structure.csv', sep=';')
