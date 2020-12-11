@@ -450,6 +450,12 @@ def get_operators_frequency(tree1, tree2):
 
 
 def print_freq_analysis(op, fr, co):
+    '''
+        The Function prints table with result of frequency analysis
+        @param op - array with most of the operators C/C++ language
+        @param fr - array with count of appearence of operators
+        @param co - array with count of operators in first and second file
+    '''
     print()
     print('Operators freq analysis')
     print('{: <7}  total  {: >7}\n-----------------------'.format(co[0],
@@ -463,6 +469,12 @@ def print_freq_analysis(op, fr, co):
 
 
 def get_freq_percent(op, fr, co):
+    '''
+        The function returns how similar the operators are in the two AST
+        @param op - array with most of the operators C/C++ language
+        @param fr - array with count of appearence of operators
+        @param co - array with count of operators in first and second file
+    '''
     percent_of_same = [0, 0]
     for i in range(len(op)):
         if fr[0][i] > 0 or fr[1][i] > 0:
@@ -474,60 +486,35 @@ def get_freq_percent(op, fr, co):
 
 
 if __name__ == '__main__':
-    filename = 'cpp/test1.cpp'
-    filename2 = 'cpp/test2.cpp'
-    output_path_first = str(filename.split('/')[-1].split('.')[0])+".ast"
-    output_path_second = str(filename2.split('/')[-1].split('.')[0])+".ast"
-
-    if len(sys.argv) > 4:
-        filename = sys.argv[1]
-        filename2 = sys.argv[2]
-        output_path_first = sys.argv[3]
-        output_path_second = sys.argv[4]
-    elif len(sys.argv) > 3:
-        filename = sys.argv[1]
-        filename2 = sys.argv[2]
-        output_path_first = sys.argv[3]
-    elif len(sys.argv) > 2:
-        filename = sys.argv[1]
-        filename2 = sys.argv[2]
-    elif len(sys.argv) > 1:
-        filename = sys.argv[1]
-
     args = '-x c++ --std=c++11'.split()
     syspath = ccsyspath.system_include_paths('clang++')
     incargs = [b'-I' + inc for inc in syspath]
     args = args + incargs
-    cursor = get_cursor_from_file(filename, args)
-    cursor2 = get_cursor_from_file(filename2, args)
-    if cursor and cursor2:
-        if os.path.isfile(output_path_first):
-            os.remove(output_path_first)
-        if os.path.isfile(output_path_second):
-            os.remove(output_path_second)
 
-        # traverse_and_print_values(cursor, filename, output_path_first)
-        # traverse_and_print_values(cursor2, filename2, output_path_second)
-        # print('Same Structure:',
-        #      is_same_structure(cursor, cursor2, filename,
-        #                        filename2), '\n')
-        # print('Is same:', full_compare(cursor, cursor2,
-        #                                filename, filename2), '\n')
-        # same_by(cursor, cursor2, filename, filename2)
+    directory = 'cpp/'
+    if len(sys.argv) > 1:
+        directory = sys.argv[1]
+    if not os.path.exists(directory):
+        print('Directory isn\'t exist')
+        exit()
 
-        # ast_compare(cursor, cursor2, filename, filename2)
-        # (op, fr, co) = get_operators_frequency(cursor, cursor2)
-        # print_freq_analysis(op, fr, co)
+    files = os.listdir(directory)
+    files = list(filter(lambda x: (x.endswith('.cpp') or
+                                   x.endswith('.cc') or
+                                   x.endswith('h')), files))
 
-    matrix_compliance = np.zeros((12, 12))
+    count_files = len(files)
+    matrix_compliance = np.zeros((count_files, count_files))
     indexes_cpp = []
     columns_cpp = []
     start_eval = perf_counter()
-    for row in range(1, 13):
-        filename = 'cpp/dataset/sample' + str(row) + '.cpp'
+    for row in range(count_files):
+        if directory[-1] != '/':
+            directory += '/'
+        filename = directory + files[row]
         indexes_cpp.append(filename.split('/')[-1])
-        for col in range(1, 13):
-            filename2 = 'cpp/dataset/sample' + str(col) + '.cpp'
+        for col in range(count_files):
+            filename2 = directory + files[col]
             if row == 1:
                 columns_cpp.append(filename2.split('/')[-1])
             if row == col:
@@ -559,7 +546,7 @@ if __name__ == '__main__':
                     print('+'*22)
 
     print()
-    print('Time for all', perf_counter() - start_eval)
+    print('Time for all {:.2f}'.format(perf_counter() - start_eval))
     same_cpp = pd.DataFrame(matrix_compliance, index=indexes_cpp,
                             columns=columns_cpp)
     same_cpp.to_csv('same_structure.csv', sep=';')
