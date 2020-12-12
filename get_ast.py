@@ -267,22 +267,26 @@ def calculate_metric(children1, children2, len1, len2, array):
         @param len2 - count of nodes in children2
         @param array - matrix of compliance
     '''
-    same_struct_metric = (0, 0)
+    same_struct_metric = [0, 0]
     indexes = []
     for i in range(min(len1, len2)):
         ind = find_max_index(array, len1, len2)
         indexes.append(ind)
-        same_struct_metric = (same_struct_metric[0] +
-                              array[ind][0],
-                              same_struct_metric[1] +
-                              array[ind][1])
+        same_struct_metric[0] += array[ind][0]
+        same_struct_metric[1] += array[ind][1]
+        # same_struct_metric = [same_struct_metric[0] +
+        #                       array[ind][0],
+        #                       same_struct_metric[1] +
+        #                       array[ind][1]]
         for i in range(len2):
-            array[ind[0]][i] = (0, 0)
+            array[ind[0]][i] = [0, 0]
         for j in range(len1):
-            array[j][ind[1]] = (0, 0)
-
-    same_struct_metric = (same_struct_metric[0] + 1,
-                          same_struct_metric[1] + 1)
+            array[j][ind[1]] = [0, 0]
+    
+    same_struct_metric[0] += 1
+    same_struct_metric[1] += 1
+    # same_struct_metric = [same_struct_metric[0] + 1,
+    #                       same_struct_metric[1] + 1]
 
     not_count = 0
     if len1 > len2:
@@ -290,10 +294,36 @@ def calculate_metric(children1, children2, len1, len2, array):
     elif len2 > len1:
         not_count = getn_count_nodes(len1, len2, indexes, 1, children2)
 
-    same_struct_metric = (same_struct_metric[0],
-                          same_struct_metric[1] + not_count)
+    same_struct_metric[1] += not_count
+    # same_struct_metric = [same_struct_metric[0],
+    #                       same_struct_metric[1] + not_count]
 
     return same_struct_metric
+
+
+# Come up with how to compare two leaves
+def compare_leaves(leaf1, leaf2):
+    '''
+        If node haven't other nodes then it is leaf
+    '''
+    tokens1 = leaf1.get_tokens()
+    # values_first[0] - keyword
+    # values_first[1] - literal
+    values_first = [None, None]
+    tokens2 = leaf2.get_tokens()
+    values_second = [None, None]
+    count = 0
+    for token in tokens1:
+        if token.kind.name == 'LITERAL':
+            values_first[1] = token.spelling
+        if token.kind.name == 'KEYWORD':
+            values_first[0] = token.spelling
+    for token in tokens2:
+        if token.kind.name == 'LITERAL':
+            values_second[1] = token.spelling
+        if token.kind.name == 'KEYWORD':
+            values_second[0] = token.spelling
+    return values_first, values_second
 
 
 def smart_compare_nodes(tree1, tree2):
@@ -308,12 +338,13 @@ def smart_compare_nodes(tree1, tree2):
     len1 = len(children1)
     len2 = len(children2)
 
+    # Can add the compare two leaves (len1 = len2 = 0)
     if (len1 == 0 and len2 == 0):
-        return (1, 1)
+        return [1, 1]
     elif (len1 == 0):
-        return (1, (get_count_of_nodes(tree2) + 1))
+        return [1, (get_count_of_nodes(tree2) + 1)]
     elif (len2 == 0):
-        return (1, (get_count_of_nodes(tree1) + 1))
+        return [1, (get_count_of_nodes(tree1) + 1)]
 
     array = np.zeros((len1, len2), dtype=object)
     # indexes = []

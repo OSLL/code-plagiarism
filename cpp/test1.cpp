@@ -1,6 +1,6 @@
 #include <iostream>
 
-float Hello(float step, int head){
+float Hello(float step, unsigned head){
 	std::cout << "Hello Worlds";
 	return step * step;
 }
@@ -11,8 +11,8 @@ int go(int hood)
 	return hood + hood;
 }
 
-void isTrue(void){
-	return True;
+bool isTrue(void){
+	return true;
 }
 
 int main(){
