@@ -8,7 +8,7 @@ from time import perf_counter
 # from clang.cindex import *
 
 IGNORE = [CursorKind.PREPROCESSING_DIRECTIVE,
-          CursorKind.MACRO_DEFINITION,
+          # CursorKind.MACRO_DEFINITION,
           CursorKind.MACRO_INSTANTIATION,
           CursorKind.INCLUSION_DIRECTIVE,
           CursorKind.USING_DIRECTIVE,
@@ -282,7 +282,7 @@ def calculate_metric(children1, children2, len1, len2, array):
             array[ind[0]][i] = [0, 0]
         for j in range(len1):
             array[j][ind[1]] = [0, 0]
-    
+
     same_struct_metric[0] += 1
     same_struct_metric[1] += 1
     # same_struct_metric = [same_struct_metric[0] + 1,
@@ -301,20 +301,23 @@ def calculate_metric(children1, children2, len1, len2, array):
     return same_struct_metric
 
 
-# Come up with how to compare two leaves
 def compare_leaves(leaf1, leaf2):
     '''
+        Function compare two leaves and return value from 0 to 1
         If node haven't other nodes then it is leaf
+        @param leaf1 - first leaf
+        @param leaf2 - second leaf
+        values_first(second)[0] - keyword
+        values_first(second)[1] - literal
     '''
     tokens1 = leaf1.get_tokens()
-    # values_first[0] - keyword
-    # values_first[1] - literal
     values_first = [None, None]
     tokens2 = leaf2.get_tokens()
     values_second = [None, None]
-    count = 0
+    count_same = 0
     for token in tokens1:
         if token.kind.name == 'LITERAL':
+            # If Russian language than crash
             values_first[1] = token.spelling
         if token.kind.name == 'KEYWORD':
             values_first[0] = token.spelling
@@ -323,7 +326,19 @@ def compare_leaves(leaf1, leaf2):
             values_second[1] = token.spelling
         if token.kind.name == 'KEYWORD':
             values_second[0] = token.spelling
-    return values_first, values_second
+
+    if values_second[0] == values_first[0]:
+        count_same += 2
+    elif values_first[0] is not None and values_second[0] is not None:
+        count_same += 1
+
+    if values_second[1] == values_first[1]:
+        count_same += 2
+    elif values_first[1] is not None and values_second[1] is not None:
+        count_same += 1
+
+    # print(values_first, values_second)
+    return [count_same, 4]
 
 
 def smart_compare_nodes(tree1, tree2):
@@ -531,25 +546,27 @@ if __name__ == '__main__':
 
     files = os.listdir(directory)
     files = list(filter(lambda x: (x.endswith('.cpp') or
-                                   x.endswith('.cc') or
+                                   x.endswith('.c') or
                                    x.endswith('h')), files))
 
     count_files = len(files)
-    matrix_compliance = np.zeros((count_files, count_files))
-    indexes_cpp = []
-    columns_cpp = []
+    # count_iterations = int((count_files*count_files - count_files) / 2)
+    # iteration = 0
+    # matrix_compliance = np.zeros((count_files, count_files))
+    # indexes_cpp = []
+    # columns_cpp = []
     start_eval = perf_counter()
     for row in range(count_files):
         if directory[-1] != '/':
             directory += '/'
         filename = directory + files[row]
-        indexes_cpp.append(filename.split('/')[-1])
+        # indexes_cpp.append(filename.split('/')[-1])
         for col in range(count_files):
             filename2 = directory + files[col]
-            if row == 1:
-                columns_cpp.append(filename2.split('/')[-1])
+            # if row == 1:
+            #     columns_cpp.append(filename2.split('/')[-1])
             if row == col:
-                matrix_compliance[row - 1][col - 1] = 1.0
+                # matrix_compliance[row - 1][col - 1] = 1.0
                 continue
             if row > col:
                 continue
@@ -560,24 +577,28 @@ if __name__ == '__main__':
                 start = perf_counter()
                 res = ast_compare(cursor, cursor2, filename, filename2)
 
-                percent = round(res[0] / res[1], 3)
-                matrix_compliance[row - 1][col - 1] = percent
-                matrix_compliance[col - 1][row - 1] = percent
+                struct_res = round(res[0] / res[1], 3)
+                (op, fr, co) = get_operators_frequency(cursor, cursor2)
+                operators_res = get_freq_percent(op, fr, co)
+                # matrix_compliance[row - 1][col - 1] = struct_res
+                # matrix_compliance[col - 1][row - 1] = struct_res
 
-                if percent >= 0.8:
+                summ = struct_res * 1.2 + operators_res
+
+                # max * 0.75
+                if summ > 1.65:
                     print()
                     print('+'*40)
                     print('May be similar:', filename.split('/')[-1],
                           filename2.split('/')[-1])
                     ast_compare(cursor, cursor2, filename, filename2, True)
-                    (op, fr, co) = get_operators_frequency(cursor, cursor2)
-                    print('Operators match percentage:')
-                    print('{:.2%}'.format(get_freq_percent(op, fr, co)))
-                    print_freq_analysis(op, fr, co)
-                    print('+'*22)
+                    text = 'Operators match percentage:'
+                    print(text, '{:.2%}'.format(operators_res))
+                    # print_freq_analysis(op, fr, co)
+                    print('+'*40)
 
     print()
     print('Time for all {:.2f}'.format(perf_counter() - start_eval))
-    same_cpp = pd.DataFrame(matrix_compliance, index=indexes_cpp,
-                            columns=columns_cpp)
-    same_cpp.to_csv('same_structure.csv', sep=';')
+    # same_cpp = pd.DataFrame(matrix_compliance, index=indexes_cpp,
+    #                         columns=columns_cpp)
+    # same_cpp.to_csv('same_structure.csv', sep=';')

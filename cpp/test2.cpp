@@ -1,3 +1,5 @@
+#define WAR 1000
+
 float Goodbyi(float step, int head, int len){
 	return step * step;
 }
