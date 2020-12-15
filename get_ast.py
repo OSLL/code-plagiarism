@@ -476,6 +476,7 @@ def get_operators_frequency(tree1, tree2):
                  '^', '&', '|', '<<', '>>', '~'         # Bitwise Operators
                  ]
     frequencies = [[0] * len(operators), [0] * len(operators)]
+    count_keywords = [{}, {}]
     operators_counter = [0, 0]
 
     for i in range(len(trees)):
@@ -486,13 +487,21 @@ def get_operators_frequency(tree1, tree2):
                token.spelling in operators):
                 frequencies[i][operators.index(token.spelling)] += 1
                 operators_counter[i] += 1
+            if (token.kind == TokenKind.KEYWORD):
+                keyword = token.spelling
+                if keyword not in count_keywords[i].keys():
+                    count_keywords[i][keyword] = 1
+                else:
+                    count_keywords[i][keyword] += 1
+                if keyword not in count_keywords[(i + 1) % 2].keys():
+                    count_keywords[(i + 1) % 2][keyword] = 0
 
         # раскомментить для возвращения доли каждого опратора,
         # а не его количества
         # for j in range(len(operators)):
         #     frequencies[i][j] /= operators_counter[i]
 
-    return (operators, frequencies, operators_counter)
+    return (operators, frequencies, operators_counter, count_keywords)
 
 
 def print_freq_analysis(op, fr, co):
@@ -514,7 +523,7 @@ def print_freq_analysis(op, fr, co):
                                                        fr[1][i]))
 
 
-def get_freq_percent(op, fr, co):
+def get_op_freq_percent(op, fr, co):
     '''
         The function returns how similar the operators are in the two AST
         @param op - array with most of the operators C/C++ language
@@ -528,6 +537,20 @@ def get_freq_percent(op, fr, co):
             percent_of_same[1] += max(fr[0][i], fr[1][i])
     if percent_of_same[1] == 0:
         return 0.0
+    return percent_of_same[0] / percent_of_same[1]
+
+
+def get_kw_freq_percent(count_keywords):
+    percent_of_same = [0, 0]
+    for key in count_keywords[0].keys():
+        percent_of_same[0] += min(count_keywords[0][key],
+                                  count_keywords[1][key])
+        percent_of_same[1] += max(count_keywords[0][key],
+                                  count_keywords[1][key])
+
+    if percent_of_same[1] == 0:
+        return 0.0
+
     return percent_of_same[0] / percent_of_same[1]
 
 
@@ -578,15 +601,16 @@ if __name__ == '__main__':
                 res = ast_compare(cursor, cursor2, filename, filename2)
 
                 struct_res = round(res[0] / res[1], 3)
-                (op, fr, co) = get_operators_frequency(cursor, cursor2)
-                operators_res = get_freq_percent(op, fr, co)
+                (op, fr, co, ck) = get_operators_frequency(cursor, cursor2)
+                operators_res = get_op_freq_percent(op, fr, co)
+                keywords_res = get_kw_freq_percent(ck)
                 # matrix_compliance[row - 1][col - 1] = struct_res
                 # matrix_compliance[col - 1][row - 1] = struct_res
 
-                summ = struct_res * 1.2 + operators_res
+                summ = struct_res * 1.2 + operators_res + keywords_res * 0.8
 
                 # max * 0.75
-                if summ > 1.65:
+                if summ > 2.25:
                     print()
                     print('+'*40)
                     print('May be similar:', filename.split('/')[-1],
@@ -595,6 +619,8 @@ if __name__ == '__main__':
                     text = 'Operators match percentage:'
                     print(text, '{:.2%}'.format(operators_res))
                     # print_freq_analysis(op, fr, co)
+                    text = 'Keywords match percentage:'
+                    print(text, '{:.2%}'.format(keywords_res))
                     print('+'*40)
 
     print()
