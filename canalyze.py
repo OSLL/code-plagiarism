@@ -368,9 +368,8 @@ def smart_compare_nodes(tree1, tree2):
     for i in range(len1):
         # indexes.append(children1[i].spelling)
         for j in range(len2):
-            result = smart_compare_nodes(children1[i],
-                                         children2[j])
-            array[i][j] = result
+            array[i][j] = smart_compare_nodes(children1[i],
+                                              children2[j])
             # print(repr(array[i][j]))
 
     # for j in range(len2):
@@ -431,12 +430,13 @@ def ast_compare(cursor1, cursor2, filename1, filename2, output=False):
     array = np.zeros((len1, len2), dtype=object)
     indexes = []
     columns = []
+
     for i in range(len1):
         indexes.append(parsed_nodes1[i].spelling)
         for j in range(len2):
-            result = smart_compare_nodes(parsed_nodes1[i],
-                                         parsed_nodes2[j])
-            array[i][j] = result
+            array[i][j] = smart_compare_nodes(parsed_nodes1[i],
+                                              parsed_nodes2[j])
+
     for j in range(len2):
         columns.append(parsed_nodes2[j].spelling)
 
