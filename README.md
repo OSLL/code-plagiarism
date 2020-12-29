@@ -12,4 +12,8 @@
 
 - Trello [invite](https://trello.com/invite/b/sovrr5dJ/afd614ed4dc319c14986e1792b53d896/identifying-plagiarism-in-source-code)
 
-### ...
+## 2. Install requirements
+
+- pip install -r ./requirements.txt
+
+- python version 3.6+ or even 3.8+

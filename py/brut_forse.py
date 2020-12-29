@@ -1,6 +1,7 @@
 import requests
 
 alphabet = '0123456789abcdefghijklmnopqrstuvwxyz'
+test = [1, 2, 3, 4]
 
 base = len(alphabet)
 
