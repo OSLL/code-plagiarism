@@ -597,7 +597,6 @@ if __name__ == '__main__':
             cursor = get_cursor_from_file(filename, args)
             cursor2 = get_cursor_from_file(filename2, args)
             if cursor and cursor2:
-                start = perf_counter()
                 res = ast_compare(cursor, cursor2, filename, filename2)
 
                 struct_res = round(res[0] / res[1], 3)
