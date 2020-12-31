@@ -14,13 +14,20 @@ OPERATORS = ['UAdd', 'USub', 'Not', 'Invert', 'Add', 'Sub',
              'RShift', 'BitOr', 'BitXor', 'BitAnd', 'MatMult',
              'And', 'Or', 'AugAssign', 'Assign', 'Eq', 'NotEq',
              'Lt', 'LtE', 'Gt', 'GtE', 'Is', 'IsNot', 'In', 'NotIn']
-KEYWORDS = []
+KEYWORDS = ['Return', 'Yield', 'YieldFrom', 'Global', 'Lambda',
+            'FunctionDef', 'Continue', 'Try', 'With', 'IfExp', 'For',
+            'While', 'Break', 'Pass', 'Raise', 'Assert', 'Delete', 'If']
+LITERALS = ['Constant', 'FormattedValue', 'JoinedStr', 'List',
+            'Tuple', 'Set', 'Dict',
+            # If use python version less than 3.8
+            'Num', 'Str', 'Bytes', 'NameConstant', 'Ellipsis']
 
 
 class OpKwCounter(ast.NodeVisitor):
     def __init__(self):
         self.operators = {}
         self.keywords = {}
+        self.literals = {}
 
     def generic_visit(self, node):
         type_name = type(node).__name__
@@ -29,6 +36,16 @@ class OpKwCounter(ast.NodeVisitor):
                 self.operators[type_name] = 1
             else:
                 self.operators[type_name] += 1
+        elif type_name in KEYWORDS:
+            if type_name not in self.keywords.keys():
+                self.keywords[type_name] = 1
+            else:
+                self.keywords[type_name] += 1
+        elif type_name in LITERALS:
+            if type_name not in self.literals.keys():
+                self.literals[type_name] = 1
+            else:
+                self.literals[type_name] += 1
         ast.NodeVisitor.generic_visit(self, node)
 
 
@@ -84,7 +101,7 @@ def get_AST(filename):
     return tree
 
 
-def op_metric(res1, res2):
+def nodes_metric(res1, res2):
     percent_of_same = [0, 0]
     for key in res1.keys():
         if key not in res2.keys():
@@ -227,7 +244,7 @@ def calculate_metric(children1, children2, len1, len2, array):
     return same_struct_metric
 
 
-def ast_compare(tree1, tree2, output=False):
+def struct_compare(tree1, tree2, output=False):
     parsed_nodes1 = get_nodes(tree1)
     parsed_nodes2 = get_nodes(tree2)
     len1 = len(parsed_nodes1)
@@ -249,8 +266,8 @@ def ast_compare(tree1, tree2, output=False):
         if output:
             indexes.append(type(parsed_nodes1[i]).__name__)
         for j in range(len2):
-            array[i][j] = ast_compare(parsed_nodes1[i],
-                                      parsed_nodes2[j])
+            array[i][j] = struct_compare(parsed_nodes1[i],
+                                         parsed_nodes2[j])
 
     if output:
         for j in range(len2):
@@ -305,30 +322,36 @@ if __name__ == '__main__':
 
             tree1 = get_AST(filename)
             tree2 = get_AST(filename2)
-            res = ast_compare(tree1, tree2)
+            res = struct_compare(tree1, tree2)
             struct_res = round(res[0] / res[1], 3)
             counter1 = OpKwCounter()
             counter2 = OpKwCounter()
             counter1.visit(tree1)
             counter2.visit(tree2)
-            operators_res = op_metric(counter1.operators, counter2.operators)
+            operators_res = nodes_metric(counter1.operators,
+                                         counter2.operators)
+            keywords_res = nodes_metric(counter1.keywords, counter2.keywords)
+            literals_res = nodes_metric(counter1.literals, counter2.literals)
             # keywords_res = get_kw_freq_percent(ck)
             # matrix_compliance[row - 1][col - 1] = struct_res
             # matrix_compliance[col - 1][row - 1] = struct_res
 
-            summ = struct_res * 1.2 + operators_res# + keywords_res * 0.8
+            summ = (struct_res * 1.2 + operators_res + keywords_res * 0.8
+                    + literals_res * 0.5)
 
             # max * 0.75
-            if summ > 1.65:#2.25:
+            if summ > 2.625:
                 print()
                 print('+'*40)
                 print('May be similar:', filename.split('/')[-1],
                       filename2.split('/')[-1])
-                ast_compare(tree1, tree2, True)
+                struct_compare(tree1, tree2, True)
                 text = 'Operators match percentage:'
                 print(text, '{:.2%}'.format(operators_res))
                 text = 'Keywords match percentage:'
-                # print(text, '{:.2%}'.format(keywords_res))
+                print(text, '{:.2%}'.format(keywords_res))
+                text = 'Literals match percentage:'
+                print(text, '{:.2%}'.format(literals_res))
                 print('+'*40)
 
     print()
