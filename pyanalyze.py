@@ -25,17 +25,24 @@ LITERALS = ['Constant', 'FormattedValue', 'JoinedStr', 'List',
 
 class OpKwCounter(ast.NodeVisitor):
     def __init__(self):
+        self.seq_ops = []
         self.operators = {}
         self.keywords = {}
         self.literals = {}
 
     def generic_visit(self, node):
+        '''
+            Function for traverse, counting operators, keywords, literals
+            and save sequence of operators
+            @param node - current node
+        '''
         type_name = type(node).__name__
         if type_name in OPERATORS:
             if type_name not in self.operators.keys():
                 self.operators[type_name] = 1
             else:
                 self.operators[type_name] += 1
+            self.seq_ops.append(type_name)
         elif type_name in KEYWORDS:
             if type_name not in self.keywords.keys():
                 self.keywords[type_name] = 1
@@ -56,6 +63,10 @@ class Visitor(ast.NodeVisitor):
         self.write_tree = write_tree
 
     def generic_visit(self, node):
+        '''
+            Function for traverse tree and print it in console
+            @param node - current node
+        '''
         type_node = (type(node).__name__)
         if type_node not in IGNORE_NODES:
             if self.depth != 0:
@@ -74,11 +85,20 @@ class NodeGetter(ast.NodeVisitor):
         self.nodes = []
 
     def visit(self, node):
+        '''
+            Function for visiting node's children
+            @param node - current node
+        '''
         if self.depth > 1:
             return
         self.generic_visit(node)
 
     def generic_visit(self, node):
+        '''
+            Function for traverse and print in console names of all
+            node's children
+            @param node - current node
+        '''
         type_node = (type(node).__name__)
         if type_node not in IGNORE_NODES:
             if self.depth == 1:
@@ -90,6 +110,11 @@ class NodeGetter(ast.NodeVisitor):
 
 
 def get_AST(filename):
+    '''
+        Function return ast which has type ast.Module
+        @param filename - full path to file with code which will have
+        analyzed
+    '''
     if not os.path.isfile(filename):
         print(filename, "Is not a file / doesn't exist")
         return 0
@@ -131,29 +156,6 @@ def get_node_value(node):
         return ' '
 
     return node
-
-
-def allowed_class(node):
-    if isinstance(node, ast.Import):
-        return False
-
-    return True
-
-
-def travesrse_ast(tree, depth=0):
-    if isinstance(tree, ast.AST):
-        # The vars() function returns the __dict__ attribute
-        # of the given object.
-        for k, v in vars(tree).items():
-            if k not in IGNORE and allowed_class(v):
-                print(depth * '-', k, get_node_value(v))
-                travesrse_ast(v, depth + 1)
-
-    if isinstance(tree, list):
-        for el in tree:
-            if allowed_class(el):
-                print(depth * '-', get_node_value(el))
-                travesrse_ast(el, depth + 1)
 
 
 def get_nodes(tree):
@@ -289,6 +291,46 @@ def struct_compare(tree1, tree2, output=False):
     return same_struct_metric
 
 
+def op_shift_metric(ops1, ops2):
+    x = []
+    y = []
+
+    count_el_f = len(ops1)
+    count_el_s = len(ops2)
+    if count_el_f > count_el_s:
+        tmp = ops1
+        ops1 = ops2
+        ops2 = tmp
+        count_el_f = len(ops1)
+        count_el_s = len(ops2)
+        del tmp
+
+    shift = 0
+    while shift < count_el_s:
+        counter = 0
+        first_ind = 0
+        second_ind = shift
+        while first_ind < count_el_f and second_ind < count_el_s:
+            if ops1[first_ind] == ops2[second_ind]:
+                counter += 1
+            first_ind += 1
+            second_ind += 1
+        x.append(shift)
+        count_all = count_el_f + count_el_s - counter
+        if count_all == 0:
+            y.append(0)
+        else:
+            y.append(counter / count_all)
+        shift += 1
+
+    max_shift = 0
+    for index in range(1, len(y)):
+        if y[index] > y[max_shift]:
+            max_shift = index
+
+    return max_shift, y[max_shift]
+
+
 if __name__ == '__main__':
     directory = 'py/'
     if len(sys.argv) > 1:
@@ -332,17 +374,19 @@ if __name__ == '__main__':
                                          counter2.operators)
             keywords_res = nodes_metric(counter1.keywords, counter2.keywords)
             literals_res = nodes_metric(counter1.literals, counter2.literals)
+            b_sh, sh_res = op_shift_metric(counter1.seq_ops,
+                                           counter2.seq_ops)
             # keywords_res = get_kw_freq_percent(ck)
             # matrix_compliance[row - 1][col - 1] = struct_res
             # matrix_compliance[col - 1][row - 1] = struct_res
 
-            summ = (struct_res * 1.2 + operators_res + keywords_res * 0.8
-                    + literals_res * 0.5)
+            summ = (struct_res * 1.2 + operators_res * 0.8 + keywords_res * 0.8
+                    + literals_res * 0.5 + sh_res * 0.3)
 
             # max * 0.75
-            if summ > 2.625:
+            if summ > 2.7:
                 print()
-                print('+'*40)
+                print('+' * 40)
                 print('May be similar:', filename.split('/')[-1],
                       filename2.split('/')[-1])
                 struct_compare(tree1, tree2, True)
@@ -352,7 +396,13 @@ if __name__ == '__main__':
                 print(text, '{:.2%}'.format(keywords_res))
                 text = 'Literals match percentage:'
                 print(text, '{:.2%}'.format(literals_res))
-                print('+'*40)
+
+                print('---')
+                print('Op shift metric.')
+                print('Best op shift:', b_sh)
+                print('Persent same: {:.2%}'.format(sh_res))
+                print('---')
+                print('+' * 40)
 
     print()
     print('Time for all {:.2f}'.format(perf_counter() - start_eval))

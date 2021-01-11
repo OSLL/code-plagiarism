@@ -18,7 +18,7 @@ IGNORE = [CursorKind.PREPROCESSING_DIRECTIVE,
 def get_cursor_from_file(filename, args=[]):
     '''
         Returns clang.cindex.Cursor object or 0 if file is undefined
-        @param filename - fuul path to source file
+        @param filename - full path to source file
         @param args - list of arguments for clang.cindex.Index.parse() method
     '''
     if not os.path.isfile(filename):
@@ -478,6 +478,7 @@ def get_operators_frequency(tree1, tree2):
     frequencies = [[0] * len(operators), [0] * len(operators)]
     count_keywords = [{}, {}]
     operators_counter = [0, 0]
+    seq_ops = [[], []]
 
     for i in range(len(trees)):
         child = trees[i]
@@ -487,6 +488,7 @@ def get_operators_frequency(tree1, tree2):
                token.spelling in operators):
                 frequencies[i][operators.index(token.spelling)] += 1
                 operators_counter[i] += 1
+                seq_ops[i].append(token.spelling)
             if (token.kind == TokenKind.KEYWORD):
                 keyword = token.spelling
                 if keyword not in count_keywords[i].keys():
@@ -501,7 +503,8 @@ def get_operators_frequency(tree1, tree2):
         # for j in range(len(operators)):
         #     frequencies[i][j] /= operators_counter[i]
 
-    return (operators, frequencies, operators_counter, count_keywords)
+    return (operators, frequencies, operators_counter,
+            count_keywords, seq_ops)
 
 
 def print_freq_analysis(op, fr, co):
@@ -554,6 +557,46 @@ def get_kw_freq_percent(count_keywords):
     return percent_of_same[0] / percent_of_same[1]
 
 
+def op_shift_metric(ops1, ops2):
+    x = []
+    y = []
+
+    count_el_f = len(ops1)
+    count_el_s = len(ops2)
+    if count_el_f > count_el_s:
+        tmp = ops1
+        ops1 = ops2
+        ops2 = tmp
+        count_el_f = len(ops1)
+        count_el_s = len(ops2)
+        del tmp
+
+    shift = 0
+    while shift < count_el_s:
+        counter = 0
+        first_ind = 0
+        second_ind = shift
+        while first_ind < count_el_f and second_ind < count_el_s:
+            if ops1[first_ind] == ops2[second_ind]:
+                counter += 1
+            first_ind += 1
+            second_ind += 1
+        x.append(shift)
+        count_all = count_el_f + count_el_s - counter
+        if count_all == 0:
+            y.append(0)
+        else:
+            y.append(counter / count_all)
+        shift += 1
+
+    max_shift = 0
+    for index in range(1, len(y)):
+        if y[index] > y[max_shift]:
+            max_shift = index
+
+    return max_shift, y[max_shift]
+
+
 if __name__ == '__main__':
     args = '-x c++ --std=c++11'.split()
     syspath = ccsyspath.system_include_paths('clang++')
@@ -600,18 +643,22 @@ if __name__ == '__main__':
                 res = ast_compare(cursor, cursor2, filename, filename2)
 
                 struct_res = round(res[0] / res[1], 3)
-                (op, fr, co, ck) = get_operators_frequency(cursor, cursor2)
+                (op, fr, co, ck, seq) = get_operators_frequency(cursor,
+                                                                cursor2)
                 operators_res = get_op_freq_percent(op, fr, co)
                 keywords_res = get_kw_freq_percent(ck)
+                b_sh, sh_res = op_shift_metric(seq[0],
+                                               seq[1])
                 # matrix_compliance[row - 1][col - 1] = struct_res
                 # matrix_compliance[col - 1][row - 1] = struct_res
 
-                summ = struct_res * 1.2 + operators_res + keywords_res * 0.8
+                summ = (struct_res * 1.2 + operators_res * 0.8
+                        + keywords_res * 0.8 + sh_res * 0.3)
 
                 # max * 0.75
-                if summ > 2.25:
+                if summ > 2.325:
                     print()
-                    print('+'*40)
+                    print('+' * 40)
                     print('May be similar:', filename.split('/')[-1],
                           filename2.split('/')[-1])
                     ast_compare(cursor, cursor2, filename, filename2, True)
@@ -620,7 +667,13 @@ if __name__ == '__main__':
                     # print_freq_analysis(op, fr, co)
                     text = 'Keywords match percentage:'
                     print(text, '{:.2%}'.format(keywords_res))
-                    print('+'*40)
+
+                    print('---')
+                    print('Op shift metric.')
+                    print('Best op shift:', b_sh)
+                    print('Persent same: {:.2%}'.format(sh_res))
+                    print('---')
+                    print('+' * 40)
 
     print()
     print('Time for all {:.2f}'.format(perf_counter() - start_eval))
