@@ -544,6 +544,11 @@ def get_op_freq_percent(op, fr, co):
 
 
 def get_kw_freq_percent(count_keywords):
+    '''
+        Function return how same keywords in two trees
+        @param count_keywords - list with two dict objects with counts of
+        keywords
+    '''
     percent_of_same = [0, 0]
     for key in count_keywords[0].keys():
         percent_of_same[0] += min(count_keywords[0][key],
@@ -558,7 +563,12 @@ def get_kw_freq_percent(count_keywords):
 
 
 def op_shift_metric(ops1, ops2):
-    x = []
+    '''
+        Returns the maximum value of the operator match and the shift under
+        this condition
+        @param ops1 - sequence of operators of tree1
+        @param ops2 - sequence of operators of tree2
+    '''
     y = []
 
     count_el_f = len(ops1)
@@ -581,7 +591,6 @@ def op_shift_metric(ops1, ops2):
                 counter += 1
             first_ind += 1
             second_ind += 1
-        x.append(shift)
         count_all = count_el_f + count_el_s - counter
         if count_all == 0:
             y.append(0)

@@ -127,6 +127,12 @@ def get_AST(filename):
 
 
 def nodes_metric(res1, res2):
+    '''
+        Function return how same operators or keywords or literals
+        in two trees
+        @param res1 - dict object with counts of op or kw or lit
+        @param res2 - dict object with counts of op or kw or lit
+    '''
     percent_of_same = [0, 0]
     for key in res1.keys():
         if key not in res2.keys():
@@ -147,24 +153,23 @@ def nodes_metric(res1, res2):
     return percent_of_same[0] / percent_of_same[1]
 
 
-def get_node_value(node):
-    if isinstance(node, ast.AST):
-        value = str(type(node))[1:-1]
-        value = value.split(' ')[1]
-        return value
-    elif isinstance(node, list):
-        return ' '
-
-    return node
-
-
 def get_nodes(tree):
+    '''
+        Function return all tree's nodes
+        @param tree - One of the nodes of the AST type whose nodes we
+        want to receive
+    '''
     traverser = NodeGetter()
     traverser.visit(tree)
     return traverser.nodes
 
 
 def get_count_of_nodes(tree):
+    '''
+        Get count of nodes of tree without head
+        @param tree - One of the nodes of the AST type whose count of nodes
+        we want to receive
+    '''
     traverser = Visitor()
     traverser.visit(tree)
     return traverser.count_of_nodes
@@ -199,7 +204,7 @@ def getn_count_nodes(len_min, len_max, indexes, axis, children):
         @param indexes - indexes of metrics taken into account list of tuples
         @param axis - if 0 then iteration on row
         if 1 then iteration on column
-        @param children - list of nodes of type clang.cindex.Cursor object
+        @param children - list of nodes of type ast
     '''
     add = [indexes[i][axis] for i in range(len_min)]
 
@@ -212,6 +217,14 @@ def getn_count_nodes(len_min, len_max, indexes, axis, children):
 
 
 def calculate_metric(children1, children2, len1, len2, array):
+    '''
+        Function calculate percent of compliance from matrix
+        @param children1 - list of nodes of type ast object
+        @param children2 - list of nodes of type ast object
+        @param len1 - count of nodes in children1
+        @param len2 - count of nodes in children2
+        @param array - matrix of compliance
+    '''
     same_struct_metric = [0, 0]
     indexes = []
     for i in range(min(len1, len2)):
@@ -247,6 +260,13 @@ def calculate_metric(children1, children2, len1, len2, array):
 
 
 def struct_compare(tree1, tree2, output=False):
+    '''
+        Function for compare structure of two trees
+        @param tree1 - ast object
+        @param tree2 - ast object
+        @param output - if equal True, then in console prints matrix
+        of compliance else not
+    '''
     parsed_nodes1 = get_nodes(tree1)
     parsed_nodes2 = get_nodes(tree2)
     len1 = len(parsed_nodes1)
@@ -292,7 +312,12 @@ def struct_compare(tree1, tree2, output=False):
 
 
 def op_shift_metric(ops1, ops2):
-    x = []
+    '''
+        Returns the maximum value of the operator match and the shift under
+        this condition
+        @param ops1 - sequence of operators of tree1
+        @param ops2 - sequence of operators of tree2
+    '''
     y = []
 
     count_el_f = len(ops1)
@@ -315,7 +340,6 @@ def op_shift_metric(ops1, ops2):
                 counter += 1
             first_ind += 1
             second_ind += 1
-        x.append(shift)
         count_all = count_el_f + count_el_s - counter
         if count_all == 0:
             y.append(0)
