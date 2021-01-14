@@ -3,6 +3,7 @@ import pandas as pd
 import ast
 import os
 import sys
+import datetime
 
 from time import perf_counter
 
@@ -386,6 +387,8 @@ if __name__ == '__main__':
     # indexes_py = []
     # columns_py = []
     start_eval = perf_counter()
+    date = datetime.datetime.now().strftime('%Y%m%d-%H#%M#%S')
+    log_file = open('./logs/log' + date + '.txt', 'w')
     for row in range(count_files):
         if directory[-1] != '/':
             directory += '/'
@@ -429,25 +432,37 @@ if __name__ == '__main__':
             if summ > 2.7:
                 print()
                 print('+' * 40)
+                log_file.write('+' * 40 + '\n')
                 print('May be similar:', filename.split('/')[-1],
                       filename2.split('/')[-1])
+                log_file.write('May be similar:' + filename.split('/')[-1] +
+                               ' ' + filename2.split('/')[-1] + '\n')
                 struct_compare(tree1, tree2, True)
                 text = 'Operators match percentage:'
                 print(text, '{:.2%}'.format(operators_res))
+                log_file.write(text + '{:.2%}'.format(operators_res) + '\n')
                 text = 'Keywords match percentage:'
                 print(text, '{:.2%}'.format(keywords_res))
+                log_file.write(text + '{:.2%}'.format(keywords_res) + '\n')
                 text = 'Literals match percentage:'
                 print(text, '{:.2%}'.format(literals_res))
+                log_file.write(text + '{:.2%}'.format(literals_res) + '\n')
 
                 print('---')
                 print('Op shift metric.')
                 print('Best op shift:', b_sh)
                 print('Persent same: {:.2%}'.format(sh_res))
                 print('---')
+                log_file.write('---\n' + 'Op shift metric.\n' +
+                               'Best op shift:' + str(b_sh) + '\n'
+                               + 'Persent same: {:.2%}'.format(sh_res) +
+                               '\n' + '---\n')
                 print('+' * 40)
+                log_file.write('+' * 40 + '\n\n')
 
     print()
     print('Time for all {:.2f}'.format(perf_counter() - start_eval))
+    log_file.close()
     # same_cpp = pd.DataFrame(matrix_compliance, index=indexes_cpp,
     #                         columns=columns_cpp)
     # same_cpp.to_csv('same_structure.csv', sep=';')
