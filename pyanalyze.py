@@ -21,6 +21,7 @@ LITERALS = ['Constant', 'FormattedValue', 'JoinedStr', 'List',
             'Tuple', 'Set', 'Dict',
             # If use python version less than 3.8
             'Num', 'Str', 'Bytes', 'NameConstant', 'Ellipsis']
+NAMES = ['name', 'arg', 'id']
 
 
 class OpKwCounter(ast.NodeVisitor):
@@ -117,7 +118,7 @@ def get_AST(filename):
     '''
     if not os.path.isfile(filename):
         print(filename, "Is not a file / doesn't exist")
-        return 0
+        return None
 
     tree = None
     with open(filename) as f:
@@ -286,14 +287,28 @@ def struct_compare(tree1, tree2, output=False):
 
     for i in range(len1):
         if output:
-            indexes.append(type(parsed_nodes1[i]).__name__)
+            find_name = False
+            for name in NAMES:
+                if name in dir(parsed_nodes1[i]):
+                    indexes.append(parsed_nodes1[i].name)
+                    find_name = True
+                    break
+            if not find_name:
+                indexes.append(type(parsed_nodes1[i]).__name__)
         for j in range(len2):
             array[i][j] = struct_compare(parsed_nodes1[i],
                                          parsed_nodes2[j])
 
     if output:
         for j in range(len2):
-            columns.append(type(parsed_nodes2[j]).__name__)
+            find_name = False
+            for name in NAMES:
+                if 'name' in dir(parsed_nodes2[j]):
+                    columns.append(parsed_nodes2[j].name)
+                    find_name = True
+                    break
+            if not find_name:
+                columns.append(type(parsed_nodes2[j]).__name__)
         table = pd.DataFrame(array, index=indexes, columns=columns)
         print()
         print(table)
@@ -388,6 +403,9 @@ if __name__ == '__main__':
 
             tree1 = get_AST(filename)
             tree2 = get_AST(filename2)
+            if tree1 is None or tree2 is None:
+                continue
+
             res = struct_compare(tree1, tree2)
             struct_res = round(res[0] / res[1], 3)
             counter1 = OpKwCounter()
