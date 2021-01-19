@@ -625,6 +625,14 @@ if __name__ == '__main__':
                                    x.endswith('h')), files))
 
     count_files = len(files)
+
+    iterrations = 0
+    for i in range (1, count_files):
+      iterrations += i
+    iterration = 0
+
+    print('  {:.2%}'.format(iterration/iterrations), end="\r")
+
     # count_iterations = int((count_files*count_files - count_files) / 2)
     # iteration = 0
     # matrix_compliance = np.zeros((count_files, count_files))
@@ -646,6 +654,7 @@ if __name__ == '__main__':
             if row > col:
                 continue
 
+
             cursor = get_cursor_from_file(filename, args)
             cursor2 = get_cursor_from_file(filename2, args)
             if cursor and cursor2:
@@ -661,15 +670,21 @@ if __name__ == '__main__':
                 # matrix_compliance[row - 1][col - 1] = struct_res
                 # matrix_compliance[col - 1][row - 1] = struct_res
 
-                summ = (struct_res * 1.2 + operators_res * 0.8
-                        + keywords_res * 0.8 + sh_res * 0.3)
+                # summ = (struct_res * 1.2 + operators_res * 0.8
+                #         + keywords_res * 0.8 + sh_res * 0.3)
 
-                # max * 0.75
-                if summ > 2.325:
-                    print()
+                similarity = (struct_res * 1.6  + operators_res * 0.7
+                        + keywords_res * 1.4 + sh_res * 0.3)/4
+                # max * 0.70
+                # if summ > 2.325:
+
+                if similarity > 0.75:
+                    print("        ")
                     print('+' * 40)
                     print('May be similar:', filename.split('/')[-1],
                           filename2.split('/')[-1])
+                    print("Total similarity -", '{:.2%}'.format(similarity))
+                          
                     ast_compare(cursor, cursor2, filename, filename2, True)
                     text = 'Operators match percentage:'
                     print(text, '{:.2%}'.format(operators_res))
@@ -683,6 +698,9 @@ if __name__ == '__main__':
                     print('Persent same: {:.2%}'.format(sh_res))
                     print('---')
                     print('+' * 40)
+            
+            iterration += 1
+            print('  {:.2%}'.format(iterration/iterrations), end="\r")
 
     print()
     print('Time for all {:.2f}'.format(perf_counter() - start_eval))
