@@ -17,3 +17,16 @@
 - pip install -r ./requirements.txt
 
 - python version 3.6+ or even 3.8+
+
+## 3. Tests
+
+- Testing for C/C++ analyzer
+  > Test of canalyze.py functions
+  ```
+    $ python3 -m unittest test_canalyse.py
+  ```
+
+  > Flag `-v` for more tesing information
+  ```
+    $ python3 -m unittest -v test_canalyse.py
+  ```
