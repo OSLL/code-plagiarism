@@ -117,6 +117,9 @@ def get_AST(filename):
         @param filename - full path to file with code which will have
         analyzed
     '''
+    if type(filename) is not str:
+        return TypeError
+
     if not os.path.isfile(filename):
         print(filename, "Is not a file / doesn't exist")
         return None
@@ -128,6 +131,7 @@ def get_AST(filename):
     return tree
 
 
+# Tested
 def nodes_metric(res1, res2):
     '''
         Function return how same operators or keywords or literals
@@ -135,6 +139,9 @@ def nodes_metric(res1, res2):
         @param res1 - dict object with counts of op or kw or lit
         @param res2 - dict object with counts of op or kw or lit
     '''
+    if(type(res1) is not dict or type(res2) is not dict):
+        return TypeError
+
     percent_of_same = [0, 0]
     for key in res1.keys():
         if key not in res2.keys():
@@ -155,12 +162,16 @@ def nodes_metric(res1, res2):
     return percent_of_same[0] / percent_of_same[1]
 
 
+# Tested
 def get_nodes(tree):
     '''
         Function return all tree's nodes
         @param tree - One of the nodes of the AST type whose nodes we
         want to receive
     '''
+    if not isinstance(tree, ast.AST):
+        return TypeError
+
     traverser = NodeGetter()
     traverser.visit(tree)
     return traverser.nodes
@@ -261,6 +272,7 @@ def calculate_metric(children1, children2, len1, len2, array):
     return same_struct_metric
 
 
+# Tested
 def struct_compare(tree1, tree2, output=False):
     '''
         Function for compare structure of two trees
@@ -269,6 +281,10 @@ def struct_compare(tree1, tree2, output=False):
         @param output - if equal True, then in console prints matrix
         of compliance else not
     '''
+    if (not isinstance(tree1, ast.AST) or not isinstance(tree2, ast.AST)
+        or type(output) is not bool):
+        return TypeError
+
     parsed_nodes1 = get_nodes(tree1)
     parsed_nodes2 = get_nodes(tree2)
     len1 = len(parsed_nodes1)

@@ -12,8 +12,8 @@ class TestCanalyze(unittest.TestCase):
         args = args + incargs
         directory = 'cpp/tests/'
         files = list(filter(lambda x: (x.endswith('.cpp') or
-                                            x.endswith('.c') or
-                                            x.endswith('h')), os.listdir(directory)))
+                                       x.endswith('.c') or
+                                       x.endswith('h')), os.listdir(directory)))
 
         if(len(files) < 2):
             raise FileNotFoundError('At least 2 files in /tests folder are needed') 
