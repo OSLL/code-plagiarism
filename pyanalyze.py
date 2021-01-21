@@ -388,7 +388,13 @@ if __name__ == '__main__':
     # columns_py = []
     start_eval = perf_counter()
     date = datetime.datetime.now().strftime('%Y%m%d-%H#%M#%S')
-    log_file = open('./logs/log' + date + '.txt', 'w')
+    log_file = open('./logs/pylog' + date + '.txt', 'w')
+
+    iterrations = 0
+    for i in range(1, count_files):
+        iterrations += i
+    iterration = 0
+
     for row in range(count_files):
         if directory[-1] != '/':
             directory += '/'
@@ -425,16 +431,17 @@ if __name__ == '__main__':
             # matrix_compliance[row - 1][col - 1] = struct_res
             # matrix_compliance[col - 1][row - 1] = struct_res
 
-            summ = (struct_res * 1.2 + operators_res * 0.8 + keywords_res * 0.8
-                    + literals_res * 0.5 + sh_res * 0.3)
+            similarity = (struct_res * 1.5 + operators_res * 0.8 +
+                          keywords_res * 0.9 + literals_res * 0.5 +
+                          sh_res * 0.3) / 4
 
-            # max * 0.75
-            if summ > 2.7:
-                print()
+            if similarity > 0.72:
+                print("         ")
                 print('+' * 40)
                 log_file.write('+' * 40 + '\n')
                 print('May be similar:', filename.split('/')[-1],
                       filename2.split('/')[-1])
+                print("Total similarity -", '{:.2%}'.format(similarity))
                 log_file.write('May be similar:' + filename.split('/')[-1] +
                                ' ' + filename2.split('/')[-1] + '\n')
                 struct_compare(tree1, tree2, True)
@@ -460,7 +467,13 @@ if __name__ == '__main__':
                 print('+' * 40)
                 log_file.write('+' * 40 + '\n\n')
 
-    print()
+            iterration += 1
+            print('  {:.2%}'.format(iterration / iterrations), end="\r")
+
+    if count_files == 0:
+        print("Folder is empty")
+
+    print("Analysis complete")
     print('Time for all {:.2f}'.format(perf_counter() - start_eval))
     log_file.close()
     # same_cpp = pd.DataFrame(matrix_compliance, index=indexes_cpp,

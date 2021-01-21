@@ -31,7 +31,8 @@ def get_cursor_from_file(filename, args=[]):
     return file_obj.cursor
 
 
-# def traverse_and_print_values(cursor, src, output_path='./tree.ast', depth=0):
+# def traverse_and_print_values(cursor, src, output_path='./tree.ast',
+#                               depth=0):
 #     '''
 #         Traverses and make file with AST of input file
 #         @param cursor - clang.cindex.Cursor object
@@ -242,14 +243,14 @@ def get_cursor_from_file(filename, args=[]):
 #     # print(values_first, values_second)
 #     return [count_same, 4]
 
-#Tested
+# Tested
 def get_not_ignored(tree, src):
     '''
         Function helps to discard unnecessary nodes such as imports
         @param tree - clang.cindex.Cursor object
         @param src - str path to file
     '''
-    
+
     if(type(tree) is not Cursor or type(src) is not str):
         return TypeError
 
@@ -264,12 +265,13 @@ def get_not_ignored(tree, src):
         if (str(loc).split('/')[-1] == src.split('/')[-1]
            and children[i].kind not in IGNORE):
             parsed_nodes.append(children[i])
-    
+
     if(len(parsed_nodes) > 0):
         return parsed_nodes
     return None
 
-#Tested
+
+# Tested
 def get_count_of_nodes(tree):
     '''
         Get count of nodes of tree without head
@@ -286,6 +288,7 @@ def get_count_of_nodes(tree):
         count += get_count_of_nodes(children[i])
 
     return count
+
 
 def getn_count_nodes(len_min, len_max, indexes, axis, children):
     '''
@@ -349,6 +352,7 @@ def calculate_metric(children1, children2, len1, len2, array):
 
     return same_struct_metric
 
+
 # Tested
 def smart_compare_nodes(tree1, tree2):
     '''
@@ -360,7 +364,6 @@ def smart_compare_nodes(tree1, tree2):
 
     if(type(tree1) is not Cursor or type(tree2) is not Cursor):
         return TypeError
-
 
     children1 = list(tree1.get_children())
     children2 = list(tree2.get_children())
@@ -398,7 +401,7 @@ def smart_compare_nodes(tree1, tree2):
                                           len1,
                                           len2,
                                           array)
-    
+
     return same_struct_metric
 
 
@@ -423,7 +426,7 @@ def find_max_index(array, len1, len2):
     return index
 
 
-#Tested
+# Tested
 def ast_compare(cursor1, cursor2, filename1, filename2, output=False):
     '''
         Function compares structure of two ast and return how they are
@@ -435,22 +438,21 @@ def ast_compare(cursor1, cursor2, filename1, filename2, output=False):
         @param filename2 - name second file plus path to it from folder
         with get_ast.py
     '''
-    if(type(filename1) is not str or type(filename2) is not str or type(cursor1) is not Cursor or type(cursor2) is not Cursor):
-      return TypeError
+    if(type(filename1) is not str or type(filename2) is not str or
+       type(cursor1) is not Cursor or type(cursor2) is not Cursor):
+        return TypeError
     elif(not os.path.isfile(filename1) or not os.path.isfile(filename2)):
-      return FileNotFoundError
-
-      
+        return FileNotFoundError
 
     parsed_nodes1 = get_not_ignored(cursor1, filename1)
     parsed_nodes2 = get_not_ignored(cursor2, filename2)
-    
-    if(parsed_nodes1 == None):
+
+    if parsed_nodes1 is None:
         len1 = 0
     else:
         len1 = len(parsed_nodes1)
-    
-    if(parsed_nodes2 == None):
+
+    if parsed_nodes2 is None:
         len2 = 0
     else:
         len2 = len(parsed_nodes2)
@@ -486,7 +488,7 @@ def ast_compare(cursor1, cursor2, filename1, filename2, output=False):
     return same_struct_metric
 
 
-#Tested
+# Tested
 def get_operators_frequency(tree1, tree2):
     '''
         Function estimates frequency of operators in tree
@@ -533,6 +535,7 @@ def get_operators_frequency(tree1, tree2):
     return (operators, frequencies, operators_counter,
             count_keywords, seq_ops)
 
+
 # using commented in main (function is not in use)
 def print_freq_analysis(op, fr, co):
     '''
@@ -551,6 +554,7 @@ def print_freq_analysis(op, fr, co):
             fr[1][i] /= co[1]
             print('{:-7.2%}    {:4s}{:-7.2%}  '.format(fr[0][i], op[i],
                                                        fr[1][i]))
+
 
 # Tested
 def get_op_freq_percent(op, fr, co):
@@ -573,6 +577,7 @@ def get_op_freq_percent(op, fr, co):
         return 0.0
     return percent_of_same[0] / percent_of_same[1]
 
+
 # Tested
 def get_kw_freq_percent(count_keywords):
     '''
@@ -588,9 +593,9 @@ def get_kw_freq_percent(count_keywords):
         if(hasattr(count_keywords[0], "keys")):
             for key in count_keywords[0].keys():
                 percent_of_same[0] += min(count_keywords[0][key],
-                                        count_keywords[1][key])
+                                          count_keywords[1][key])
                 percent_of_same[1] += max(count_keywords[0][key],
-                                        count_keywords[1][key])
+                                          count_keywords[1][key])
 
             if percent_of_same[1] == 0:
                 return 0.0
@@ -599,6 +604,7 @@ def get_kw_freq_percent(count_keywords):
 
         return percent_of_same[0] / percent_of_same[1]
     return 0
+
 
 # Tested
 def op_shift_metric(ops1, ops2):
@@ -650,6 +656,7 @@ def op_shift_metric(ops1, ops2):
     else:
         return 0, 0
 
+
 if __name__ == '__main__':
     args = '-x c++ --std=c++11'.split()
     syspath = ccsyspath.system_include_paths('clang++')
@@ -673,12 +680,10 @@ if __name__ == '__main__':
     start_eval = perf_counter()
     if(count_files > 0):
         iterrations = 0
-        for i in range (1, count_files):
+        for i in range(1, count_files):
             iterrations += i
         iterration = 0
 
-        # count_iterations = int((count_files*count_files - count_files) / 2)
-        # iteration = 0
         # matrix_compliance = np.zeros((count_files, count_files))
         # indexes_cpp = []
         # columns_cpp = []
@@ -697,7 +702,6 @@ if __name__ == '__main__':
                 if row > col:
                     continue
 
-
                 cursor = get_cursor_from_file(filename, args)
                 cursor2 = get_cursor_from_file(filename2, args)
                 if cursor and cursor2:
@@ -709,7 +713,7 @@ if __name__ == '__main__':
 
                     operators_res = get_op_freq_percent(op, fr, co)
                     keywords_res = get_kw_freq_percent(ck)
-                    if(len(seq)>=2):
+                    if(len(seq) >= 2):
                         b_sh, sh_res = op_shift_metric(seq[0], seq[1])
                     else:
                         b_sh, sh_res = 0
@@ -721,16 +725,17 @@ if __name__ == '__main__':
                     # max * 0.70
                     # if summ > 2.325:
 
-                    similarity = (struct_res * 1.6  + operators_res * 0.7
-                            + keywords_res * 1.4 + sh_res * 0.3)/4
+                    similarity = (struct_res * 1.6 + operators_res * 1
+                                  + keywords_res * 1.1 + sh_res * 0.3) / 4
 
-                    if similarity > 0.75:
+                    if similarity > 0.72:
                         print("         ")
                         print('+' * 40)
                         print('May be similar:', filename.split('/')[-1],
-                                filename2.split('/')[-1])
-                        print("Total similarity -", '{:.2%}'.format(similarity))
-                                
+                              filename2.split('/')[-1])
+                        print("Total similarity -",
+                              '{:.2%}'.format(similarity))
+
                         ast_compare(cursor, cursor2, filename, filename2, True)
                         text = 'Operators match percentage:'
                         print(text, '{:.2%}'.format(operators_res))
@@ -744,12 +749,12 @@ if __name__ == '__main__':
                         print('Persent same: {:.2%}'.format(sh_res))
                         print('---')
                         print('+' * 40)
-                
+
                 iterration += 1
-                print('  {:.2%}'.format(iterration/iterrations), end="\r")
+                print('  {:.2%}'.format(iterration / iterrations), end="\r")
     else:
         print("Folder is empty")
-        
+
     print("Analysis complete")
     print('Time for all {:.2f}'.format(perf_counter() - start_eval))
     # same_cpp = pd.DataFrame(matrix_compliance, index=indexes_cpp,
