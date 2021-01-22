@@ -177,24 +177,36 @@ def get_nodes(tree):
     return traverser.nodes
 
 
+# Tested
 def get_count_of_nodes(tree):
     '''
         Get count of nodes of tree without head
         @param tree - One of the nodes of the AST type whose count of nodes
         we want to receive
     '''
+    if not isinstance(tree, ast.AST):
+        return TypeError
+
     traverser = Visitor()
     traverser.visit(tree)
     return traverser.count_of_nodes
 
 
+# Tested
 def find_max_index(array, len1, len2):
     '''
         Function for finding index of max element in matrix
-        @param array - matrix of compliance
+        @param array - matrix of compliance (np.ndarray object)
         @param len1 - number of nodes in children1
         @param len2 - number of nodes in children2
     '''
+    if (not isinstance(array, np.ndarray) or type(len1) is not int
+       or type(len2) is not int):
+        return TypeError
+
+    if array.shape[0] != len1 or array.shape[1] != len2:
+        return IndexError
+
     maximum = 0
     index = (0, 0)
     for i in range(len1):
@@ -282,7 +294,7 @@ def struct_compare(tree1, tree2, output=False):
         of compliance else not
     '''
     if (not isinstance(tree1, ast.AST) or not isinstance(tree2, ast.AST)
-        or type(output) is not bool):
+       or type(output) is not bool):
         return TypeError
 
     parsed_nodes1 = get_nodes(tree1)
@@ -343,6 +355,7 @@ def struct_compare(tree1, tree2, output=False):
     return same_struct_metric
 
 
+# Tested
 def op_shift_metric(ops1, ops2):
     '''
         Returns the maximum value of the operator match and the shift under
@@ -350,6 +363,9 @@ def op_shift_metric(ops1, ops2):
         @param ops1 - sequence of operators of tree1
         @param ops2 - sequence of operators of tree2
     '''
+    if (type(ops1) is not list or type(ops2) is not list):
+        return TypeError
+
     y = []
 
     count_el_f = len(ops1)
@@ -384,7 +400,10 @@ def op_shift_metric(ops1, ops2):
         if y[index] > y[max_shift]:
             max_shift = index
 
-    return max_shift, y[max_shift]
+    if len(y) > 0:
+        return max_shift, y[max_shift]
+    else:
+        return 0, 0
 
 
 if __name__ == '__main__':

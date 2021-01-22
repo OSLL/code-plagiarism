@@ -651,7 +651,8 @@ def op_shift_metric(ops1, ops2):
     for index in range(1, len(y)):
         if y[index] > y[max_shift]:
             max_shift = index
-    if(len(y) > 0 and max_shift < len(y)):
+
+    if len(y) > 0:
         return max_shift, y[max_shift]
     else:
         return 0, 0
