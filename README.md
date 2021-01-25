@@ -23,10 +23,20 @@
 - Testing for C/C++ analyzer
   > Test of canalyze.py functions
   ```
-    $ python3 -m unittest test_canalyse.py
+    $ python3 -m unittest test_canalyze.py
   ```
 
-  > Flag `-v` for more tesing information
+  > Flag `-v` for more testing information
   ```
-    $ python3 -m unittest -v test_canalyse.py
+    $ python3 -m unittest -v test_canalyze.py
+  ```
+- Testing for python analyzer
+  > Test of pyanalyze.py functions
+  ```
+    $ python3 -m unittest test_pyanalyze.py
+  ```
+
+  > Flag `-v` for more testing information
+  ```
+    $ python3 -m unittest -v test_pyanalyze.py
   ```
