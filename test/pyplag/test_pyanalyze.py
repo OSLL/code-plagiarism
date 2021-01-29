@@ -1,4 +1,5 @@
-from pyanalyze import *
+from context import *
+
 import unittest
 import warnings
 import numpy as np

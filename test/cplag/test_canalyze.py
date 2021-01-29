@@ -1,4 +1,5 @@
-from canalyze import *
+from context import *
+
 import unittest
 import warnings
 
