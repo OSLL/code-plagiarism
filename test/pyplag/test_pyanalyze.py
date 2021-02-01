@@ -4,6 +4,9 @@ import unittest
 import warnings
 import numpy as np
 
+from src.pyplag.tree import *
+from src.pyplag.metric import *
+
 class TestPyanalyze(unittest.TestCase):
 
     def init(self, file1 = "", file2 = ""):
