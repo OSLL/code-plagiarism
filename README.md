@@ -21,24 +21,24 @@
 ## 3. Tests
 
 - Testing for C/C++ analyzer
-  > Test of canalyze.py functions
+  > Test of cplag functions
   ```
-    $ python3 test/cplag/test_canalyze.py
+    $ python3 test/cplag
   ```
 
   > Flag `-v` for more testing information
   ```
-    $ python3 test/cplag/test_canalyze.py -v
+    $ python3 test/cplag -v
   ```
 - Testing for python analyzer
-  > Test of pyanalyze.py functions
+  > Test of pyplag functions
   ```
-    $ python3 test/pyplag/test_pyanalyze.py
+    $ python3 test/pyplag
   ```
 
   > Flag `-v` for more testing information
   ```
-    $ python3 test/pyplag/test_pyanalyze.py -v
+    $ python3 test/pyplag -v
   ```
 
 ## 4. Work with analyzers
@@ -49,5 +49,5 @@
   ```
 - C++/C analyzer
   ```
-    $ python3 src/cplag/canalyze.py <path/to/folder/with/cpp/or/cc/files>
+    $ python3 src/cplag <path/to/folder/with/cpp/or/cc/files>
   ```
