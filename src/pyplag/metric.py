@@ -114,28 +114,22 @@ def struct_compare(tree1, tree2, output=False):
 
     for i in range(len1):
         if output:
-            find_name = False
-            for name in NAMES:
-                if name in dir(parsed_nodes1[i]):
-                    indexes.append(parsed_nodes1[i].name)
-                    find_name = True
-                    break
-            if not find_name:
+            if 'name' in dir(parsed_nodes1[i]):
+                indexes.append(parsed_nodes1[i].name)
+            else:
                 indexes.append(type(parsed_nodes1[i]).__name__)
+
         for j in range(len2):
             array[i][j] = struct_compare(parsed_nodes1[i],
                                          parsed_nodes2[j])
 
     if output:
         for j in range(len2):
-            find_name = False
-            for name in NAMES:
-                if 'name' in dir(parsed_nodes2[j]):
-                    columns.append(parsed_nodes2[j].name)
-                    find_name = True
-                    break
-            if not find_name:
+            if 'name' in dir(parsed_nodes2[j]):
+                columns.append(parsed_nodes2[j].name)
+            else:
                 columns.append(type(parsed_nodes2[j]).__name__)
+
         table = pd.DataFrame(array, index=indexes, columns=columns)
         print()
         print(table)
