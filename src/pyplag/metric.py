@@ -48,7 +48,7 @@ def calculate_metric(children1, children2, len1, len2, array):
         @param len2 - count of nodes in children2
         @param array - matrix of compliance
     '''
-    same_struct_metric = [0, 0]
+    same_struct_metric = [1, 1]
     indexes = []
     for i in range(min(len1, len2)):
         ind = find_max_index(array, len1, len2)
@@ -63,11 +63,6 @@ def calculate_metric(children1, children2, len1, len2, array):
             array[ind[0]][i] = [0, 0]
         for j in range(len1):
             array[j][ind[1]] = [0, 0]
-
-    same_struct_metric[0] += 1
-    same_struct_metric[1] += 1
-    # same_struct_metric = [same_struct_metric[0] + 1,
-    #                       same_struct_metric[1] + 1]
 
     not_count = 0
     if len1 > len2:
