@@ -14,9 +14,11 @@
 
 ## 2. Install requirements
 
-- pip install -r ./requirements.txt
-
 - python version 3.6+ or even 3.8+
+
+- pip3 version >= 19.0 (pip3 install -U pip)
+
+- pip3 install -r ./requirements.txt
 
 ## 3. Tests
 
