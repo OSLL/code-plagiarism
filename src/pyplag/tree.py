@@ -3,12 +3,13 @@ from context import *
 import ast
 import os
 import numpy as np
+from numba import njit
 
 from src.pyplag.const import *
 
 class OpKwCounter(ast.NodeVisitor):
     def __init__(self):
-        self.seq_ops = []
+        self.seq_ops = np.array([], dtype=np.str)
         self.operators = {}
         self.keywords = {}
         self.literals = {}
@@ -25,7 +26,7 @@ class OpKwCounter(ast.NodeVisitor):
                 self.operators[type_name] = 1
             else:
                 self.operators[type_name] += 1
-            self.seq_ops.append(type_name)
+            np.append(self.seq_ops, type_name)
         elif type_name in KEYWORDS:
             if type_name not in self.keywords.keys():
                 self.keywords[type_name] = 1
@@ -142,6 +143,7 @@ def get_count_of_nodes(tree):
 
 
 # Tested
+@njit(fastmath=True)
 def find_max_index(array, len1, len2):
     '''
         Function for finding index of max element in matrix
@@ -149,12 +151,12 @@ def find_max_index(array, len1, len2):
         @param len1 - number of nodes in children1
         @param len2 - number of nodes in children2
     '''
-    if (not isinstance(array, np.ndarray) or type(len1) is not int
-       or type(len2) is not int):
-        return TypeError
+    #if (not isinstance(array, np.ndarray) or type(len1) is not int
+     #  or type(len2) is not int):
+      #  return TypeError
 
-    if array.shape[0] != len1 or array.shape[1] != len2:
-        return IndexError
+    #if array.shape[0] != len1 or array.shape[1] != len2:
+     #   return IndexError
 
     maximum = 0
     index = (0, 0)

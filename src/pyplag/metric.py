@@ -2,6 +2,7 @@ from context import *
 
 import ast
 import pandas as pd
+from numba import njit
 
 from src.pyplag.tree import *
 
@@ -34,9 +35,6 @@ def nodes_metric(res1, res2):
         return 0.0
 
     return percent_of_same[0] / percent_of_same[1]
-
-
-
 
 
 def calculate_metric(children1, children2, len1, len2, array):
@@ -102,7 +100,7 @@ def struct_compare(tree1, tree2, output=False):
     elif (len2 == 0):
         return [1, (get_count_of_nodes(tree1) + 1)]
 
-    array = np.zeros((len1, len2), dtype=object)
+    array = np.zeros((len1, len2), dtype=(np.int32, 2))
     if output:
         indexes = []
         columns = []
@@ -125,7 +123,12 @@ def struct_compare(tree1, tree2, output=False):
             else:
                 columns.append(type(parsed_nodes2[j]).__name__)
 
-        table = pd.DataFrame(array, index=indexes, columns=columns)
+        a = np.zeros((len1, len2), dtype=object)
+        for i in range(len1):
+            for j in range(len2):
+                a[i][j] = '{:.2%}'.format(array[i][j][0] / array[i][j][1])
+
+        table = pd.DataFrame(a, index=indexes, columns=columns)
         print()
         print(table)
 
@@ -143,6 +146,7 @@ def struct_compare(tree1, tree2, output=False):
 
 
 # Tested
+@njit(fastmath=True)
 def op_shift_metric(ops1, ops2):
     '''
         Returns the maximum value of the operator match and the shift under
@@ -150,10 +154,8 @@ def op_shift_metric(ops1, ops2):
         @param ops1 - sequence of operators of tree1
         @param ops2 - sequence of operators of tree2
     '''
-    if (type(ops1) is not list or type(ops2) is not list):
-        return TypeError
-
-    y = []
+    #if (type(ops1) is not list or type(ops2) is not list):
+     #   return TypeError
 
     count_el_f = len(ops1)
     count_el_s = len(ops2)
@@ -163,7 +165,8 @@ def op_shift_metric(ops1, ops2):
         ops2 = tmp
         count_el_f = len(ops1)
         count_el_s = len(ops2)
-        del tmp
+
+    y = np.zeros(count_el_s, dtype=np.float32)
 
     shift = 0
     while shift < count_el_s:
@@ -176,10 +179,9 @@ def op_shift_metric(ops1, ops2):
             first_ind += 1
             second_ind += 1
         count_all = count_el_f + count_el_s - counter
-        if count_all == 0:
-            y.append(0)
-        else:
-            y.append(counter / count_all)
+        if count_all != 0:
+            y[shift] = counter / count_all
+
         shift += 1
 
     max_shift = 0
@@ -190,4 +192,4 @@ def op_shift_metric(ops1, ops2):
     if len(y) > 0:
         return max_shift, y[max_shift]
     else:
-        return 0, 0
+        return 0, 0.0
