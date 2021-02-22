@@ -3,6 +3,7 @@ from context import *
 import ast
 import pandas as pd
 from numba import njit
+from numba.typed import List
 
 from src.pyplag.tree import *
 
@@ -37,6 +38,25 @@ def nodes_metric(res1, res2):
     return percent_of_same[0] / percent_of_same[1]
 
 
+@njit(fastmath=True)
+def test(array):
+    same_struct_metric = [1, 1]
+    minimal = min(array.shape[0], array.shape[1])
+    indexes = List()
+    for i in range(minimal):
+        ind = find_max_index(array)
+        indexes.append(ind)
+        same_struct_metric[0] += array[ind[0]][ind[1]][0]
+        same_struct_metric[1] += array[ind[0]][ind[1]][1]
+
+        for i in range(array.shape[1]):
+            array[ind[0]][i] = [0, 0]
+        for j in range(array.shape[0]):
+            array[j][ind[1]] = [0, 0]
+
+    return same_struct_metric, indexes
+
+
 def calculate_metric(children1, children2, len1, len2, array):
     '''
         Function calculate percent of compliance from matrix
@@ -46,21 +66,7 @@ def calculate_metric(children1, children2, len1, len2, array):
         @param len2 - count of nodes in children2
         @param array - matrix of compliance
     '''
-    same_struct_metric = [1, 1]
-    indexes = []
-    for i in range(min(len1, len2)):
-        ind = find_max_index(array, len1, len2)
-        indexes.append(ind)
-        same_struct_metric[0] += array[ind][0]
-        same_struct_metric[1] += array[ind][1]
-        # same_struct_metric = [same_struct_metric[0] +
-        #                       array[ind][0],
-        #                       same_struct_metric[1] +
-        #                       array[ind][1]]
-        for i in range(len2):
-            array[ind[0]][i] = [0, 0]
-        for j in range(len1):
-            array[j][ind[1]] = [0, 0]
+    same_struct_metric, indexes = test(array)
 
     not_count = 0
     if len1 > len2:
@@ -156,7 +162,6 @@ def op_shift_metric(ops1, ops2):
     '''
     #if (type(ops1) is not list or type(ops2) is not list):
      #   return TypeError
-
     count_el_f = len(ops1)
     count_el_s = len(ops2)
     if count_el_f > count_el_s:

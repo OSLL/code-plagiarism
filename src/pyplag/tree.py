@@ -3,13 +3,16 @@ from context import *
 import ast
 import os
 import numpy as np
+import numba
 from numba import njit
+from numba.typed import List
 
 from src.pyplag.const import *
 
 class OpKwCounter(ast.NodeVisitor):
     def __init__(self):
-        self.seq_ops = np.array([], dtype=np.str)
+        self.seq_ops = List(['tmp'])
+        self.seq_ops.clear()
         self.operators = {}
         self.keywords = {}
         self.literals = {}
@@ -26,7 +29,7 @@ class OpKwCounter(ast.NodeVisitor):
                 self.operators[type_name] = 1
             else:
                 self.operators[type_name] += 1
-            np.append(self.seq_ops, type_name)
+            self.seq_ops.append(type_name)
         elif type_name in KEYWORDS:
             if type_name not in self.keywords.keys():
                 self.keywords[type_name] = 1
@@ -144,30 +147,26 @@ def get_count_of_nodes(tree):
 
 # Tested
 @njit(fastmath=True)
-def find_max_index(array, len1, len2):
+def find_max_index(array):
     '''
         Function for finding index of max element in matrix
         @param array - matrix of compliance (np.ndarray object)
-        @param len1 - number of nodes in children1
-        @param len2 - number of nodes in children2
     '''
     #if (not isinstance(array, np.ndarray) or type(len1) is not int
      #  or type(len2) is not int):
       #  return TypeError
 
-    #if array.shape[0] != len1 or array.shape[1] != len2:
-     #   return IndexError
-
     maximum = 0
-    index = (0, 0)
-    for i in range(len1):
-        for j in range(len2):
+    index = numba.int32([0, 0])
+    for i in range(array.shape[0]):
+        for j in range(array.shape[1]):
             if array[i][j][1] == 0:
                 continue
             value = array[i][j][0] / array[i][j][1]
             if value > maximum:
                 maximum = value
-                index = (i, j)
+                index[0] = i
+                index[1] = j
 
     return index
 
