@@ -9,6 +9,54 @@ from numba.typed import List
 
 from src.pyplag.const import *
 
+
+class ASTFeatures(ast.NodeVisitor):
+    def __init__(self):
+        self.curr_depth = 0
+        self.count_of_nodes = 0
+        self.seq_ops = List(['tmp'])
+        self.seq_ops.clear()
+        self.operators = {}
+        self.keywords = {}
+        self.literals = {}
+        self.structure = List(['tmp'])
+        self.structure.clear()
+
+    def generic_visit(self, node):
+        '''
+            Function for traverse, counting operators, keywords, literals
+            and save sequence of operators
+            @param node - current node
+        '''
+        type_name = type(node).__name__
+        if type_name in OPERATORS:
+            if type_name not in self.operators.keys():
+                self.operators[type_name] = 1
+            else:
+                self.operators[type_name] += 1
+            self.seq_ops.append(type_name)
+        elif type_name in KEYWORDS:
+            if type_name not in self.keywords.keys():
+                self.keywords[type_name] = 1
+            else:
+                self.keywords[type_name] += 1
+        elif type_name in LITERALS:
+            if type_name not in self.literals.keys():
+                self.literals[type_name] = 1
+            else:
+                self.literals[type_name] += 1
+
+        if type_name not in IGNORE_NODES:
+            if self.curr_depth != 0:
+                self.structure.append(str(self.curr_depth) + " " + type_name)
+                self.count_of_nodes += 1
+            self.curr_depth += 1
+            ast.NodeVisitor.generic_visit(self, node)
+            self.curr_depth -= 1
+
+        ast.NodeVisitor.generic_visit(self, node)
+
+
 class OpKwCounter(ast.NodeVisitor):
     def __init__(self):
         self.seq_ops = List(['tmp'])

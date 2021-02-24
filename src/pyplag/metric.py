@@ -12,8 +12,8 @@ def nodes_metric(res1, res2):
     '''
         Function return how same operators or keywords or literals
         in two trees
-        @param res1 - dict object with counts of op or kw or lit
-        @param res2 - dict object with counts of op or kw or lit
+        @param res1 - dict object with counts of op or kw or list
+        @param res2 - dict object with counts of op or kw or list
     '''
     if(type(res1) is not dict or type(res2) is not dict):
         return TypeError
