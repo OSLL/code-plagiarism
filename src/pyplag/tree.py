@@ -4,8 +4,9 @@ import ast
 import os
 import numpy as np
 import numba
-from numba import njit
-from numba.typed import List
+from numba import njit, prange
+from numba.typed import List, Dict
+from numba.core import types
 
 from src.pyplag.const import *
 
@@ -16,9 +17,9 @@ class ASTFeatures(ast.NodeVisitor):
         self.count_of_nodes = 0
         self.seq_ops = List(['tmp'])
         self.seq_ops.clear()
-        self.operators = {}
-        self.keywords = {}
-        self.literals = {}
+        self.operators = Dict.empty(key_type=types.unicode_type, value_type=types.int32)
+        self.keywords = Dict.empty(key_type=types.unicode_type, value_type=types.int32)
+        self.literals = Dict.empty(key_type=types.unicode_type, value_type=types.int32)
         self.structure = List(['tmp'])
         self.structure.clear()
 
@@ -30,33 +31,35 @@ class ASTFeatures(ast.NodeVisitor):
         '''
         type_name = type(node).__name__
         if type_name in OPERATORS:
-            if type_name not in self.operators.keys():
-                self.operators[type_name] = 1
+            if type_name not in self.operators:
+                self.operators[type_name] = numba.int32(1)
             else:
-                self.operators[type_name] += 1
+                self.operators[type_name] += numba.int32(1)
             self.seq_ops.append(type_name)
         elif type_name in KEYWORDS:
-            if type_name not in self.keywords.keys():
-                self.keywords[type_name] = 1
+            if type_name not in self.keywords:
+                self.keywords[type_name] = numba.int32(1)
             else:
-                self.keywords[type_name] += 1
+                self.keywords[type_name] += numba.int32(1)
         elif type_name in LITERALS:
-            if type_name not in self.literals.keys():
-                self.literals[type_name] = 1
+            if type_name not in self.literals:
+                self.literals[type_name] = numba.int32(1)
             else:
-                self.literals[type_name] += 1
+                self.literals[type_name] += numba.int32(1)
 
         if type_name not in IGNORE_NODES:
             if self.curr_depth != 0:
-                self.structure.append(str(self.curr_depth) + " " + type_name)
+                if 'name' in dir(node) and node.name is not None:
+                    self.structure.append(str(self.curr_depth) + " " + node.name)
+                else:
+                    self.structure.append(str(self.curr_depth) + " " + type_name)
                 self.count_of_nodes += 1
             self.curr_depth += 1
             ast.NodeVisitor.generic_visit(self, node)
             self.curr_depth -= 1
 
-        ast.NodeVisitor.generic_visit(self, node)
 
-
+#YAGNI
 class OpKwCounter(ast.NodeVisitor):
     def __init__(self):
         self.seq_ops = List(['tmp'])
@@ -163,7 +166,8 @@ def get_AST(filename):
 
     return tree
 
-    # Tested
+# Tested
+# YAGNI
 def get_nodes(tree):
     '''
         Function return all tree's nodes
@@ -179,6 +183,7 @@ def get_nodes(tree):
 
 
 # Tested
+#YAGNI
 def get_count_of_nodes(tree):
     '''
         Get count of nodes of tree without head
@@ -191,6 +196,23 @@ def get_count_of_nodes(tree):
     traverser = Visitor()
     traverser.visit(tree)
     return traverser.count_of_nodes
+
+
+@njit(fastmath=True)
+def get_children_ind(tree, count_of_nodes):
+    count_of_children = 0
+    if count_of_nodes == 0:
+        return None, count_of_children
+
+    ind = List([0])
+    count_of_children = 1
+    curr_level = tree[0].split(" ")[0]
+    for i in range(1, count_of_nodes):
+        if curr_level == tree[i].split(" ")[0]:
+            ind.append(i)
+            count_of_children += 1
+
+    return ind, count_of_children
 
 
 # Tested
@@ -219,6 +241,7 @@ def find_max_index(array):
     return index
 
 
+#YAGNI
 def getn_count_nodes(len_min, len_max, indexes, axis, children):
     '''
         Function return count of not accounted nodes
@@ -229,11 +252,16 @@ def getn_count_nodes(len_min, len_max, indexes, axis, children):
         if 1 then iteration on column
         @param children - list of nodes of type ast
     '''
-    add = [indexes[i][axis] for i in range(len_min)]
+    added = [indexes[i][axis] for i in range(len_min)]
 
     count = 0
     for i in range(len_max):
-        if i not in add:
+        if i not in added:
             count += get_count_of_nodes(children[i]) + 1
 
     return count
+
+
+@njit(fastmath=True)
+def get_from_tree(tree, start, finish):
+    return tree[start:finish]

@@ -15,8 +15,8 @@ def nodes_metric(res1, res2):
         @param res1 - dict object with counts of op or kw or list
         @param res2 - dict object with counts of op or kw or list
     '''
-    if(type(res1) is not dict or type(res2) is not dict):
-        return TypeError
+    #if(type(res1) is not dict or type(res2) is not dict):
+     #   return TypeError
 
     percent_of_same = [0, 0]
     for key in res1.keys():
@@ -39,7 +39,7 @@ def nodes_metric(res1, res2):
 
 
 @njit(fastmath=True)
-def test(array):
+def matrix_value(array):
     same_struct_metric = [1, 1]
     minimal = min(array.shape[0], array.shape[1])
     indexes = List()
@@ -57,30 +57,6 @@ def test(array):
     return same_struct_metric, indexes
 
 
-def calculate_metric(children1, children2, len1, len2, array):
-    '''
-        Function calculate percent of compliance from matrix
-        @param children1 - list of nodes of type ast object
-        @param children2 - list of nodes of type ast object
-        @param len1 - count of nodes in children1
-        @param len2 - count of nodes in children2
-        @param array - matrix of compliance
-    '''
-    same_struct_metric, indexes = test(array)
-
-    not_count = 0
-    if len1 > len2:
-        not_count = getn_count_nodes(len2, len1, indexes, 0, children1)
-    elif len2 > len1:
-        not_count = getn_count_nodes(len1, len2, indexes, 1, children2)
-
-    same_struct_metric[1] += not_count
-    # same_struct_metric = [same_struct_metric[0],
-    #                       same_struct_metric[1] + not_count]
-
-    return same_struct_metric
-
-
 # Tested
 def struct_compare(tree1, tree2, output=False):
     '''
@@ -90,64 +66,92 @@ def struct_compare(tree1, tree2, output=False):
         @param output - if equal True, then in console prints matrix
         of compliance else not
     '''
-    if (not isinstance(tree1, ast.AST) or not isinstance(tree2, ast.AST)
-       or type(output) is not bool):
-        return TypeError
+    #if (not isinstance(tree1, ast.AST) or not isinstance(tree2, ast.AST)
+     #  or type(output) is not bool):
+      #  return TypeError
 
-    parsed_nodes1 = get_nodes(tree1)
-    parsed_nodes2 = get_nodes(tree2)
-    len1 = len(parsed_nodes1)
-    len2 = len(parsed_nodes2)
+    count_of_nodes1 = len(tree1)
+    count_of_nodes2 = len(tree2)
+    ch_inds1, count_of_children1 = get_children_ind(tree1, count_of_nodes1)
+    ch_inds2, count_of_children2 = get_children_ind(tree2, count_of_nodes2)
 
-    if (len1 == 0 and len2 == 0):
+    if (count_of_children1 == 0 and count_of_children2 == 0):
         return [1, 1]
-    elif (len1 == 0):
-        return [1, (get_count_of_nodes(tree2) + 1)]
-    elif (len2 == 0):
-        return [1, (get_count_of_nodes(tree1) + 1)]
+    elif (count_of_children1 == 0):
+        return [1, (count_of_nodes2 + 1)]
+    elif (count_of_children2 == 0):
+        return [1, (count_of_nodes1 + 1)]
 
-    array = np.zeros((len1, len2), dtype=(np.int32, 2))
+    array = np.zeros((count_of_children1, count_of_children2), dtype=(np.int32, 2))
     if output:
         indexes = []
         columns = []
 
-    for i in range(len1):
+    for i in range(count_of_children1 - 1):
         if output:
-            if 'name' in dir(parsed_nodes1[i]):
-                indexes.append(parsed_nodes1[i].name)
-            else:
-                indexes.append(type(parsed_nodes1[i]).__name__)
+            indexes.append(tree1[ch_inds1[i]].split(" ")[1])
 
-        for j in range(len2):
-            array[i][j] = struct_compare(parsed_nodes1[i],
-                                         parsed_nodes2[j])
+        for j in range(count_of_children2 - 1):
+            section1 = get_from_tree(tree1, ch_inds1[i] + 1, ch_inds1[i + 1])
+            section2 = get_from_tree(tree2, ch_inds2[j] + 1, ch_inds2[j + 1])
+            array[i][j] = struct_compare(section1,
+                                         section2)
+
+    last_ind1 = ch_inds1[-1]
+    last_ind2 = ch_inds2[-1]
+    for j in range(count_of_children2 - 1):
+        if output:
+            columns.append(tree2[ch_inds2[j]].split(" ")[1])
+        section1 = get_from_tree(tree1, ch_inds1[-1] + 1, count_of_nodes1)
+        section2 = get_from_tree(tree2, ch_inds2[j] + 1, ch_inds2[j + 1])
+        array[count_of_children1 - 1][j] = struct_compare(section1,
+                                                          section2)
+
+    for i in range(count_of_children1 - 1):
+        section1 = get_from_tree(tree1, ch_inds1[i] + 1, ch_inds1[i + 1])
+        section2 = get_from_tree(tree2, ch_inds2[-1] + 1, count_of_nodes2)
+        array[i][count_of_children2 - 1] = struct_compare(section1,
+                                                          section2)
+
+    section1 = get_from_tree(tree1, ch_inds1[-1] + 1, count_of_nodes1)
+    section2 = get_from_tree(tree2, ch_inds2[-1] + 1, count_of_nodes2)
+    array[count_of_children1 - 1][count_of_children2 - 1] = struct_compare(section1,
+                                                                           section2)
 
     if output:
-        for j in range(len2):
-            if 'name' in dir(parsed_nodes2[j]):
-                columns.append(parsed_nodes2[j].name)
-            else:
-                columns.append(type(parsed_nodes2[j]).__name__)
+        indexes.append(tree1[ch_inds1[-1]].split(" ")[1])
+        columns.append(tree2[ch_inds2[-1]].split(" ")[1])
 
-        a = np.zeros((len1, len2), dtype=object)
-        for i in range(len1):
-            for j in range(len2):
+        a = np.zeros((count_of_children1, count_of_children2), dtype=object)
+        for i in range(count_of_children1):
+            for j in range(count_of_children2):
                 a[i][j] = '{:.2%}'.format(array[i][j][0] / array[i][j][1])
 
         table = pd.DataFrame(a, index=indexes, columns=columns)
         print()
         print(table)
 
-    same_struct_metric = calculate_metric(parsed_nodes1,
-                                          parsed_nodes2,
-                                          len1,
-                                          len2,
-                                          array)
+    same_struct_metric, indexes = matrix_value(array)
+    if count_of_children1 > count_of_children2:
+        added = [indexes[i][0] for i in range(count_of_children2)]
+        for k in range(count_of_children1 - 1):
+            if k not in added:
+                same_struct_metric[1] += len(tree1[ch_inds1[k]:ch_inds1[k + 1]])
+        if (count_of_children1 - 1) not in added:
+            same_struct_metric[1] += len(tree1[ch_inds1[-1]:count_of_nodes1])
+    elif count_of_children2 > count_of_children1:
+        added = [indexes[i][1] for i in range(count_of_children1)]
+        for k in range(count_of_children2 - 1):
+            if k not in added:
+                same_struct_metric[1] += len(tree2[ch_inds2[k]:ch_inds2[k + 1]])
+        if (count_of_children2 - 1) not in added:
+            same_struct_metric[1] += len(tree2[ch_inds2[-1]:count_of_nodes2])
 
     if output:
         print()
         print('Structure is same by {:.2%}'.format(same_struct_metric[0] /
                                                    same_struct_metric[1]))
+
     return same_struct_metric
 
 
