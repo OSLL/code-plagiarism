@@ -8,6 +8,7 @@ from numba.typed import List
 from src.pyplag.tree import *
 
 # Tested
+@njit(fastmath=True)
 def nodes_metric(res1, res2):
     '''
         Function return how same operators or keywords or literals
@@ -20,7 +21,7 @@ def nodes_metric(res1, res2):
 
     percent_of_same = [0, 0]
     for key in res1.keys():
-        if key not in res2.keys():
+        if key not in res2:
             percent_of_same[1] += res1[key]
             continue
         percent_of_same[0] += min(res1[key],
@@ -28,7 +29,7 @@ def nodes_metric(res1, res2):
         percent_of_same[1] += max(res1[key],
                                   res2[key])
     for key in res2.keys():
-        if key not in res1.keys():
+        if key not in res1:
             percent_of_same[1] += res2[key]
             continue
 
@@ -58,6 +59,7 @@ def matrix_value(array):
 
 
 # Tested
+#@njit(fastmath=True)
 def struct_compare(tree1, tree2, output=False):
     '''
         Function for compare structure of two trees
@@ -84,8 +86,8 @@ def struct_compare(tree1, tree2, output=False):
 
     array = np.zeros((count_of_children1, count_of_children2), dtype=(np.int32, 2))
     if output:
-        indexes = []
-        columns = []
+        indexes = List()
+        columns = List()
 
     for i in range(count_of_children1 - 1):
         if output:
@@ -122,14 +124,15 @@ def struct_compare(tree1, tree2, output=False):
         indexes.append(tree1[ch_inds1[-1]].split(" ")[1])
         columns.append(tree2[ch_inds2[-1]].split(" ")[1])
 
-        a = np.zeros((count_of_children1, count_of_children2), dtype=object)
-        for i in range(count_of_children1):
-            for j in range(count_of_children2):
-                a[i][j] = '{:.2%}'.format(array[i][j][0] / array[i][j][1])
+        #a = np.zeros((count_of_children1, count_of_children2), dtype=object)
+        #for i in range(count_of_children1):
+         #   for j in range(count_of_children2):
+          #      a[i][j] = '{:.2%}'.format(array[i][j][0] / array[i][j][1])
 
-        table = pd.DataFrame(a, index=indexes, columns=columns)
+        #table = pd.DataFrame(a, index=indexes, columns=columns)
         print()
-        print(table)
+        print(array)
+        #print(table)
 
     same_struct_metric, indexes = matrix_value(array)
     if count_of_children1 > count_of_children2:
