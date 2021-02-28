@@ -1,7 +1,8 @@
 from context import *
 
 import ast
-import pandas as pd
+#import pandas as pd
+import numba
 from numba import njit
 from numba.typed import List
 
@@ -59,7 +60,7 @@ def matrix_value(array):
 
 
 # Tested
-#@njit(fastmath=True)
+@njit(fastmath=True)
 def struct_compare(tree1, tree2, output=False):
     '''
         Function for compare structure of two trees
@@ -84,7 +85,7 @@ def struct_compare(tree1, tree2, output=False):
     elif (count_of_children2 == 0):
         return [1, (count_of_nodes1 + 1)]
 
-    array = np.zeros((count_of_children1, count_of_children2), dtype=(np.int32, 2))
+    array = np.zeros((count_of_children1, count_of_children2, 2), dtype=numba.int32)
     if output:
         indexes = List()
         columns = List()
@@ -138,22 +139,30 @@ def struct_compare(tree1, tree2, output=False):
     if count_of_children1 > count_of_children2:
         added = [indexes[i][0] for i in range(count_of_children2)]
         for k in range(count_of_children1 - 1):
-            if k not in added:
+            if k in added:
+                continue
+            else:
                 same_struct_metric[1] += len(tree1[ch_inds1[k]:ch_inds1[k + 1]])
-        if (count_of_children1 - 1) not in added:
+        if (count_of_children1 - 1) in added:
+            pass
+        else:
             same_struct_metric[1] += len(tree1[ch_inds1[-1]:count_of_nodes1])
     elif count_of_children2 > count_of_children1:
         added = [indexes[i][1] for i in range(count_of_children1)]
         for k in range(count_of_children2 - 1):
-            if k not in added:
+            if k in added:
+                continue
+            else:
                 same_struct_metric[1] += len(tree2[ch_inds2[k]:ch_inds2[k + 1]])
-        if (count_of_children2 - 1) not in added:
+        if (count_of_children2 - 1) in added:
+            pass
+        else:
             same_struct_metric[1] += len(tree2[ch_inds2[-1]:count_of_nodes2])
 
     if output:
         print()
-        print('Structure is same by {:.2%}'.format(same_struct_metric[0] /
-                                                   same_struct_metric[1]))
+        #print('Structure is same by {:.2%}'.format(same_struct_metric[0] /
+         #                                          same_struct_metric[1]))
 
     return same_struct_metric
 
