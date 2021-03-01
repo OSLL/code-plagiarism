@@ -13,14 +13,19 @@ from src.pyplag.const import *
 
 class ASTFeatures(ast.NodeVisitor):
     def __init__(self):
-        self.curr_depth = 0
-        self.count_of_nodes = 0
+        self.curr_depth = numba.int32(0)
+        self.count_of_nodes = numba.int32(0)
         self.seq_ops = List(['tmp'])
         self.seq_ops.clear()
         self.operators = Dict.empty(key_type=types.unicode_type, value_type=types.int32)
         self.keywords = Dict.empty(key_type=types.unicode_type, value_type=types.int32)
         self.literals = Dict.empty(key_type=types.unicode_type, value_type=types.int32)
-        self.structure = List(['tmp'])
+        # uniq nodes
+        self.unodes = Dict.empty(key_type=types.unicode_type, value_type=types.int32)
+        self.from_num = Dict.empty(key_type=types.int32, value_type=types.unicode_type)
+        # count of uniq nodes
+        self.cunodes = numba.int32(0)
+        self.structure = List([(1, 2)])
         self.structure.clear()
 
     def generic_visit(self, node):
@@ -50,9 +55,19 @@ class ASTFeatures(ast.NodeVisitor):
         if type_name not in IGNORE_NODES:
             if self.curr_depth != 0:
                 if 'name' in dir(node) and node.name is not None:
-                    self.structure.append(str(self.curr_depth) + " " + node.name)
+                    if node.name not in self.unodes:
+                        self.unodes[node.name] = self.cunodes
+                        self.from_num[self.cunodes] = node.name
+                        self.cunodes += numba.int32(1)
+                    self.structure.append((self.curr_depth, self.unodes[node.name]))
+                    #self.structure.append(str(self.curr_depth) + " " + node.name)
                 else:
-                    self.structure.append(str(self.curr_depth) + " " + type_name)
+                    if type_name not in self.unodes:
+                        self.unodes[type_name] = self.cunodes
+                        self.from_num[self.cunodes] = type_name
+                        self.cunodes += numba.int32(1)
+                    self.structure.append((self.curr_depth, self.unodes[type_name]))
+                    #self.structure.append(str(self.curr_depth) + " " + type_name)
                 self.count_of_nodes += 1
             self.curr_depth += 1
             ast.NodeVisitor.generic_visit(self, node)
@@ -94,6 +109,7 @@ class OpKwCounter(ast.NodeVisitor):
         ast.NodeVisitor.generic_visit(self, node)
 
 
+#YAGNI
 class Visitor(ast.NodeVisitor):
     def __init__(self, write_tree=False):
         self.depth = 0
@@ -117,6 +133,7 @@ class Visitor(ast.NodeVisitor):
             self.depth -= 1
 
 
+#YAGNI
 class NodeGetter(ast.NodeVisitor):
     def __init__(self):
         self.depth = 0
@@ -206,9 +223,11 @@ def get_children_ind(tree, count_of_nodes):
 
     ind = List([0])
     count_of_children = 1
-    curr_level = tree[0].split(" ")[0]
+    curr_level = tree[0][0]
+    #curr_level = tree[0].split(" ")[0]
     for i in range(1, count_of_nodes):
-        if curr_level == tree[i].split(" ")[0]:
+        if curr_level == tree[i][0]:
+        #if curr_level == tree[i].split(" ")[0]:
             ind.append(i)
             count_of_children += 1
 

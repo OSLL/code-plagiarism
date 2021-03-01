@@ -61,7 +61,7 @@ def matrix_value(array):
 
 # Tested
 @njit(fastmath=True)
-def struct_compare(tree1, tree2, output=False):
+def struct_compare(tree1, tree2):#transform_dict1, transform_dict2, output=False):
     '''
         Function for compare structure of two trees
         @param tree1 - ast object
@@ -86,44 +86,56 @@ def struct_compare(tree1, tree2, output=False):
         return [1, (count_of_nodes1 + 1)]
 
     array = np.zeros((count_of_children1, count_of_children2, 2), dtype=numba.int32)
-    if output:
-        indexes = List()
-        columns = List()
+    #if output:
+        #indexes = List()
+        #columns = List()
 
     for i in range(count_of_children1 - 1):
-        if output:
-            indexes.append(tree1[ch_inds1[i]].split(" ")[1])
+        #if output:
+            #indexes.append(transform_dict1[tree1[ch_inds1[i]][1]])
+            #indexes.append(tree1[ch_inds1[i]].split(" ")[1])
 
         for j in range(count_of_children2 - 1):
             section1 = get_from_tree(tree1, ch_inds1[i] + 1, ch_inds1[i + 1])
             section2 = get_from_tree(tree2, ch_inds2[j] + 1, ch_inds2[j + 1])
             array[i][j] = struct_compare(section1,
-                                         section2)
+                                         section2)#,
+                                         #transform_dict1,
+                                         #transform_dict2)
 
     last_ind1 = ch_inds1[-1]
     last_ind2 = ch_inds2[-1]
     for j in range(count_of_children2 - 1):
-        if output:
-            columns.append(tree2[ch_inds2[j]].split(" ")[1])
+        #if output:
+            #columns.append(transform_dict2[tree2[ch_inds2[j]][1]])
+            #columns.append(tree2[ch_inds2[j]].split(" ")[1])
         section1 = get_from_tree(tree1, ch_inds1[-1] + 1, count_of_nodes1)
         section2 = get_from_tree(tree2, ch_inds2[j] + 1, ch_inds2[j + 1])
         array[count_of_children1 - 1][j] = struct_compare(section1,
-                                                          section2)
+                                                          section2)#,
+                                                          #transform_dict1,
+                                                          #transform_dict2)
 
     for i in range(count_of_children1 - 1):
         section1 = get_from_tree(tree1, ch_inds1[i] + 1, ch_inds1[i + 1])
         section2 = get_from_tree(tree2, ch_inds2[-1] + 1, count_of_nodes2)
         array[i][count_of_children2 - 1] = struct_compare(section1,
-                                                          section2)
+                                                          section2)#,
+                                                          #transform_dict1,
+                                                          #transform_dict2)
 
     section1 = get_from_tree(tree1, ch_inds1[-1] + 1, count_of_nodes1)
     section2 = get_from_tree(tree2, ch_inds2[-1] + 1, count_of_nodes2)
     array[count_of_children1 - 1][count_of_children2 - 1] = struct_compare(section1,
-                                                                           section2)
+                                                                           section2)#,
+                                                                           #transform_dict1,
+                                                                           #transform_dict2)
 
-    if output:
-        indexes.append(tree1[ch_inds1[-1]].split(" ")[1])
-        columns.append(tree2[ch_inds2[-1]].split(" ")[1])
+    #if output:
+        #indexes.append(transform_dict1[tree1[ch_inds1[-1]][1]])
+        #indexes.append(tree1[ch_inds1[-1]].split(" ")[1])
+        #columns.append(transform_dict2[tree2[ch_inds2[-1]][1]])
+        #columns.append(tree2[ch_inds2[-1]].split(" ")[1])
 
         #a = np.zeros((count_of_children1, count_of_children2), dtype=object)
         #for i in range(count_of_children1):
@@ -131,8 +143,8 @@ def struct_compare(tree1, tree2, output=False):
           #      a[i][j] = '{:.2%}'.format(array[i][j][0] / array[i][j][1])
 
         #table = pd.DataFrame(a, index=indexes, columns=columns)
-        print()
-        print(array)
+        #print()
+        #print(array)
         #print(table)
 
     same_struct_metric, indexes = matrix_value(array)
@@ -158,11 +170,6 @@ def struct_compare(tree1, tree2, output=False):
             pass
         else:
             same_struct_metric[1] += len(tree2[ch_inds2[-1]:count_of_nodes2])
-
-    if output:
-        print()
-        #print('Structure is same by {:.2%}'.format(same_struct_metric[0] /
-         #                                          same_struct_metric[1]))
 
     return same_struct_metric
 

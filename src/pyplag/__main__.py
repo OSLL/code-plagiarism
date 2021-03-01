@@ -80,7 +80,8 @@ for row in range(count_files):
             print("Total similarity -", '{:.2%}'.format(similarity))
             log_file.write('May be similar:' + filename.split('/')[-1] +
                             ' ' + filename2.split('/')[-1] + '\n')
-            struct_compare(features1.structure, features2.structure, True)
+            print()
+            print('Structure is same by {:.2%}'.format(res[0] / res[1]))
             text = 'Operators match percentage:'
             print(text, '{:.2%}'.format(operators_res))
             log_file.write(text + '{:.2%}'.format(operators_res) + '\n')
