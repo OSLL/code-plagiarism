@@ -10,7 +10,7 @@ from numba.core import types
 
 from src.pyplag.const import *
 
-
+# Можно сохранять название узлов только самого верхнего, первого уровня, чтобы экономить ресурсы
 class ASTFeatures(ast.NodeVisitor):
     def __init__(self):
         self.curr_depth = numba.int32(0)

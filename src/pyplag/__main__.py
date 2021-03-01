@@ -26,9 +26,7 @@ start_eval = perf_counter()
 date = datetime.datetime.now().strftime('%Y%m%d-%H#%M#%S')
 log_file = open('./logs/pylog' + date + '.txt', 'w')
 
-iterrations = 0
-for i in range(1, count_files):
-    iterrations += i
+iterrations = (count_files * count_files - count_files) / 2
 iterration = 0
 
 for row in range(count_files):
