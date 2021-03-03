@@ -45,15 +45,15 @@ def matrix_value(array):
     same_struct_metric = [1, 1]
     minimal = min(array.shape[0], array.shape[1])
     indexes = List()
-    for i in range(minimal):
+    for i in np.arange(0, minimal, 1):
         ind = find_max_index(array)
         indexes.append(ind)
         same_struct_metric[0] += array[ind[0]][ind[1]][0]
         same_struct_metric[1] += array[ind[0]][ind[1]][1]
 
-        for i in range(array.shape[1]):
+        for i in np.arange(0, array.shape[1], 1):
             array[ind[0]][i] = [0, 0]
-        for j in range(array.shape[0]):
+        for j in np.arange(0, array.shape[0], 1):
             array[j][ind[1]] = [0, 0]
 
     return same_struct_metric, indexes
@@ -90,12 +90,12 @@ def struct_compare(tree1, tree2):#transform_dict1, transform_dict2, output=False
         #indexes = List()
         #columns = List()
 
-    for i in range(count_of_children1 - 1):
+    for i in np.arange(0, count_of_children1 - 1, 1):
         #if output:
             #indexes.append(transform_dict1[tree1[ch_inds1[i]][1]])
             #indexes.append(tree1[ch_inds1[i]].split(" ")[1])
 
-        for j in range(count_of_children2 - 1):
+        for j in np.arange(0, count_of_children2 - 1, 1):
             section1 = get_from_tree(tree1, ch_inds1[i] + 1, ch_inds1[i + 1])
             section2 = get_from_tree(tree2, ch_inds2[j] + 1, ch_inds2[j + 1])
             array[i][j] = struct_compare(section1,
@@ -105,7 +105,7 @@ def struct_compare(tree1, tree2):#transform_dict1, transform_dict2, output=False
 
     last_ind1 = ch_inds1[-1]
     last_ind2 = ch_inds2[-1]
-    for j in range(count_of_children2 - 1):
+    for j in np.arange(0, count_of_children2 - 1, 1):
         #if output:
             #columns.append(transform_dict2[tree2[ch_inds2[j]][1]])
             #columns.append(tree2[ch_inds2[j]].split(" ")[1])
@@ -116,7 +116,7 @@ def struct_compare(tree1, tree2):#transform_dict1, transform_dict2, output=False
                                                           #transform_dict1,
                                                           #transform_dict2)
 
-    for i in range(count_of_children1 - 1):
+    for i in np.arange(0, count_of_children1 - 1, 1):
         section1 = get_from_tree(tree1, ch_inds1[i] + 1, ch_inds1[i + 1])
         section2 = get_from_tree(tree2, ch_inds2[-1] + 1, count_of_nodes2)
         array[i][count_of_children2 - 1] = struct_compare(section1,
@@ -149,8 +149,8 @@ def struct_compare(tree1, tree2):#transform_dict1, transform_dict2, output=False
 
     same_struct_metric, indexes = matrix_value(array)
     if count_of_children1 > count_of_children2:
-        added = [indexes[i][0] for i in range(count_of_children2)]
-        for k in range(count_of_children1 - 1):
+        added = [indexes[i][0] for i in np.arange(0, count_of_children2, 1)]
+        for k in np.arange(0, count_of_children1 - 1, 1):
             if k in added:
                 continue
             else:
@@ -160,8 +160,8 @@ def struct_compare(tree1, tree2):#transform_dict1, transform_dict2, output=False
         else:
             same_struct_metric[1] += len(tree1[ch_inds1[-1]:count_of_nodes1])
     elif count_of_children2 > count_of_children1:
-        added = [indexes[i][1] for i in range(count_of_children1)]
-        for k in range(count_of_children2 - 1):
+        added = [indexes[i][1] for i in np.arange(0, count_of_children1, 1)]
+        for k in np.arange(0, count_of_children2 - 1, 1):
             if k in added:
                 continue
             else:
@@ -213,7 +213,7 @@ def op_shift_metric(ops1, ops2):
         shift += 1
 
     max_shift = 0
-    for index in range(1, len(y)):
+    for index in np.arange(1, len(y), 1):
         if y[index] > y[max_shift]:
             max_shift = index
 

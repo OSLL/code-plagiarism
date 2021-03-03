@@ -225,7 +225,7 @@ def get_children_ind(tree, count_of_nodes):
     count_of_children = 1
     curr_level = tree[0][0]
     #curr_level = tree[0].split(" ")[0]
-    for i in range(1, count_of_nodes):
+    for i in np.arange(1, count_of_nodes, 1):
         if curr_level == tree[i][0]:
         #if curr_level == tree[i].split(" ")[0]:
             ind.append(i)
@@ -247,8 +247,8 @@ def find_max_index(array):
 
     maximum = 0
     index = numba.int32([0, 0])
-    for i in range(array.shape[0]):
-        for j in range(array.shape[1]):
+    for i in np.arange(0, array.shape[0], 1):
+        for j in np.arange(0, array.shape[1], 1):
             if array[i][j][1] == 0:
                 continue
             value = array[i][j][0] / array[i][j][1]
@@ -271,10 +271,10 @@ def getn_count_nodes(len_min, len_max, indexes, axis, children):
         if 1 then iteration on column
         @param children - list of nodes of type ast
     '''
-    added = [indexes[i][axis] for i in range(len_min)]
+    added = [indexes[i][axis] for i in np.arange(0, len_min, 1)]
 
     count = 0
-    for i in range(len_max):
+    for i in np.arange(0, len_max, 1):
         if i not in added:
             count += get_count_of_nodes(children[i]) + 1
 

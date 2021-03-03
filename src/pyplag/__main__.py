@@ -19,9 +19,6 @@ files = os.listdir(directory)
 files = list(filter(lambda x: (x.endswith('.py')), files))
 
 count_files = len(files)
-# matrix_compliance = np.zeros((count_files, count_files))
-# indexes_py = []
-# columns_py = []
 start_eval = perf_counter()
 date = datetime.datetime.now().strftime('%Y%m%d-%H#%M#%S')
 log_file = open('./logs/pylog' + date + '.txt', 'w')
@@ -29,12 +26,12 @@ log_file = open('./logs/pylog' + date + '.txt', 'w')
 iterrations = (count_files * count_files - count_files) / 2
 iterration = 0
 
-for row in range(count_files):
+for row in np.arange(0, count_files, 1):
     if directory[-1] != '/':
         directory += '/'
     filename = directory + files[row]
     # indexes_py.append(filename.split('/')[-1])
-    for col in range(count_files):
+    for col in np.arange(0, count_files, 1):
         filename2 = directory + files[col]
         # if row == 1:
         #     columns_cpp.append(filename2.split('/')[-1])
