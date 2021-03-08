@@ -4,13 +4,31 @@ import os
 import sys
 import datetime
 import numpy as np
+import pandas as pd
+pd.options.display.float_format = '{:,.2%}'.format
 
 from time import perf_counter
 # from src.pyplag.tree import *
 from src.pyplag.tree import ASTFeatures, get_AST
 from src.pyplag.metric import nodes_metric, run_struct_compare
-from src.pyplag.metric import op_shift_metric
+from src.pyplag.metric import op_shift_metric, get_children_ind
 # from src.pyplag.metric import *
+
+
+def print_table(matrix, struct1, struct2, to_names1, to_names2):
+    ch_inds1, count_of_children1 = get_children_ind(struct1, len(struct1))
+    ch_inds2, count_of_children2 = get_children_ind(struct2, len(struct2))
+    indexes = [to_names1[struct1[ind][1]] for ind in ch_inds1]
+    columns = [to_names2[struct2[ind][1]] for ind in ch_inds2]
+    data = np.zeros((matrix.shape[0], matrix.shape[1]), dtype=np.float32)
+    for row in range(matrix.shape[0]):
+        for col in range(matrix.shape[1]):
+            data[row][col] = round((matrix[row][col][0] /
+                                    matrix[row][col][1]), 2)
+    df = pd.DataFrame(data=data,
+                      index=indexes, columns=columns)
+    print(df, '\n')
+
 
 directory = 'py/'
 if len(sys.argv) > 1:
@@ -80,7 +98,8 @@ for row in np.arange(0, count_files, 1):
                            ' ' + filename2.split('/')[-1] + '\n')
             print()
             print('Structure is same by {:.2%}'.format(res[0] / res[1]))
-            print('\n', matrix_compliance, '\n')
+            print_table(matrix_compliance, struct1, struct2,
+                        features1.from_num, features2.from_num)
             text = 'Operators match percentage:'
             print(text, '{:.2%}'.format(operators_res))
             log_file.write(text + '{:.2%}'.format(operators_res) + '\n')
