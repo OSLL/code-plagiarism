@@ -58,10 +58,17 @@ def matrix_value(array):
 
     return same_struct_metric, indexes
 
+@njit
+def test(tree1, tree2):
+    count_ch1 = (get_children_ind(tree1, len(tree1)))[1]
+    count_ch2 = (get_children_ind(tree2, len(tree2)))[1]
+    compliance_matrix = np.zeros((count_ch1, count_ch2, 2), dtype=np.int32)
+
+    return struct_compare(tree1, tree2, compliance_matrix), compliance_matrix
 
 # Tested
 @njit(fastmath=True)
-def struct_compare(tree1, tree2):#transform_dict1, transform_dict2, output=False):
+def struct_compare(tree1, tree2, matrix=np.array([[[]]])):#transform_dict1, transform_dict2, output=False):
     '''
         Function for compare structure of two trees
         @param tree1 - ast object
@@ -85,7 +92,7 @@ def struct_compare(tree1, tree2):#transform_dict1, transform_dict2, output=False
     elif (count_of_children2 == 0):
         return [1, (count_of_nodes1 + 1)]
 
-    array = np.zeros((count_of_children1, count_of_children2, 2), dtype=numba.int32)
+    array = np.zeros((count_of_children1, count_of_children2, 2), dtype=np.int32)
     #if output:
         #indexes = List()
         #columns = List()
@@ -146,6 +153,11 @@ def struct_compare(tree1, tree2):#transform_dict1, transform_dict2, output=False
         #print()
         #print(array)
         #print(table)
+
+    if matrix.size != 0:
+        for i in np.arange(0, count_of_children1, 1):
+            for j in np.arange(0, count_of_children2, 1):
+                matrix[i][j] = array[i][j]
 
     same_struct_metric, indexes = matrix_value(array)
     if count_of_children1 > count_of_children2:

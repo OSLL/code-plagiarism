@@ -3,6 +3,8 @@ from context import *
 import os
 import sys
 import datetime
+import numba
+import numpy as np
 
 from time import perf_counter
 from src.pyplag.tree import *
@@ -36,7 +38,6 @@ for row in np.arange(0, count_files, 1):
         # if row == 1:
         #     columns_cpp.append(filename2.split('/')[-1])
         if row == col:
-            # matrix_compliance[row - 1][col - 1] = 1.0
             continue
         if row > col:
             continue
@@ -50,7 +51,10 @@ for row in np.arange(0, count_files, 1):
         features2 = ASTFeatures()
         features1.visit(tree1)
         features2.visit(tree2)
-        res = struct_compare(features1.structure, features2.structure)
+        struct1 = features1.structure
+        struct2 = features2.structure
+        #res = struct_compare(struct1, struct2, True)
+        res, matrix_compliance = test(struct1, struct2)
         struct_res = round(res[0] / res[1], 3)
         operators_res = nodes_metric(features1.operators,
                                      features2.operators)
@@ -58,9 +62,6 @@ for row in np.arange(0, count_files, 1):
         literals_res = nodes_metric(features1.literals, features2.literals)
         b_sh, sh_res = op_shift_metric(features1.seq_ops,
                                        features2.seq_ops)
-        # keywords_res = get_kw_freq_percent(ck)
-        # matrix_compliance[row - 1][col - 1] = struct_res
-        # matrix_compliance[col - 1][row - 1] = struct_res
 
         similarity = (struct_res * 1.5 + operators_res * 0.8 +
                       keywords_res * 0.9 + literals_res * 0.5 +
@@ -77,6 +78,7 @@ for row in np.arange(0, count_files, 1):
                             ' ' + filename2.split('/')[-1] + '\n')
             print()
             print('Structure is same by {:.2%}'.format(res[0] / res[1]))
+            print('\n', matrix_compliance, '\n')
             text = 'Operators match percentage:'
             print(text, '{:.2%}'.format(operators_res))
             log_file.write(text + '{:.2%}'.format(operators_res) + '\n')
