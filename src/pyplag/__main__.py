@@ -1,14 +1,16 @@
-from context import *
+import context
 
 import os
 import sys
 import datetime
-import numba
 import numpy as np
 
 from time import perf_counter
-from src.pyplag.tree import *
-from src.pyplag.metric import *
+# from src.pyplag.tree import *
+from src.pyplag.tree import ASTFeatures, get_AST
+from src.pyplag.metric import nodes_metric, run_struct_compare
+from src.pyplag.metric import op_shift_metric
+# from src.pyplag.metric import *
 
 directory = 'py/'
 if len(sys.argv) > 1:
@@ -53,8 +55,8 @@ for row in np.arange(0, count_files, 1):
         features2.visit(tree2)
         struct1 = features1.structure
         struct2 = features2.structure
-        #res = struct_compare(struct1, struct2, True)
-        res, matrix_compliance = test(struct1, struct2)
+        # res = struct_compare(struct1, struct2, True)
+        res, matrix_compliance = run_struct_compare(struct1, struct2)
         struct_res = round(res[0] / res[1], 3)
         operators_res = nodes_metric(features1.operators,
                                      features2.operators)
@@ -72,10 +74,10 @@ for row in np.arange(0, count_files, 1):
             print('+' * 40)
             log_file.write('+' * 40 + '\n')
             print('May be similar:', filename.split('/')[-1],
-                    filename2.split('/')[-1])
+                  filename2.split('/')[-1])
             print("Total similarity -", '{:.2%}'.format(similarity))
             log_file.write('May be similar:' + filename.split('/')[-1] +
-                            ' ' + filename2.split('/')[-1] + '\n')
+                           ' ' + filename2.split('/')[-1] + '\n')
             print()
             print('Structure is same by {:.2%}'.format(res[0] / res[1]))
             print('\n', matrix_compliance, '\n')
@@ -95,9 +97,9 @@ for row in np.arange(0, count_files, 1):
             print('Persent same: {:.2%}'.format(sh_res))
             print('---')
             log_file.write('---\n' + 'Op shift metric.\n' +
-                            'Best op shift:' + str(b_sh) + '\n'
-                            + 'Persent same: {:.2%}'.format(sh_res) +
-                            '\n' + '---\n')
+                           'Best op shift:' + str(b_sh) + '\n'
+                           + 'Persent same: {:.2%}'.format(sh_res) +
+                           '\n' + '---\n')
             print('+' * 40)
             log_file.write('+' * 40 + '\n\n')
 

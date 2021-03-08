@@ -1,12 +1,11 @@
-from context import *
+import context
 
-import ast
-#import pandas as pd
-import numba
+import numpy as np
 from numba import njit
 from numba.typed import List
 
-from src.pyplag.tree import *
+from src.pyplag.tree import get_children_ind, find_max_index, get_from_tree
+
 
 # Tested
 @njit(fastmath=True)
@@ -17,8 +16,8 @@ def nodes_metric(res1, res2):
         @param res1 - dict object with counts of op or kw or list
         @param res2 - dict object with counts of op or kw or list
     '''
-    #if(type(res1) is not dict or type(res2) is not dict):
-     #   return TypeError
+    # if(type(res1) is not dict or type(res2) is not dict):
+    #    return TypeError
 
     percent_of_same = [0, 0]
     for key in res1.keys():
@@ -58,17 +57,19 @@ def matrix_value(array):
 
     return same_struct_metric, indexes
 
+
 @njit
-def test(tree1, tree2):
+def run_struct_compare(tree1, tree2):
     count_ch1 = (get_children_ind(tree1, len(tree1)))[1]
     count_ch2 = (get_children_ind(tree2, len(tree2)))[1]
     compliance_matrix = np.zeros((count_ch1, count_ch2, 2), dtype=np.int32)
 
     return struct_compare(tree1, tree2, compliance_matrix), compliance_matrix
 
+
 # Tested
 @njit(fastmath=True)
-def struct_compare(tree1, tree2, matrix=np.array([[[]]])):#transform_dict1, transform_dict2, output=False):
+def struct_compare(tree1, tree2, matrix=np.array([[[]]])):
     '''
         Function for compare structure of two trees
         @param tree1 - ast object
@@ -76,9 +77,9 @@ def struct_compare(tree1, tree2, matrix=np.array([[[]]])):#transform_dict1, tran
         @param output - if equal True, then in console prints matrix
         of compliance else not
     '''
-    #if (not isinstance(tree1, ast.AST) or not isinstance(tree2, ast.AST)
-     #  or type(output) is not bool):
-      #  return TypeError
+    # if (not isinstance(tree1, ast.AST) or not isinstance(tree2, ast.AST)
+    #   or type(output) is not bool):
+    #   return TypeError
 
     count_of_nodes1 = len(tree1)
     count_of_nodes2 = len(tree2)
@@ -92,67 +93,32 @@ def struct_compare(tree1, tree2, matrix=np.array([[[]]])):#transform_dict1, tran
     elif (count_of_children2 == 0):
         return [1, (count_of_nodes1 + 1)]
 
-    array = np.zeros((count_of_children1, count_of_children2, 2), dtype=np.int32)
-    #if output:
-        #indexes = List()
-        #columns = List()
+    array = np.zeros((count_of_children1, count_of_children2, 2),
+                     dtype=np.int32)
 
     for i in np.arange(0, count_of_children1 - 1, 1):
-        #if output:
-            #indexes.append(transform_dict1[tree1[ch_inds1[i]][1]])
-            #indexes.append(tree1[ch_inds1[i]].split(" ")[1])
-
         for j in np.arange(0, count_of_children2 - 1, 1):
             section1 = get_from_tree(tree1, ch_inds1[i] + 1, ch_inds1[i + 1])
             section2 = get_from_tree(tree2, ch_inds2[j] + 1, ch_inds2[j + 1])
             array[i][j] = struct_compare(section1,
-                                         section2)#,
-                                         #transform_dict1,
-                                         #transform_dict2)
+                                         section2)
 
-    last_ind1 = ch_inds1[-1]
-    last_ind2 = ch_inds2[-1]
     for j in np.arange(0, count_of_children2 - 1, 1):
-        #if output:
-            #columns.append(transform_dict2[tree2[ch_inds2[j]][1]])
-            #columns.append(tree2[ch_inds2[j]].split(" ")[1])
         section1 = get_from_tree(tree1, ch_inds1[-1] + 1, count_of_nodes1)
         section2 = get_from_tree(tree2, ch_inds2[j] + 1, ch_inds2[j + 1])
         array[count_of_children1 - 1][j] = struct_compare(section1,
-                                                          section2)#,
-                                                          #transform_dict1,
-                                                          #transform_dict2)
+                                                          section2)
 
     for i in np.arange(0, count_of_children1 - 1, 1):
         section1 = get_from_tree(tree1, ch_inds1[i] + 1, ch_inds1[i + 1])
         section2 = get_from_tree(tree2, ch_inds2[-1] + 1, count_of_nodes2)
         array[i][count_of_children2 - 1] = struct_compare(section1,
-                                                          section2)#,
-                                                          #transform_dict1,
-                                                          #transform_dict2)
+                                                          section2)
 
     section1 = get_from_tree(tree1, ch_inds1[-1] + 1, count_of_nodes1)
     section2 = get_from_tree(tree2, ch_inds2[-1] + 1, count_of_nodes2)
     array[count_of_children1 - 1][count_of_children2 - 1] = struct_compare(section1,
-                                                                           section2)#,
-                                                                           #transform_dict1,
-                                                                           #transform_dict2)
-
-    #if output:
-        #indexes.append(transform_dict1[tree1[ch_inds1[-1]][1]])
-        #indexes.append(tree1[ch_inds1[-1]].split(" ")[1])
-        #columns.append(transform_dict2[tree2[ch_inds2[-1]][1]])
-        #columns.append(tree2[ch_inds2[-1]].split(" ")[1])
-
-        #a = np.zeros((count_of_children1, count_of_children2), dtype=object)
-        #for i in range(count_of_children1):
-         #   for j in range(count_of_children2):
-          #      a[i][j] = '{:.2%}'.format(array[i][j][0] / array[i][j][1])
-
-        #table = pd.DataFrame(a, index=indexes, columns=columns)
-        #print()
-        #print(array)
-        #print(table)
+                                                                           section2)
 
     if matrix.size != 0:
         for i in np.arange(0, count_of_children1, 1):
@@ -195,8 +161,8 @@ def op_shift_metric(ops1, ops2):
         @param ops1 - sequence of operators of tree1
         @param ops2 - sequence of operators of tree2
     '''
-    #if (type(ops1) is not list or type(ops2) is not list):
-     #   return TypeError
+    # if (type(ops1) is not list or type(ops2) is not list):
+    #    return TypeError
     count_el_f = len(ops1)
     count_el_s = len(ops2)
     if count_el_f > count_el_s:

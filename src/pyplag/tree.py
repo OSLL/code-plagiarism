@@ -1,28 +1,35 @@
-from context import *
+import context
 
 import ast
 import os
 import numpy as np
 import numba
-from numba import njit, prange
+from numba import njit
 from numba.typed import List, Dict
 from numba.core import types
 
-from src.pyplag.const import *
+from src.pyplag.const import IGNORE_NODES, OPERATORS, KEYWORDS, LITERALS
 
-# Можно сохранять название узлов только самого верхнего, первого уровня, чтобы экономить ресурсы
+
+# Можно сохранять название узлов только самого верхнего, первого уровня,
+# чтобы экономить ресурсы
 class ASTFeatures(ast.NodeVisitor):
     def __init__(self):
         self.curr_depth = numba.int32(0)
         self.count_of_nodes = numba.int32(0)
         self.seq_ops = List(['tmp'])
         self.seq_ops.clear()
-        self.operators = Dict.empty(key_type=types.unicode_type, value_type=types.int32)
-        self.keywords = Dict.empty(key_type=types.unicode_type, value_type=types.int32)
-        self.literals = Dict.empty(key_type=types.unicode_type, value_type=types.int32)
+        self.operators = Dict.empty(key_type=types.unicode_type,
+                                    value_type=types.int32)
+        self.keywords = Dict.empty(key_type=types.unicode_type,
+                                   value_type=types.int32)
+        self.literals = Dict.empty(key_type=types.unicode_type,
+                                   value_type=types.int32)
         # uniq nodes
-        self.unodes = Dict.empty(key_type=types.unicode_type, value_type=types.int32)
-        self.from_num = Dict.empty(key_type=types.int32, value_type=types.unicode_type)
+        self.unodes = Dict.empty(key_type=types.unicode_type,
+                                 value_type=types.int32)
+        self.from_num = Dict.empty(key_type=types.int32,
+                                   value_type=types.unicode_type)
         # count of uniq nodes
         self.cunodes = numba.int32(0)
         self.structure = List([(1, 2)])
@@ -59,22 +66,22 @@ class ASTFeatures(ast.NodeVisitor):
                         self.unodes[node.name] = self.cunodes
                         self.from_num[self.cunodes] = node.name
                         self.cunodes += numba.int32(1)
-                    self.structure.append((self.curr_depth, self.unodes[node.name]))
-                    #self.structure.append(str(self.curr_depth) + " " + node.name)
+                    self.structure.append((self.curr_depth,
+                                           self.unodes[node.name]))
                 else:
                     if type_name not in self.unodes:
                         self.unodes[type_name] = self.cunodes
                         self.from_num[self.cunodes] = type_name
                         self.cunodes += numba.int32(1)
-                    self.structure.append((self.curr_depth, self.unodes[type_name]))
-                    #self.structure.append(str(self.curr_depth) + " " + type_name)
+                    self.structure.append((self.curr_depth,
+                                           self.unodes[type_name]))
                 self.count_of_nodes += 1
             self.curr_depth += 1
             ast.NodeVisitor.generic_visit(self, node)
             self.curr_depth -= 1
 
 
-#YAGNI
+# YAGNI
 class OpKwCounter(ast.NodeVisitor):
     def __init__(self):
         self.seq_ops = List(['tmp'])
@@ -109,7 +116,7 @@ class OpKwCounter(ast.NodeVisitor):
         ast.NodeVisitor.generic_visit(self, node)
 
 
-#YAGNI
+# YAGNI
 class Visitor(ast.NodeVisitor):
     def __init__(self, write_tree=False):
         self.depth = 0
@@ -133,7 +140,7 @@ class Visitor(ast.NodeVisitor):
             self.depth -= 1
 
 
-#YAGNI
+# YAGNI
 class NodeGetter(ast.NodeVisitor):
     def __init__(self):
         self.depth = 0
@@ -183,6 +190,7 @@ def get_AST(filename):
 
     return tree
 
+
 # Tested
 # YAGNI
 def get_nodes(tree):
@@ -200,7 +208,7 @@ def get_nodes(tree):
 
 
 # Tested
-#YAGNI
+# YAGNI
 def get_count_of_nodes(tree):
     '''
         Get count of nodes of tree without head
@@ -224,10 +232,8 @@ def get_children_ind(tree, count_of_nodes):
     ind = List([0])
     count_of_children = 1
     curr_level = tree[0][0]
-    #curr_level = tree[0].split(" ")[0]
     for i in np.arange(1, count_of_nodes, 1):
         if curr_level == tree[i][0]:
-        #if curr_level == tree[i].split(" ")[0]:
             ind.append(i)
             count_of_children += 1
 
@@ -241,9 +247,9 @@ def find_max_index(array):
         Function for finding index of max element in matrix
         @param array - matrix of compliance (np.ndarray object)
     '''
-    #if (not isinstance(array, np.ndarray) or type(len1) is not int
-     #  or type(len2) is not int):
-      #  return TypeError
+    # if (not isinstance(array, np.ndarray) or type(len1) is not int
+    #    or type(len2) is not int):
+    #    return TypeError
 
     maximum = 0
     index = numba.int32([0, 0])
@@ -260,7 +266,7 @@ def find_max_index(array):
     return index
 
 
-#YAGNI
+# YAGNI
 def getn_count_nodes(len_min, len_max, indexes, axis, children):
     '''
         Function return count of not accounted nodes
