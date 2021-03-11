@@ -59,12 +59,23 @@ def matrix_value(array):
 
 
 @njit
-def run_struct_compare(tree1, tree2):
-    count_ch1 = (get_children_ind(tree1, len(tree1)))[1]
-    count_ch2 = (get_children_ind(tree2, len(tree2)))[1]
+def run_compare(f_struct, s_struct, f_ops, s_ops,
+                f_kw, s_kw, f_lits, s_lits, f_seq_ops, s_seq_ops):
+    count_ch1 = (get_children_ind(f_struct, len(f_struct)))[1]
+    count_ch2 = (get_children_ind(s_struct, len(s_struct)))[1]
     compliance_matrix = np.zeros((count_ch1, count_ch2, 2), dtype=np.int32)
 
-    return struct_compare(tree1, tree2, compliance_matrix), compliance_matrix
+    struct_res = struct_compare(f_struct, s_struct, compliance_matrix)
+    struct_res = struct_res[0] / struct_res[1]
+    ops_res = nodes_metric(f_ops, s_ops)
+    kw_res = nodes_metric(f_kw, s_kw)
+    lits_res = nodes_metric(f_lits, s_lits)
+    best_shift, shift_res = op_shift_metric(f_seq_ops, s_seq_ops)
+    
+    metrics = np.array([struct_res, ops_res, kw_res, lits_res, shift_res],
+                       dtype=np.float32)
+
+    return metrics, best_shift, compliance_matrix
 
 
 # Tested
