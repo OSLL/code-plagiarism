@@ -18,7 +18,8 @@ from src.github_helper.utils import get_python_files_links, get_code
 
 
 def print_compare_res(metrics, total_similarity, best_shift, 
-                      matrix, struct1, struct2, to_names1, to_names2):
+                      matrix, struct1, struct2, to_names1, to_names2,
+                      filename1, filename2):
     ch_inds1, count_of_children1 = get_children_ind(struct1, len(struct1))
     ch_inds2, count_of_children2 = get_children_ind(struct2, len(struct2))
     indexes = [to_names1[struct1[ind][1]] for ind in ch_inds1]
@@ -32,8 +33,7 @@ def print_compare_res(metrics, total_similarity, best_shift,
 
     print("         ")
     print('+' * 40)
-    print('May be similar:', filename.split('/')[-1],
-          filename2.split('/')[-1])
+    print('May be similar:', filename1, filename2)
     print("Total similarity -", '{:.2%}'.format(total_similarity))
     print()
     print('Structure is same by {:.2%}'.format(metrics[0]))
@@ -104,11 +104,12 @@ if mode == 0:
                                                       features2.seq_ops)
             total_similarity = np.sum(metrics * weights) / 4
 
-            if total_similarity > 0.02:
+            if total_similarity > 0.72:
                 print_compare_res(metrics, total_similarity, best_shift,
                                   matrix, features1.structure,
                                   features2.structure, features1.from_num,
-                                  features2.from_num)
+                                  features2.from_num, file_path.split('\\')[-1],
+                                  url_file)
 
         iteration += 1
         print(' {:.2%}'.format(iteration / count_iter), end="\r")
@@ -160,7 +161,8 @@ elif mode == 1:
                 print_compare_res(metrics, total_similarity, best_shift,
                                   matrix, features1.structure,
                                   features2.structure, features1.from_num,
-                                  features2.from_num)
+                                  features2.from_num, filename.split('/')[-1],
+                                  filename2.split('/')[-1])
 
             iterration += 1
             print('  {:.2%}'.format(iterration / iterrations), end="\r")

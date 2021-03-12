@@ -32,7 +32,11 @@ def get_python_files_links(start_link):
     url_links = []
     req = requests.get(start_link, headers=HEADERS)
     req = req.json()
-    if type(req) == list:
+    if type(req) == dict:
+        if 'message' in req.keys():
+            print(req['message'])
+            exit()
+    elif type(req) == list:
         for el in req:
             if el['size'] != 0 and el['name'].endswith('.py') and len(el['name']) > 3:
                 url_links.append(el['url'])
@@ -46,7 +50,13 @@ def get_python_files_links(start_link):
 
 def get_code(link):
     req = requests.get(link, headers=HEADERS)
-    file_byts = base64.b64decode(req.json()['content'])
+    req = req.json()
+    if type(req) == dict:
+        if 'message' in req.keys():
+            print(req['message'])
+            exit()
+
+    file_bytes = base64.b64decode(req['content'])
     file_str = file_bytes.decode('utf-8')
 
     return file_str
