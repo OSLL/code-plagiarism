@@ -12,7 +12,7 @@ from time import perf_counter
 from src.pyplag.tree import ASTFeatures, get_AST
 from src.pyplag.metric import nodes_metric, run_compare
 from src.pyplag.metric import op_shift_metric, get_children_ind
-from src.github_helper.utils import get_list_of_repos
+from src.github_helper.utils import get_list_of_repos, select_repos
 from src.github_helper.utils import get_python_files_links, get_code
 # from src.pyplag.metric import *
 
@@ -57,15 +57,17 @@ def print_compare_res(metrics, total_similarity, best_shift,
 
 directory = 'py/'
 if len(sys.argv) > 2:
-    if sys.argv[2] == '-g':
-        file_path = sys.argv[1]
-        mode = 0
+    file_path = sys.argv[1]
+    reg_exp = sys.argv[2]
+    mode = 0
 elif len(sys.argv) == 2:
     directory = sys.argv[1]
     mode = 1
     if not os.path.exists(directory):
         print('Directory isn\'t exist')
         exit()
+elif len(sys.argv) == 1:
+    exit()
 
 start_eval = perf_counter()
 weights = np.array([1.5, 0.8, 0.9, 0.5, 0.3], dtype=np.float32)
@@ -85,11 +87,18 @@ if mode == 0:
 
     iteration = 0
     repos, repos_url = get_list_of_repos()
-    count_iter = len(repos_url)
+    repos, repos_url = select_repos(repos, repos_url, reg_exp)
+    count_iter = len(repos)
     for repo_url in repos_url:
         url_files_in_repo = get_python_files_links(repo_url + '/contents')
+        inner_iter = 0
+        inner_iters = len(url_files_in_repo)
         for url_file in url_files_in_repo:
-            tree2 = ast.parse(get_code(url_file))
+            try:
+                tree2 = ast.parse(get_code(url_file))
+            except:
+                print('Not compiled: ', url_file)
+                continue
             features2 = ASTFeatures()
             features2.visit(tree2)
             metrics, best_shift, matrix = run_compare(features1.structure,
@@ -111,8 +120,12 @@ if mode == 0:
                                   features2.from_num, file_path.split('\\')[-1],
                                   url_file)
 
+            inner_iter += 1
+            print('In repo {:.2%}, In repos {:.2%}'.format(inner_iter / inner_iters,
+                                                           iteration / count_iter), end="\r")
         iteration += 1
-        print(' {:.2%}'.format(iteration / count_iter), end="\r")
+        print(" " * 40, end="\r")
+        print('In repos {:.2%}'.format(iteration / count_iter), end="\r")
 elif mode == 1:
     files = os.listdir(directory)
     files = list(filter(lambda x: (x.endswith('.py')), files))

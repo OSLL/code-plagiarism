@@ -1,6 +1,7 @@
 import requests
 import numpy as np
 import base64
+import re
 from src.github_helper.const import HEADERS, OWNER
 
 
@@ -60,3 +61,13 @@ def get_code(link):
     file_str = file_bytes.decode('utf-8')
 
     return file_str
+
+def select_repos(repos, repos_url, reg_exp):
+    upprooved_repos = []
+    upprooved_repos_links = []
+    for repo, repo_url in zip(repos, repos_url):
+        if(re.search(reg_exp, repo) is not None):
+            upprooved_repos.append(repo)
+            upprooved_repos_links.append(repo_url)
+
+    return upprooved_repos, upprooved_repos_links
