@@ -2,7 +2,9 @@ import requests
 import numpy as np
 import base64
 import re
+
 from src.github_helper.const import HEADERS, OWNER
+from termcolor import colored
 
 
 def get_list_of_repos():
@@ -15,7 +17,9 @@ def get_list_of_repos():
     while page != []:
         if type(page) == dict:
             if 'message' in page.keys():
-                print(page['message'])
+                print()
+                print(colored(page['message']), 'red')
+                print()
                 exit()
 
         for repo in page:
@@ -35,16 +39,18 @@ def get_python_files_links(start_link):
     req = req.json()
     if type(req) == dict:
         if 'message' in req.keys():
-            print(req['message'])
+            print()
+            print(start_link)
+            print(colored(req['message'], 'red'))
+            print()
             exit()
     elif type(req) == list:
         for el in req:
             if el['size'] != 0 and el['name'].endswith('.py') and len(el['name']) > 3:
                 url_links.append(el['url'])
                 continue
-            url_links.extend(get_python_files_links(el['url']))
-    elif 'size' in req.keys() and req['size'] == 0:
-        url_links.extend(get_python_files_links(req['url']))
+            if 'size' in el.keys() and el['size'] == 0:
+                url_links.extend(get_python_files_links(el['url']))
 
     return url_links
 
@@ -54,7 +60,10 @@ def get_code(link):
     req = req.json()
     if type(req) == dict:
         if 'message' in req.keys():
-            print(req['message'])
+            print()
+            print(link)
+            print(colored(req['message'], 'red'))
+            print()
             exit()
 
     file_bytes = base64.b64decode(req['content'])

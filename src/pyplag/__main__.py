@@ -14,6 +14,7 @@ from src.pyplag.metric import nodes_metric, run_compare
 from src.pyplag.metric import op_shift_metric, get_children_ind
 from src.github_helper.utils import get_list_of_repos, select_repos
 from src.github_helper.utils import get_python_files_links, get_code
+from termcolor import colored
 # from src.pyplag.metric import *
 
 
@@ -74,7 +75,14 @@ weights = np.array([1.5, 0.8, 0.9, 0.5, 0.3], dtype=np.float32)
 if mode == 0:
     try:
         with open(file_path) as f:
-            tree1 = ast.parse(f.read())
+            try:
+                tree1 = ast.parse(f.read())
+            except Exception as e:
+                print(colored('Not compiled: ' + file_path, 'red'))
+                print(colored(e.__class__.__name__, 'red'))
+                for el in e.args:
+                    print(colored(el, 'red'))
+                exit()
     except PermissionError:
         print("File denied.")
         exit()
@@ -90,15 +98,34 @@ if mode == 0:
     repos, repos_url = select_repos(repos, repos_url, reg_exp)
     count_iter = len(repos)
     for repo_url in repos_url:
+        print(repo_url)
         url_files_in_repo = get_python_files_links(repo_url + '/contents')
         inner_iter = 0
         inner_iters = len(url_files_in_repo)
         for url_file in url_files_in_repo:
             try:
                 tree2 = ast.parse(get_code(url_file))
-            except:
-                print('Not compiled: ', url_file)
+            except IndentationError as err:
+                print(colored('Not compiled: ' + url_file, 'red'))
+                print(colored('IdentationError: ' + err.args[0], 'red'))
+                print(colored('In line ' + str(err.args[1][1]), 'red'))
+                print()
                 continue
+            except SyntaxError as err:
+                print(colored('Not compiled: ' + url_file, 'red'))
+                print(colored('SyntaxError: ' + err.args[0], 'red'))
+                print(colored('In line ' + str(err.args[1][1]), 'red'))
+                print(colored('In column ' + str(err.args[1][2]), 'red'))
+                print()
+                continue
+            except Exception as e:
+                print(colored('Not compiled: ' + url_file, 'red'))
+                print(colored(e.__class__.__name__, 'red'))
+                for el in e.args:
+                    print(colored(el, 'red'))
+                print()
+                continue
+
             features2 = ASTFeatures()
             features2.visit(tree2)
             metrics, best_shift, matrix = run_compare(features1.structure,

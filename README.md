@@ -46,10 +46,16 @@
 ## 4. Work with analyzers
 
 - python analyzer
+  > Compare all files in folder
   ```
     $ python3 src/pyplag <path/to/folder/with/py/files>
   ```
+  > Compare one files with files in git repositories
+  ```
+    $ python3 src/pyplag <path/to/file/which/compare> <reg_exp>
+  ```
 - C++/C analyzer
+  > Compare all files in folder
   ```
     $ python3 src/cplag <path/to/folder/with/cpp/or/cc/files>
   ```
