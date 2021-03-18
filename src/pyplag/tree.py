@@ -7,6 +7,7 @@ import numba
 from numba import njit
 from numba.typed import List, Dict
 from numba.core import types
+from termcolor import colored
 
 from src.pyplag.const import IGNORE_NODES, OPERATORS, KEYWORDS, LITERALS
 
@@ -185,8 +186,43 @@ def get_AST(filename):
         return None
 
     tree = None
-    with open(filename) as f:
-        tree = ast.parse(f.read())
+    try:
+        
+        with open(filename) as f:
+            try:
+                tree = ast.parse(f.read())
+            except IndentationError as err:
+                print('-' * 40)
+                print(colored('Not compiled: ' + filename, 'red'))
+                print(colored('IdentationError: ' + err.args[0], 'red'))
+                print(colored('In line ' + str(err.args[1][1]), 'red'))
+                print('-' * 40)
+            except SyntaxError as err:
+                print('-' * 40)
+                print(colored('Not compiled: ' + filename, 'red'))
+                print(colored('SyntaxError: ' + err.args[0], 'red'))
+                print(colored('In line ' + str(err.args[1][1]), 'red'))
+                print(colored('In column ' + str(err.args[1][2]), 'red'))
+                print('-' * 40)
+            except TabError as err:
+                print('-' * 40)
+                print(colored('Not compiled: ' + filename, 'red'))
+                print(colored('TabError: ' + err.args[0], 'red'))
+                print(colored('In line ' + str(err.args[1][1]), 'red'))
+                print('-' * 40)
+            except Exception as e:
+                print('-' * 40)
+                print(colored('Not compiled: ' + filename, 'red'))
+                print(colored(e.__class__.__name__, 'red'))
+                for el in e.args:
+                    print(colored(el, 'red'))
+                print('-' * 40)
+    except PermissionError:
+        print("File denied.")
+        exit()
+    except FileNotFoundError:
+        print("File not found")
+        exit()
 
     return tree
 

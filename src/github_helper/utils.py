@@ -1,5 +1,4 @@
 import requests
-import numpy as np
 import base64
 import re
 
@@ -8,6 +7,11 @@ from termcolor import colored
 
 
 def get_list_of_repos():
+    '''
+        Function return list of repos which belongs to user
+        defined in const.py in field OWNER and list of urls to this repos
+        Also required to define ACCESS_TOKEN
+    '''
     repos = []
     repos_url = []
 
@@ -34,6 +38,11 @@ def get_list_of_repos():
 
 
 def get_python_files_links(start_link):
+    '''
+        Function return list of urls to all python files in repository
+
+        start_link: str - link to repository contents in api.github.com
+    '''
     url_links = []
     req = requests.get(start_link, headers=HEADERS)
     req = req.json()
@@ -46,7 +55,8 @@ def get_python_files_links(start_link):
             exit()
     elif type(req) == list:
         for el in req:
-            if el['size'] != 0 and el['name'].endswith('.py') and len(el['name']) > 3:
+            if (el['size'] != 0 and el['name'].endswith('.py') and
+               len(el['name']) > 3):
                 url_links.append(el['url'])
                 continue
             if 'size' in el.keys() and el['size'] == 0:
@@ -56,6 +66,11 @@ def get_python_files_links(start_link):
 
 
 def get_code(link):
+    '''
+        Function return code of python file which located at the link
+
+        link: str - link to python file in api.github.com
+    '''
     req = requests.get(link, headers=HEADERS)
     req = req.json()
     if type(req) == dict:
@@ -70,6 +85,7 @@ def get_code(link):
     file_str = file_bytes.decode('utf-8')
 
     return file_str
+
 
 def select_repos(repos, repos_url, reg_exp):
     upprooved_repos = []
