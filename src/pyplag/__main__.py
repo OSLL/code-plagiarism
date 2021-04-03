@@ -11,6 +11,7 @@ from src.pyplag.tree import ASTFeatures, get_AST
 from src.pyplag.metric import run_compare, get_children_ind
 from src.github_helper.utils import get_list_of_repos, select_repos
 from src.github_helper.utils import get_python_files_links, get_code
+from src.github_helper.utils import get_github_api_link
 from termcolor import colored
 # from src.pyplag.metric import *
 
@@ -70,10 +71,25 @@ elif len(sys.argv) == 2:
 elif len(sys.argv) == 1:
     exit()
 
+tree1 = None
 start_eval = perf_counter()
 weights = np.array([1.5, 0.8, 0.9, 0.5, 0.3], dtype=np.float32)
 if mode == 0:
-    tree1 = get_AST(file_path)
+    if file_path.startswith('https://'):
+        file_link = get_github_api_link(file_path)
+        try:
+            tree1 = ast.parse(get_code(file_link))
+        except Exception as e:
+            print('-' * 40)
+            print(colored('Not compiled: ' + file_link, 'red'))
+            print(colored(e.__class__.__name__, 'red'))
+            for el in e.args:
+                print(colored(el, 'red'))
+            print('-' * 40)
+            exit()
+    else:
+        tree1 = get_AST(file_path)
+
     if tree1 is None:
         exit()
 
@@ -113,6 +129,7 @@ if mode == 0:
                 print(colored('TabError: ' + err.args[0], 'red'))
                 print(colored('In line ' + str(err.args[1][1]), 'red'))
                 print('-' * 40)
+                continue
             except Exception as e:
                 print('-' * 40)
                 print(colored('Not compiled: ' + url_file, 'red'))
@@ -153,6 +170,7 @@ if mode == 0:
                                                             count_iter)),
                   end="\r")
         iteration += 1
+        print(repo_url, " ... OK")
         print(" " * 40, end="\r")
         print('In repos {:.2%}'.format(iteration / count_iter), end="\r")
 elif mode == 1:

@@ -50,9 +50,13 @@
   ```
     $ python3 src/pyplag <path/to/folder/with/py/files>
   ```
-  > Compare one files with files in git repositories
+  > Compare file in folder with files in github repositories
   ```
     $ python3 src/pyplag <path/to/file/which/compare> <reg_exp>
+  ```
+  > Compare file by link on github starts with https:// with files in github repositories
+  ```
+    $ python3 src/pyplag <link/to/file/which/compare> <reg_exp>
   ```
 - C++/C analyzer
   > Compare all files in folder
