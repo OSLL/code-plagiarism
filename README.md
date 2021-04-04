@@ -8,10 +8,6 @@
 
 - Python PEP8 style ([guide](https://www.python.org/dev/peps/pep-0008/))
 
-### 1.2. Taskboard
-
-- Trello [invite](https://trello.com/invite/b/sovrr5dJ/afd614ed4dc319c14986e1792b53d896/identifying-plagiarism-in-source-code)
-
 ## 2. Install requirements
 
 - python version 3.6+ or even 3.8+
@@ -32,7 +28,7 @@
   ```
     $ python3 test/cplag -v
   ```
-- Testing for python analyzer
+- Testing for python analyzer (Temporarily not working)
   > Test of pyplag functions
   ```
     $ python3 test/pyplag
