@@ -16,7 +16,8 @@ def get_list_of_repos():
     repos_url = []
 
     page_num = 1
-    url = f"https://api.github.com/orgs/{OWNER}/repos?page={page_num}&per_page=100"
+    url = (f"https://api.github.com/orgs/{OWNER}" +
+           f"/repos?page={page_num}&per_page=100")
     page = requests.get(url, headers=HEADERS).json()
     while page != []:
         if type(page) == dict:
@@ -31,7 +32,8 @@ def get_list_of_repos():
             repos_url.append(repo['url'])
 
         page_num += 1
-        url = f"https://api.github.com/orgs/{OWNER}/repos?page={page_num}&per_page=100"
+        url = (f"https://api.github.com/orgs/{OWNER}" +
+               f"/repos?page={page_num}&per_page=100")
         page = requests.get(url, headers=HEADERS).json()
 
     return repos, repos_url
@@ -127,7 +129,8 @@ def get_github_api_link(link):
             break
 
     branch = link[start_ind + 3]
-    complete_link += '/'.join(link[start_ind:start_ind + 2] + ['contents'] + link[start_ind + 4:])
+    complete_link += '/'.join((link[start_ind:start_ind + 2] + ['contents']
+                               + link[start_ind + 4:]))
     complete_link += '?ref={}'.format(branch)
 
     return complete_link

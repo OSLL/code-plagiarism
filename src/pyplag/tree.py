@@ -187,7 +187,6 @@ def get_AST(filename):
 
     tree = None
     try:
-        
         with open(filename) as f:
             try:
                 tree = ast.parse(f.read())
