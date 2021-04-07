@@ -2,22 +2,23 @@ import context
 import ast
 import os
 import sys
-import datetime
 import numpy as np
 import pandas as pd
-pd.options.display.float_format = '{:,.2%}'.format
 
 from time import perf_counter
 # from src.pyplag.tree import *
 from src.pyplag.tree import ASTFeatures, get_AST
-from src.pyplag.metric import nodes_metric, run_compare
-from src.pyplag.metric import op_shift_metric, get_children_ind
+from src.pyplag.metric import run_compare, get_children_ind
 from src.github_helper.utils import get_list_of_repos, select_repos
 from src.github_helper.utils import get_python_files_links, get_code
+from src.github_helper.utils import get_github_api_link
+from termcolor import colored
 # from src.pyplag.metric import *
 
+pd.options.display.float_format = '{:,.2%}'.format
 
-def print_compare_res(metrics, total_similarity, best_shift, 
+
+def print_compare_res(metrics, total_similarity, best_shift,
                       matrix, struct1, struct2, to_names1, to_names2,
                       filename1, filename2):
     ch_inds1, count_of_children1 = get_children_ind(struct1, len(struct1))
@@ -55,6 +56,7 @@ def print_compare_res(metrics, total_similarity, best_shift,
 # 0 mode works with GitHub repositoryes
 # 1 mode works with directory in user computer
 
+
 directory = 'py/'
 if len(sys.argv) > 2:
     file_path = sys.argv[1]
@@ -69,17 +71,26 @@ elif len(sys.argv) == 2:
 elif len(sys.argv) == 1:
     exit()
 
+tree1 = None
 start_eval = perf_counter()
 weights = np.array([1.5, 0.8, 0.9, 0.5, 0.3], dtype=np.float32)
 if mode == 0:
-    try:
-        with open(file_path) as f:
-            tree1 = ast.parse(f.read())
-    except PermissionError:
-        print("File denied.")
-        exit()
-    except FileNotFoundError:
-        print("File not found")
+    if file_path.startswith('https://'):
+        file_link = get_github_api_link(file_path)
+        try:
+            tree1 = ast.parse(get_code(file_link))
+        except Exception as e:
+            print('-' * 40)
+            print(colored('Not compiled: ' + file_link, 'red'))
+            print(colored(e.__class__.__name__, 'red'))
+            for el in e.args:
+                print(colored(el, 'red'))
+            print('-' * 40)
+            exit()
+    else:
+        tree1 = get_AST(file_path)
+
+    if tree1 is None:
         exit()
 
     features1 = ASTFeatures()
@@ -90,15 +101,44 @@ if mode == 0:
     repos, repos_url = select_repos(repos, repos_url, reg_exp)
     count_iter = len(repos)
     for repo_url in repos_url:
+        print(repo_url)
         url_files_in_repo = get_python_files_links(repo_url + '/contents')
         inner_iter = 0
         inner_iters = len(url_files_in_repo)
         for url_file in url_files_in_repo:
             try:
                 tree2 = ast.parse(get_code(url_file))
-            except:
-                print('Not compiled: ', url_file)
+            except IndentationError as err:
+                print('-' * 40)
+                print(colored('Not compiled: ' + url_file, 'red'))
+                print(colored('IdentationError: ' + err.args[0], 'red'))
+                print(colored('In line ' + str(err.args[1][1]), 'red'))
+                print('-' * 40)
                 continue
+            except SyntaxError as err:
+                print('-' * 40)
+                print(colored('Not compiled: ' + url_file, 'red'))
+                print(colored('SyntaxError: ' + err.args[0], 'red'))
+                print(colored('In line ' + str(err.args[1][1]), 'red'))
+                print(colored('In column ' + str(err.args[1][2]), 'red'))
+                print('-' * 40)
+                continue
+            except TabError as err:
+                print('-' * 40)
+                print(colored('Not compiled: ' + url_file, 'red'))
+                print(colored('TabError: ' + err.args[0], 'red'))
+                print(colored('In line ' + str(err.args[1][1]), 'red'))
+                print('-' * 40)
+                continue
+            except Exception as e:
+                print('-' * 40)
+                print(colored('Not compiled: ' + url_file, 'red'))
+                print(colored(e.__class__.__name__, 'red'))
+                for el in e.args:
+                    print(colored(el, 'red'))
+                print('-' * 40)
+                continue
+
             features2 = ASTFeatures()
             features2.visit(tree2)
             metrics, best_shift, matrix = run_compare(features1.structure,
@@ -115,15 +155,22 @@ if mode == 0:
 
             if total_similarity > 0.72:
                 print_compare_res(metrics, total_similarity, best_shift,
-                                  matrix, features1.structure,
-                                  features2.structure, features1.from_num,
-                                  features2.from_num, file_path.split('\\')[-1],
+                                  matrix,
+                                  features1.structure,
+                                  features2.structure,
+                                  features1.from_num,
+                                  features2.from_num,
+                                  file_path.split('\\')[-1],
                                   url_file)
 
             inner_iter += 1
-            print('In repo {:.2%}, In repos {:.2%}'.format(inner_iter / inner_iters,
-                                                           iteration / count_iter), end="\r")
+            print('In repo {:.2%}, In repos {:.2%}'.format((inner_iter /
+                                                            inner_iters),
+                                                           (iteration /
+                                                            count_iter)),
+                  end="\r")
         iteration += 1
+        print(repo_url, " ... OK")
         print(" " * 40, end="\r")
         print('In repos {:.2%}'.format(iteration / count_iter), end="\r")
 elif mode == 1:
@@ -150,7 +197,10 @@ elif mode == 1:
 
             tree1 = get_AST(filename)
             tree2 = get_AST(filename2)
-            if tree1 is None or tree2 is None:
+
+            if tree1 is None:
+                break
+            if tree2 is None:
                 continue
 
             features1 = ASTFeatures()
