@@ -1,13 +1,11 @@
 import context
 
 import ast
-import os
 import numpy as np
 import numba
 from numba import njit
 from numba.typed import List, Dict
 from numba.core import types
-from termcolor import colored
 
 from src.pyplag.const import IGNORE_NODES, OPERATORS, KEYWORDS, LITERALS
 
@@ -82,6 +80,23 @@ class ASTFeatures(ast.NodeVisitor):
             self.curr_depth -= 1
 
 
+@njit(fastmath=True)
+def get_children_ind(tree, count_of_nodes):
+    count_of_children = 0
+    if count_of_nodes == 0:
+        return None, count_of_children
+
+    ind = List([0])
+    count_of_children = 1
+    curr_level = tree[0][0]
+    for i in np.arange(1, count_of_nodes, 1):
+        if curr_level == tree[i][0]:
+            ind.append(i)
+            count_of_children += 1
+
+    return ind, count_of_children
+
+
 # YAGNI
 class OpKwCounter(ast.NodeVisitor):
     def __init__(self):
@@ -141,107 +156,6 @@ class Visitor(ast.NodeVisitor):
             self.depth -= 1
 
 
-# YAGNI
-class NodeGetter(ast.NodeVisitor):
-    def __init__(self):
-        self.depth = 0
-        self.nodes = []
-
-    def visit(self, node):
-        '''
-            Function for visiting node's children
-            @param node - current node
-        '''
-        if self.depth > 1:
-            return
-        self.generic_visit(node)
-
-    def generic_visit(self, node):
-        '''
-            Function for traverse and print in console names of all
-            node's children
-            @param node - current node
-        '''
-        type_node = (type(node).__name__)
-        if type_node not in IGNORE_NODES:
-            if self.depth == 1:
-                self.nodes.append(node)
-
-            self.depth += 1
-            ast.NodeVisitor.generic_visit(self, node)
-            self.depth -= 1
-
-
-def get_AST(filename):
-    '''
-        Function return ast which has type ast.Module
-        @param filename - full path to file with code which will have
-        analyzed
-    '''
-    if type(filename) is not str:
-        return TypeError
-
-    if not os.path.isfile(filename):
-        print(filename, "Is not a file / doesn't exist")
-        return None
-
-    tree = None
-    try:
-        with open(filename) as f:
-            try:
-                tree = ast.parse(f.read())
-            except IndentationError as err:
-                print('-' * 40)
-                print(colored('Not compiled: ' + filename, 'red'))
-                print(colored('IdentationError: ' + err.args[0], 'red'))
-                print(colored('In line ' + str(err.args[1][1]), 'red'))
-                print('-' * 40)
-            except SyntaxError as err:
-                print('-' * 40)
-                print(colored('Not compiled: ' + filename, 'red'))
-                print(colored('SyntaxError: ' + err.args[0], 'red'))
-                print(colored('In line ' + str(err.args[1][1]), 'red'))
-                print(colored('In column ' + str(err.args[1][2]), 'red'))
-                print('-' * 40)
-            except TabError as err:
-                print('-' * 40)
-                print(colored('Not compiled: ' + filename, 'red'))
-                print(colored('TabError: ' + err.args[0], 'red'))
-                print(colored('In line ' + str(err.args[1][1]), 'red'))
-                print('-' * 40)
-            except Exception as e:
-                print('-' * 40)
-                print(colored('Not compiled: ' + filename, 'red'))
-                print(colored(e.__class__.__name__, 'red'))
-                for el in e.args:
-                    print(colored(el, 'red'))
-                print('-' * 40)
-    except PermissionError:
-        print("File denied.")
-        exit()
-    except FileNotFoundError:
-        print("File not found")
-        exit()
-
-    return tree
-
-
-# Tested
-# YAGNI
-def get_nodes(tree):
-    '''
-        Function return all tree's nodes
-        @param tree - One of the nodes of the AST type whose nodes we
-        want to receive
-    '''
-    if not isinstance(tree, ast.AST):
-        return TypeError
-
-    traverser = NodeGetter()
-    traverser.visit(tree)
-    return traverser.nodes
-
-
 # Tested
 # YAGNI
 def get_count_of_nodes(tree):
@@ -256,72 +170,3 @@ def get_count_of_nodes(tree):
     traverser = Visitor()
     traverser.visit(tree)
     return traverser.count_of_nodes
-
-
-@njit(fastmath=True)
-def get_children_ind(tree, count_of_nodes):
-    count_of_children = 0
-    if count_of_nodes == 0:
-        return None, count_of_children
-
-    ind = List([0])
-    count_of_children = 1
-    curr_level = tree[0][0]
-    for i in np.arange(1, count_of_nodes, 1):
-        if curr_level == tree[i][0]:
-            ind.append(i)
-            count_of_children += 1
-
-    return ind, count_of_children
-
-
-# Tested
-@njit(fastmath=True)
-def find_max_index(array):
-    '''
-        Function for finding index of max element in matrix
-        @param array - matrix of compliance (np.ndarray object)
-    '''
-    # if (not isinstance(array, np.ndarray) or type(len1) is not int
-    #    or type(len2) is not int):
-    #    return TypeError
-
-    maximum = 0
-    index = numba.int32([0, 0])
-    for i in np.arange(0, array.shape[0], 1):
-        for j in np.arange(0, array.shape[1], 1):
-            if array[i][j][1] == 0:
-                continue
-            value = array[i][j][0] / array[i][j][1]
-            if value > maximum:
-                maximum = value
-                index[0] = i
-                index[1] = j
-
-    return index
-
-
-# YAGNI
-def getn_count_nodes(len_min, len_max, indexes, axis, children):
-    '''
-        Function return count of not accounted nodes
-        @param len_min - length of less node
-        @param len_max - length of longer node
-        @param indexes - indexes of metrics taken into account list of tuples
-        @param axis - if 0 then iteration on row
-        if 1 then iteration on column
-        @param children - list of nodes of type ast
-    '''
-    added = [indexes[i][axis] for i in np.arange(0, len_min, 1)]
-
-    count = 0
-    for i in np.arange(0, len_max, 1):
-        if i not in added:
-            count += get_count_of_nodes(children[i]) + 1
-
-    return count
-
-
-@njit(fastmath=True)
-def get_from_tree(tree, start, finish):
-    return tree[start:finish]
