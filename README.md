@@ -16,6 +16,10 @@
 
 - pip3 install -r ./requirements.txt
 
+- sudo apt install clang
+
+- sudo apt install libncurses5
+
 ## 3. Tests
 
 - Testing for C/C++ analyzer
