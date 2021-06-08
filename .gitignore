@@ -41,3 +41,4 @@
 __pycache__
 /logs/*.txt
 /docs/*
+.env

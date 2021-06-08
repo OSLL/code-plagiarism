@@ -2,9 +2,12 @@ import requests
 import base64
 import re
 
-from src.github_helper.const import HEADERS, OWNER
 from termcolor import colored
+from decouple import config
 
+OWNER = config('OWNER', default='')
+ACCESS_TOKEN = config('ACCESS_TOKEN', default='')
+HEADERS = {'Authorization': "Token " + ACCESS_TOKEN}
 
 def get_list_of_repos():
     '''
