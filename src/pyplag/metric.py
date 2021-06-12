@@ -7,7 +7,6 @@ from src.pyplag.tfeatures import get_children_ind
 from src.pyplag.other import get_from_tree, matrix_value
 
 
-# Tested
 @njit(fastmath=True)
 def nodes_metric(res1, res2):
     '''
@@ -39,7 +38,6 @@ def nodes_metric(res1, res2):
     return percent_of_same[0] / percent_of_same[1]
 
 
-# Tested
 @njit(fastmath=True)
 def struct_compare(tree1, tree2, matrix=np.array([[[]]])):
     '''
@@ -124,7 +122,6 @@ def struct_compare(tree1, tree2, matrix=np.array([[[]]])):
     return same_struct_metric
 
 
-# Tested
 @njit(fastmath=True)
 def op_shift_metric(ops1, ops2):
     '''

@@ -19,15 +19,15 @@ class ASTFeatures(ast.NodeVisitor):
         self.seq_ops = List(['tmp'])
         self.seq_ops.clear()
         self.operators = Dict.empty(key_type=types.unicode_type,
-                                    value_type=types.int64)
+                                    value_type=types.int32)
         self.keywords = Dict.empty(key_type=types.unicode_type,
-                                   value_type=types.int64)
+                                   value_type=types.int32)
         self.literals = Dict.empty(key_type=types.unicode_type,
-                                   value_type=types.int64)
+                                   value_type=types.int32)
         # uniq nodes
         self.unodes = Dict.empty(key_type=types.unicode_type,
-                                 value_type=types.int64)
-        self.from_num = Dict.empty(key_type=types.int64,
+                                 value_type=types.int32)
+        self.from_num = Dict.empty(key_type=types.int32,
                                    value_type=types.unicode_type)
         # count of uniq nodes
         self.cunodes = numba.int32(0)
