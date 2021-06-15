@@ -32,7 +32,7 @@
   ```
     $ python3 test/cplag -v
   ```
-- Testing for python analyzer (Temporarily not working)
+- Testing for python analyzer
   > Test of pyplag functions
   ```
     $ python3 test/pyplag

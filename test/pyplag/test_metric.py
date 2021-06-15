@@ -10,12 +10,12 @@ from src.pyplag.metric import nodes_metric, struct_compare
 from src.pyplag.metric import op_shift_metric
 from src.pyplag.tfeatures import ASTFeatures, get_children_ind
 from src.pyplag.utils import get_AST
-from test.pyplag.util import prepare_trees
+# from test.pyplag.util import prepare_trees
 
 
 class TestMetric(unittest.TestCase):
-    def init(self, file1 = "", file2 = ""):
-        return prepare_trees(file1, file2)
+    # def init(self, file1 = "", file2 = ""):
+    #     return prepare_trees(file1, file2)
 
 
     def test_nodes_metric_normal(self):

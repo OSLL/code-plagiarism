@@ -10,7 +10,6 @@ from src.pyplag.const import IGNORE_NODES
 from src.pyplag.tfeatures import get_count_of_nodes
 
 
-# Tested
 @njit(fastmath=True)
 def find_max_index(array):
     '''
