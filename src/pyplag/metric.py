@@ -39,7 +39,7 @@ def nodes_metric(res1, res2):
 
 
 @njit(fastmath=True)
-def struct_compare(tree1, tree2, matrix=np.array([[[]]])):
+def struct_compare(tree1, tree2, matrix=np.array([[[]]]), dtype=np.int64):
     '''
         Function for compare structure of two trees
         @param tree1 - ast object
@@ -64,7 +64,7 @@ def struct_compare(tree1, tree2, matrix=np.array([[[]]])):
         return [1, (count_of_nodes1 + 1)]
 
     array = np.zeros((count_of_children1, count_of_children2, 2),
-                     dtype=np.int32)
+                     dtype=np.int64)
 
     for i in np.arange(0, count_of_children1 - 1, 1):
         for j in np.arange(0, count_of_children2 - 1, 1):

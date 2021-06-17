@@ -10,44 +10,40 @@ from src.pyplag.metric import nodes_metric, struct_compare
 from src.pyplag.metric import op_shift_metric
 from src.pyplag.tfeatures import ASTFeatures, get_children_ind
 from src.pyplag.utils import get_AST
-# from test.pyplag.util import prepare_trees
 
 
 class TestMetric(unittest.TestCase):
-    # def init(self, file1 = "", file2 = ""):
-    #     return prepare_trees(file1, file2)
-
 
     def test_nodes_metric_normal(self):
         example1 = Dict.empty(key_type=types.unicode_type,
-                              value_type=types.int32)
+                              value_type=types.int64)
         for key, value in {'a': 2, 'b':1, 'c':5, 'd':7}.items():
-            example1[key] = numba.int32(value)
+            example1[key] = numba.int64(value)
 
         example2 = Dict.empty(key_type=types.unicode_type,
-                              value_type=types.int32)
+                              value_type=types.int64)
         for key, value in {'a':10, 'c':8, 'e':2, 'f':12}.items():
-            example2[key] = numba.int32(value)
+            example2[key] = numba.int64(value)
 
         example3 = Dict.empty(key_type=types.unicode_type,
-                              value_type=types.int32)
+                              value_type=types.int64)
         for key, value in {'USub':3, 'Mor':3, 'Der':5}.items():
-            example3[key] = numba.int32(value)
+            example3[key] = numba.int64(value)
 
         example4 = Dict.empty(key_type=types.unicode_type,
-                              value_type=types.int32)
+                              value_type=types.int64)
         for key, value in {'USub':5, 'Mor':5, 'Ker':5}.items():
-            example4[key] = numba.int32(value)
+            example4[key] = numba.int64(value)
 
         res1 = nodes_metric(example1, example2)
         res2 = nodes_metric(example3, example4)
         res3 = nodes_metric(Dict.empty(key_type=types.unicode_type,
-                                       value_type=types.int32),
+                                       value_type=types.int64),
                             example4)
         res4 = nodes_metric(Dict.empty(key_type=types.unicode_type,
-                                       value_type=types.int32),
+                                       value_type=types.int64),
                             Dict.empty(key_type=types.unicode_type,
-                                    value_type=types.int32))
+                                    value_type=types.int64))
 
         self.assertEqual(res1, 0.175)
         self.assertEqual(res2, 0.3)
@@ -76,7 +72,7 @@ class TestMetric(unittest.TestCase):
         count_ch2 = (get_children_ind(features2.structure,
                                       len(features2.structure)))[1]
         compliance_matrix = np.zeros((count_ch1, count_ch2, 2),
-                                     dtype=np.int32)
+                                     dtype=np.int64)
         res = struct_compare(features1.structure, features2.structure,
                              compliance_matrix)
         self.assertEqual(res, [28, 34])
@@ -92,7 +88,7 @@ class TestMetric(unittest.TestCase):
         count_ch2 = (get_children_ind(features2.structure,
                                       len(features2.structure)))[1]
         compliance_matrix = np.zeros((count_ch1, count_ch2, 2),
-                                     dtype=np.int32)
+                                     dtype=np.int64)
         res = struct_compare(features1.structure, features2.structure,
                              compliance_matrix)
         self.assertEqual(res, [275, 336])
@@ -110,7 +106,7 @@ class TestMetric(unittest.TestCase):
         count_ch2 = (get_children_ind(features2.structure,
                                       len(features2.structure)))[1]
         compliance_matrix = np.zeros((count_ch1, count_ch2, 2),
-                                     dtype=np.int32)
+                                     dtype=np.int64)
         res = struct_compare(features1.structure, features2.structure,
                              compliance_matrix)
         self.assertEqual(res, [1, 34])
@@ -126,7 +122,7 @@ class TestMetric(unittest.TestCase):
         count_ch2 = (get_children_ind(features2.structure,
                                       len(features2.structure)))[1]
         compliance_matrix = np.zeros((count_ch1, count_ch2, 2),
-                                     dtype=np.int32)
+                                     dtype=np.int64)
         res = struct_compare(features1.structure, features2.structure,
                              compliance_matrix)
         self.assertEqual(res, [1, 28])

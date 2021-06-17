@@ -70,7 +70,7 @@ def run_compare(f_struct, s_struct, f_ops, s_ops,
                 f_kw, s_kw, f_lits, s_lits, f_seq_ops, s_seq_ops):
     count_ch1 = (get_children_ind(f_struct, len(f_struct)))[1]
     count_ch2 = (get_children_ind(s_struct, len(s_struct)))[1]
-    compliance_matrix = np.zeros((count_ch1, count_ch2, 2), dtype=np.int32)
+    compliance_matrix = np.zeros((count_ch1, count_ch2, 2), dtype=np.int64)
 
     struct_res = struct_compare(f_struct, s_struct, compliance_matrix)
     struct_res = struct_res[0] / struct_res[1]

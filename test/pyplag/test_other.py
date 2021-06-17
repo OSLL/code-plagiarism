@@ -6,20 +6,16 @@ import numba
 
 from numba.typed import List
 from src.pyplag.other import find_max_index, matrix_value, get_from_tree
-# from test.pyplag.util import prepare_trees
 
 class TestOther(unittest.TestCase):
 
-    # def init(self, file1 = "", file2 = ""):
-    #    return prepare_trees(file1, file2)
-
     def test_find_max_index_normal(self):
-        res1 = find_max_index(np.array([[[]]], dtype=np.int32))
+        res1 = find_max_index(np.array([[[]]], dtype=np.int64))
         res2 = find_max_index(np.array([[[3, 5], [6, 7]],
-                                        [[1, 1], [2, 3]]], dtype=np.int32))
+                                        [[1, 1], [2, 3]]], dtype=np.int64))
         res3 = find_max_index(np.array([[[1, 5], [17, 131]],
                                         [[1, 3], [25, 51]],
-                                        [[3, 8], [15, 29]]], dtype=np.int32))
+                                        [[3, 8], [15, 29]]], dtype=np.int64))
 
         self.assertEqual(res1[0], 0)
         self.assertEqual(res1[1], 0)
@@ -32,15 +28,15 @@ class TestOther(unittest.TestCase):
     def test_matrix_value_normal(self):
         value1, ind1 = matrix_value(np.array([[[3, 5], [6, 7]],
                                              [[1, 1], [2, 3]]],
-                                             dtype=np.int32))
+                                             dtype=np.int64))
         value2, ind2 = matrix_value(np.array([[[1, 5], [17, 131]],
                                              [[1, 3], [25, 51]],
                                              [[3, 8], [15, 29]]],
-                                             dtype=np.int32))
+                                             dtype=np.int64))
         value3, ind3 = matrix_value(np.array([[[1, 1], [2, 3], [3, 4]],
                                               [[25, 34], [33, 34], [5, 8]],
                                               [[10, 11], [1, 3], [2, 4]]],
-                                             dtype=np.int32))
+                                             dtype=np.int64))
 
         self.assertEqual(value1[0], 8)
         self.assertEqual(value1[1], 9)

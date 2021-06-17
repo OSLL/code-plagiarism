@@ -14,23 +14,23 @@ from src.pyplag.const import IGNORE_NODES, OPERATORS, KEYWORDS, LITERALS
 # чтобы экономить ресурсы
 class ASTFeatures(ast.NodeVisitor):
     def __init__(self):
-        self.curr_depth = numba.int32(0)
-        self.count_of_nodes = numba.int32(0)
+        self.curr_depth = 0
+        self.count_of_nodes = 0
         self.seq_ops = List(['tmp'])
         self.seq_ops.clear()
         self.operators = Dict.empty(key_type=types.unicode_type,
-                                    value_type=types.int32)
+                                    value_type=types.int64)
         self.keywords = Dict.empty(key_type=types.unicode_type,
-                                   value_type=types.int32)
+                                   value_type=types.int64)
         self.literals = Dict.empty(key_type=types.unicode_type,
-                                   value_type=types.int32)
+                                   value_type=types.int64)
         # uniq nodes
         self.unodes = Dict.empty(key_type=types.unicode_type,
-                                 value_type=types.int32)
-        self.from_num = Dict.empty(key_type=types.int32,
+                                 value_type=types.int64)
+        self.from_num = Dict.empty(key_type=types.int64,
                                    value_type=types.unicode_type)
         # count of uniq nodes
-        self.cunodes = numba.int32(0)
+        self.cunodes = 0
         self.structure = List([(1, 2)])
         self.structure.clear()
 
@@ -43,20 +43,20 @@ class ASTFeatures(ast.NodeVisitor):
         type_name = type(node).__name__
         if type_name in OPERATORS:
             if type_name not in self.operators:
-                self.operators[type_name] = numba.int32(1)
+                self.operators[type_name] = 1
             else:
-                self.operators[type_name] += numba.int32(1)
+                self.operators[type_name] += 1
             self.seq_ops.append(type_name)
         elif type_name in KEYWORDS:
             if type_name not in self.keywords:
-                self.keywords[type_name] = numba.int32(1)
+                self.keywords[type_name] = 1
             else:
-                self.keywords[type_name] += numba.int32(1)
+                self.keywords[type_name] += 1
         elif type_name in LITERALS:
             if type_name not in self.literals:
-                self.literals[type_name] = numba.int32(1)
+                self.literals[type_name] = 1
             else:
-                self.literals[type_name] += numba.int32(1)
+                self.literals[type_name] += 1
 
         if type_name not in IGNORE_NODES:
             if self.curr_depth != 0:
@@ -64,14 +64,14 @@ class ASTFeatures(ast.NodeVisitor):
                     if node.name not in self.unodes:
                         self.unodes[node.name] = self.cunodes
                         self.from_num[self.cunodes] = node.name
-                        self.cunodes += numba.int32(1)
+                        self.cunodes += 1
                     self.structure.append((self.curr_depth,
                                            self.unodes[node.name]))
                 else:
                     if type_name not in self.unodes:
                         self.unodes[type_name] = self.cunodes
                         self.from_num[self.cunodes] = type_name
-                        self.cunodes += numba.int32(1)
+                        self.cunodes += 1
                     self.structure.append((self.curr_depth,
                                            self.unodes[type_name]))
                 self.count_of_nodes += 1

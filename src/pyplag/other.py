@@ -21,7 +21,7 @@ def find_max_index(array):
     #    return TypeError
 
     maximum = 0
-    index = numba.int32([0, 0])
+    index = numba.int64([0, 0])
     for i in np.arange(0, array.shape[0], 1):
         for j in np.arange(0, array.shape[1], 1):
             if array[i][j][1] == 0:
