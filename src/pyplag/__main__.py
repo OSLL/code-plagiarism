@@ -181,7 +181,7 @@ elif mode == 1:
                                                       features2.literals,
                                                       features1.seq_ops,
                                                       features2.seq_ops)
-            total_similarity = np.sum(metrics * weights) / 4
+            total_similarity = np.sum(metrics * weights) / weights.sum()
 
             if total_similarity > 0.72:
                 print_compare_res(metrics, total_similarity, best_shift,
