@@ -2,12 +2,11 @@ import context
 
 import numpy as np
 from numba import njit
-from numba.typed import List
 
-from src.pyplag.tree import get_children_ind, find_max_index, get_from_tree
+from src.pyplag.tfeatures import get_children_ind
+from src.pyplag.other import get_from_tree, matrix_value
 
 
-# Tested
 @njit(fastmath=True)
 def nodes_metric(res1, res2):
     '''
@@ -40,47 +39,7 @@ def nodes_metric(res1, res2):
 
 
 @njit(fastmath=True)
-def matrix_value(array):
-    same_struct_metric = [1, 1]
-    minimal = min(array.shape[0], array.shape[1])
-    indexes = List()
-    for i in np.arange(0, minimal, 1):
-        ind = find_max_index(array)
-        indexes.append(ind)
-        same_struct_metric[0] += array[ind[0]][ind[1]][0]
-        same_struct_metric[1] += array[ind[0]][ind[1]][1]
-
-        for i in np.arange(0, array.shape[1], 1):
-            array[ind[0]][i] = [0, 0]
-        for j in np.arange(0, array.shape[0], 1):
-            array[j][ind[1]] = [0, 0]
-
-    return same_struct_metric, indexes
-
-
-@njit
-def run_compare(f_struct, s_struct, f_ops, s_ops,
-                f_kw, s_kw, f_lits, s_lits, f_seq_ops, s_seq_ops):
-    count_ch1 = (get_children_ind(f_struct, len(f_struct)))[1]
-    count_ch2 = (get_children_ind(s_struct, len(s_struct)))[1]
-    compliance_matrix = np.zeros((count_ch1, count_ch2, 2), dtype=np.int32)
-
-    struct_res = struct_compare(f_struct, s_struct, compliance_matrix)
-    struct_res = struct_res[0] / struct_res[1]
-    ops_res = nodes_metric(f_ops, s_ops)
-    kw_res = nodes_metric(f_kw, s_kw)
-    lits_res = nodes_metric(f_lits, s_lits)
-    best_shift, shift_res = op_shift_metric(f_seq_ops, s_seq_ops)
-    
-    metrics = np.array([struct_res, ops_res, kw_res, lits_res, shift_res],
-                       dtype=np.float32)
-
-    return metrics, best_shift, compliance_matrix
-
-
-# Tested
-@njit(fastmath=True)
-def struct_compare(tree1, tree2, matrix=np.array([[[]]])):
+def struct_compare(tree1, tree2, matrix=np.array([[[]]]), dtype=np.int64):
     '''
         Function for compare structure of two trees
         @param tree1 - ast object
@@ -105,7 +64,7 @@ def struct_compare(tree1, tree2, matrix=np.array([[[]]])):
         return [1, (count_of_nodes1 + 1)]
 
     array = np.zeros((count_of_children1, count_of_children2, 2),
-                     dtype=np.int32)
+                     dtype=np.int64)
 
     for i in np.arange(0, count_of_children1 - 1, 1):
         for j in np.arange(0, count_of_children2 - 1, 1):
@@ -163,7 +122,6 @@ def struct_compare(tree1, tree2, matrix=np.array([[[]]])):
     return same_struct_metric
 
 
-# Tested
 @njit(fastmath=True)
 def op_shift_metric(ops1, ops2):
     '''

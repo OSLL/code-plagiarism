@@ -7,8 +7,8 @@ import pandas as pd
 
 from time import perf_counter
 # from src.pyplag.tree import *
-from src.pyplag.tree import ASTFeatures, get_AST
-from src.pyplag.metric import run_compare, get_children_ind
+from src.pyplag.tfeatures import ASTFeatures
+from src.pyplag.utils import get_AST, run_compare, print_compare_res
 from src.github_helper.utils import get_list_of_repos, select_repos
 from src.github_helper.utils import get_python_files_links, get_code
 from src.github_helper.utils import get_github_api_link
@@ -17,45 +17,8 @@ from termcolor import colored
 
 pd.options.display.float_format = '{:,.2%}'.format
 
-
-def print_compare_res(metrics, total_similarity, best_shift,
-                      matrix, struct1, struct2, to_names1, to_names2,
-                      filename1, filename2):
-    ch_inds1, count_of_children1 = get_children_ind(struct1, len(struct1))
-    ch_inds2, count_of_children2 = get_children_ind(struct2, len(struct2))
-    indexes = [to_names1[struct1[ind][1]] for ind in ch_inds1]
-    columns = [to_names2[struct2[ind][1]] for ind in ch_inds2]
-    data = np.zeros((matrix.shape[0], matrix.shape[1]), dtype=np.float32)
-    for row in range(matrix.shape[0]):
-        for col in range(matrix.shape[1]):
-            data[row][col] = matrix[row][col][0] / matrix[row][col][1]
-    df = pd.DataFrame(data=data,
-                      index=indexes, columns=columns)
-
-    print("         ")
-    print('+' * 40)
-    print('May be similar:', filename1, filename2)
-    print("Total similarity -", '{:.2%}'.format(total_similarity))
-    print()
-    print('Structure is same by {:.2%}'.format(metrics[0]))
-    print(df, '\n')
-
-    text = 'Operators match percentage:'
-    print(text, '{:.2%}'.format(metrics[1]))
-    text = 'Keywords match percentage:'
-    print(text, '{:.2%}'.format(metrics[2]))
-    text = 'Literals match percentage:'
-    print(text, '{:.2%}'.format(metrics[3]))
-    print('---')
-    print('Op shift metric.')
-    print('Best op shift:', best_shift)
-    print('Persent same: {:.2%}'.format(metrics[4]))
-    print('---')
-    print('+' * 40)
-
 # 0 mode works with GitHub repositoryes
 # 1 mode works with directory in user computer
-
 
 directory = 'py/'
 if len(sys.argv) > 2:
