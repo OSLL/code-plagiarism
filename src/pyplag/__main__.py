@@ -104,16 +104,7 @@ if mode == 0:
 
             features2 = ASTFeatures()
             features2.visit(tree2)
-            metrics, best_shift, matrix = run_compare(features1.structure,
-                                                      features2.structure,
-                                                      features1.operators,
-                                                      features2.operators,
-                                                      features1.keywords,
-                                                      features2.keywords,
-                                                      features1.literals,
-                                                      features2.literals,
-                                                      features1.seq_ops,
-                                                      features2.seq_ops)
+            metrics, best_shift, matrix = run_compare(features1, features2)
             total_similarity = np.sum(metrics * weights) / 4
 
             if total_similarity > 0.72:
@@ -171,16 +162,7 @@ elif mode == 1:
             features1.visit(tree1)
             features2.visit(tree2)
 
-            metrics, best_shift, matrix = run_compare(features1.structure,
-                                                      features2.structure,
-                                                      features1.operators,
-                                                      features2.operators,
-                                                      features1.keywords,
-                                                      features2.keywords,
-                                                      features1.literals,
-                                                      features2.literals,
-                                                      features1.seq_ops,
-                                                      features2.seq_ops)
+            metrics, best_shift, matrix = run_compare(features1, features2)
             total_similarity = np.sum(metrics * weights) / weights.sum()
 
             if total_similarity > 0.72:

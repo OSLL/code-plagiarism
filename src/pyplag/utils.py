@@ -65,19 +65,21 @@ def get_AST(filename):
     return tree
 
 
-@njit
-def run_compare(f_struct, s_struct, f_ops, s_ops,
-                f_kw, s_kw, f_lits, s_lits, f_seq_ops, s_seq_ops):
-    count_ch1 = (get_children_ind(f_struct, len(f_struct)))[1]
-    count_ch2 = (get_children_ind(s_struct, len(s_struct)))[1]
+# @njit
+def run_compare(features_f, features_s):
+    count_ch1 = (get_children_ind(features_f.structure,
+                 len(features_f.structure)))[1]
+    count_ch2 = (get_children_ind(features_s.structure,
+                 len(features_s.structure)))[1]
     compliance_matrix = np.zeros((count_ch1, count_ch2, 2), dtype=np.int64)
 
-    struct_res = struct_compare(f_struct, s_struct, compliance_matrix)
+    struct_res = struct_compare(features_f.structure, features_s.structure,
+                                compliance_matrix)
     struct_res = struct_res[0] / struct_res[1]
-    ops_res = nodes_metric(f_ops, s_ops)
-    kw_res = nodes_metric(f_kw, s_kw)
-    lits_res = nodes_metric(f_lits, s_lits)
-    best_shift, shift_res = op_shift_metric(f_seq_ops, s_seq_ops)
+    ops_res = nodes_metric(features_f.operators, features_s.operators)
+    kw_res = nodes_metric(features_f.keywords, features_s.keywords)
+    lits_res = nodes_metric(features_f.literals, features_s.literals)
+    best_shift, shift_res = op_shift_metric(features_f.seq_ops, features_s.seq_ops)
 
     metrics = np.array([struct_res, ops_res, kw_res, lits_res, shift_res],
                        dtype=np.float32)
