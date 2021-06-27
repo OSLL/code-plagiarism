@@ -36,7 +36,7 @@ elif len(sys.argv) == 1:
 
 tree1 = None
 start_eval = perf_counter()
-weights = np.array([1.5, 0.8, 0.9, 0.5, 0.3], dtype=np.float32)
+weights = np.array([1, 0.8, 0.9, 0.5, 0.3], dtype=np.float32)
 if mode == 0:
     if file_path.startswith('https://'):
         file_link = get_github_api_link(file_path)
@@ -162,12 +162,12 @@ elif mode == 1:
             features1.visit(tree1)
             features2.visit(tree2)
 
-            metrics, best_shift, matrix = run_compare(features1, features2)
+            metrics, best_shift = run_compare(features1, features2)
             total_similarity = np.sum(metrics * weights) / weights.sum()
 
-            if total_similarity > 0.72:
+            if total_similarity > 0.7:
                 print_compare_res(metrics, total_similarity, best_shift,
-                                  matrix, features1.structure,
+                                  features1.structure,
                                   features2.structure, features1.from_num,
                                   features2.from_num, filename.split('/')[-1],
                                   filename2.split('/')[-1])

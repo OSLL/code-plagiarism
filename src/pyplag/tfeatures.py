@@ -103,6 +103,10 @@ def get_children_ind(tree, count_of_nodes):
     return ind, count_of_children
 
 
+def generate_ngrams(tokens, n=2):
+    return {tuple(tokens[i-n:i]) for i in range(n, len(tokens) + 1)}
+
+
 # YAGNI
 class OpKwCounter(ast.NodeVisitor):
     def __init__(self):
