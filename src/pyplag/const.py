@@ -26,6 +26,7 @@ NAMES = ('name', 'arg', 'id')
 # 11 - Handling errors
 # 12 - Imports
 # 13 - Loop's statements
+# 26 - Containers
 TO_TOKEN = {'UAdd': 0, 'USub': 0, 'Not': 0, 'Invert': 0,
             'Add': 1, 'Sub': 1, 'Mult': 1, 'Div': 1, 'FloorDiv': 1,
             'Mod': 1, 'Pow': 1, 'LShift': 1, 'Not': 1, 'RShift': 1,
@@ -46,5 +47,9 @@ TO_TOKEN = {'UAdd': 0, 'USub': 0, 'Not': 0, 'Invert': 0,
              'Global': 16, 'Nonlocal': 17, 'Exp': 18,
              'Lambda': 19, 'alias': 20, 'ExceptHandler': 21,
             'withitem': 22, 'arguments': 23, 'arg': 24,
-            'Await': 25
+            'Await': 25,
+            'Tuple': 26, 'Set': 26, 'Dict': 26, 'List': 26,
+            'Constant': 27, 'FormattedValue': 28, 'JoinedStr': 29, 'Num': 30,
+            'Str': 31, 'Bytes': 32, 'NameConstant': 33, 'Ellipsis': 34,
+            'Name': 35
             }

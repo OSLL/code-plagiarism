@@ -8,6 +8,7 @@ from numba.typed import List, Dict
 from numba.core import types
 
 from src.pyplag.const import IGNORE_NODES, OPERATORS, KEYWORDS, LITERALS
+from src.pyplag.const import TO_TOKEN
 
 
 # Можно сохранять название узлов только самого верхнего, первого уровня,
@@ -33,6 +34,8 @@ class ASTFeatures(ast.NodeVisitor):
         self.cunodes = 0
         self.structure = List([(1, 2)])
         self.structure.clear()
+        self.tokens = []
+
 
     def generic_visit(self, node):
         '''
@@ -41,6 +44,9 @@ class ASTFeatures(ast.NodeVisitor):
             @param node - current node
         '''
         type_name = type(node).__name__
+        if type_name in TO_TOKEN.keys():
+            self.tokens.append(TO_TOKEN[type_name])
+
         if type_name in OPERATORS:
             if type_name not in self.operators:
                 self.operators[type_name] = 1
