@@ -58,10 +58,8 @@ def get_AST(filename):
                 print('-' * 40)
     except PermissionError:
         print("File denied.")
-        exit()
     except FileNotFoundError:
         print("File not found")
-        exit()
 
     return tree
 
@@ -71,16 +69,16 @@ def run_compare(features_f, features_s):
     ops_res = nodes_metric(features_f.operators, features_s.operators)
     kw_res = nodes_metric(features_f.keywords, features_s.keywords)
     lits_res = nodes_metric(features_f.literals, features_s.literals)
-    best_shift, shift_res = op_shift_metric(features_f.seq_ops, features_s.seq_ops)
 
-    metrics = np.array([jakkar_coef, ops_res, kw_res, lits_res, shift_res],
+    metrics = np.array([jakkar_coef, ops_res, kw_res, lits_res],
                        dtype=np.float32)
 
-    return metrics, best_shift
+    return metrics
 
 
-def print_compare_res(metrics, total_similarity, best_shift,
+def print_compare_res(metrics, total_similarity,
                       struct1, struct2, to_names1, to_names2,
+                      seq_ops_f, seq_ops_s,
                       filename1, filename2):
     ch_inds1, count_ch1 = get_children_ind(struct1, len(struct1))
     ch_inds2, count_ch2 = get_children_ind(struct2, len(struct2))
@@ -88,19 +86,24 @@ def print_compare_res(metrics, total_similarity, best_shift,
     struct_res = struct_compare(struct1, struct2,
                                 compliance_matrix)
     struct_res = struct_res[0] / struct_res[1]
+    best_shift, shift_res = op_shift_metric(seq_ops_f, seq_ops_s)
 
     print("         ")
     print('+' * 40)
     print('May be similar:', filename1, filename2, end='\n\n')
-    metrics_df = pd.DataFrame()
-    metrics_df.loc['Total match', 'Same'] = total_similarity
-    metrics_df.loc['Structure match', 'Same'] = struct_res
-    metrics_df.loc['Jakkar coef', 'Same'] = metrics[0]
-    metrics_df.loc['Operators match', 'Same'] = metrics[1]
-    metrics_df.loc['Keywords match', 'Same'] = metrics[2]
-    metrics_df.loc['Literals match', 'Same'] = metrics[3]
-    metrics_df.loc['Op shift match(max)', 'Same'] = metrics[4]
-    print(metrics_df)
+    main_metrics_df = pd.DataFrame()
+    main_metrics_df.loc['Total match', 'Same'] = total_similarity
+    main_metrics_df.loc['Jakkar coef', 'Same'] = metrics[0]
+    main_metrics_df.loc['Operators match', 'Same'] = metrics[1]
+    main_metrics_df.loc['Keywords match', 'Same'] = metrics[2]
+    main_metrics_df.loc['Literals match', 'Same'] = metrics[3]
+
+    print(main_metrics_df)
+    print()
+    additional_metrics_df = pd.DataFrame()
+    additional_metrics_df.loc['Structure match', 'Same'] = struct_res
+    additional_metrics_df.loc['Op shift match (max)', 'Same'] = shift_res
+    print(additional_metrics_df)
     print()
 
     if struct_res > 0.75:
