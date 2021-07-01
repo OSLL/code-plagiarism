@@ -7,6 +7,7 @@ import numba
 from numba.typed import List, Dict
 from numba.core import types
 from src.pyplag.tfeatures import get_children_ind, ASTFeatures
+from src.pyplag.tfeatures import generate_ngrams
 from src.pyplag.utils import get_AST
 
 class TestTfeatures(unittest.TestCase):
@@ -59,3 +60,21 @@ class TestTfeatures(unittest.TestCase):
         self.assertEqual(ind3[0], 0)
         self.assertEqual(ind3[1], 4)
         self.assertEqual(ind3[2], 5)
+
+
+    def test_generate_ngrams(self):
+        res1 = generate_ngrams([1, 2, 3, 4, 5])
+        bigrams = [(1, 2), (2, 3), (3, 4), (4, 5)]
+        res2 = generate_ngrams([3, 4, 7, 8, 15, 3], 3)
+        trigrams = [(3, 4, 7), (4, 7, 8), (7, 8, 15), (8, 15, 3)]
+        res3 = generate_ngrams([1, 3, 5, 7, 9, 7 , 5], 4)
+        fourgrams = [(1, 3, 5, 7), (3, 5, 7, 9), (5, 7, 9, 7), (7, 9, 7, 5)]
+
+        for el in bigrams:
+            self.assertIn(el, res1)
+
+        for el in trigrams:
+            self.assertIn(el, res2)
+
+        for el in fourgrams:
+            self.assertIn(el, res3)

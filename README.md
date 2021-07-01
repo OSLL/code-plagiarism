@@ -10,6 +10,8 @@
 
 ## 2. Install requirements
 
+- OS Linux
+
 - python version 3.6+ or even 3.8+
 
 - pip3 version >= 19.0 (pip3 install -U pip)

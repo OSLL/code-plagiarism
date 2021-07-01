@@ -3,7 +3,7 @@ import context
 import numpy as np
 from numba import njit
 
-from src.pyplag.tfeatures import get_children_ind
+from src.pyplag.tfeatures import get_children_ind, generate_ngrams
 from src.pyplag.other import get_from_tree, matrix_value
 
 
@@ -168,3 +168,11 @@ def op_shift_metric(ops1, ops2):
         return max_shift, y[max_shift]
     else:
         return 0, 0.0
+
+
+def value_jakkar_coef(tokens_first, tokens_second):
+    ngrams_first = generate_ngrams(tokens_first, 2)
+    ngrams_second  = generate_ngrams(tokens_second, 2)
+
+    return (len(ngrams_first.intersection(ngrams_second)) /
+            len(ngrams_first | ngrams_second))

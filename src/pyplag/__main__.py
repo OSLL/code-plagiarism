@@ -6,14 +6,12 @@ import numpy as np
 import pandas as pd
 
 from time import perf_counter
-# from src.pyplag.tree import *
 from src.pyplag.tfeatures import ASTFeatures
 from src.pyplag.utils import get_AST, run_compare, print_compare_res
 from src.github_helper.utils import get_list_of_repos, select_repos
 from src.github_helper.utils import get_python_files_links, get_code
 from src.github_helper.utils import get_github_api_link
 from termcolor import colored
-# from src.pyplag.metric import *
 
 pd.options.display.float_format = '{:,.2%}'.format
 
@@ -36,7 +34,7 @@ elif len(sys.argv) == 1:
 
 tree1 = None
 start_eval = perf_counter()
-weights = np.array([1.5, 0.8, 0.9, 0.5, 0.3], dtype=np.float32)
+weights = np.array([1, 0.8, 0.8, 0.8], dtype=np.float32)
 if mode == 0:
     if file_path.startswith('https://'):
         file_link = get_github_api_link(file_path)
@@ -104,25 +102,17 @@ if mode == 0:
 
             features2 = ASTFeatures()
             features2.visit(tree2)
-            metrics, best_shift, matrix = run_compare(features1.structure,
-                                                      features2.structure,
-                                                      features1.operators,
-                                                      features2.operators,
-                                                      features1.keywords,
-                                                      features2.keywords,
-                                                      features1.literals,
-                                                      features2.literals,
-                                                      features1.seq_ops,
-                                                      features2.seq_ops)
+            metrics = run_compare(features1, features2)
             total_similarity = np.sum(metrics * weights) / 4
 
-            if total_similarity > 0.72:
-                print_compare_res(metrics, total_similarity, best_shift,
-                                  matrix,
+            if total_similarity > 0.75:
+                print_compare_res(metrics, total_similarity,
                                   features1.structure,
                                   features2.structure,
                                   features1.from_num,
                                   features2.from_num,
+                                  features1.seq_ops,
+                                  features2.seq_ops,
                                   file_path.split('\\')[-1],
                                   url_file)
 
@@ -171,23 +161,18 @@ elif mode == 1:
             features1.visit(tree1)
             features2.visit(tree2)
 
-            metrics, best_shift, matrix = run_compare(features1.structure,
-                                                      features2.structure,
-                                                      features1.operators,
-                                                      features2.operators,
-                                                      features1.keywords,
-                                                      features2.keywords,
-                                                      features1.literals,
-                                                      features2.literals,
-                                                      features1.seq_ops,
-                                                      features2.seq_ops)
-            total_similarity = np.sum(metrics * weights) / 4
+            metrics = run_compare(features1, features2)
+            total_similarity = np.sum(metrics * weights) / weights.sum()
 
-            if total_similarity > 0.72:
-                print_compare_res(metrics, total_similarity, best_shift,
-                                  matrix, features1.structure,
-                                  features2.structure, features1.from_num,
-                                  features2.from_num, filename.split('/')[-1],
+            if total_similarity > 0.75:
+                print_compare_res(metrics, total_similarity,
+                                  features1.structure,
+                                  features2.structure,
+                                  features1.from_num,
+                                  features2.from_num,
+                                  features1.seq_ops,
+                                  features2.seq_ops,
+                                  filename.split('/')[-1],
                                   filename2.split('/')[-1])
 
             iterration += 1

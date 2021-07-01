@@ -7,7 +7,7 @@ import numpy as np
 from numba.typed import Dict, List
 from numba.core import types
 from src.pyplag.metric import nodes_metric, struct_compare
-from src.pyplag.metric import op_shift_metric
+from src.pyplag.metric import op_shift_metric, value_jakkar_coef
 from src.pyplag.tfeatures import ASTFeatures, get_children_ind
 from src.pyplag.utils import get_AST
 
@@ -168,3 +168,16 @@ class TestMetric(unittest.TestCase):
         self.assertAlmostEqual(res6[1], 0.6, 2)
         self.assertEqual(res7[0], 2)
         self.assertAlmostEqual(res7[1], 0.6, 2)
+
+
+    def test_value_jakkar_coef(self):
+        res1 = value_jakkar_coef([1, 2, 3, 4, 5, 4],
+                                 [1, 2, 3, 2, 5, 2])
+        res2 = value_jakkar_coef([2, 1, 1, 3, 5, 6, 7],
+                                 [5, 6, 1, 3, 4, 2])
+        res3 = value_jakkar_coef([3, 1, 2, 7, 4, 5, 1, 2],
+                                 [4, 5, 1, 3, 4, 6, 3, 1])
+
+        self.assertEqual(res1, 0.25)
+        self.assertAlmostEqual(res2, 0.222, 3)
+        self.assertEqual(res3, 0.3)
