@@ -105,7 +105,7 @@ if mode == 0:
             metrics = run_compare(features1, features2)
             total_similarity = np.sum(metrics * weights) / 4
 
-            if total_similarity > 0.75:
+            if total_similarity > 0.7:
                 print_compare_res(metrics, total_similarity,
                                   features1.structure,
                                   features2.structure,
@@ -113,6 +113,8 @@ if mode == 0:
                                   features2.from_num,
                                   features1.seq_ops,
                                   features2.seq_ops,
+                                  features1.tokens,
+                                  features2.tokens,
                                   file_path.split('\\')[-1],
                                   url_file)
 
@@ -164,7 +166,7 @@ elif mode == 1:
             metrics = run_compare(features1, features2)
             total_similarity = np.sum(metrics * weights) / weights.sum()
 
-            if total_similarity > 0.75:
+            if total_similarity > 0.7:
                 print_compare_res(metrics, total_similarity,
                                   features1.structure,
                                   features2.structure,
@@ -172,6 +174,8 @@ elif mode == 1:
                                   features2.from_num,
                                   features1.seq_ops,
                                   features2.seq_ops,
+                                  features1.tokens,
+                                  features2.tokens,
                                   filename.split('/')[-1],
                                   filename2.split('/')[-1])
 

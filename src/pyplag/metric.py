@@ -172,7 +172,31 @@ def op_shift_metric(ops1, ops2):
 
 def value_jakkar_coef(tokens_first, tokens_second):
     ngrams_first = generate_ngrams(tokens_first, 2)
-    ngrams_second  = generate_ngrams(tokens_second, 2)
+    ngrams_second = generate_ngrams(tokens_second, 2)
 
     return (len(ngrams_first.intersection(ngrams_second)) /
             len(ngrams_first | ngrams_second))
+
+
+@njit(fastmath=True)
+def lcs(X, Y):
+    m = len(X)
+    n = len(Y)
+
+    if m == 0 or n == 0:
+        return 0
+
+    # m + 1 строк
+    # n + 1 столбцов
+    L = [[0] * (n + 1) for i in range(m + 1)]
+
+    for i in range(m + 1):
+        for j in range(n + 1):
+            if i == 0 or j == 0:
+                L[i][j] = 0
+            elif X[i-1] == Y[j-1]:
+                L[i][j] = L[i-1][j-1] + 1
+            else:
+                L[i][j] = max(L[i-1][j], L[i][j-1])
+
+    return L[m][n]

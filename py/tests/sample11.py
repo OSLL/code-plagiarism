@@ -6,7 +6,7 @@ def solve(values):
     
     number2 = int(values[1 + number1])
     values2 = values[2 + number1:]
-    
+
     d = dict()
     passed = []
     not_passed = []
@@ -20,7 +20,7 @@ def solve(values):
                 d[x[0]] = x[1]
                 if x[1] not in d.keys():
                     d[x[1]] = "None"
-    
+
     for x in values2:
         flag = 0
         t = x
