@@ -1,14 +1,13 @@
-from context import *
+import context
 
 import unittest
 import numpy as np
-import numba
 
 from numba.typed import List
 from src.pyplag.other import find_max_index, matrix_value, get_from_tree
 
-class TestOther(unittest.TestCase):
 
+class TestOther(unittest.TestCase):
     def test_find_max_index_normal(self):
         res1 = find_max_index(np.array([[[]]], dtype=np.int64))
         res2 = find_max_index(np.array([[[3, 5], [6, 7]],
@@ -23,7 +22,6 @@ class TestOther(unittest.TestCase):
         self.assertEqual(res2[1], 0)
         self.assertEqual(res3[0], 2)
         self.assertEqual(res3[1], 1)
-
 
     def test_matrix_value_normal(self):
         value1, ind1 = matrix_value(np.array([[[3, 5], [6, 7]],
@@ -60,7 +58,6 @@ class TestOther(unittest.TestCase):
         self.assertEqual(ind3[1][1], 1)
         self.assertEqual(ind3[2][0], 2)
         self.assertEqual(ind3[2][1], 2)
-
 
     def test_get_from_tree_normal(self):
         self.assertEqual(get_from_tree(List([1, 2, 3]), 1, 3), List([2, 3]))

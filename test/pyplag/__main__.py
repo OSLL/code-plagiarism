@@ -1,4 +1,4 @@
-from context import *
+import context
 
 import unittest
 
