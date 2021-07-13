@@ -8,8 +8,7 @@ import pandas as pd
 from termcolor import colored
 from src.pyplag.tfeatures import get_children_ind
 from src.pyplag.metric import nodes_metric, struct_compare, op_shift_metric
-from src.pyplag.metric import value_jakkar_coef
-from numba import njit
+from src.pyplag.metric import value_jakkar_coef, lcs
 
 
 def get_AST(filename):
@@ -79,6 +78,7 @@ def run_compare(features_f, features_s):
 def print_compare_res(metrics, total_similarity,
                       struct1, struct2, to_names1, to_names2,
                       seq_ops_f, seq_ops_s,
+                      tokens_f, tokens_s,
                       filename1, filename2):
     ch_inds1, count_ch1 = get_children_ind(struct1, len(struct1))
     ch_inds2, count_ch2 = get_children_ind(struct2, len(struct2))
@@ -103,13 +103,16 @@ def print_compare_res(metrics, total_similarity,
     additional_metrics_df = pd.DataFrame()
     additional_metrics_df.loc['Structure match', 'Same'] = struct_res
     additional_metrics_df.loc['Op shift match (max)', 'Same'] = shift_res
+    additional_metrics_df.loc['LCS'] = (2 * lcs(tokens_f, tokens_s) /
+                                        (len(tokens_f) + len(tokens_s)))
     print(additional_metrics_df)
     print()
 
     if struct_res > 0.75:
         indexes = [to_names1[struct1[ind][1]] for ind in ch_inds1]
         columns = [to_names2[struct2[ind][1]] for ind in ch_inds2]
-        data = np.zeros((compliance_matrix.shape[0], compliance_matrix.shape[1]),
+        data = np.zeros((compliance_matrix.shape[0],
+                         compliance_matrix.shape[1]),
                         dtype=np.float32)
         for row in range(compliance_matrix.shape[0]):
             for col in range(compliance_matrix.shape[1]):

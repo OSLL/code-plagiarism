@@ -2,7 +2,6 @@ import context
 
 import ast
 import numpy as np
-import numba
 from numba import njit
 from numba.typed import List, Dict
 from numba.core import types
@@ -34,8 +33,8 @@ class ASTFeatures(ast.NodeVisitor):
         self.cunodes = 0
         self.structure = List([(1, 2)])
         self.structure.clear()
-        self.tokens = []
-
+        self.tokens = List([1])
+        self.tokens.clear()
 
     def generic_visit(self, node):
         '''

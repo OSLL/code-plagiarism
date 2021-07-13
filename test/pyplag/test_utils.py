@@ -1,10 +1,10 @@
-from context import *
+import context
 
 import unittest
-import numpy as np
 
 from src.pyplag.tfeatures import ASTFeatures
 from src.pyplag.utils import run_compare, get_AST
+
 
 class TestUtils(unittest.TestCase):
 
