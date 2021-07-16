@@ -102,8 +102,8 @@ def get_children_ind(tree, count_of_nodes):
     return ind, count_of_children
 
 
-def generate_ngrams(tokens, n=2):
-    return {tuple(tokens[i-n:i]) for i in range(n, len(tokens) + 1)}
+def generate_unique_ngrams(tokens, n=3):
+    return {tuple(tokens[i:i + n]) for i in range(len(tokens) - n + 1)}
 
 
 # YAGNI
