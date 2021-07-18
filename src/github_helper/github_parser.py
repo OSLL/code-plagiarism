@@ -64,6 +64,31 @@ class GitHubParser:
 
         return response
 
+    def get_list_of_repos(self, owner, per_page=100):
+        '''
+            Function returns dict in which keys characterize repository names
+            and values characterize repositories links
+        '''
+        repos = {}
+        page = 1
+        while True:
+            api_url = '/users/{}/repos'.format(owner)
+            params = {
+                "per_page": per_page,
+                "page": page
+            }
+            response_json = self.send_get_request(api_url, params=params).json()
+
+            if len(response_json) == 0:
+                break
+
+            for repo in response_json:
+                repos[repo['name']] = repo['url']
+
+            page += 1
+
+        return repos
+
     def get_name_default_branch(self, owner, repo):
         api_url = '/repos/{}/{}'.format(owner, repo)
         response_json = self.send_get_request(api_url).json()
@@ -99,7 +124,7 @@ class GitHubParser:
                                                                     current_path)
             if node["type"] == "blob" and self.is_accepted_extension(current_path):
                 yield self.get_file_content_from_sha(owner, repo, branch, node["sha"])
-    
+
     def get_list_repo_branches(self, owner, repo, per_page=100):
         branches = {}
         page = 1
