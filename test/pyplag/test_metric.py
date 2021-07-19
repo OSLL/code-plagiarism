@@ -169,13 +169,13 @@ class TestMetric(unittest.TestCase):
         res1 = value_jakkar_coef([1, 2, 3, 4, 5, 4],
                                  [1, 2, 3, 2, 5, 2])
         res2 = value_jakkar_coef([2, 1, 1, 3, 5, 6, 7],
-                                 [5, 6, 1, 3, 4, 2])
+                                 [1, 3, 5, 3, 5, 6])
         res3 = value_jakkar_coef([3, 1, 2, 7, 4, 5, 1, 2],
                                  [4, 5, 1, 3, 4, 6, 3, 1])
 
-        self.assertEqual(res1, 0.25)
-        self.assertAlmostEqual(res2, 0.222, 3)
-        self.assertEqual(res3, 0.3)
+        self.assertAlmostEqual(res1, 0.143, 3)
+        self.assertAlmostEqual(res2, 0.286, 3)
+        self.assertAlmostEqual(res3, 0.091, 3)
 
     def test_lcs(self):
         res1 = lcs(List([1, 2, 2, 3, 1, 4]),

@@ -1,13 +1,13 @@
 import requests
 import base64
+import re
 
 from decouple import config
 
-# Также нужно сохранять ссылки на файлы
 class GitHubParser:
-    def __init__(self, file_extensions=['py', 'c', 'cpp', 'h'], CHECK_POLICY=False):
+    def __init__(self, file_extensions=['py', 'c', 'cpp', 'h'], check_policy=False):
         self.__access_token = config('ACCESS_TOKEN', default='')
-        self.__check_all_branches = CHECK_POLICY
+        self.__check_all_branches = check_policy
         self.__file_extensions = file_extensions
 
     @staticmethod
@@ -28,7 +28,7 @@ class GitHubParser:
 
         if len(url_parts) != 5:
             raise ValueError('Incorrect link to GitHub repository')
-        
+
         return url_parts[3], url_parts[4]
 
     @staticmethod
@@ -37,12 +37,12 @@ class GitHubParser:
 
         if len(url_parts) <= 7:
             raise ValueError('Incorrect link to content of GitHub repository')
-        
+
         return url_parts[3], url_parts[4], url_parts[6], '/'.join(url_parts[7:])
 
     def is_accepted_extension(self, path):
         return path.split('.')[-1].lower() in self.__file_extensions
-        
+
     def send_get_request(self, api_url, params={}):
         address = 'https://api.github.com'
         if api_url[0] != "/":
@@ -64,7 +64,7 @@ class GitHubParser:
 
         return response
 
-    def get_list_of_repos(self, owner, per_page=100):
+    def get_list_of_repos(self, owner, per_page=100, reg_exp=None):
         '''
             Function returns dict in which keys characterize repository names
             and values characterize repositories links
@@ -83,7 +83,10 @@ class GitHubParser:
                 break
 
             for repo in response_json:
-                repos[repo['name']] = repo['url']
+                if reg_exp is None:
+                    repos[repo['name']] = repo['html_url']
+                elif re.search(reg_exp, repo['name']) is not None:
+                    repos[repo['name']] = repo['html_url']
 
             page += 1
 
@@ -101,14 +104,14 @@ class GitHubParser:
 
         return response_json['commit']['sha']
 
-    def get_file_content_from_sha(self, owner, repo, branch, sha):
+    def get_file_content_from_sha(self, owner, repo, branch, sha, file_path):
         api_url = '/repos/{}/{}/git/blobs/{}'.format(owner, repo, sha)
         response_json = self.send_get_request(api_url).json()
 
         file_bytes = base64.b64decode(response_json['content'])
         code = file_bytes.decode('utf-8')
 
-        return code
+        return code, file_path
 
     def get_files_generator_from_sha_commit(self, owner, repo, branch, sha, path='.'):
         api_url = '/repos/{}/{}/git/trees/{}'.format(owner, repo, sha)
@@ -123,7 +126,7 @@ class GitHubParser:
                                                                     node['sha'],
                                                                     current_path)
             if node["type"] == "blob" and self.is_accepted_extension(current_path):
-                yield self.get_file_content_from_sha(owner, repo, branch, node["sha"])
+                yield self.get_file_content_from_sha(owner, repo, branch, node["sha"], current_path)
 
     def get_list_repo_branches(self, owner, repo, per_page=100):
         branches = {}
@@ -145,7 +148,7 @@ class GitHubParser:
             page += 1
 
         return branches
-    
+
     def get_files_generator_from_repo_url(self, repo_url):
         owner, repo = GitHubParser.parse_repo_url(repo_url)
 

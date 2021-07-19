@@ -54,8 +54,6 @@
   ```
   Before starting work with repositories, you must to define variable OWNER in src/github_helper/.env and ACCESS_TOKEN:
 
-  OWNER - organization user name on github;
-
   ACCESS_TOKEN - Personal access token which add more requests to repos and access to private repos if you give it.
 
   > Compare file in folder with files in github repositories

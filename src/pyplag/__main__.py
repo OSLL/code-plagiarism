@@ -8,9 +8,7 @@ import pandas as pd
 from time import perf_counter
 from src.pyplag.tfeatures import ASTFeatures
 from src.pyplag.utils import get_AST, run_compare, print_compare_res
-from src.github_helper.utils import get_list_of_repos, select_repos
-from src.github_helper.utils import get_python_files_links, get_code
-from src.github_helper.utils import get_github_api_link
+from src.webparsers.github_parser import GitHubParser
 from termcolor import colored
 
 pd.options.display.float_format = '{:,.2%}'.format
@@ -34,12 +32,13 @@ elif len(sys.argv) == 1:
 
 tree1 = None
 start_eval = perf_counter()
-weights = np.array([1, 0.8, 0.8, 0.8], dtype=np.float32)
+weights = np.array([1, 0.7, 0.7, 0.7], dtype=np.float32)
+
 if mode == 0:
+    gh = GitHubParser(file_extensions=['py'])
     if file_path.startswith('https://'):
-        file_link = get_github_api_link(file_path)
         try:
-            tree1 = ast.parse(get_code(file_link))
+            tree1 = ast.parse(gh.get_file_from_url(file_path))
         except Exception as e:
             print('-' * 40)
             print(colored('Not compiled: ' + file_link, 'red'))
@@ -58,17 +57,14 @@ if mode == 0:
     features1.visit(tree1)
 
     iteration = 0
-    repos, repos_url = get_list_of_repos()
-    repos, repos_url = select_repos(repos, repos_url, reg_exp)
+    repos = gh.get_list_of_repos(owner='OSLL', reg_exp=reg_exp)
     count_iter = len(repos)
-    for repo_url in repos_url:
+    for repo, repo_url in repos.items():
         print(repo_url)
-        url_files_in_repo = get_python_files_links(repo_url + '/contents')
-        inner_iter = 0
-        inner_iters = len(url_files_in_repo)
-        for url_file in url_files_in_repo:
+        files = gh.get_files_generator_from_repo_url(repo_url)
+        for file, url_file in files:
             try:
-                tree2 = ast.parse(get_code(url_file))
+                tree2 = ast.parse(file)
             except IndentationError as err:
                 print('-' * 40)
                 print(colored('Not compiled: ' + url_file, 'red'))
@@ -103,7 +99,7 @@ if mode == 0:
             features2 = ASTFeatures()
             features2.visit(tree2)
             metrics = run_compare(features1, features2)
-            total_similarity = np.sum(metrics * weights) / 4
+            total_similarity = np.sum(metrics * weights) / weights.sum()
 
             if total_similarity > 0.7:
                 print_compare_res(metrics, total_similarity,
@@ -118,12 +114,6 @@ if mode == 0:
                                   file_path.split('\\')[-1],
                                   url_file)
 
-            inner_iter += 1
-            print('In repo {:.2%}, In repos {:.2%}'.format((inner_iter /
-                                                            inner_iters),
-                                                           (iteration /
-                                                            count_iter)),
-                  end="\r")
         iteration += 1
         print(repo_url, " ... OK")
         print(" " * 40, end="\r")
