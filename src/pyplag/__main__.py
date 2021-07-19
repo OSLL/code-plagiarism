@@ -57,21 +57,6 @@ def compare_file_pair(filename, filename2):
 (mode, file_path, git_file, git, directory, project, git_project, reg_exp) = get_mode()
 
 
-
-directory = 'py/'
-if len(sys.argv) > 2:
-    file_path = sys.argv[1]
-    reg_exp = sys.argv[2]
-    mode = 0
-elif len(sys.argv) == 2:
-    directory = sys.argv[1]
-    mode = 1
-    if not os.path.exists(directory):
-        print('Directory isn\'t exist')
-        exit()
-elif len(sys.argv) == 1:
-    exit()
-
 tree1 = None
 start_eval = perf_counter()
 weights = np.array([1, 0.4, 0.4, 0.4], dtype=np.float32)

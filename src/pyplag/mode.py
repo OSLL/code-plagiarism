@@ -7,22 +7,26 @@ def get_mode():
     # Добавить bracnh policy
     # Добавить threshold
     parser.add_argument('-f', "--file", type=str, 
-                        help = "Path to file on a computer")
+                        help="Path to file on a computer")
     parser.add_argument("-F", "--git_file", type=str, 
-                        help = "URL to file in a GIT repository")
+                        help="URL to file in a GIT repository")
     parser.add_argument("-g", "--git", type=str, 
-                        help = "GitHub organisation URL")
+                        help="GitHub organisation/user name")
     parser.add_argument("-d", "--dir", type=str, 
-                        help = "Path to a local directory")
+                        help="Path to a local directory")
     parser.add_argument("-p", "--project", type=str, 
-                        help = "Path to a local project")
+                        help="Path to a local project")
     parser.add_argument("-P", "--git_project", type=str, 
-                        help = "Path to a GIT project")
+                        help="Path to a GIT project")
     parser.add_argument("-e", "--reg_exp", type=str, 
-                        help = "Regular expresion (in GitHub mode)")
+                        help="Regular expresion (in GitHub mode)")
+    parser.add_argument("-cp", "--check_policy", type=str,
+                        help="Branches check policy")
+    parser.add_argument("-t", "--threshold",
+                        help="Threshold of analyzer")
 
     args = parser.parse_args()
-    
+
     file_path = args.file
     git_file = args.git_file
     git = args.git
@@ -30,6 +34,8 @@ def get_mode():
     project = args.project
     git_project = args.git_project
     reg_exp = args.reg_exp
+    check_policy = args.check_policy
+    threshold = args.threshold
 
     if not directory:
         directory = '/py'
