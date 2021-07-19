@@ -10,11 +10,53 @@ from src.pyplag.tfeatures import ASTFeatures
 from src.pyplag.utils import get_AST, run_compare, print_compare_res
 from src.webparsers.github_parser import GitHubParser
 from termcolor import colored
+from mode import get_mode
 
+LEVEL = 0.65
 pd.options.display.float_format = '{:,.2%}'.format
 
-# 0 mode works with GitHub repositoryes
-# 1 mode works with directory in user computer
+
+def compare_file_pair(filename, filename2):
+    '''
+        Function compares 2 files
+        filename - path to the first file (dir/file1.py)
+        filename2 - path the second file (dir/file2.py)
+    '''
+    tree1 = get_AST(filename)
+    tree2 = get_AST(filename2)
+
+    if tree1 is None:
+        return
+    if tree2 is None:
+        return
+
+    features1 = ASTFeatures()
+    features2 = ASTFeatures()
+    features1.visit(tree1)
+    features2.visit(tree2)
+
+    metrics = run_compare(features1, features2)
+    total_similarity = np.sum(metrics * weights) / weights.sum()
+
+    if total_similarity > LEVEL:
+            print_compare_res(metrics, total_similarity,
+                              features1.structure,
+                              features2.structure,
+                              features1.from_num,
+                              features2.from_num,
+                              features1.seq_ops,
+                              features2.seq_ops,
+                              features1.tokens,
+                              features2.tokens,
+                              filename.split('/')[-1],
+                              filename2.split('/')[-1])
+
+    return (metrics, total_similarity)
+
+
+(mode, file_path, git_file, git, directory, project, git_project, reg_exp) = get_mode()
+
+
 
 directory = 'py/'
 if len(sys.argv) > 2:
@@ -32,8 +74,80 @@ elif len(sys.argv) == 1:
 
 tree1 = None
 start_eval = perf_counter()
-weights = np.array([1, 0.7, 0.7, 0.7], dtype=np.float32)
+weights = np.array([1, 0.4, 0.4, 0.4], dtype=np.float32)
 
+if mode == 0:
+    # Local file comapres with files in git repositories
+    # Use variablse 'file_path' and 'git'
+    print('This mode is not ready yet')
+    #TODO
+
+elif mode == 1:
+    # Github file comapres with files in git repositories    
+    # Use variablse 'git_file' and 'git'
+    print('This mode is not ready yet')
+    #TODO
+
+elif mode == 2:
+    # Local file comapres with files in a local directory
+    # Use variablse 'file_path' and 'directory'
+
+    files = os.listdir(directory)
+    files = list(filter(lambda x: (x.endswith('.py')), files))
+
+    count_files = len(files)
+    if count_files == 0:
+        print("Folder is empty")
+        exit()
+
+    iterrations = (count_files)
+    iterration = 0
+
+    for row in np.arange(0, count_files, 1):
+        if directory[-1] != '/':
+            directory += '/'
+
+        filename = directory + files[row]
+        compare_file_pair(file_path, filename)
+
+        iterration += 1
+        print('  {:.2%}'.format(iterration / iterrations), end="\r")
+
+elif mode == 3:
+    # GitHub file comapres with files in a local directory 
+    # Use variablse 'git_file' and 'directory'
+    print('This mode is not ready yet')
+    #TODO
+
+elif mode == 4:
+    # Local project comapres with a local directory
+    # Use variablse 'project' and 'directory'
+    print('This mode is not ready yet')
+    #TODO
+
+elif mode == 5:
+    # Local project comapres with git repositories
+    # Use variables 'project' and 'git'
+    print('This mode is not ready yet')
+    #TODO
+
+elif mode == 6:
+    # Git project comapres with a local directory
+    # Use variables 'git_project' and 'direcrory'
+    print('This mode is not ready yet')
+    #TODO
+
+elif mode == 7:
+    #Git project comapres with git repositories
+    # Use variables 'git_project' and 'git'
+    print('This mode is not ready yet')
+    #TODO
+
+else:
+    print("Check the arguments (use --help)")
+    exit()
+
+'''
 if mode == 0:
     gh = GitHubParser(file_extensions=['py'])
     if file_path.startswith('https://'):
@@ -118,63 +232,7 @@ if mode == 0:
         print(repo_url, " ... OK")
         print(" " * 40, end="\r")
         print('In repos {:.2%}'.format(iteration / count_iter), end="\r")
-elif mode == 1:
-    files = os.listdir(directory)
-    files = list(filter(lambda x: (x.endswith('.py')), files))
-
-    count_files = len(files)
-    # date = datetime.datetime.now().strftime('%Y%m%d-%H#%M#%S')
-    # log_file = open('./logs/pylog' + date + '.txt', 'w')
-
-    iterrations = (count_files * count_files - count_files) / 2
-    iterration = 0
-
-    for row in np.arange(0, count_files, 1):
-        if directory[-1] != '/':
-            directory += '/'
-        filename = directory + files[row]
-        for col in np.arange(0, count_files, 1):
-            filename2 = directory + files[col]
-            if row == col:
-                continue
-            if row > col:
-                continue
-
-            tree1 = get_AST(filename)
-            tree2 = get_AST(filename2)
-
-            if tree1 is None:
-                break
-            if tree2 is None:
-                continue
-
-            features1 = ASTFeatures()
-            features2 = ASTFeatures()
-            features1.visit(tree1)
-            features2.visit(tree2)
-
-            metrics = run_compare(features1, features2)
-            total_similarity = np.sum(metrics * weights) / weights.sum()
-
-            if total_similarity > 0.7:
-                print_compare_res(metrics, total_similarity,
-                                  features1.structure,
-                                  features2.structure,
-                                  features1.from_num,
-                                  features2.from_num,
-                                  features1.seq_ops,
-                                  features2.seq_ops,
-                                  features1.tokens,
-                                  features2.tokens,
-                                  filename.split('/')[-1],
-                                  filename2.split('/')[-1])
-
-            iterration += 1
-            print('  {:.2%}'.format(iterration / iterrations), end="\r")
-
-    if count_files == 0:
-        print("Folder is empty")
+'''
 
 print("Analysis complete")
 print('Time for all {:.2f}'.format(perf_counter() - start_eval))
-# log_file.close()
