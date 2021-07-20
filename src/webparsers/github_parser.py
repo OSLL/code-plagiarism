@@ -5,7 +5,7 @@ import re
 from decouple import config
 
 class GitHubParser:
-    def __init__(self, file_extensions=['py', 'c', 'cpp', 'h'], check_policy=False):
+    def __init__(self, file_extensions=['py', 'c', 'cpp', 'h'], check_policy=0):
         self.__access_token = config('ACCESS_TOKEN', default='')
         self.__check_all_branches = check_policy
         self.__file_extensions = file_extensions
@@ -126,7 +126,10 @@ class GitHubParser:
                                                                     node['sha'],
                                                                     current_path)
             if node["type"] == "blob" and self.is_accepted_extension(current_path):
-                yield self.get_file_content_from_sha(owner, repo, branch, node["sha"], current_path)
+                path_to_file = "https://github.com/{}/{}/blob/{}{}".format(owner, repo,
+                                                                            branch,
+                                                                            current_path[1:])
+                yield self.get_file_content_from_sha(owner, repo, branch, node["sha"], path_to_file)
 
     def get_list_repo_branches(self, owner, repo, per_page=100):
         branches = {}

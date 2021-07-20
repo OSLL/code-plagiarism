@@ -20,10 +20,12 @@ def get_mode():
                         help="Path to a GIT project")
     parser.add_argument("-e", "--reg_exp", type=str, 
                         help="Regular expresion (in GitHub mode)")
-    parser.add_argument("-cp", "--check_policy", type=str,
-                        help="Branches check policy")
+    parser.add_argument("-cp", "--check_policy", type=int,
+                        help="Branches check policy, 0 - only main, 1 - All",
+                        choices=[0, 1], default=0)
     parser.add_argument("-t", "--threshold",
-                        help="Threshold of analyzer")
+                        help="Threshold of analyzer", type=int,
+                        default=65, choices=range(50, 100))
 
     args = parser.parse_args()
 
@@ -78,15 +80,17 @@ def get_mode():
         mode = 7
     else: 
         print('\n  Invalid arguments. Please use one of the following agrument combination:\n')    
-        print('  --file PATH --git URL [--reg_exp EXPR]         Local file comapres with files in git repositories')    
-        print('  --file PATH --dir PATH                         Local file comapres with files in a local directory')    
-        print('  --git_file URL --git URL [--reg_exp EXPR]      Git file comapres with files in git repositories')    
-        print('  --git_file URL --dir PATH                      Git file comapres with files in a local directory')    
-        print('  --project PATH --git URL [--reg_exp EXPR]      Files in local project comapre with git repositories')    
-        print('  --project PATH --dir PATH                      Files in local project comapre with files in a local directory')    
-        print('  --git_project URL --git URL [--reg_exp EXPR]   Files in git project comapre with git repositories')   
-        print('  --git_project URL --dir PATH                   Files in git project comapre with files in a local directory')   
+        print('  --file PATH --git URL [--reg_exp EXPR] [--check_policy CHECK_POLICY] [--threshold THRESHOLD]           Local file comapres with files in git repositories')
+        print('  --file PATH --dir PATH [--threshold THRESHOLD]                                                         Local file comapres with files in a local directory')
+        print('  --git_file URL --git URL [--reg_exp EXPR] [--check_policy CHECK_POLICY] [--threshold THRESHOLD]        Git file comapres with files in git repositories')
+        print('  --git_file URL --dir PATH [--threshold THRESHOLD]                                                      Git file comapres with files in a local directory')
+        print('  --project PATH --git URL [--reg_exp EXPR]  [--check_policy CHECK_POLICY] [--threshold THRESHOLD]       Files in local project comapre with git repositories')
+        print('  --project PATH --dir PATH [--threshold THRESHOLD]                                                      Files in local project comapre with files in a local directory')
+        print('  --git_project URL --git URL [--reg_exp EXPR]  [--check_policy CHECK_POLICY] [--threshold THRESHOLD]    Files in git project comapre with git repositories')
+        print('  --git_project URL --dir PATH [--threshold THRESHOLD]                                                   Files in git project comapre with files in a local directory')
         print()
         exit()
 
-    return (mode, file_path, git_file, git, directory, project, git_project, reg_exp)
+    #return (mode, file_path, git_file, git, directory, project, git_project,
+    #        reg_exp, check_policy, threshold)
+    return mode, args

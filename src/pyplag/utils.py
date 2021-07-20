@@ -90,7 +90,7 @@ def print_compare_res(metrics, total_similarity,
 
     print("         ")
     print('+' * 40)
-    print('May be similar:', filename1, filename2, end='\n\n')
+    print('May be similar:', filename1, filename2, end='\n\n', sep='\n')
     main_metrics_df = pd.DataFrame()
     main_metrics_df.loc['Total match', 'Same'] = total_similarity
     main_metrics_df.loc['Jakkar coef', 'Same'] = metrics[0]
