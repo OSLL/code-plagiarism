@@ -171,7 +171,7 @@ class GitHubParser:
             'ref': branch
         }
         response_json = self.send_get_request(api_url, params=params).json()
-        file = self.get_file_content_from_sha(owner, repo, branch, response_json['sha'])
+        file = self.get_file_content_from_sha(owner, repo, branch, response_json['sha'], file_url)
 
         return file
 

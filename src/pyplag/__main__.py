@@ -7,7 +7,8 @@ import pandas as pd
 
 from time import perf_counter
 from src.pyplag.tfeatures import ASTFeatures
-from src.pyplag.utils import get_AST, run_compare, print_compare_res
+from src.pyplag.utils import get_ast_from_content, run_compare
+from src.pyplag.utils import get_ast_from_filename, print_compare_res
 from src.webparsers.github_parser import GitHubParser
 from termcolor import colored
 from mode import get_mode
@@ -21,8 +22,8 @@ def compare_file_pair(filename, filename2, threshold):
         filename - path to the first file (dir/file1.py)
         filename2 - path the second file (dir/file2.py)
     '''
-    tree1 = get_AST(filename)
-    tree2 = get_AST(filename2)
+    tree1 = get_ast_from_filename(filename)
+    tree2 = get_ast_from_filename(filename2)
 
     if tree1 is None:
         return
@@ -67,8 +68,7 @@ if mode == 0:
     # Use variablse 'file_path' and 'git'
     # Когда отсутствует подключение к интернету, программа падает
 
-    tree1 = get_AST(args.file)
-
+    tree1 = get_ast_from_filename(args.file)
     if tree1 is None:
         exit()
 
@@ -83,37 +83,8 @@ if mode == 0:
         print(repo_url)
         files = gh.get_files_generator_from_repo_url(repo_url)
         for file, url_file in files:
-            try:
-                tree2 = ast.parse(file)
-            except IndentationError as err:
-                print('-' * 40)
-                print(colored('Not compiled: ' + url_file, 'red'))
-                print(colored('IdentationError: ' + err.args[0], 'red'))
-                print(colored('In line ' + str(err.args[1][1]), 'red'))
-                print('-' * 40)
-                continue
-            except SyntaxError as err:
-                print('-' * 40)
-                print(colored('Not compiled: ' + url_file, 'red'))
-                print(colored('SyntaxError: ' + err.args[0], 'red'))
-                print(colored('In line ' + str(err.args[1][1]), 'red'))
-                print(colored('In column ' + str(err.args[1][2]), 'red'))
-                print('-' * 40)
-                continue
-            except TabError as err:
-                print('-' * 40)
-                print(colored('Not compiled: ' + url_file, 'red'))
-                print(colored('TabError: ' + err.args[0], 'red'))
-                print(colored('In line ' + str(err.args[1][1]), 'red'))
-                print('-' * 40)
-                continue
-            except Exception as e:
-                print('-' * 40)
-                print(colored('Not compiled: ' + url_file, 'red'))
-                print(colored(e.__class__.__name__, 'red'))
-                for el in e.args:
-                    print(colored(el, 'red'))
-                print('-' * 40)
+            tree2 = get_ast_from_content(file, url_file)
+            if tree2 is None:
                 continue
 
             features2 = ASTFeatures()
@@ -141,8 +112,48 @@ if mode == 0:
 elif mode == 1:
     # Github file comapres with files in git repositories
     # Use variablse 'git_file' and 'git'
-    print('This mode is not ready yet')
-    #TODO
+    gh = GitHubParser(file_extensions=['py'], check_policy=args.check_policy)
+    tree1 = get_ast_from_content(gh.get_file_from_url(args.git_file)[0],
+                                 args.git_file)
+    if tree1 is None:
+        exit()
+
+    features1 = ASTFeatures()
+    features1.visit(tree1)
+
+    repos = gh.get_list_of_repos(owner=args.git, reg_exp=args.reg_exp)
+    count_iter = len(repos)
+    iteration = 0
+    for repo, repo_url in repos.items():
+        print(repo_url)
+        files = gh.get_files_generator_from_repo_url(repo_url)
+        for file, url_file in files:
+            tree2 = get_ast_from_content(file, url_file)
+            if tree2 is None:
+                continue
+
+            features2 = ASTFeatures()
+            features2.visit(tree2)
+            metrics = run_compare(features1, features2)
+            total_similarity = np.sum(metrics * weights) / weights.sum()
+
+            if (total_similarity * 100) > args.threshold:
+                print_compare_res(metrics, total_similarity,
+                                  features1.structure,
+                                  features2.structure,
+                                  features1.from_num,
+                                  features2.from_num,
+                                  features1.seq_ops,
+                                  features2.seq_ops,
+                                  features1.tokens,
+                                  features2.tokens,
+                                  args.git_file,
+                                  url_file)
+
+        iteration += 1
+        print(repo_url, " ... OK")
+        print(" " * 40, end="\r")
+        print('In repos {:.2%}'.format(iteration / count_iter), end="\r")
 
 elif mode == 2:
     # Local file comapres with files in a local directory

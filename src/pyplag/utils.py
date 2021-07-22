@@ -11,7 +11,42 @@ from src.pyplag.metric import nodes_metric, struct_compare, op_shift_metric
 from src.pyplag.metric import value_jakkar_coef, lcs
 
 
-def get_AST(filename):
+def get_ast_from_content(code, path):
+    tree = None
+
+    try:
+        tree = ast.parse(code)
+    except IndentationError as err:
+        print('-' * 40)
+        print(colored('Not compiled: ' + path, 'red'))
+        print(colored('IdentationError: ' + err.args[0], 'red'))
+        print(colored('In line ' + str(err.args[1][1]), 'red'))
+        print('-' * 40)
+    except SyntaxError as err:
+        print('-' * 40)
+        print(colored('Not compiled: ' + path, 'red'))
+        print(colored('SyntaxError: ' + err.args[0], 'red'))
+        print(colored('In line ' + str(err.args[1][1]), 'red'))
+        print(colored('In column ' + str(err.args[1][2]), 'red'))
+        print('-' * 40)
+    except TabError as err:
+        print('-' * 40)
+        print(colored('Not compiled: ' + path, 'red'))
+        print(colored('TabError: ' + err.args[0], 'red'))
+        print(colored('In line ' + str(err.args[1][1]), 'red'))
+        print('-' * 40)
+    except Exception as e:
+        print('-' * 40)
+        print(colored('Not compiled: ' + path, 'red'))
+        print(colored(e.__class__.__name__, 'red'))
+        for el in e.args:
+            print(colored(el, 'red'))
+        print('-' * 40)
+
+    return tree
+
+
+def get_ast_from_filename(filename):
     '''
         Function return ast which has type ast.Module
         @param filename - full path to file with code which will have
@@ -27,34 +62,7 @@ def get_AST(filename):
     tree = None
     try:
         with open(filename) as f:
-            try:
-                tree = ast.parse(f.read())
-            except IndentationError as err:
-                print('-' * 40)
-                print(colored('Not compiled: ' + filename, 'red'))
-                print(colored('IdentationError: ' + err.args[0], 'red'))
-                print(colored('In line ' + str(err.args[1][1]), 'red'))
-                print('-' * 40)
-            except SyntaxError as err:
-                print('-' * 40)
-                print(colored('Not compiled: ' + filename, 'red'))
-                print(colored('SyntaxError: ' + err.args[0], 'red'))
-                print(colored('In line ' + str(err.args[1][1]), 'red'))
-                print(colored('In column ' + str(err.args[1][2]), 'red'))
-                print('-' * 40)
-            except TabError as err:
-                print('-' * 40)
-                print(colored('Not compiled: ' + filename, 'red'))
-                print(colored('TabError: ' + err.args[0], 'red'))
-                print(colored('In line ' + str(err.args[1][1]), 'red'))
-                print('-' * 40)
-            except Exception as e:
-                print('-' * 40)
-                print(colored('Not compiled: ' + filename, 'red'))
-                print(colored(e.__class__.__name__, 'red'))
-                for el in e.args:
-                    print(colored(el, 'red'))
-                print('-' * 40)
+            tree = get_ast_from_content(f.read(), filename)
     except PermissionError:
         print("File denied.")
     except FileNotFoundError:
