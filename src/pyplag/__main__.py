@@ -109,6 +109,7 @@ if mode == 0:
         print(repo_url, " ... OK")
         print(" " * 40, end="\r")
         print('In repos {:.2%}'.format(iteration / count_iter), end="\r")
+
 elif mode == 1:
     # Github file comapres with files in git repositories
     # Use variablse 'git_file' and 'git'
@@ -183,8 +184,56 @@ elif mode == 2:
 elif mode == 3:
     # GitHub file comapres with files in a local directory
     # Use variablse 'git_file' and 'directory'
-    print('This mode is not ready yet')
-    #TODO
+    gh = GitHubParser(file_extensions=['py'], check_policy=args.check_policy)
+    tree1 = get_ast_from_content(gh.get_file_from_url(args.git_file)[0],
+                                 args.git_file)
+    if tree1 is None:
+        exit()
+
+    features1 = ASTFeatures()
+    features1.visit(tree1)
+
+    files = os.listdir(args.dir)
+    files = list(filter(lambda x: (x.endswith('.py')), files))
+
+    count_files = len(files)
+    if count_files == 0:
+        print("Folder is empty")
+        exit()
+
+    iterrations = (count_files)
+    iterration = 0
+
+    for row in np.arange(0, count_files, 1):
+        if args.dir[-1] != '/':
+            args.dir += '/'
+
+        filename = args.dir + files[row]
+        tree2 = get_ast_from_filename(filename)
+        if tree2 is None:
+            continue
+
+        features2 = ASTFeatures()
+        features2.visit(tree2)
+
+        metrics = run_compare(features1, features2)
+        total_similarity = np.sum(metrics * weights) / weights.sum()
+
+        if (total_similarity * 100) > args.threshold:
+            print_compare_res(metrics, total_similarity,
+                              features1.structure,
+                              features2.structure,
+                              features1.from_num,
+                              features2.from_num,
+                              features1.seq_ops,
+                              features2.seq_ops,
+                              features1.tokens,
+                              features2.tokens,
+                              args.git_file,
+                              filename.split('/')[-1])
+
+        iterration += 1
+        print('  {:.2%}'.format(iterration / iterrations), end="\r")
 
 elif mode == 4:
     # Local project comapres with a local directory
