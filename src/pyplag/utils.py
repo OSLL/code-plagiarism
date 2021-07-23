@@ -132,3 +132,54 @@ def print_compare_res(metrics, total_similarity,
         print(df, '\n')
 
     print('+' * 40)
+
+
+def compare_file_pair(filename, filename2, threshold):
+    '''
+        Function compares 2 files
+        filename - path to the first file (dir/file1.py)
+        filename2 - path the second file (dir/file2.py)
+    '''
+    tree1 = get_ast_from_filename(filename)
+    tree2 = get_ast_from_filename(filename2)
+
+    if tree1 is None:
+        return
+    if tree2 is None:
+        return
+
+    features1 = ASTFeatures()
+    features2 = ASTFeatures()
+    features1.visit(tree1)
+    features2.visit(tree2)
+
+    metrics = run_compare(features1, features2)
+    total_similarity = np.sum(metrics * weights) / weights.sum()
+
+    if (total_similarity * 100) > threshold:
+        print_compare_res(metrics, total_similarity,
+                          features1.structure,
+                          features2.structure,
+                          features1.from_num,
+                          features2.from_num,
+                          features1.seq_ops,
+                          features2.seq_ops,
+                          features1.tokens,
+                          features2.tokens,
+                          filename.split('/')[-1],
+                          filename2.split('/')[-1])
+
+    return (metrics, total_similarity)
+
+
+def get_files_path_from_directory(directory):
+    cur_dir_files = os.listdir(directory)
+    allowed_files = []
+    for file in cur_dir_files:
+        path = directory + '/' + file
+        if file.endswith('.py'):
+            allowed_files.append(path)
+        elif os.path.isdir(path):
+            allowed_files.extend(get_files_path_from_directory(path))
+
+    return allowed_files

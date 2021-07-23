@@ -91,6 +91,4 @@ def get_mode():
         print()
         exit()
 
-    #return (mode, file_path, git_file, git, directory, project, git_project,
-    #        reg_exp, check_policy, threshold)
     return mode, args
