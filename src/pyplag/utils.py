@@ -6,7 +6,7 @@ import ast
 import pandas as pd
 
 from termcolor import colored
-from src.pyplag.tfeatures import get_children_ind
+from src.pyplag.tfeatures import get_children_ind, ASTFeatures
 from src.pyplag.metric import counter_metric, struct_compare, op_shift_metric
 from src.pyplag.metric import value_jakkar_coef, lcs
 
@@ -134,7 +134,7 @@ def print_compare_res(metrics, total_similarity,
     print('+' * 40)
 
 
-def compare_file_pair(filename, filename2, threshold):
+def compare_file_pair(filename, filename2, threshold, weights):
     '''
         Function compares 2 files
         filename - path to the first file (dir/file1.py)

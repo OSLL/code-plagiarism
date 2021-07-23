@@ -48,6 +48,10 @@
 ## 4. Work with analyzers
 
 - python analyzer
+  > call help
+  ```
+    $ python3 src/pyplag --help
+  ```
   > Local file compares with files in a local directory
   ```
     $ python3 src/pyplag --file PATH --dir PATH [--threshold THRESHOLD]

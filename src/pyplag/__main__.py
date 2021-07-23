@@ -135,7 +135,7 @@ elif mode == 2:
             args.dir += '/'
 
         filename = args.dir + files[row]
-        compare_file_pair(args.file, filename, args.threshold)
+        compare_file_pair(args.file, filename, args.threshold, weights)
 
         iterration += 1
         print('  {:.2%}'.format(iterration / iterrations), end="\r")
@@ -215,7 +215,7 @@ elif mode == 4:
 
         filename = args.dir + dir_files[row]
         for file in project_files:
-            compare_file_pair(file, filename, args.threshold)
+            compare_file_pair(file, filename, args.threshold, weights)
 
             iterration += 1
             print('  {:.2%}'.format(iterration / iterrations), end="\r")
@@ -335,7 +335,7 @@ elif mode == 7:
     # Git project compares with git repositories
     # Use variables 'git_project' and 'git'
     gh = GitHubParser(file_extensions=['py'], check_policy=args.check_policy)
-    project_files = list(gh.get_files_generator_from_repo_url(args.git_project))
+    project_files = list(gh.get_files_generator_from_dir_url(args.git_project))
     if len(project_files) == 0:
         print("Project not consist py files.")
         exit()
