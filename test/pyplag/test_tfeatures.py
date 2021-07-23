@@ -7,13 +7,13 @@ from numba.typed import List, Dict
 from numba.core import types
 from src.pyplag.tfeatures import get_children_ind, ASTFeatures
 from src.pyplag.tfeatures import generate_unique_ngrams
-from src.pyplag.utils import get_AST
+from src.pyplag.utils import get_ast_from_filename
 
 
 class TestTfeatures(unittest.TestCase):
 
     def test_astfeatures_class_normal(self):
-        tree1 = get_AST('py/tests/test1.py')
+        tree1 = get_ast_from_filename('py/tests/test1.py')
         features1 = ASTFeatures()
         features1.visit(tree1)
         operators = Dict.empty(key_type=types.unicode_type,

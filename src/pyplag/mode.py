@@ -80,14 +80,14 @@ def get_mode():
         mode = 7
     else: 
         print('\n  Invalid arguments. Please use one of the following agrument combination:\n')    
-        print('  --file PATH --git URL [--reg_exp EXPR] [--check_policy CHECK_POLICY] [--threshold THRESHOLD]           Local file comapres with files in git repositories')
-        print('  --file PATH --dir PATH [--threshold THRESHOLD]                                                         Local file comapres with files in a local directory')
-        print('  --git_file URL --git URL [--reg_exp EXPR] [--check_policy CHECK_POLICY] [--threshold THRESHOLD]        Git file comapres with files in git repositories')
-        print('  --git_file URL --dir PATH [--threshold THRESHOLD]                                                      Git file comapres with files in a local directory')
-        print('  --project PATH --git URL [--reg_exp EXPR]  [--check_policy CHECK_POLICY] [--threshold THRESHOLD]       Files in local project comapre with git repositories')
-        print('  --project PATH --dir PATH [--threshold THRESHOLD]                                                      Files in local project comapre with files in a local directory')
-        print('  --git_project URL --git URL [--reg_exp EXPR]  [--check_policy CHECK_POLICY] [--threshold THRESHOLD]    Files in git project comapre with git repositories')
-        print('  --git_project URL --dir PATH [--threshold THRESHOLD]                                                   Files in git project comapre with files in a local directory')
+        print('  --file PATH --git URL [--reg_exp EXPR] [--check_policy CHECK_POLICY] [--threshold THRESHOLD]           Local file compares with files in git repositories')
+        print('  --file PATH --dir PATH [--threshold THRESHOLD]                                                         Local file compares with files in a local directory')
+        print('  --git_file URL --git URL [--reg_exp EXPR] [--check_policy CHECK_POLICY] [--threshold THRESHOLD]        Git file compares with files in git repositories')
+        print('  --git_file URL --dir PATH [--threshold THRESHOLD]                                                      Git file compares with files in a local directory')
+        print('  --project PATH --git URL [--reg_exp EXPR]  [--check_policy CHECK_POLICY] [--threshold THRESHOLD]       Files in local project compares with git repositories')
+        print('  --project PATH --dir PATH [--threshold THRESHOLD]                                                      Files in local project compares with files in a local directory')
+        print('  --git_project URL --git URL [--reg_exp EXPR]  [--check_policy CHECK_POLICY] [--threshold THRESHOLD]    Files in git project compares with git repositories')
+        print('  --git_project URL --dir PATH [--threshold THRESHOLD]                                                   Files in git project compares with files in a local directory')
         print()
         exit()
 

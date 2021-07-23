@@ -3,14 +3,14 @@ import context
 import unittest
 
 from src.pyplag.tfeatures import ASTFeatures
-from src.pyplag.utils import run_compare, get_AST
+from src.pyplag.utils import run_compare, get_ast_from_filename
 
 
 class TestUtils(unittest.TestCase):
 
     def test_run_compare_normal(self):
-        tree1 = get_AST('py/tests/test1.py')
-        tree2 = get_AST('py/tests/test2.py')
+        tree1 = get_ast_from_filename('py/tests/test1.py')
+        tree2 = get_ast_from_filename('py/tests/test2.py')
         features1 = ASTFeatures()
         features2 = ASTFeatures()
         features1.visit(tree1)
