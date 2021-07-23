@@ -53,6 +53,17 @@ def compare_file_pair(filename, filename2, threshold):
 
     return (metrics, total_similarity)
 
+def get_files_path_from_directory(directory):
+    cur_dir_files = os.listdir(directory)
+    allowed_files = []
+    for file in cur_dir_files:
+        path = directory + '/' + file
+        if file.endswith('.py'):
+            allowed_files.append(path)
+        elif os.path.isdir(path):
+            allowed_files.extend(get_files_path_from_directory(path))
+
+    return allowed_files
 
 #(mode, file_path, git_file, git, directory, project, git_project, reg_exp,
 # check_policy, threshold) = get_mode()
@@ -238,8 +249,28 @@ elif mode == 3:
 elif mode == 4:
     # Local project comapres with a local directory
     # Use variablse 'project' and 'directory'
-    print('This mode is not ready yet')
-    #TODO
+    dir_files = os.listdir(args.dir)
+    dir_files = list(filter(lambda x: (x.endswith('.py')), dir_files))
+    project_files = get_files_path_from_directory(args.project)
+
+    count_files = len(dir_files) * len(project_files)
+    if count_files == 0:
+        print("One of the folder is empty")
+        exit()
+
+    iterrations = (count_files)
+    iterration = 0
+
+    for row in np.arange(0, len(dir_files), 1):
+        if args.dir[-1] != '/':
+            args.dir += '/'
+
+        filename = args.dir + dir_files[row]
+        for file in project_files:
+            compare_file_pair(file, filename, args.threshold)
+
+            iterration += 1
+            print('  {:.2%}'.format(iterration / iterrations), end="\r")
 
 elif mode == 5:
     # Local project comapres with git repositories

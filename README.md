@@ -52,7 +52,7 @@
   ```
     $ python3 src/pyplag <path/to/folder/with/py/files>
   ```
-  Before starting work with repositories, you must to define variable OWNER in src/github_helper/.env and ACCESS_TOKEN:
+  Before starting work with repositories, you may to define variable ACCESS_TOKEN in src/github_helper/.env:
 
   ACCESS_TOKEN - Personal access token which add more requests to repos and access to private repos if you give it.
 

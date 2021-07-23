@@ -179,7 +179,7 @@ class GitHubParser:
 
         return file_content, file_url
 
-    def get_files_from_dir_url(self, dir_url):
+    def get_files_generator_from_dir_url(self, dir_url):
         owner, repo, branch, path = GitHubParser.parse_content_url(dir_url)
         api_url = '/repos/{}/{}/contents/{}'.format(owner, repo, path)
         params = {
@@ -196,4 +196,6 @@ class GitHubParser:
                                                                     node['sha'],
                                                                     current_path)
             if node["type"] == "file" and self.is_accepted_extension(node["name"]):
-                yield self.get_file_content_from_sha(owner, repo, branch, node["sha"])
+                path_to_file = 'https://github.com/{}/{}/tree/{}/{}'.format(owner, repo, branch,
+                                                                            current_path[2:])
+                yield self.get_file_content_from_sha(owner, repo, branch, node["sha"], path_to_file)

@@ -7,7 +7,7 @@ import pandas as pd
 
 from termcolor import colored
 from src.pyplag.tfeatures import get_children_ind
-from src.pyplag.metric import nodes_metric, struct_compare, op_shift_metric
+from src.pyplag.metric import counter_metric, struct_compare, op_shift_metric
 from src.pyplag.metric import value_jakkar_coef, lcs
 
 
@@ -73,9 +73,9 @@ def get_ast_from_filename(filename):
 
 def run_compare(features_f, features_s):
     jakkar_coef = value_jakkar_coef(features_f.tokens, features_s.tokens)
-    ops_res = nodes_metric(features_f.operators, features_s.operators)
-    kw_res = nodes_metric(features_f.keywords, features_s.keywords)
-    lits_res = nodes_metric(features_f.literals, features_s.literals)
+    ops_res = counter_metric(features_f.operators, features_s.operators)
+    kw_res = counter_metric(features_f.keywords, features_s.keywords)
+    lits_res = counter_metric(features_f.literals, features_s.literals)
 
     metrics = np.array([jakkar_coef, ops_res, kw_res, lits_res],
                        dtype=np.float32)
