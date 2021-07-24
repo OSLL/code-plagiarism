@@ -277,7 +277,7 @@ elif mode == 6:
     # Git project compares with a local directory
     # Use variables 'git_project' and 'direcrory'
     gh = GitHubParser(file_extensions=['py'], check_policy=args.check_policy)
-    project_files = list(gh.get_files_generator_from_repo_url(args.git_project))
+    project_files = list(gh.get_files_generator_from_dir_url(args.git_project))
     count_files_in_project = len(project_files)
     if count_files_in_project == 0:
         print("Project not consist py files.")
