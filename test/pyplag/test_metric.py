@@ -6,15 +6,15 @@ import numpy as np
 
 from numba.typed import Dict, List
 from numba.core import types
-from src.pyplag.metric import nodes_metric, struct_compare
+from src.pyplag.metric import counter_metric, struct_compare
 from src.pyplag.metric import op_shift_metric, value_jakkar_coef, lcs
 from src.pyplag.tfeatures import ASTFeatures, get_children_ind
-from src.pyplag.utils import get_AST
+from src.pyplag.utils import get_ast_from_filename
 
 
 class TestMetric(unittest.TestCase):
 
-    def test_nodes_metric_normal(self):
+    def test_counter_metric_normal(self):
         example1 = Dict.empty(key_type=types.unicode_type,
                               value_type=types.int64)
         for key, value in {'a': 2, 'b': 1, 'c': 5, 'd': 7}.items():
@@ -35,34 +35,34 @@ class TestMetric(unittest.TestCase):
         for key, value in {'USub': 5, 'Mor': 5, 'Ker': 5}.items():
             example4[key] = numba.int64(value)
 
-        res1 = nodes_metric(example1, example2)
-        res2 = nodes_metric(example3, example4)
-        res3 = nodes_metric(Dict.empty(key_type=types.unicode_type,
+        res1 = counter_metric(example1, example2)
+        res2 = counter_metric(example3, example4)
+        res3 = counter_metric(Dict.empty(key_type=types.unicode_type,
                                        value_type=types.int64),
                             example4)
-        res4 = nodes_metric(Dict.empty(key_type=types.unicode_type,
-                                       value_type=types.int64),
-                            Dict.empty(key_type=types.unicode_type,
-                                       value_type=types.int64))
+        res4 = counter_metric(Dict.empty(key_type=types.unicode_type,
+                                         value_type=types.int64),
+                              Dict.empty(key_type=types.unicode_type,
+                                         value_type=types.int64))
 
         self.assertEqual(res1, 0.175)
         self.assertEqual(res2, 0.3)
         self.assertEqual(res3, 0.0)
-        self.assertEqual(res4, 0.0)
+        self.assertEqual(res4, 1.0)
 
     '''
         Numba forbid bad arguments
-    def test_nodes_metric_bad_args(self):
-        res1 = nodes_metric("", [])
-        res2 = nodes_metric([], [])
+    def test_counter_metric_bad_args(self):
+        res1 = counter_metric("", [])
+        res2 = counter_metric([], [])
     '''
 
     #    self.assertEqual(TypeError, res1)
     #    self.assertEqual(TypeError, res2)
 
     def test_struct_compare_normal(self):
-        tree1 = get_AST('py/tests/test1.py')
-        tree2 = get_AST('py/tests/test2.py')
+        tree1 = get_ast_from_filename('py/tests/test1.py')
+        tree2 = get_ast_from_filename('py/tests/test2.py')
         features1 = ASTFeatures()
         features2 = ASTFeatures()
         features1.visit(tree1)
@@ -77,8 +77,8 @@ class TestMetric(unittest.TestCase):
                              compliance_matrix)
         self.assertEqual(res, [28, 34])
 
-        tree1 = get_AST('py/tests/sample1.py')
-        tree2 = get_AST('py/tests/sample11.py')
+        tree1 = get_ast_from_filename('py/tests/sample1.py')
+        tree2 = get_ast_from_filename('py/tests/sample11.py')
         features1 = ASTFeatures()
         features2 = ASTFeatures()
         features1.visit(tree1)
@@ -94,8 +94,8 @@ class TestMetric(unittest.TestCase):
         self.assertEqual(res, [275, 336])
 
     def test_struct_compare_file_empty(self):
-        tree1 = get_AST('py/tests/empty.py')
-        tree2 = get_AST('py/tests/test2.py')
+        tree1 = get_ast_from_filename('py/tests/empty.py')
+        tree2 = get_ast_from_filename('py/tests/test2.py')
         features1 = ASTFeatures()
         features2 = ASTFeatures()
         features1.visit(tree1)
@@ -110,8 +110,8 @@ class TestMetric(unittest.TestCase):
                              compliance_matrix)
         self.assertEqual(res, [1, 34])
 
-        tree1 = get_AST('py/tests/empty.py')
-        tree2 = get_AST('py/tests/test1.py')
+        tree1 = get_ast_from_filename('py/tests/empty.py')
+        tree2 = get_ast_from_filename('py/tests/test1.py')
         features1 = ASTFeatures()
         features2 = ASTFeatures()
         features1.visit(tree1)
@@ -169,13 +169,13 @@ class TestMetric(unittest.TestCase):
         res1 = value_jakkar_coef([1, 2, 3, 4, 5, 4],
                                  [1, 2, 3, 2, 5, 2])
         res2 = value_jakkar_coef([2, 1, 1, 3, 5, 6, 7],
-                                 [5, 6, 1, 3, 4, 2])
+                                 [1, 3, 5, 3, 5, 6])
         res3 = value_jakkar_coef([3, 1, 2, 7, 4, 5, 1, 2],
                                  [4, 5, 1, 3, 4, 6, 3, 1])
 
-        self.assertEqual(res1, 0.25)
-        self.assertAlmostEqual(res2, 0.222, 3)
-        self.assertEqual(res3, 0.3)
+        self.assertAlmostEqual(res1, 0.143, 3)
+        self.assertAlmostEqual(res2, 0.286, 3)
+        self.assertAlmostEqual(res3, 0.091, 3)
 
     def test_lcs(self):
         res1 = lcs(List([1, 2, 2, 3, 1, 4]),

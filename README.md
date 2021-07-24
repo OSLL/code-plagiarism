@@ -48,23 +48,45 @@
 ## 4. Work with analyzers
 
 - python analyzer
-  > Compare all files in folder
+  > call help
   ```
-    $ python3 src/pyplag <path/to/folder/with/py/files>
+    $ python3 src/pyplag --help
   ```
-  Before starting work with repositories, you must to define variable OWNER in src/github_helper/.env and ACCESS_TOKEN:
-
-  OWNER - organization user name on github;
+  > Local file compares with files in a local directory
+  ```
+    $ python3 src/pyplag --file PATH --dir PATH [--threshold THRESHOLD]
+  ```
+  > Files in local project compares with files in a local directory
+  ```
+    $ python3 src/pyplag --project PATH --dir PATH [--threshold THRESHOLD]
+  ```
+  Before starting work with repositories, you may to define variable ACCESS_TOKEN in src/github_helper/.env:
 
   ACCESS_TOKEN - Personal access token which add more requests to repos and access to private repos if you give it.
 
-  > Compare file in folder with files in github repositories
+  > Local file compares with files in git repositories
   ```
-    $ python3 src/pyplag <path/to/file/which/compare> <reg_exp>
+    $ python3 src/pyplag --file PATH --git URL [--reg_exp EXPR] [--check_policy CHECK_POLICY] [--threshold THRESHOLD]
   ```
-  > Compare file by link on github starts with https:// with files in github repositories
+  > Git file compares with files in git repositories
   ```
-    $ python3 src/pyplag <link/to/file/which/compare> <reg_exp>
+    $ python3 src/pyplag --git_file URL --git URL [--reg_exp EXPR] [--check_policy CHECK_POLICY] [--threshold THRESHOLD]
+  ```
+  > Git file compares with files in a local directory
+  ```
+    $ python3 src/pyplag --git_file URL --dir PATH [--threshold THRESHOLD]
+  ```
+  > Files in local project compares with git repositories
+  ```
+    $ python3 src/pyplag --project PATH --git URL [--reg_exp EXPR]  [--check_policy CHECK_POLICY] [--threshold THRESHOLD]
+  ```
+  > Files in git project compares with git repositories
+  ```
+    $ python3 src/pyplag --git_project URL --git URL [--reg_exp EXPR]  [--check_policy CHECK_POLICY] [--threshold THRESHOLD]
+  ```
+  > Files in git project compares with files in a local directory
+  ```
+    $ python3 src/pyplag --git_project URL --dir PATH [--threshold THRESHOLD]
   ```
 - C++/C analyzer
   > Compare all files in folder

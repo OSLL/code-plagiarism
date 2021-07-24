@@ -3,33 +3,36 @@ import context
 import numpy as np
 from numba import njit
 
-from src.pyplag.tfeatures import get_children_ind, generate_ngrams
+from src.pyplag.tfeatures import get_children_ind, generate_unique_ngrams
 from src.pyplag.other import get_from_tree, matrix_value
 
 
 @njit(fastmath=True)
-def nodes_metric(res1, res2):
+def counter_metric(counter1, counter2):
     '''
         Function return how same operators or keywords or literals
         in two trees
-        @param res1 - dict object with counts of op or kw or list
-        @param res2 - dict object with counts of op or kw or list
+        @param counter1 - dict object with counts of op or kw or list
+        @param counter2 - dict object with counts of op or kw or list
     '''
-    # if(type(res1) is not dict or type(res2) is not dict):
+    # if(type(counter1) is not dict or type(counter2) is not dict):
     #    return TypeError
 
+    if len(counter1) == 0 and len(counter2) == 0:
+        return 1.0
+
     percent_of_same = [0, 0]
-    for key in res1.keys():
-        if key not in res2:
-            percent_of_same[1] += res1[key]
+    for key in counter1.keys():
+        if key not in counter2:
+            percent_of_same[1] += counter1[key]
             continue
-        percent_of_same[0] += min(res1[key],
-                                  res2[key])
-        percent_of_same[1] += max(res1[key],
-                                  res2[key])
-    for key in res2.keys():
-        if key not in res1:
-            percent_of_same[1] += res2[key]
+        percent_of_same[0] += min(counter1[key],
+                                  counter2[key])
+        percent_of_same[1] += max(counter1[key],
+                                  counter2[key])
+    for key in counter2.keys():
+        if key not in counter1:
+            percent_of_same[1] += counter2[key]
             continue
 
     if percent_of_same[1] == 0:
@@ -171,11 +174,16 @@ def op_shift_metric(ops1, ops2):
 
 
 def value_jakkar_coef(tokens_first, tokens_second):
-    ngrams_first = generate_ngrams(tokens_first, 2)
-    ngrams_second = generate_ngrams(tokens_second, 2)
+    ngrams_first = generate_unique_ngrams(tokens_first, 3)
+    ngrams_second = generate_unique_ngrams(tokens_second, 3)
 
-    return (len(ngrams_first.intersection(ngrams_second)) /
-            len(ngrams_first | ngrams_second))
+    intersection = len(ngrams_first.intersection(ngrams_second))
+    union = len(ngrams_first | ngrams_second)
+
+    if union == 0:
+        return 0.0
+
+    return intersection / union
 
 
 @njit(fastmath=True)
