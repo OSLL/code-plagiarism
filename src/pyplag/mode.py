@@ -2,6 +2,7 @@ import os
 import sys
 import argparse
 
+
 def get_mode():
     parser = argparse.ArgumentParser()
     # Добавить bracnh policy
