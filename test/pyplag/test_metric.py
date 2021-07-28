@@ -157,7 +157,7 @@ class TestMetric(unittest.TestCase):
         res6 = op_shift_metric(example2, example3)
         res7 = op_shift_metric(example4, example5)
 
-        self.assertEqual(res3, (0, 0.0))
+        self.assertEqual(res3, (0, 1.0))
         self.assertEqual(res4, (0, 0.0))
         self.assertEqual(res5, (0, 0.0))
         self.assertEqual(res6[0], 0)

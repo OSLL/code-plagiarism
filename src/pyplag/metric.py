@@ -137,6 +137,8 @@ def op_shift_metric(ops1, ops2):
     #    return TypeError
     count_el_f = len(ops1)
     count_el_s = len(ops2)
+    if count_el_f == 0 and count_el_s == 0:
+        return 0, 1.0
     if count_el_f > count_el_s:
         tmp = ops1
         ops1 = ops2
