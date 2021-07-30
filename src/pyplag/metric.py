@@ -3,7 +3,7 @@ import context
 import numpy as np
 from numba import njit
 
-from src.pyplag.tfeatures import get_children_ind, generate_unique_ngrams
+from src.pyplag.tfeatures import get_children_indexes, generate_unique_ngrams
 from src.pyplag.other import get_from_tree, matrix_value
 
 
@@ -45,26 +45,22 @@ def counter_metric(counter1, counter2):
 def struct_compare(tree1, tree2, matrix=np.array([[[]]]), dtype=np.int64):
     '''
         Function for compare structure of two trees
-        @param tree1 - ast object
-        @param tree2 - ast object
-        @param output - if equal True, then in console prints matrix
-        of compliance else not
+        @param tree1 - a simple structure of the first AST.
+        @param tree2 - a simple structure of the second AST.
     '''
-    # if (not isinstance(tree1, ast.AST) or not isinstance(tree2, ast.AST)
-    #   or type(output) is not bool):
-    #   return TypeError
 
     count_of_nodes1 = len(tree1)
     count_of_nodes2 = len(tree2)
-    ch_inds1, count_of_children1 = get_children_ind(tree1, count_of_nodes1)
-    ch_inds2, count_of_children2 = get_children_ind(tree2, count_of_nodes2)
 
-    if (count_of_children1 == 0 and count_of_children2 == 0):
+    if (count_of_nodes1 == 0 and count_of_nodes2 == 0):
         return [1, 1]
-    elif (count_of_children1 == 0):
+    elif (count_of_nodes1 == 0):
         return [1, (count_of_nodes2 + 1)]
-    elif (count_of_children2 == 0):
+    elif (count_of_nodes2 == 0):
         return [1, (count_of_nodes1 + 1)]
+
+    ch_inds1, count_of_children1 = get_children_indexes(tree1)
+    ch_inds2, count_of_children2 = get_children_indexes(tree2)
 
     array = np.zeros((count_of_children1, count_of_children2, 2),
                      dtype=np.int64)

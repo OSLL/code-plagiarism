@@ -6,7 +6,7 @@ import ast
 import pandas as pd
 
 from termcolor import colored
-from src.pyplag.tfeatures import get_children_ind, ASTFeatures
+from src.pyplag.tfeatures import get_children_indexes, ASTFeatures
 from src.pyplag.metric import counter_metric, struct_compare, op_shift_metric
 from src.pyplag.metric import value_jakkar_coef, lcs
 
@@ -88,8 +88,8 @@ def print_compare_res(metrics, total_similarity,
                       seq_ops_f, seq_ops_s,
                       tokens_f, tokens_s,
                       filename1, filename2):
-    ch_inds1, count_ch1 = get_children_ind(struct1, len(struct1))
-    ch_inds2, count_ch2 = get_children_ind(struct2, len(struct2))
+    ch_inds1, count_ch1 = get_children_indexes(struct1)
+    ch_inds2, count_ch2 = get_children_indexes(struct2)
     compliance_matrix = np.zeros((count_ch1, count_ch2, 2), dtype=np.int64)
     struct_res = struct_compare(struct1, struct2,
                                 compliance_matrix)

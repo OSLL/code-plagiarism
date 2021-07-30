@@ -16,8 +16,7 @@ class ASTFeatures(ast.NodeVisitor):
     def __init__(self):
         self.curr_depth = 0
         self.count_of_nodes = 0
-        self.seq_ops = List(['tmp'])
-        self.seq_ops.clear()
+        self.seq_ops = List().empty_list(types.unicode_type)
         self.operators = Dict.empty(key_type=types.unicode_type,
                                     value_type=types.int64)
         self.keywords = Dict.empty(key_type=types.unicode_type,
@@ -33,8 +32,7 @@ class ASTFeatures(ast.NodeVisitor):
         self.cunodes = 0
         self.structure = List([(1, 2)])
         self.structure.clear()
-        self.tokens = List([1])
-        self.tokens.clear()
+        self.tokens = List().empty_list(types.int64)
 
     def generic_visit(self, node):
         '''
@@ -86,20 +84,26 @@ class ASTFeatures(ast.NodeVisitor):
 
 
 @njit(fastmath=True)
-def get_children_ind(tree, count_of_nodes):
+def get_children_indexes(tree):
+    '''
+        The function returns indexes of her children and their count.
+        @param tree - a simple structure of the first AST.
+    '''
+    indexes = List([1])
+    indexes.clear()
     count_of_children = 0
-    if count_of_nodes == 0:
-        return None, count_of_children
 
-    ind = List([0])
-    count_of_children = 1
-    curr_level = tree[0][0]
-    for i in np.arange(1, count_of_nodes, 1):
-        if curr_level == tree[i][0]:
-            ind.append(i)
+    if len(tree) != 0:
+        current_level = tree[0][0]
+
+    current_index = 0
+    for node in tree:
+        if current_level == node[0]:
+            indexes.append(current_index)
             count_of_children += 1
+        current_index += 1
 
-    return ind, count_of_children
+    return indexes, count_of_children
 
 
 def generate_unique_ngrams(tokens, n=3):
