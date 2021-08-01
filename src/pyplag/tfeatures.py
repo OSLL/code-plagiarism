@@ -1,7 +1,6 @@
 import context
 
 import ast
-import numpy as np
 from numba import njit
 from numba.typed import List, Dict
 from numba.core import types
@@ -107,6 +106,11 @@ def get_children_indexes(tree):
 
 
 def generate_unique_ngrams(tokens, n=3):
+    '''
+        The function returns a set of N-grams.
+        @param tokens - list of tokens
+        @param n - count of elements in sequences
+    '''
     return {tuple(tokens[i:i + n]) for i in range(len(tokens) - n + 1)}
 
 

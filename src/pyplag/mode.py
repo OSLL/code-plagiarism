@@ -7,19 +7,19 @@ def get_mode():
     parser = argparse.ArgumentParser()
     # Добавить bracnh policy
     # Добавить threshold
-    parser.add_argument('-f', "--file", type=str, 
+    parser.add_argument('-f', "--file", type=str,
                         help="Path to file on a computer")
-    parser.add_argument("-F", "--git_file", type=str, 
+    parser.add_argument("-F", "--git_file", type=str,
                         help="URL to file in a GIT repository")
-    parser.add_argument("-g", "--git", type=str, 
+    parser.add_argument("-g", "--git", type=str,
                         help="GitHub organisation/user name")
-    parser.add_argument("-d", "--dir", type=str, 
+    parser.add_argument("-d", "--dir", type=str,
                         help="Path to a local directory")
-    parser.add_argument("-p", "--project", type=str, 
+    parser.add_argument("-p", "--project", type=str,
                         help="Path to a local project")
-    parser.add_argument("-P", "--git_project", type=str, 
+    parser.add_argument("-P", "--git_project", type=str,
                         help="Path to a GIT project")
-    parser.add_argument("-e", "--reg_exp", type=str, 
+    parser.add_argument("-e", "--reg_exp", type=str,
                         help="Regular expresion (in GitHub mode)")
     parser.add_argument("-cp", "--check_policy", type=int,
                         help="Branches check policy, 0 - only main, 1 - All",
@@ -31,27 +31,19 @@ def get_mode():
     args = parser.parse_args()
 
     file_path = args.file
-    git_file = args.git_file
-    git = args.git
     directory = args.dir
-    project = args.project
-    git_project = args.git_project
-    reg_exp = args.reg_exp
-    check_policy = args.check_policy
-    threshold = args.threshold
 
     if not directory:
         directory = '/py'
     else:
         if not os.path.exists(directory):
-            print('Directory '+ directory + ' doesn\'t exist')
+            print('Directory ' + directory + ' doesn\'t exist')
             exit()
 
     if file_path:
         if not os.path.exists(file_path):
             print('File ' + file_path + ' doesn\'t exist')
             exit()
-
 
     if len(sys.argv) == 1:
         mode = -1
@@ -79,8 +71,8 @@ def get_mode():
     elif args.git_project and args.git and not (args.file or args.dir or args.git_file or args.project):
         print("Git project compares with git repositories")
         mode = 7
-    else: 
-        print('\n  Invalid arguments. Please use one of the following agrument combination:\n')    
+    else:
+        print('\n  Invalid arguments. Please use one of the following agrument combination:\n')
         print('  --file PATH --git URL [--reg_exp EXPR] [--check_policy CHECK_POLICY] [--threshold THRESHOLD]           Local file compares with files in git repositories')
         print('  --file PATH --dir PATH [--threshold THRESHOLD]                                                         Local file compares with files in a local directory')
         print('  --git_file URL --git URL [--reg_exp EXPR] [--check_policy CHECK_POLICY] [--threshold THRESHOLD]        Git file compares with files in git repositories')

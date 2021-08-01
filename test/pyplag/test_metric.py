@@ -38,8 +38,8 @@ class TestMetric(unittest.TestCase):
         res1 = counter_metric(example1, example2)
         res2 = counter_metric(example3, example4)
         res3 = counter_metric(Dict.empty(key_type=types.unicode_type,
-                                       value_type=types.int64),
-                            example4)
+                                         value_type=types.int64),
+                              example4)
         res4 = counter_metric(Dict.empty(key_type=types.unicode_type,
                                          value_type=types.int64),
                               Dict.empty(key_type=types.unicode_type,

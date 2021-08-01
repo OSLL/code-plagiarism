@@ -57,11 +57,6 @@ def matrix_value(array):
     return same_struct_metric, indexes
 
 
-@njit(fastmath=True)
-def get_from_tree(tree, start, finish):
-    return tree[start:finish]
-
-
 # YAGNI
 class NodeGetter(ast.NodeVisitor):
     def __init__(self):

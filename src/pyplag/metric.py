@@ -4,7 +4,7 @@ import numpy as np
 from numba import njit
 
 from src.pyplag.tfeatures import get_children_indexes, generate_unique_ngrams
-from src.pyplag.other import get_from_tree, matrix_value
+from src.pyplag.other import matrix_value
 
 
 @njit(fastmath=True)
@@ -67,25 +67,25 @@ def struct_compare(tree1, tree2, matrix=np.array([[[]]]), dtype=np.int64):
 
     for i in np.arange(0, count_of_children1 - 1, 1):
         for j in np.arange(0, count_of_children2 - 1, 1):
-            section1 = get_from_tree(tree1, ch_inds1[i] + 1, ch_inds1[i + 1])
-            section2 = get_from_tree(tree2, ch_inds2[j] + 1, ch_inds2[j + 1])
+            section1 = tree1[ch_inds1[i] + 1:ch_inds1[i + 1]]
+            section2 = tree2[ch_inds2[j] + 1:ch_inds2[j + 1]]
             array[i][j] = struct_compare(section1,
                                          section2)
 
     for j in np.arange(0, count_of_children2 - 1, 1):
-        section1 = get_from_tree(tree1, ch_inds1[-1] + 1, count_of_nodes1)
-        section2 = get_from_tree(tree2, ch_inds2[j] + 1, ch_inds2[j + 1])
+        section1 = tree1[ch_inds1[-1] + 1:count_of_nodes1]
+        section2 = tree2[ch_inds2[j] + 1:ch_inds2[j + 1]]
         array[count_of_children1 - 1][j] = struct_compare(section1,
                                                           section2)
 
     for i in np.arange(0, count_of_children1 - 1, 1):
-        section1 = get_from_tree(tree1, ch_inds1[i] + 1, ch_inds1[i + 1])
-        section2 = get_from_tree(tree2, ch_inds2[-1] + 1, count_of_nodes2)
+        section1 = tree1[ch_inds1[i] + 1:ch_inds1[i + 1]]
+        section2 = tree2[ch_inds2[-1] + 1:count_of_nodes2]
         array[i][count_of_children2 - 1] = struct_compare(section1,
                                                           section2)
 
-    section1 = get_from_tree(tree1, ch_inds1[-1] + 1, count_of_nodes1)
-    section2 = get_from_tree(tree2, ch_inds2[-1] + 1, count_of_nodes2)
+    section1 = tree1[ch_inds1[-1] + 1:count_of_nodes1]
+    section2 = tree2[ch_inds2[-1] + 1:count_of_nodes2]
     array[count_of_children1 - 1][count_of_children2 - 1] = struct_compare(section1,
                                                                            section2)
 
