@@ -13,10 +13,18 @@ from src.pyplag.utils import compare_file_pair, get_files_path_from_directory
 from src.webparsers.github_parser import GitHubParser
 from termcolor import colored
 from mode import get_mode
+from src.logger import get_logger
+from src.pyplag.const import LOG_PATH
+
+logger = get_logger(__name__, LOG_PATH)
+
+logger.info("Pyplag starting...")
 
 pd.options.display.float_format = '{:,.2%}'.format
 
 mode, args = get_mode()
+
+logger.info("Working mode = " + str(mode))
 
 tree1 = None
 start_eval = perf_counter()
@@ -384,7 +392,9 @@ elif mode == 7:
         print('In repos {:.2%}'.format(iteration / count_iter), end="\r")
 
 else:
+    logger.warning("Incorrect arguments!")
     print("Check the arguments (use --help)")
+    logger.info("Pyplag stopping...")
     exit()
 
 print("Analysis complete")
