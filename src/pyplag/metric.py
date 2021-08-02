@@ -59,35 +59,20 @@ def struct_compare(tree1, tree2, matrix=np.array([[[]]]), dtype=np.int64):
     elif (count_of_nodes2 == 0):
         return [1, (count_of_nodes1 + 1)]
 
-    ch_inds1, count_of_children1 = get_children_indexes(tree1)
-    ch_inds2, count_of_children2 = get_children_indexes(tree2)
+    key_indexes1, count_of_children1 = get_children_indexes(tree1)
+    key_indexes2, count_of_children2 = get_children_indexes(tree2)
+    key_indexes1.append(count_of_nodes1)
+    key_indexes2.append(count_of_nodes2)
 
     array = np.zeros((count_of_children1, count_of_children2, 2),
                      dtype=np.int64)
 
-    for i in np.arange(0, count_of_children1 - 1, 1):
-        for j in np.arange(0, count_of_children2 - 1, 1):
-            section1 = tree1[ch_inds1[i] + 1:ch_inds1[i + 1]]
-            section2 = tree2[ch_inds2[j] + 1:ch_inds2[j + 1]]
+    for i in np.arange(0, count_of_children1, 1):
+        for j in np.arange(0, count_of_children2, 1):
+            section1 = tree1[key_indexes1[i] + 1:key_indexes1[i + 1]]
+            section2 = tree2[key_indexes2[j] + 1:key_indexes2[j + 1]]
             array[i][j] = struct_compare(section1,
                                          section2)
-
-    for j in np.arange(0, count_of_children2 - 1, 1):
-        section1 = tree1[ch_inds1[-1] + 1:count_of_nodes1]
-        section2 = tree2[ch_inds2[j] + 1:ch_inds2[j + 1]]
-        array[count_of_children1 - 1][j] = struct_compare(section1,
-                                                          section2)
-
-    for i in np.arange(0, count_of_children1 - 1, 1):
-        section1 = tree1[ch_inds1[i] + 1:ch_inds1[i + 1]]
-        section2 = tree2[ch_inds2[-1] + 1:count_of_nodes2]
-        array[i][count_of_children2 - 1] = struct_compare(section1,
-                                                          section2)
-
-    section1 = tree1[ch_inds1[-1] + 1:count_of_nodes1]
-    section2 = tree2[ch_inds2[-1] + 1:count_of_nodes2]
-    array[count_of_children1 - 1][count_of_children2 - 1] = struct_compare(section1,
-                                                                           section2)
 
     if matrix.size != 0:
         for i in np.arange(0, count_of_children1, 1):
@@ -97,26 +82,18 @@ def struct_compare(tree1, tree2, matrix=np.array([[[]]]), dtype=np.int64):
     same_struct_metric, indexes = matrix_value(array)
     if count_of_children1 > count_of_children2:
         added = [indexes[i][0] for i in np.arange(0, count_of_children2, 1)]
-        for k in np.arange(0, count_of_children1 - 1, 1):
+        for k in np.arange(0, count_of_children1, 1):
             if k in added:
                 continue
             else:
-                same_struct_metric[1] += len(tree1[ch_inds1[k]:ch_inds1[k + 1]])
-        if (count_of_children1 - 1) in added:
-            pass
-        else:
-            same_struct_metric[1] += len(tree1[ch_inds1[-1]:count_of_nodes1])
+                same_struct_metric[1] += len(tree1[key_indexes1[k]:key_indexes1[k + 1]])
     elif count_of_children2 > count_of_children1:
         added = [indexes[i][1] for i in np.arange(0, count_of_children1, 1)]
-        for k in np.arange(0, count_of_children2 - 1, 1):
+        for k in np.arange(0, count_of_children2, 1):
             if k in added:
                 continue
             else:
-                same_struct_metric[1] += len(tree2[ch_inds2[k]:ch_inds2[k + 1]])
-        if (count_of_children2 - 1) in added:
-            pass
-        else:
-            same_struct_metric[1] += len(tree2[ch_inds2[-1]:count_of_nodes2])
+                same_struct_metric[1] += len(tree2[key_indexes2[k]:key_indexes2[k + 1]])
 
     return same_struct_metric
 
