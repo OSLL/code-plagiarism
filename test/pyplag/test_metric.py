@@ -8,7 +8,7 @@ from numba.typed import Dict, List
 from numba.core import types
 from src.pyplag.metric import counter_metric, struct_compare
 from src.pyplag.metric import op_shift_metric, value_jakkar_coef, lcs
-from src.pyplag.tfeatures import ASTFeatures, get_children_ind
+from src.pyplag.tfeatures import ASTFeatures, get_children_indexes
 from src.pyplag.utils import get_ast_from_filename
 
 
@@ -38,8 +38,8 @@ class TestMetric(unittest.TestCase):
         res1 = counter_metric(example1, example2)
         res2 = counter_metric(example3, example4)
         res3 = counter_metric(Dict.empty(key_type=types.unicode_type,
-                                       value_type=types.int64),
-                            example4)
+                                         value_type=types.int64),
+                              example4)
         res4 = counter_metric(Dict.empty(key_type=types.unicode_type,
                                          value_type=types.int64),
                               Dict.empty(key_type=types.unicode_type,
@@ -67,10 +67,8 @@ class TestMetric(unittest.TestCase):
         features2 = ASTFeatures()
         features1.visit(tree1)
         features2.visit(tree2)
-        count_ch1 = (get_children_ind(features1.structure,
-                                      len(features1.structure)))[1]
-        count_ch2 = (get_children_ind(features2.structure,
-                                      len(features2.structure)))[1]
+        count_ch1 = (get_children_indexes(features1.structure))[1]
+        count_ch2 = (get_children_indexes(features2.structure))[1]
         compliance_matrix = np.zeros((count_ch1, count_ch2, 2),
                                      dtype=np.int64)
         res = struct_compare(features1.structure, features2.structure,
@@ -83,10 +81,8 @@ class TestMetric(unittest.TestCase):
         features2 = ASTFeatures()
         features1.visit(tree1)
         features2.visit(tree2)
-        count_ch1 = (get_children_ind(features1.structure,
-                                      len(features1.structure)))[1]
-        count_ch2 = (get_children_ind(features2.structure,
-                                      len(features2.structure)))[1]
+        count_ch1 = (get_children_indexes(features1.structure))[1]
+        count_ch2 = (get_children_indexes(features2.structure))[1]
         compliance_matrix = np.zeros((count_ch1, count_ch2, 2),
                                      dtype=np.int64)
         res = struct_compare(features1.structure, features2.structure,
@@ -100,10 +96,8 @@ class TestMetric(unittest.TestCase):
         features2 = ASTFeatures()
         features1.visit(tree1)
         features2.visit(tree2)
-        count_ch1 = (get_children_ind(features1.structure,
-                                      len(features1.structure)))[1]
-        count_ch2 = (get_children_ind(features2.structure,
-                                      len(features2.structure)))[1]
+        count_ch1 = (get_children_indexes(features1.structure))[1]
+        count_ch2 = (get_children_indexes(features2.structure))[1]
         compliance_matrix = np.zeros((count_ch1, count_ch2, 2),
                                      dtype=np.int64)
         res = struct_compare(features1.structure, features2.structure,
@@ -116,10 +110,8 @@ class TestMetric(unittest.TestCase):
         features2 = ASTFeatures()
         features1.visit(tree1)
         features2.visit(tree2)
-        count_ch1 = (get_children_ind(features1.structure,
-                                      len(features1.structure)))[1]
-        count_ch2 = (get_children_ind(features2.structure,
-                                      len(features2.structure)))[1]
+        count_ch1 = (get_children_indexes(features1.structure))[1]
+        count_ch2 = (get_children_indexes(features2.structure))[1]
         compliance_matrix = np.zeros((count_ch1, count_ch2, 2),
                                      dtype=np.int64)
         res = struct_compare(features1.structure, features2.structure,
@@ -157,7 +149,7 @@ class TestMetric(unittest.TestCase):
         res6 = op_shift_metric(example2, example3)
         res7 = op_shift_metric(example4, example5)
 
-        self.assertEqual(res3, (0, 0.0))
+        self.assertEqual(res3, (0, 1.0))
         self.assertEqual(res4, (0, 0.0))
         self.assertEqual(res5, (0, 0.0))
         self.assertEqual(res6[0], 0)

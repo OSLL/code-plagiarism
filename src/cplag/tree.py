@@ -90,4 +90,3 @@ def find_max_index(array, len1, len2):
                 index = (i, j)
 
     return index
-    

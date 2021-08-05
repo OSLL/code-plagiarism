@@ -6,4 +6,3 @@ IGNORE = [CursorKind.PREPROCESSING_DIRECTIVE,
           CursorKind.INCLUSION_DIRECTIVE,
           CursorKind.USING_DIRECTIVE,
           CursorKind.NAMESPACE]
-          

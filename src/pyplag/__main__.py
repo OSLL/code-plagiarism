@@ -1,7 +1,5 @@
 import context
-import ast
 import os
-import sys
 import numpy as np
 import pandas as pd
 
@@ -11,7 +9,6 @@ from src.pyplag.utils import get_ast_from_content, run_compare
 from src.pyplag.utils import get_ast_from_filename, print_compare_res
 from src.pyplag.utils import compare_file_pair, get_files_path_from_directory
 from src.webparsers.github_parser import GitHubParser
-from termcolor import colored
 from mode import get_mode
 from src.logger import get_logger
 from src.pyplag.const import LOG_PATH

@@ -16,4 +16,3 @@ def get_cursor_from_file(filename, args=[]):
 
     file_obj = index.parse(filename, args=args, options=options) or 0
     return file_obj.cursor
-    

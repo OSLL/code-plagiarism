@@ -1,10 +1,8 @@
 import context
-
 import unittest
 import numpy as np
 
-from numba.typed import List
-from src.pyplag.other import find_max_index, matrix_value, get_from_tree
+from src.pyplag.other import find_max_index, matrix_value
 
 
 class TestOther(unittest.TestCase):
@@ -58,10 +56,3 @@ class TestOther(unittest.TestCase):
         self.assertEqual(ind3[1][1], 1)
         self.assertEqual(ind3[2][0], 2)
         self.assertEqual(ind3[2][1], 2)
-
-    def test_get_from_tree_normal(self):
-        self.assertEqual(get_from_tree(List([1, 2, 3]), 1, 3), List([2, 3]))
-        self.assertEqual(get_from_tree(List([(4, 3), (5, 8), (7, 0), (4, 3)]),
-                                       0, 3), List([(4, 3), (5, 8), (7, 0)]))
-        self.assertEqual(get_from_tree(List(["1", "2", "3", "4", "5"]), 2, 4),
-                         List(["3", "4"]))

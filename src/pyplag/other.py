@@ -37,6 +37,7 @@ def find_max_index(array):
 
 @njit(fastmath=True)
 def matrix_value(array):
+    # At worst O(n^3 + 2n^2)
     same_struct_metric = [1, 1]
     minimal = min(array.shape[0], array.shape[1])
     indexes = List()
@@ -46,17 +47,14 @@ def matrix_value(array):
         same_struct_metric[0] += array[ind[0]][ind[1]][0]
         same_struct_metric[1] += array[ind[0]][ind[1]][1]
 
+        # Zeroing row
         for i in np.arange(0, array.shape[1], 1):
             array[ind[0]][i] = [0, 0]
+        # Zeroing column
         for j in np.arange(0, array.shape[0], 1):
             array[j][ind[1]] = [0, 0]
 
     return same_struct_metric, indexes
-
-
-@njit(fastmath=True)
-def get_from_tree(tree, start, finish):
-    return tree[start:finish]
 
 
 # YAGNI

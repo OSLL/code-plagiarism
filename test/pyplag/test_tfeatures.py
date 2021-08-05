@@ -5,7 +5,7 @@ import numba
 
 from numba.typed import List, Dict
 from numba.core import types
-from src.pyplag.tfeatures import get_children_ind, ASTFeatures
+from src.pyplag.tfeatures import get_children_indexes, ASTFeatures
 from src.pyplag.tfeatures import generate_unique_ngrams
 from src.pyplag.utils import get_ast_from_filename
 
@@ -39,13 +39,13 @@ class TestTfeatures(unittest.TestCase):
         self.assertEqual(features1.cunodes, numba.int64(13))
         self.assertEqual(len(features1.structure), 27)
 
-    def test_get_children_ind_normal(self):
+    def test_get_children_indexes_normal(self):
         example1 = List([(1, 2), (2, 3), (3, 5), (2, 4), (2, 5), (1, 6)])
         example2 = List([(3, 4), (3, 2), (4, 5), (3, 1), (4, 8), (3, 8)])
         example3 = List([(2, 1), (3, 4), (3, 10), (4, 1), (2, 5), (2, 9)])
-        ind1, c_ch1 = get_children_ind(example1, len(example1))
-        ind2, c_ch2 = get_children_ind(example2, len(example2))
-        ind3, c_ch3 = get_children_ind(example3, len(example3))
+        ind1, c_ch1 = get_children_indexes(example1)
+        ind2, c_ch2 = get_children_indexes(example2)
+        ind3, c_ch3 = get_children_indexes(example3)
 
         self.assertEqual(c_ch1, 2)
         self.assertEqual(ind1[0], 0)
