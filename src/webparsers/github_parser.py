@@ -2,11 +2,10 @@ import requests
 import base64
 import re
 
-from decouple import config
 
 class GitHubParser:
-    def __init__(self, file_extensions=['py', 'c', 'cpp', 'h'], check_policy=0):
-        self.__access_token = config('ACCESS_TOKEN', default='')
+    def __init__(self, file_extensions=['py', 'c', 'cpp', 'h'], check_policy=0, access_token=''):
+        self.__access_token = access_token
         self.__check_all_branches = check_policy
         self.__file_extensions = file_extensions
 
@@ -59,6 +58,8 @@ class GitHubParser:
 
         response = requests.get(address + api_url, headers=headers, params=params)
         if response.status_code == 403:
+            if 'message' in response.json().keys():
+                raise Exception(response.json()['message'])
             raise KeyError
         response.raise_for_status()
 

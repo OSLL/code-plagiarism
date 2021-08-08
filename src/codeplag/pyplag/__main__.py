@@ -1,19 +1,20 @@
-import context
 import os
 import numpy as np
 import pandas as pd
 
 from time import perf_counter
-from src.pyplag.tfeatures import ASTFeatures
-from src.pyplag.utils import get_ast_from_content, run_compare
-from src.pyplag.utils import get_ast_from_filename, print_compare_res
-from src.pyplag.utils import compare_file_pair, get_files_path_from_directory
-from src.webparsers.github_parser import GitHubParser
-from mode import get_mode
+from codeplag.pyplag.tfeatures import ASTFeatures
+from codeplag.pyplag.utils import get_ast_from_content, run_compare
+from codeplag.pyplag.utils import get_ast_from_filename, print_compare_res
+from codeplag.pyplag.utils import compare_file_pair, get_files_path_from_directory
+from webparsers.github_parser import GitHubParser
+from codeplag.pyplag.mode import get_mode
+from decouple import config
 
 pd.options.display.float_format = '{:,.2%}'.format
 
 mode, args = get_mode()
+ACCESS_TOKEN = config('ACCESS_TOKEN', default='')
 
 tree1 = None
 start_eval = perf_counter()
@@ -31,7 +32,8 @@ if mode == 0:
     features1 = ASTFeatures()
     features1.visit(tree1)
 
-    gh = GitHubParser(file_extensions=['py'], check_policy=args.check_policy)
+    gh = GitHubParser(file_extensions=['py'], check_policy=args.check_policy,
+                      access_token=ACCESS_TOKEN)
     repos = gh.get_list_of_repos(owner=args.git, reg_exp=args.reg_exp)
     count_iter = len(repos)
     iteration = 0
@@ -69,7 +71,8 @@ if mode == 0:
 elif mode == 1:
     # Github file compares with files in git repositories
     # Use variablse 'git_file' and 'git'
-    gh = GitHubParser(file_extensions=['py'], check_policy=args.check_policy)
+    gh = GitHubParser(file_extensions=['py'], check_policy=args.check_policy,
+                      access_token=ACCESS_TOKEN)
     tree1 = get_ast_from_content(gh.get_file_from_url(args.git_file)[0],
                                  args.git_file)
     if tree1 is None:
@@ -140,7 +143,8 @@ elif mode == 2:
 elif mode == 3:
     # GitHub file compares with files in a local directory
     # Use variablse 'git_file' and 'directory'
-    gh = GitHubParser(file_extensions=['py'], check_policy=args.check_policy)
+    gh = GitHubParser(file_extensions=['py'], check_policy=args.check_policy,
+                      access_token=ACCESS_TOKEN)
     tree1 = get_ast_from_content(gh.get_file_from_url(args.git_file)[0],
                                  args.git_file)
     if tree1 is None:
@@ -220,7 +224,8 @@ elif mode == 4:
 elif mode == 5:
     # Local project compares with git repositories
     # Use variables 'project' and 'git'
-    gh = GitHubParser(file_extensions=['py'], check_policy=args.check_policy)
+    gh = GitHubParser(file_extensions=['py'], check_policy=args.check_policy,
+                      access_token=ACCESS_TOKEN)
 
     project_files = get_files_path_from_directory(args.project)
     if len(project_files) == 0:
@@ -273,7 +278,8 @@ elif mode == 5:
 elif mode == 6:
     # Git project compares with a local directory
     # Use variables 'git_project' and 'direcrory'
-    gh = GitHubParser(file_extensions=['py'], check_policy=args.check_policy)
+    gh = GitHubParser(file_extensions=['py'], check_policy=args.check_policy,
+                      access_token=ACCESS_TOKEN)
     project_files = list(gh.get_files_generator_from_dir_url(args.git_project))
     count_files_in_project = len(project_files)
     if count_files_in_project == 0:
@@ -331,7 +337,8 @@ elif mode == 6:
 elif mode == 7:
     # Git project compares with git repositories
     # Use variables 'git_project' and 'git'
-    gh = GitHubParser(file_extensions=['py'], check_policy=args.check_policy)
+    gh = GitHubParser(file_extensions=['py'], check_policy=args.check_policy,
+                      access_token=ACCESS_TOKEN)
     project_files = list(gh.get_files_generator_from_dir_url(args.git_project))
     if len(project_files) == 0:
         print("Project not consist py files.")

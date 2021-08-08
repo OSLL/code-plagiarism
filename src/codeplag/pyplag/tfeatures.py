@@ -1,12 +1,10 @@
-import context
-
 import ast
 from numba import njit
 from numba.typed import List, Dict
 from numba.core import types
 
-from src.pyplag.const import IGNORE_NODES, OPERATORS, KEYWORDS, LITERALS
-from src.pyplag.const import TO_TOKEN
+from codeplag.pyplag.const import IGNORE_NODES, OPERATORS, KEYWORDS, LITERALS
+from codeplag.pyplag.const import TO_TOKEN
 
 
 # Можно сохранять название узлов только самого верхнего, первого уровня,
@@ -80,38 +78,6 @@ class ASTFeatures(ast.NodeVisitor):
             self.curr_depth += 1
             ast.NodeVisitor.generic_visit(self, node)
             self.curr_depth -= 1
-
-
-@njit(fastmath=True)
-def get_children_indexes(tree):
-    '''
-        The function returns indexes of her children and their count.
-        @param tree - a simple structure of the first AST.
-    '''
-    indexes = List([1])
-    indexes.clear()
-    count_of_children = 0
-
-    if len(tree) != 0:
-        current_level = tree[0][0]
-
-    current_index = 0
-    for node in tree:
-        if current_level == node[0]:
-            indexes.append(current_index)
-            count_of_children += 1
-        current_index += 1
-
-    return indexes, count_of_children
-
-
-def generate_unique_ngrams(tokens, n=3):
-    '''
-        The function returns a set of N-grams.
-        @param tokens - list of tokens
-        @param n - count of elements in sequences
-    '''
-    return {tuple(tokens[i:i + n]) for i in range(len(tokens) - n + 1)}
 
 
 # YAGNI

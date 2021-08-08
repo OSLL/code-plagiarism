@@ -1,14 +1,13 @@
-import context
-
 import os
 import numpy as np
 import ast
 import pandas as pd
 
 from termcolor import colored
-from src.pyplag.tfeatures import get_children_indexes, ASTFeatures
-from src.pyplag.metric import counter_metric, struct_compare, op_shift_metric
-from src.pyplag.metric import value_jakkar_coef, lcs
+from codeplag.pyplag.tfeatures import ASTFeatures
+from codeplag.algorithms.featurebased import get_children_indexes
+from codeplag.algorithms.featurebased import counter_metric, struct_compare, op_shift_metric
+from codeplag.algorithms.tokenbased import value_jakkar_coef, lcs
 
 
 def get_ast_from_content(code, path):
