@@ -1,9 +1,7 @@
-from context import *
-
 import numpy as np
 import pandas as pd
 from clang.cindex import TokenKind
-from src.cplag.tree import *
+from codeplag.cplag.tree import *
 
 def calculate_metric(children1, children2, len1, len2, array):
     '''

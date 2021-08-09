@@ -1,8 +1,6 @@
-from context import *
-
 import unittest
 from test.cplag.util import prepare_cursors
-from src.cplag.metric import *
+from codeplag.cplag.metric import *
 
 class TestMetric(unittest.TestCase):
 

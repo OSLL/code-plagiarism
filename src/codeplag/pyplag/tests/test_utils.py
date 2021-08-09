@@ -1,9 +1,7 @@
-import context
-
 import unittest
 
-from src.pyplag.tfeatures import ASTFeatures
-from src.pyplag.utils import run_compare, get_ast_from_filename
+from codeplag.pyplag.tfeatures import ASTFeatures
+from codeplag.pyplag.utils import run_compare, get_ast_from_filename
 
 
 class TestUtils(unittest.TestCase):

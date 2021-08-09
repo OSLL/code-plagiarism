@@ -1,11 +1,9 @@
-from context import *
-
 import ccsyspath
 import sys
 import os
 from time import perf_counter
-from src.cplag.util import get_cursor_from_file
-from src.cplag.metric import *
+from codeplag.cplag.util import get_cursor_from_file
+from codeplag.cplag.metric import *
 
 args = '-x c++ --std=c++11'.split()
 syspath = ccsyspath.system_include_paths('clang++')
