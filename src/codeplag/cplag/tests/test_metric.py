@@ -1,5 +1,5 @@
 import unittest
-from test.cplag.util import prepare_cursors
+from codeplag.cplag.util import prepare_cursors
 from codeplag.cplag.metric import *
 
 class TestMetric(unittest.TestCase):
@@ -87,7 +87,7 @@ class TestMetric(unittest.TestCase):
         (op, fr, co, ck, seq) = get_operators_frequency(cursor, cursor2)
         res = get_op_freq_percent(op, fr, co)
         self.assertAlmostEqual(res, 0.95, 2)
-      
+
         res = get_op_freq_percent(None, "12", {13, 11})
         self.assertEqual(res, TypeError)
 
@@ -98,7 +98,7 @@ class TestMetric(unittest.TestCase):
         (op, fr, co, ck, seq) = get_operators_frequency(cursor, cursor2)
         res = get_kw_freq_percent(ck)
         self.assertEqual(res, 1)
-        
+
     def test_get_kw_freq_percent_bad(self):
         res = get_kw_freq_percent([])
         self.assertEqual(res, 0)
@@ -110,33 +110,3 @@ class TestMetric(unittest.TestCase):
         self.assertEqual(res, TypeError)
         res = get_kw_freq_percent([1,2,3])
         self.assertEqual(res, 0)
-    
-
-    # Tests for op_shift_metric
-    def test_op_shift_metric_normal(self):
-        (filename, filename2, cursor, cursor2) = self.init("sample4.cpp", "sample7.cpp")
-        (op, fr, co, ck, seq) = get_operators_frequency(cursor, cursor2)
-        res = op_shift_metric(seq[0], seq[1])
-        self.assertAlmostEqual(res[0], 0, 2)
-        self.assertAlmostEqual(res[1], 0.42, 2)
-
-        (filename, filename2, cursor, cursor2) = self.init("same1.cpp", "same2.cpp")
-        (op, fr, co, ck, seq) = get_operators_frequency(cursor, cursor2)
-        res = op_shift_metric(seq[0], seq[1])
-        self.assertAlmostEqual(res[0], 0, 2)
-        self.assertAlmostEqual(res[1], 1, 2)
-
-    def test_op_shift_metric_normal_bad(self):
-        (filename, filename2, cursor, cursor2) = self.init("empty.cpp", "empty.cpp")
-        (op, fr, co, ck, seq) = get_operators_frequency(cursor, cursor2)
-        res = op_shift_metric(seq[0], seq[1])
-        self.assertAlmostEqual(res[0], 0, 2)
-        self.assertAlmostEqual(res[1], 0, 2)
-
-        res = op_shift_metric([], [])
-        self.assertAlmostEqual(res[0], 0, 2)
-        self.assertAlmostEqual(res[1], 0, 2)
-
-        res = op_shift_metric("hello", {"12", "21"})
-        self.assertAlmostEqual(res, TypeError)
-        

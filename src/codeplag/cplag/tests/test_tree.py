@@ -1,5 +1,5 @@
 import unittest
-from test.cplag.util import prepare_cursors
+from codeplag.cplag.util import prepare_cursors
 from codeplag.cplag.tree import *
 
 class TestTree(unittest.TestCase):
