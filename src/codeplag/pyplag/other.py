@@ -1,60 +1,8 @@
-import context
-
 import numpy as np
-import numba
 import ast
 
-from numba import njit
-from numba.typed import List
-from src.pyplag.const import IGNORE_NODES
-from src.pyplag.tfeatures import get_count_of_nodes
-
-
-@njit(fastmath=True)
-def find_max_index(array):
-    '''
-        Function for finding index of max element in matrix
-        @param array - matrix of compliance (np.ndarray object)
-    '''
-    # if (not isinstance(array, np.ndarray) or type(len1) is not int
-    #    or type(len2) is not int):
-    #    return TypeError
-
-    maximum = 0
-    index = numba.int64([0, 0])
-    for i in np.arange(0, array.shape[0], 1):
-        for j in np.arange(0, array.shape[1], 1):
-            if array[i][j][1] == 0:
-                continue
-            value = array[i][j][0] / array[i][j][1]
-            if value > maximum:
-                maximum = value
-                index[0] = i
-                index[1] = j
-
-    return index
-
-
-@njit(fastmath=True)
-def matrix_value(array):
-    # At worst O(n^3 + 2n^2)
-    same_struct_metric = [1, 1]
-    minimal = min(array.shape[0], array.shape[1])
-    indexes = List()
-    for i in np.arange(0, minimal, 1):
-        ind = find_max_index(array)
-        indexes.append(ind)
-        same_struct_metric[0] += array[ind[0]][ind[1]][0]
-        same_struct_metric[1] += array[ind[0]][ind[1]][1]
-
-        # Zeroing row
-        for i in np.arange(0, array.shape[1], 1):
-            array[ind[0]][i] = [0, 0]
-        # Zeroing column
-        for j in np.arange(0, array.shape[0], 1):
-            array[j][ind[1]] = [0, 0]
-
-    return same_struct_metric, indexes
+from codeplag.pyplag.const import IGNORE_NODES
+from codeplag.pyplag.tfeatures import get_count_of_nodes
 
 
 # YAGNI
@@ -88,7 +36,6 @@ class NodeGetter(ast.NodeVisitor):
             self.depth -= 1
 
 
-# Tested
 # YAGNI
 def get_nodes(tree):
     '''

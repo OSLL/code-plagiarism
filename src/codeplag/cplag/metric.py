@@ -1,9 +1,7 @@
-from context import *
-
 import numpy as np
 import pandas as pd
 from clang.cindex import TokenKind
-from src.cplag.tree import *
+from codeplag.cplag.tree import *
 
 def calculate_metric(children1, children2, len1, len2, array):
     '''
@@ -273,56 +271,3 @@ def get_kw_freq_percent(count_keywords):
 
         return percent_of_same[0] / percent_of_same[1]
     return 0
-
-
-# Tested
-def op_shift_metric(ops1, ops2):
-    '''
-        Returns the maximum value of the operator match and the shift under
-        this condition
-        @param ops1 - sequence of operators of tree1
-        @param ops2 - sequence of operators of tree2
-    '''
-
-    if(type(ops1) is not list or type(ops2) is not list):
-        return TypeError
-
-    y = []
-
-    count_el_f = len(ops1)
-    count_el_s = len(ops2)
-    if count_el_f > count_el_s:
-        tmp = ops1
-        ops1 = ops2
-        ops2 = tmp
-        count_el_f = len(ops1)
-        count_el_s = len(ops2)
-        del tmp
-
-    shift = 0
-    while shift < count_el_s:
-        counter = 0
-        first_ind = 0
-        second_ind = shift
-        while first_ind < count_el_f and second_ind < count_el_s:
-            if ops1[first_ind] == ops2[second_ind]:
-                counter += 1
-            first_ind += 1
-            second_ind += 1
-        count_all = count_el_f + count_el_s - counter
-        if count_all == 0:
-            y.append(0)
-        else:
-            y.append(counter / count_all)
-        shift += 1
-
-    max_shift = 0
-    for index in range(1, len(y)):
-        if y[index] > y[max_shift]:
-            max_shift = index
-
-    if len(y) > 0:
-        return max_shift, y[max_shift]
-    else:
-        return 0, 0
-        

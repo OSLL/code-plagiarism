@@ -1,11 +1,11 @@
-from context import *
-
 import ccsyspath
 import sys
 import os
 from time import perf_counter
-from src.cplag.util import get_cursor_from_file
-from src.cplag.metric import *
+from codeplag.cplag.util import get_cursor_from_file
+from codeplag.cplag.metric import ast_compare, get_operators_frequency
+from codeplag.cplag.metric import get_op_freq_percent, get_kw_freq_percent
+from codeplag.algorithms.featurebased import op_shift_metric
 
 args = '-x c++ --std=c++11'.split()
 syspath = ccsyspath.system_include_paths('clang++')

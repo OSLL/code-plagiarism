@@ -1,10 +1,25 @@
-from context import *
-
+import os
 import warnings
 import ccsyspath
-import os
+from clang.cindex import Index, TranslationUnit
 
-from src.cplag.util import get_cursor_from_file
+
+def get_cursor_from_file(filename, args=[]):
+    '''
+        Returns clang.cindex.Cursor object or 0 if file is undefined
+        @param filename - full path to source file
+        @param args - list of arguments for clang.cindex.Index.parse() method
+    '''
+    if not os.path.isfile(filename):
+        print(filename, "Is not a file / doesn't exist")
+        return 0
+
+    index = Index.create()
+    options = TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD
+
+    file_obj = index.parse(filename, args=args, options=options) or 0
+    return file_obj.cursor
+
 
 def prepare_cursors(file1, file2):
     warnings.simplefilter("ignore", ResourceWarning)
@@ -14,8 +29,8 @@ def prepare_cursors(file1, file2):
     args = args + incargs
     directory = 'cpp/tests/'
     files = list(filter(lambda x: (x.endswith('.cpp') or
-                                    x.endswith('.c') or
-                                    x.endswith('h')), os.listdir(directory)))
+                                   x.endswith('.c') or
+                                   x.endswith('h')), os.listdir(directory)))
 
     if(len(files) < 2):
         raise FileNotFoundError('At least 2 files in /tests folder are needed') 
@@ -33,4 +48,3 @@ def prepare_cursors(file1, file2):
         cursor = get_cursor_from_file(filename, args)
         cursor2 = get_cursor_from_file(filename2, args)
         return (filename, filename2, cursor, cursor2)
-        
