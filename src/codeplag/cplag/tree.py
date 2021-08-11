@@ -67,24 +67,3 @@ def getn_count_nodes(len_min, len_max, indexes, axis, children):
             count += get_count_of_nodes(children[i]) + 1
 
     return count
-
-
-def find_max_index(array, len1, len2):
-    '''
-        Function for finding index of max element in matrix
-        @param array - matrix of compliance
-        @param len1 - number of nodes in children1
-        @param len2 - number of nodes in children2
-    '''
-    maximum = 0
-    index = (0, 0)
-    for i in range(len1):
-        for j in range(len2):
-            if array[i][j][1] == 0:
-                continue
-            value = array[i][j][0] / array[i][j][1]
-            if value > maximum:
-                maximum = value
-                index = (i, j)
-
-    return index

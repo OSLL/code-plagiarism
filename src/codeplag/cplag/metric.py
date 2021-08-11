@@ -1,7 +1,12 @@
+import os
 import numpy as np
 import pandas as pd
-from clang.cindex import TokenKind
-from codeplag.cplag.tree import *
+from numba.typed import List
+from clang.cindex import TokenKind, Cursor
+from codeplag.cplag.tree import get_not_ignored, get_count_of_nodes
+from codeplag.cplag.tree import getn_count_nodes
+from codeplag.algorithms.featurebased import find_max_index
+
 
 def calculate_metric(children1, children2, len1, len2, array):
     '''
@@ -15,10 +20,10 @@ def calculate_metric(children1, children2, len1, len2, array):
     same_struct_metric = [1, 1]
     indexes = []
     for i in range(min(len1, len2)):
-        ind = find_max_index(array, len1, len2)
+        ind = find_max_index(array)
         indexes.append(ind)
-        same_struct_metric[0] += array[ind][0]
-        same_struct_metric[1] += array[ind][1]
+        same_struct_metric[0] += array[ind[0]][ind[1]][0]
+        same_struct_metric[1] += array[ind[0]][ind[1]][1]
         # same_struct_metric = [same_struct_metric[0] +
         #                       array[ind][0],
         #                       same_struct_metric[1] +
@@ -66,7 +71,7 @@ def smart_compare_nodes(tree1, tree2):
     elif (len2 == 0):
         return [1, (get_count_of_nodes(tree1) + 1)]
 
-    array = np.zeros((len1, len2), dtype=object)
+    array = np.zeros((len1, len2, 2), dtype=np.int64)
     # indexes = []
     # columns = []
 
@@ -124,7 +129,7 @@ def ast_compare(cursor1, cursor2, filename1, filename2, output=False):
     else:
         len2 = len(parsed_nodes2)
 
-    array = np.zeros((len1, len2), dtype=object)
+    array = np.zeros((len1, len2, 2), dtype=np.int64)
     indexes = []
     columns = []
 
@@ -138,7 +143,14 @@ def ast_compare(cursor1, cursor2, filename1, filename2, output=False):
         columns.append(parsed_nodes2[j].spelling)
 
     if output:
-        table = pd.DataFrame(array, index=indexes, columns=columns)
+        data = np.zeros((array.shape[0],
+                         array.shape[1]),
+                        dtype=np.float32)
+        for row in range(array.shape[0]):
+            for col in range(array.shape[1]):
+                data[row][col] = (array[row][col][0] /
+                                  array[row][col][1])
+        table = pd.DataFrame(data, index=indexes, columns=columns)
         print()
         print(table)
 
@@ -179,7 +191,9 @@ def get_operators_frequency(tree1, tree2):
     frequencies = [[0] * len(operators), [0] * len(operators)]
     count_keywords = [{}, {}]
     operators_counter = [0, 0]
-    seq_ops = [[], []]
+    seq_ops = [List(['++']), List(['++'])]
+    seq_ops[0].clear()
+    seq_ops[1].clear()
 
     for i in range(len(trees)):
         child = trees[i]

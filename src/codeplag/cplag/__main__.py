@@ -1,6 +1,7 @@
 import ccsyspath
 import sys
 import os
+
 from time import perf_counter
 from codeplag.cplag.util import get_cursor_from_file
 from codeplag.cplag.metric import ast_compare, get_operators_frequency
@@ -21,8 +22,8 @@ if not os.path.exists(directory):
 
 files = os.listdir(directory)
 files = list(filter(lambda x: (x.endswith('.cpp') or
-                                x.endswith('.c') or
-                                x.endswith('h')), files))
+                               x.endswith('.c') or
+                               x.endswith('h')), files))
 
 count_files = len(files)
 

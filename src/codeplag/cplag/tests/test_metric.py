@@ -1,4 +1,5 @@
 import unittest
+from numba.typed import List
 from codeplag.cplag.util import prepare_cursors
 from codeplag.cplag.metric import *
 
@@ -51,10 +52,12 @@ class TestMetric(unittest.TestCase):
         (filename, filename2, cursor, cursor2) = self.init("rw2.cpp", "rw1.cpp")
         (op, fr, co, ck, seq) = get_operators_frequency(cursor, cursor2)
                
-        fr_std = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 14, 3, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 14, 3, 0]]
+        fr_std = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 14, 3, 0],
+                  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 14, 3, 0]]
         co_std = [22, 21]
         ck_std = [{'using': 1, 'namespace': 1, 'int': 1, 'char': 1, 'if': 2, 'return': 3}, {'using': 1, 'namespace': 1, 'int': 1, 'char': 1, 'if': 0, 'return': 1}]
-        seq_std = [['<', '>', '<', '>', '!', '<<', '<<', '<<', '<<', '<<', '<<', '>>', '<<', '<<', '<<', '<<', '>>', '<<', '<<', '>>', '<<', '<<'], ['<', '>', '<', '>', '<<', '<<', '<<', '<<', '<<', '<<', '>>', '<<', '<<', '<<', '<<', '>>', '<<', '<<', '>>', '<<', '<<']]
+        seq_std = [List(['<', '>', '<', '>', '!', '<<', '<<', '<<', '<<', '<<', '<<', '>>', '<<', '<<', '<<', '<<', '>>', '<<', '<<', '>>', '<<', '<<']),
+                   List(['<', '>', '<', '>', '<<', '<<', '<<', '<<', '<<', '<<', '>>', '<<', '<<', '<<', '<<', '>>', '<<', '<<', '>>', '<<', '<<'])]
 
         self.assertEqual(fr, fr_std)
         self.assertEqual(co, co_std)
