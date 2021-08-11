@@ -10,21 +10,21 @@
 
 ## 2. Install requirements
 
-- OS Linux
+- OS Ubuntu Linux
 
 - python version 3.6+ or even 3.8+
 
 - pip3 version >= 19.0 (pip3 install -U pip)
 
-- pip3 install -r ./requirements.txt
-
 - sudo apt install clang
 
 - sudo apt install libncurses5
 
+- pip3 install ./<name/of/the/cloned/repository>
+
 ## 3. Tests
 
-- Testing for C/C++ and Python 3 analyzers
+- Testing for C/C++ and Python 3 analyzers (The command works from the directory with cpp and py folders)
   ```
     $ python3 -m unittest discover src/
   ```
@@ -48,7 +48,7 @@
   ```
     $ python3 -m codeplag.pyplag --project PATH --dir PATH [--threshold THRESHOLD]
   ```
-  Before starting work with repositories, you may to define variable ACCESS_TOKEN in src/github_helper/.env:
+  Before starting work with searching on GitHub, you may define variable ACCESS_TOKEN in file .env in the folder from which you want to run the app:
 
   ACCESS_TOKEN - Personal access token which add more requests to repos and access to private repos if you give it.
 

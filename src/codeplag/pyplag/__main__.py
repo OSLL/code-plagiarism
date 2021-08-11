@@ -11,13 +11,18 @@ from webparsers.github_parser import GitHubParser
 from codeplag.pyplag.mode import get_mode
 from codeplag.logger import get_logger
 from codeplag.pyplag.const import LOG_PATH
-from decouple import config
+from decouple import Config, RepositoryEnv
 
 
 pd.options.display.float_format = '{:,.2%}'.format
 
 mode, args = get_mode()
-ACCESS_TOKEN = config('ACCESS_TOKEN', default='')
+try:
+    env_config = Config(RepositoryEnv('./.env'))
+except FileNotFoundError:
+    print('The environment file did not define.')
+else:
+    ACCESS_TOKEN = env_config.get('ACCESS_TOKEN', default='')
 
 logger = get_logger(__name__, LOG_PATH)
 logger.info("Pyplag starting...")
