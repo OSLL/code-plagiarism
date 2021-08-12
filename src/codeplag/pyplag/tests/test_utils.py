@@ -6,11 +6,12 @@ from codeplag.pyplag.utils import run_compare, get_ast_from_filename
 
 pwd = os.path.dirname(os.path.abspath(__file__))
 
+
 class TestUtils(unittest.TestCase):
 
     def test_run_compare_normal(self):
-        tree1 = get_ast_from_filename(os.path.join(pwd, './data/test1.py'))#'py/tests/test1.py')
-        tree2 = get_ast_from_filename(os.path.join(pwd, './data/test2.py'))#'py/tests/test2.py')
+        tree1 = get_ast_from_filename(os.path.join(pwd, './data/test1.py'))
+        tree2 = get_ast_from_filename(os.path.join(pwd, './data/test2.py'))
         features1 = ASTFeatures()
         features2 = ASTFeatures()
         features1.visit(tree1)

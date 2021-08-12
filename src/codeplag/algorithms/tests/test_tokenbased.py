@@ -1,8 +1,8 @@
 import unittest
 
 from numba.typed import List
-from codeplag.algorithms.tokenbased import value_jakkar_coef, lcs
-from codeplag.algorithms.tokenbased import generate_unique_ngrams
+from codeplag.algorithms.tokenbased import (value_jakkar_coef, lcs,
+                                            generate_unique_ngrams)
 
 
 class TestTokenbased(unittest.TestCase):

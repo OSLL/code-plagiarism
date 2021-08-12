@@ -47,28 +47,42 @@ def get_mode():
 
     if len(sys.argv) == 1:
         mode = -1
-    elif args.file and args.git and not (args.git_file or args.dir or args.project or args.git_project):
+    elif args.file and args.git and not (args.git_file or args.dir or
+                                         args.project or args.git_project):
         print("Local file compares with files in git repositories")
         mode = 0
-    elif args.git_file and args.git and not (args.file or args.dir or args.project or args.git_project):
+    elif args.git_file and args.git and not (args.file or args.dir or
+                                             args.project or
+                                             args.git_project):
         print("Github file compares with files in git repositories")
         mode = 1
-    elif args.file and args.dir and not (args.git_file or args.git or args.project or args.git_project):
+    elif args.file and args.dir and not (args.git_file or args.git or
+                                         args.project or args.git_project):
         print("Local file compares with files in a local directory")
         mode = 2
-    elif args.git_file and args.dir and not (args.file or args.git or args.project or args.git_project):
+    elif args.git_file and args.dir and not (args.file or args.git or
+                                             args.project or
+                                             args.git_project):
         print("Git file compares with files in a local directory")
         mode = 3
-    elif args.project and args.dir and not (args.file or args.git or args.git_file or args.git_project):
+    elif args.project and args.dir and not (args.file or args.git or
+                                            args.git_file or
+                                            args.git_project):
         print("Local project compares with a local directory")
         mode = 4
-    elif args.project and args.git and not (args.file or args.dir or args.git_file or args.git_project):
+    elif args.project and args.git and not (args.file or args.dir or
+                                            args.git_file or
+                                            args.git_project):
         print("Local project compares with git repositories")
         mode = 5
-    elif args.git_project and args.dir and not (args.file or args.git or args.git_file or args.project):
+    elif args.git_project and args.dir and not (args.file or args.git or
+                                                args.git_file or
+                                                args.project):
         print("Git project compares with a local directory")
         mode = 6
-    elif args.git_project and args.git and not (args.file or args.dir or args.git_file or args.project):
+    elif args.git_project and args.git and not (args.file or args.dir or
+                                                args.git_file or
+                                                args.project):
         print("Git project compares with git repositories")
         mode = 7
     else:

@@ -4,9 +4,10 @@ import numpy as np
 
 from numba.typed import Dict, List
 from numba.core import types
-from codeplag.algorithms.featurebased import find_max_index, matrix_value
-from codeplag.algorithms.featurebased import op_shift_metric, counter_metric
-from codeplag.algorithms.featurebased import get_children_indexes, struct_compare
+from codeplag.algorithms.featurebased import (
+    op_shift_metric, counter_metric,
+    get_children_indexes, struct_compare
+)
 
 
 class TestFeaturebased(unittest.TestCase):
@@ -66,7 +67,7 @@ class TestFeaturebased(unittest.TestCase):
         structure2 = List([(1, 0), (2, 1), (2, 2),
                            (3, 3), (4, 4), (5, 5),
                            (4, 1), (4, 1), (4, 1),
-                           (1, 6), (2, 7), (3, 8), 
+                           (1, 6), (2, 7), (3, 8),
                            (3, 8), (3, 8), (2, 9)])
         count_ch1 = (get_children_indexes(structure1))[1]
         count_ch2 = (get_children_indexes(structure2))[1]

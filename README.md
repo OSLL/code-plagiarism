@@ -32,7 +32,7 @@
   ```
     $ python3 -m unittest discover <path/to/the/src/folder/of/the/project> -v
   ```
-- Testing for C/C++ and Python 3 analyzers with pytest lib
+- Testing for C/C++ and Python 3 analyzers with pytest lib (Works from the cloned repository)
   ```
     $ python3 -m pytest
   ```

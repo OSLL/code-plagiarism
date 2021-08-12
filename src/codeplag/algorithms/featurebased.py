@@ -205,13 +205,15 @@ def struct_compare(tree1, tree2, matrix=np.array([[[]]]), dtype=np.int64):
             if k in added:
                 continue
             else:
-                same_struct_metric[1] += len(tree1[key_indexes1[k]:key_indexes1[k + 1]])
+                part_of_tree = tree1[key_indexes1[k]:key_indexes1[k + 1]]
+                same_struct_metric[1] += len(part_of_tree)
     elif count_of_children2 > count_of_children1:
         added = [indexes[i][1] for i in np.arange(0, count_of_children1, 1)]
         for k in np.arange(0, count_of_children2, 1):
             if k in added:
                 continue
             else:
-                same_struct_metric[1] += len(tree2[key_indexes2[k]:key_indexes2[k + 1]])
+                part_of_tree = tree2[key_indexes2[k]:key_indexes2[k + 1]]
+                same_struct_metric[1] += len(part_of_tree)
 
     return same_struct_metric

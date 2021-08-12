@@ -5,8 +5,10 @@ import pandas as pd
 
 from termcolor import colored
 from codeplag.pyplag.tfeatures import ASTFeatures
-from codeplag.algorithms.featurebased import get_children_indexes
-from codeplag.algorithms.featurebased import counter_metric, struct_compare, op_shift_metric
+from codeplag.algorithms.featurebased import (
+    get_children_indexes, counter_metric,
+    struct_compare, op_shift_metric
+)
 from codeplag.algorithms.tokenbased import value_jakkar_coef, lcs
 
 

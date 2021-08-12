@@ -1,10 +1,12 @@
 import ast
-from numba import njit
 from numba.typed import List, Dict
 from numba.core import types
 
-from codeplag.pyplag.const import IGNORE_NODES, OPERATORS, KEYWORDS, LITERALS
-from codeplag.pyplag.const import TO_TOKEN
+from codeplag.pyplag.const import (
+    IGNORE_NODES, OPERATORS,
+    KEYWORDS, LITERALS,
+    TO_TOKEN
+)
 
 
 # Можно сохранять название узлов только самого верхнего, первого уровня,
