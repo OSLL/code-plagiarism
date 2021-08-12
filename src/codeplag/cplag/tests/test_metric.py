@@ -1,7 +1,13 @@
 import unittest
+
 from numba.typed import List
 from codeplag.cplag.util import prepare_cursors
-from codeplag.cplag.metric import *
+from codeplag.cplag.metric import (
+    smart_compare_nodes, ast_compare, get_operators_frequency,
+    get_op_freq_percent, get_kw_freq_percent
+)
+from codeplag.cplag.tree import get_not_ignored
+
 
 class TestMetric(unittest.TestCase):
 
@@ -16,7 +22,7 @@ class TestMetric(unittest.TestCase):
         parsed_nodes2 = get_not_ignored(cursor2, filename2)
         res = smart_compare_nodes(parsed_nodes1[0], parsed_nodes2[0])
         self.assertEqual(res, [146, 158])
-    
+
     def test_smart_compare_nodes_bad_cursor(self):
         (filename, filename2, cursor, cursor2) = self.init("rw2.cpp", "rw1.cpp")
         res = smart_compare_nodes("cursor", None)
@@ -37,7 +43,7 @@ class TestMetric(unittest.TestCase):
         self.assertEqual(TypeError, res2)
 
     def test_ast_compare_file_empty(self):
-        (filename, filename2, cursor, cursor2) = self.init('empty.cpp')
+        (filename, filename2, cursor, cursor2) = self.init("empty.cpp")
         res = ast_compare(cursor, cursor2, "", "")
         self.assertEqual(FileNotFoundError, res)
 
@@ -55,9 +61,14 @@ class TestMetric(unittest.TestCase):
         fr_std = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 14, 3, 0],
                   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 14, 3, 0]]
         co_std = [22, 21]
-        ck_std = [{'using': 1, 'namespace': 1, 'int': 1, 'char': 1, 'if': 2, 'return': 3}, {'using': 1, 'namespace': 1, 'int': 1, 'char': 1, 'if': 0, 'return': 1}]
-        seq_std = [List(['<', '>', '<', '>', '!', '<<', '<<', '<<', '<<', '<<', '<<', '>>', '<<', '<<', '<<', '<<', '>>', '<<', '<<', '>>', '<<', '<<']),
-                   List(['<', '>', '<', '>', '<<', '<<', '<<', '<<', '<<', '<<', '>>', '<<', '<<', '<<', '<<', '>>', '<<', '<<', '>>', '<<', '<<'])]
+        ck_std = [{'using': 1, 'namespace': 1, 'int': 1, 'char': 1, 'if': 2, 'return': 3},
+                  {'using': 1, 'namespace': 1, 'int': 1, 'char': 1, 'if': 0, 'return': 1}]
+        seq_std = [List(['<', '>', '<', '>', '!', '<<', '<<', '<<',
+                         '<<', '<<', '<<', '>>', '<<', '<<', '<<',
+                         '<<', '>>', '<<', '<<', '>>', '<<', '<<']),
+                   List(['<', '>', '<', '>', '<<', '<<', '<<', '<<',
+                         '<<', '<<', '>>', '<<', '<<', '<<', '<<',
+                         '>>', '<<', '<<', '>>', '<<', '<<'])]
 
         self.assertEqual(fr, fr_std)
         self.assertEqual(co, co_std)
@@ -81,12 +92,12 @@ class TestMetric(unittest.TestCase):
         res = get_op_freq_percent(op, fr, co)
         self.assertAlmostEqual(res, 0.95, 2)
 
-        (filename, filename2, cursor, cursor2) = self.init("empty.cpp", "same1.cpp")
+        (filename, filename2, cursor, cursor2) = self.init("empty.cpp", "sample1.cpp")
         (op, fr, co, ck, seq) = get_operators_frequency(cursor, cursor2)
         res = get_op_freq_percent(op, fr, co)
         self.assertAlmostEqual(res, 0, 2)
 
-        (filename, filename2, cursor, cursor2) = self.init("sample4.cpp", "sample7.cpp")
+        (filename, filename2, cursor, cursor2) = self.init("sample3.cpp", "sample4.cpp")
         (op, fr, co, ck, seq) = get_operators_frequency(cursor, cursor2)
         res = get_op_freq_percent(op, fr, co)
         self.assertAlmostEqual(res, 0.95, 2)
@@ -97,7 +108,7 @@ class TestMetric(unittest.TestCase):
 
     # Tests for get_kw_freq_percent
     def test_get_kw_freq_percent_normal(self):
-        (filename, filename2, cursor, cursor2) = self.init("sample4.cpp", "sample7.cpp")
+        (filename, filename2, cursor, cursor2) = self.init("sample3.cpp", "sample4.cpp")
         (op, fr, co, ck, seq) = get_operators_frequency(cursor, cursor2)
         res = get_kw_freq_percent(ck)
         self.assertEqual(res, 1)

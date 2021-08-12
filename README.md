@@ -24,13 +24,21 @@
 
 ## 3. Tests
 
-- Testing for C/C++ and Python 3 analyzers (The command works from the directory with cpp and py folders)
+- Testing for C/C++ and Python 3 analyzers with unittest lib
   ```
-    $ python3 -m unittest discover src/
+    $ python3 -m unittest discover <path/to/the/src/folder/of/the/project>
   ```
   > For getting more testing information add the `-v` flag
   ```
-    $ python3 -m unittest discover src/ -v
+    $ python3 -m unittest discover <path/to/the/src/folder/of/the/project> -v
+  ```
+- Testing for C/C++ and Python 3 analyzers with pytest lib
+  ```
+    $ python3 -m pytest
+  ```
+  > For getting more testing information add the `-v` flag
+  ```
+    $ python3 -m pytest -v
   ```
 
 ## 4. Work with analyzers
