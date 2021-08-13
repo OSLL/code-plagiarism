@@ -2,11 +2,11 @@ import requests
 import base64
 import re
 
-from decouple import config
 
 class GitHubParser:
-    def __init__(self, file_extensions=['py', 'c', 'cpp', 'h'], check_policy=0):
-        self.__access_token = config('ACCESS_TOKEN', default='')
+    def __init__(self, file_extensions=['py', 'c', 'cpp', 'h'],
+                 check_policy=0, access_token=''):
+        self.__access_token = access_token
         self.__check_all_branches = check_policy
         self.__file_extensions = file_extensions
 
@@ -38,7 +38,8 @@ class GitHubParser:
         if len(url_parts) <= 7:
             raise ValueError('Incorrect link to content of GitHub repository')
 
-        return url_parts[3], url_parts[4], url_parts[6], '/'.join(url_parts[7:])
+        return (url_parts[3], url_parts[4],
+                url_parts[6], '/'.join(url_parts[7:]))
 
     def is_accepted_extension(self, path):
         return path.split('.')[-1].lower() in self.__file_extensions
@@ -57,8 +58,11 @@ class GitHubParser:
                 'Authorization': 'token ' + self.__access_token,
             })
 
-        response = requests.get(address + api_url, headers=headers, params=params)
+        response = requests.get(address + api_url, headers=headers,
+                                params=params)
         if response.status_code == 403:
+            if 'message' in response.json().keys():
+                raise Exception(response.json()['message'])
             raise KeyError
         response.raise_for_status()
 
@@ -77,7 +81,10 @@ class GitHubParser:
                 "per_page": per_page,
                 "page": page
             }
-            response_json = self.send_get_request(api_url, params=params).json()
+            response_json = self.send_get_request(
+                                api_url,
+                                params=params
+                            ).json()
 
             if len(response_json) == 0:
                 break
@@ -113,23 +120,34 @@ class GitHubParser:
 
         return code, file_path
 
-    def get_files_generator_from_sha_commit(self, owner, repo, branch, sha, path='.'):
+    def get_files_generator_from_sha_commit(self, owner, repo, branch,
+                                            sha, path='.'):
         api_url = '/repos/{}/{}/git/trees/{}'.format(owner, repo, sha)
         response_json = self.send_get_request(api_url).json()
         tree = response_json['tree']
         for node in tree:
             current_path = path + "/" + node["path"]
             if node["type"] == "tree":
-                yield from self.get_files_generator_from_sha_commit(owner,
-                                                                    repo,
-                                                                    branch,
-                                                                    node['sha'],
-                                                                    current_path)
-            if node["type"] == "blob" and self.is_accepted_extension(current_path):
-                path_to_file = "https://github.com/{}/{}/blob/{}{}".format(owner, repo,
-                                                                            branch,
-                                                                            current_path[1:])
-                yield self.get_file_content_from_sha(owner, repo, branch, node["sha"], path_to_file)
+                yield from self.get_files_generator_from_sha_commit(
+                               owner,
+                               repo,
+                               branch,
+                               node['sha'],
+                               current_path
+                            )
+
+            if node["type"] == "blob" and self.is_accepted_extension(
+                                              current_path
+                                          ):
+                file_link = "https://github.com/{}/{}/blob/{}{}".format(
+                                owner,
+                                repo,
+                                branch,
+                                current_path[1:]
+                            )
+                yield self.get_file_content_from_sha(owner, repo,
+                                                     branch, node["sha"],
+                                                     file_link)
 
     def get_list_repo_branches(self, owner, repo, per_page=100):
         branches = {}
@@ -140,7 +158,8 @@ class GitHubParser:
                 "per_page": per_page,
                 "page": page
             }
-            response_json = self.send_get_request(api_url, params=params).json()
+            response_json = self.send_get_request(api_url,
+                                                  params=params).json()
 
             if len(response_json) == 0:
                 break
@@ -159,10 +178,20 @@ class GitHubParser:
         if self.__check_all_branches:
             branches = self.get_list_repo_branches(owner, repo)
         else:
-            branches = {default_branch: self.get_sha_last_branch_commit(owner, repo, default_branch)}
+            branches = {default_branch: self.get_sha_last_branch_commit(
+                                            owner,
+                                            repo,
+                                            default_branch
+                                        )
+                        }
 
         for branch in branches.items():
-            yield from self.get_files_generator_from_sha_commit(owner, repo, branch[0], branch[1])
+            yield from self.get_files_generator_from_sha_commit(
+                           owner,
+                           repo,
+                           branch[0],
+                           branch[1]
+                        )
 
     def get_file_from_url(self, file_url):
         owner, repo, branch, path = self.parse_content_url(file_url)
@@ -171,11 +200,13 @@ class GitHubParser:
             'ref': branch
         }
         response_json = self.send_get_request(api_url, params=params).json()
-        file_content, file_url = self.get_file_content_from_sha(owner,
-                                                                repo,
-                                                                branch,
-                                                                response_json['sha'],
-                                                                file_url)
+        file_content, file_url = self.get_file_content_from_sha(
+                                    owner,
+                                    repo,
+                                    branch,
+                                    response_json['sha'],
+                                    file_url
+                                 )
 
         return file_content, file_url
 
@@ -190,12 +221,26 @@ class GitHubParser:
         for node in response_json:
             current_path = "./" + node["path"]
             if node["type"] == "dir":
-                yield from self.get_files_generator_from_sha_commit(owner,
-                                                                    repo,
-                                                                    branch,
-                                                                    node['sha'],
-                                                                    current_path)
-            if node["type"] == "file" and self.is_accepted_extension(node["name"]):
-                path_to_file = 'https://github.com/{}/{}/tree/{}/{}'.format(owner, repo, branch,
-                                                                            current_path[2:])
-                yield self.get_file_content_from_sha(owner, repo, branch, node["sha"], path_to_file)
+                yield from self.get_files_generator_from_sha_commit(
+                               owner,
+                               repo,
+                               branch,
+                               node['sha'],
+                               current_path
+                           )
+            if node["type"] == "file" and self.is_accepted_extension(
+                                              node["name"]
+                                          ):
+                file_link = 'https://github.com/{}/{}/tree/{}/{}'.format(
+                                owner,
+                                repo,
+                                branch,
+                                current_path[2:]
+                             )
+                yield self.get_file_content_from_sha(
+                          owner,
+                          repo,
+                          branch,
+                          node["sha"],
+                          file_link
+                      )

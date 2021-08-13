@@ -34,11 +34,12 @@
 # Output files
 *.ast
 *.csv
+*.log
 
 # Developmnt environmemt
 .vscode
 
 __pycache__
-/logs/*.txt
-/docs/*
+other/*
+dist/*
 .env
