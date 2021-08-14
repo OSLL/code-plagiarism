@@ -1,6 +1,7 @@
 from setuptools import setup, find_packages
 from pathlib import Path
 
+
 setup(
     name='codeplag',
     version='0.0.1',
@@ -40,4 +41,7 @@ setup(
         'python-decouple>=3.4',
         'requests',
     ],
+    tests_require=[
+        'pytest',
+    ]
 )

@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 from time import perf_counter
-from codeplag.pyplag.tfeatures import ASTFeatures
+from codeplag.pyplag.astwalkers import ASTWalker
 from codeplag.pyplag.utils import (
     get_ast_from_content, run_compare, get_ast_from_filename,
     print_compare_res, compare_file_pair,
@@ -42,7 +42,7 @@ if mode == 0:
     if tree1 is None:
         exit()
 
-    features1 = ASTFeatures()
+    features1 = ASTWalker()
     features1.visit(tree1)
 
     gh = GitHubParser(file_extensions=['py'], check_policy=args.check_policy,
@@ -58,7 +58,7 @@ if mode == 0:
             if tree2 is None:
                 continue
 
-            features2 = ASTFeatures()
+            features2 = ASTWalker()
             features2.visit(tree2)
             metrics = run_compare(features1, features2)
             total_similarity = np.sum(metrics * weights) / weights.sum()
@@ -91,7 +91,7 @@ elif mode == 1:
     if tree1 is None:
         exit()
 
-    features1 = ASTFeatures()
+    features1 = ASTWalker()
     features1.visit(tree1)
 
     repos = gh.get_list_of_repos(owner=args.git, reg_exp=args.reg_exp)
@@ -105,7 +105,7 @@ elif mode == 1:
             if tree2 is None:
                 continue
 
-            features2 = ASTFeatures()
+            features2 = ASTWalker()
             features2.visit(tree2)
             metrics = run_compare(features1, features2)
             total_similarity = np.sum(metrics * weights) / weights.sum()
@@ -163,7 +163,7 @@ elif mode == 3:
     if tree1 is None:
         exit()
 
-    features1 = ASTFeatures()
+    features1 = ASTWalker()
     features1.visit(tree1)
 
     files = os.listdir(args.dir)
@@ -186,7 +186,7 @@ elif mode == 3:
         if tree2 is None:
             continue
 
-        features2 = ASTFeatures()
+        features2 = ASTWalker()
         features2.visit(tree2)
 
         metrics = run_compare(features1, features2)
@@ -256,7 +256,7 @@ elif mode == 5:
             if tree2 is None:
                 continue
 
-            features2 = ASTFeatures()
+            features2 = ASTWalker()
             features2.visit(tree2)
 
             for filepath in project_files:
@@ -264,7 +264,7 @@ elif mode == 5:
                 if tree1 is None:
                     continue
 
-                features1 = ASTFeatures()
+                features1 = ASTWalker()
                 features1.visit(tree1)
 
                 metrics = run_compare(features1, features2)
@@ -323,9 +323,9 @@ elif mode == 6:
             if tree2 is None:
                 continue
 
-            features1 = ASTFeatures()
+            features1 = ASTWalker()
             features1.visit(tree1)
-            features2 = ASTFeatures()
+            features2 = ASTWalker()
             features2.visit(tree2)
 
             metrics = run_compare(features1, features2)
@@ -368,7 +368,7 @@ elif mode == 7:
             if tree2 is None:
                 continue
 
-            features2 = ASTFeatures()
+            features2 = ASTWalker()
             features2.visit(tree2)
 
             for file2, url_file2 in project_files:
@@ -376,7 +376,7 @@ elif mode == 7:
                 if tree1 is None:
                     continue
 
-                features1 = ASTFeatures()
+                features1 = ASTWalker()
                 features1.visit(tree1)
 
                 metrics = run_compare(features1, features2)

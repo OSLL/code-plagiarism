@@ -11,7 +11,7 @@ from codeplag.pyplag.const import (
 
 # Можно сохранять название узлов только самого верхнего, первого уровня,
 # чтобы экономить ресурсы
-class ASTFeatures(ast.NodeVisitor):
+class ASTWalker(ast.NodeVisitor):
     def __init__(self):
         self.curr_depth = 0
         self.count_of_nodes = 0
@@ -40,7 +40,7 @@ class ASTFeatures(ast.NodeVisitor):
             @param node - current node
         '''
         type_name = type(node).__name__
-        if type_name in TO_TOKEN.keys():
+        if type_name in TO_TOKEN:
             self.tokens.append(TO_TOKEN[type_name])
 
         if type_name in OPERATORS:
@@ -77,44 +77,10 @@ class ASTFeatures(ast.NodeVisitor):
                     self.structure.append((self.curr_depth,
                                            self.unodes[type_name]))
                 self.count_of_nodes += 1
+
             self.curr_depth += 1
             ast.NodeVisitor.generic_visit(self, node)
             self.curr_depth -= 1
-
-
-# YAGNI
-class OpKwCounter(ast.NodeVisitor):
-    def __init__(self):
-        self.seq_ops = List(['tmp'])
-        self.seq_ops.clear()
-        self.operators = {}
-        self.keywords = {}
-        self.literals = {}
-
-    def generic_visit(self, node):
-        '''
-            Function for traverse, counting operators, keywords, literals
-            and save sequence of operators
-            @param node - current node
-        '''
-        type_name = type(node).__name__
-        if type_name in OPERATORS:
-            if type_name not in self.operators.keys():
-                self.operators[type_name] = 1
-            else:
-                self.operators[type_name] += 1
-            self.seq_ops.append(type_name)
-        elif type_name in KEYWORDS:
-            if type_name not in self.keywords.keys():
-                self.keywords[type_name] = 1
-            else:
-                self.keywords[type_name] += 1
-        elif type_name in LITERALS:
-            if type_name not in self.literals.keys():
-                self.literals[type_name] = 1
-            else:
-                self.literals[type_name] += 1
-        ast.NodeVisitor.generic_visit(self, node)
 
 
 # YAGNI
@@ -141,17 +107,33 @@ class Visitor(ast.NodeVisitor):
             self.depth -= 1
 
 
-# Tested
 # YAGNI
-def get_count_of_nodes(tree):
-    '''
-        Get count of nodes of tree without head
-        @param tree - One of the nodes of the AST type whose count of nodes
-        we want to receive
-    '''
-    if not isinstance(tree, ast.AST):
-        return TypeError
+class NodeGetter(ast.NodeVisitor):
+    def __init__(self):
+        self.depth = 0
+        self.nodes = []
 
-    traverser = Visitor()
-    traverser.visit(tree)
-    return traverser.count_of_nodes
+    def visit(self, node):
+        '''
+            Function for visiting node's children
+            @param node - current node
+        '''
+        if self.depth > 1:
+            return
+        self.generic_visit(node)
+
+    def generic_visit(self, node):
+        '''
+            Function for traverse and print in console names of all
+            node's children
+            @param node - current node
+        '''
+        type_node = (type(node).__name__)
+        if type_node not in IGNORE_NODES:
+            if self.depth == 1:
+                self.nodes.append(node)
+
+            # Будет ли работать, если эти три строки заккоментировать?
+            self.depth += 1
+            ast.NodeVisitor.generic_visit(self, node)
+            self.depth -= 1

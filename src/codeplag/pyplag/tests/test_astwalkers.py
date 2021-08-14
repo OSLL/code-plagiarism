@@ -4,18 +4,18 @@ import os
 
 from numba.typed import List, Dict
 from numba.core import types
-from codeplag.pyplag.tfeatures import ASTFeatures
+from codeplag.pyplag.astwalkers import ASTWalker
 from codeplag.pyplag.utils import get_ast_from_filename
 
 
 pwd = os.path.dirname(os.path.abspath(__file__))
 
 
-class TestTfeatures(unittest.TestCase):
+class TestASTWalkers(unittest.TestCase):
 
-    def test_astfeatures_class_normal(self):
+    def test_astwalker_class_normal(self):
         tree1 = get_ast_from_filename(os.path.join(pwd, './data/test1.py'))
-        features1 = ASTFeatures()
+        features1 = ASTWalker()
         features1.visit(tree1)
         operators = Dict.empty(key_type=types.unicode_type,
                                value_type=types.int64)

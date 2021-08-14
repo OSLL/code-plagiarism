@@ -4,7 +4,7 @@ import ast
 import pandas as pd
 
 from termcolor import colored
-from codeplag.pyplag.tfeatures import ASTFeatures
+from codeplag.pyplag.astwalkers import ASTWalker
 from codeplag.algorithms.featurebased import (
     get_children_indexes, counter_metric,
     struct_compare, op_shift_metric
@@ -149,8 +149,8 @@ def compare_file_pair(filename, filename2, threshold, weights):
     if tree2 is None:
         return
 
-    features1 = ASTFeatures()
-    features2 = ASTFeatures()
+    features1 = ASTWalker()
+    features2 = ASTWalker()
     features1.visit(tree1)
     features2.visit(tree2)
 
