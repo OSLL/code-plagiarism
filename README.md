@@ -10,9 +10,9 @@
 
 ## 2. Install requirements
 
-- OS Ubuntu Linux 18.04+
+- OS Ubuntu Linux >= 18.04
 
-- python version 3.6+ or even 3.8+
+- python version >= 3.6
 
 - pip3 version >= 19.0 (pip3 install -U pip)
 

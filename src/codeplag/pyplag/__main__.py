@@ -3,11 +3,12 @@ import numpy as np
 import pandas as pd
 
 from time import perf_counter
+from codeplag.astfeatures import ASTFeatures
 from codeplag.pyplag.astwalkers import ASTWalker
 from codeplag.pyplag.utils import (
     get_ast_from_content, run_compare, get_ast_from_filename,
     print_compare_res, compare_file_pair,
-    get_files_path_from_directory
+    get_files_path_from_directory, get_features_from_ast
 )
 from webparsers.github_parser import GitHubParser
 from codeplag.pyplag.mode import get_mode
@@ -42,8 +43,7 @@ if mode == 0:
     if tree1 is None:
         exit()
 
-    features1 = ASTWalker()
-    features1.visit(tree1)
+    features1 = get_features_from_ast(tree1)
 
     gh = GitHubParser(file_extensions=['py'], check_policy=args.check_policy,
                       access_token=ACCESS_TOKEN)
@@ -58,8 +58,7 @@ if mode == 0:
             if tree2 is None:
                 continue
 
-            features2 = ASTWalker()
-            features2.visit(tree2)
+            features2 = get_features_from_ast(tree2)
             metrics = run_compare(features1, features2)
             total_similarity = np.sum(metrics * weights) / weights.sum()
 
@@ -69,8 +68,8 @@ if mode == 0:
                                   features2.structure,
                                   features1.from_num,
                                   features2.from_num,
-                                  features1.seq_ops,
-                                  features2.seq_ops,
+                                  features1.operators_sequence,
+                                  features2.operators_sequence,
                                   features1.tokens,
                                   features2.tokens,
                                   args.file.split('\\')[-1],
@@ -91,8 +90,7 @@ elif mode == 1:
     if tree1 is None:
         exit()
 
-    features1 = ASTWalker()
-    features1.visit(tree1)
+    features1 = get_features_from_ast(tree1)
 
     repos = gh.get_list_of_repos(owner=args.git, reg_exp=args.reg_exp)
     count_iter = len(repos)
@@ -105,8 +103,7 @@ elif mode == 1:
             if tree2 is None:
                 continue
 
-            features2 = ASTWalker()
-            features2.visit(tree2)
+            features2 = get_features_from_ast(tree2)
             metrics = run_compare(features1, features2)
             total_similarity = np.sum(metrics * weights) / weights.sum()
 
@@ -116,8 +113,8 @@ elif mode == 1:
                                   features2.structure,
                                   features1.from_num,
                                   features2.from_num,
-                                  features1.seq_ops,
-                                  features2.seq_ops,
+                                  features1.operators_sequence,
+                                  features2.operators_sequence,
                                   features1.tokens,
                                   features2.tokens,
                                   args.git_file,
@@ -163,8 +160,7 @@ elif mode == 3:
     if tree1 is None:
         exit()
 
-    features1 = ASTWalker()
-    features1.visit(tree1)
+    features1 = get_features_from_ast(tree1)
 
     files = os.listdir(args.dir)
     files = list(filter(lambda x: (x.endswith('.py')), files))
@@ -186,8 +182,7 @@ elif mode == 3:
         if tree2 is None:
             continue
 
-        features2 = ASTWalker()
-        features2.visit(tree2)
+        features2 = get_features_from_ast(tree2)
 
         metrics = run_compare(features1, features2)
         total_similarity = np.sum(metrics * weights) / weights.sum()
@@ -198,8 +193,8 @@ elif mode == 3:
                               features2.structure,
                               features1.from_num,
                               features2.from_num,
-                              features1.seq_ops,
-                              features2.seq_ops,
+                              features1.operators_sequence,
+                              features2.operators_sequence,
                               features1.tokens,
                               features2.tokens,
                               args.git_file,
@@ -256,16 +251,14 @@ elif mode == 5:
             if tree2 is None:
                 continue
 
-            features2 = ASTWalker()
-            features2.visit(tree2)
+            features2 = get_features_from_ast(tree2)
 
             for filepath in project_files:
                 tree1 = get_ast_from_filename(filepath)
                 if tree1 is None:
                     continue
 
-                features1 = ASTWalker()
-                features1.visit(tree1)
+                features1 = get_features_from_ast(tree1)
 
                 metrics = run_compare(features1, features2)
                 total_similarity = np.sum(metrics * weights) / weights.sum()
@@ -276,8 +269,8 @@ elif mode == 5:
                                       features2.structure,
                                       features1.from_num,
                                       features2.from_num,
-                                      features1.seq_ops,
-                                      features2.seq_ops,
+                                      features1.operators_sequence,
+                                      features2.operators_sequence,
                                       features1.tokens,
                                       features2.tokens,
                                       filepath,
@@ -323,10 +316,8 @@ elif mode == 6:
             if tree2 is None:
                 continue
 
-            features1 = ASTWalker()
-            features1.visit(tree1)
-            features2 = ASTWalker()
-            features2.visit(tree2)
+            features1 = get_features_from_ast(tree1)
+            features2 = get_features_from_ast(tree2)
 
             metrics = run_compare(features1, features2)
             total_similarity = np.sum(metrics * weights) / weights.sum()
@@ -337,8 +328,8 @@ elif mode == 6:
                                   features2.structure,
                                   features1.from_num,
                                   features2.from_num,
-                                  features1.seq_ops,
-                                  features2.seq_ops,
+                                  features1.operators_sequence,
+                                  features2.operators_sequence,
                                   features1.tokens,
                                   features2.tokens,
                                   url_file,
@@ -368,16 +359,14 @@ elif mode == 7:
             if tree2 is None:
                 continue
 
-            features2 = ASTWalker()
-            features2.visit(tree2)
+            features2 = get_features_from_ast(tree2)
 
             for file2, url_file2 in project_files:
                 tree1 = get_ast_from_content(file2, url_file2)
                 if tree1 is None:
                     continue
 
-                features1 = ASTWalker()
-                features1.visit(tree1)
+                features1 = get_features_from_ast(tree1)
 
                 metrics = run_compare(features1, features2)
                 total_similarity = np.sum(metrics * weights) / weights.sum()
@@ -388,8 +377,8 @@ elif mode == 7:
                                       features2.structure,
                                       features1.from_num,
                                       features2.from_num,
-                                      features1.seq_ops,
-                                      features2.seq_ops,
+                                      features1.operators_sequence,
+                                      features2.operators_sequence,
                                       features1.tokens,
                                       features2.tokens,
                                       url_file2,

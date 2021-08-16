@@ -118,11 +118,18 @@ class GitHubParser:
         file_bytes = bytearray(base64.b64decode(response_json['content']))
         code = None
 
-        while not code:
+        attempt = 1
+        while True:
             try:
                 code = file_bytes.decode('utf-8')
+                break
             except UnicodeDecodeError as e:
+                attempt += 1
+                print(f"Trying to decode content, attempt - {attempt}",
+                      end='\r')
                 file_bytes[e.args[2]] = 32
+        if attempt >= 2:
+            print()
 
         return code, file_path
 

@@ -4,6 +4,7 @@ import ast
 import pandas as pd
 
 from termcolor import colored
+from codeplag.astfeatures import ASTFeatures
 from codeplag.pyplag.astwalkers import ASTWalker
 from codeplag.algorithms.featurebased import (
     get_children_indexes, counter_metric,
@@ -70,6 +71,14 @@ def get_ast_from_filename(filename):
         print("File not found")
 
     return tree
+
+
+def get_features_from_ast(tree):
+    features = ASTFeatures()
+    walker = ASTWalker(features)
+    walker.visit(tree)
+
+    return features
 
 
 def run_compare(features_f, features_s):
@@ -149,10 +158,8 @@ def compare_file_pair(filename, filename2, threshold, weights):
     if tree2 is None:
         return
 
-    features1 = ASTWalker()
-    features2 = ASTWalker()
-    features1.visit(tree1)
-    features2.visit(tree2)
+    features1 = get_features_from_ast(tree1)
+    features2 = get_features_from_ast(tree2)
 
     metrics = run_compare(features1, features2)
     total_similarity = np.sum(metrics * weights) / weights.sum()
@@ -163,8 +170,8 @@ def compare_file_pair(filename, filename2, threshold, weights):
                           features2.structure,
                           features1.from_num,
                           features2.from_num,
-                          features1.seq_ops,
-                          features2.seq_ops,
+                          features1.operators_sequence,
+                          features2.operators_sequence,
                           features1.tokens,
                           features2.tokens,
                           filename.split('/')[-1],
