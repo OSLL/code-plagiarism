@@ -1,8 +1,8 @@
 import unittest
 import os
 
-from codeplag.pyplag.tfeatures import ASTFeatures
-from codeplag.pyplag.utils import run_compare, get_ast_from_filename
+from codeplag.pyplag.utils import (run_compare, get_ast_from_filename,
+                                   get_features_from_ast)
 
 pwd = os.path.dirname(os.path.abspath(__file__))
 
@@ -12,10 +12,8 @@ class TestUtils(unittest.TestCase):
     def test_run_compare_normal(self):
         tree1 = get_ast_from_filename(os.path.join(pwd, './data/test1.py'))
         tree2 = get_ast_from_filename(os.path.join(pwd, './data/test2.py'))
-        features1 = ASTFeatures()
-        features2 = ASTFeatures()
-        features1.visit(tree1)
-        features2.visit(tree2)
+        features1 = get_features_from_ast(tree1)
+        features2 = get_features_from_ast(tree2)
 
         metrics = run_compare(features1, features2)
 

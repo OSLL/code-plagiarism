@@ -50,7 +50,7 @@ class GitHubParser:
             address += "/"
 
         headers = {
-            # Recommended, найти точно ли в заголовках и почему
+            # Recommended
             'accept': 'application/vnd.github.v3+json'
         }
         if self.__access_token != '':
@@ -115,8 +115,21 @@ class GitHubParser:
         api_url = '/repos/{}/{}/git/blobs/{}'.format(owner, repo, sha)
         response_json = self.send_get_request(api_url).json()
 
-        file_bytes = base64.b64decode(response_json['content'])
-        code = file_bytes.decode('utf-8')
+        file_bytes = bytearray(base64.b64decode(response_json['content']))
+        code = None
+
+        attempt = 1
+        while True:
+            try:
+                code = file_bytes.decode('utf-8')
+                break
+            except UnicodeDecodeError as e:
+                attempt += 1
+                print(f"Trying to decode content, attempt - {attempt}",
+                      end='\r')
+                file_bytes[e.args[2]] = 32
+        if attempt >= 2:
+            print()
 
         return code, file_path
 

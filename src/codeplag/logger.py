@@ -1,6 +1,7 @@
 import logging
 
-_log_format = f"%(asctime)s - [%(levelname)s] - %(name)s - (%(filename)s).%(funcName)s(%(lineno)d) - %(message)s"
+_log_format = '%(asctime)s - [%(levelname)s] - %(name)s - (%(filename)s).%(funcName)s(%(lineno)d) - %(message)s'
+
 
 def get_file_handler(filename):
     file_handler = logging.FileHandler(filename)
@@ -8,11 +9,13 @@ def get_file_handler(filename):
     file_handler.setFormatter(logging.Formatter(_log_format))
     return file_handler
 
+
 def get_stream_handler():
     stream_handler = logging.StreamHandler()
     stream_handler.setLevel(logging.WARNING)
     stream_handler.setFormatter(logging.Formatter(_log_format))
     return stream_handler
+
 
 def get_logger(name, filename):
     logger = logging.getLogger(name)

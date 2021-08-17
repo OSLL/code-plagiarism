@@ -1,6 +1,7 @@
 from setuptools import setup, find_packages
 from pathlib import Path
 
+
 setup(
     name='codeplag',
     version='0.0.1',
@@ -29,15 +30,16 @@ setup(
     packages=find_packages("src"),
     python_requires='>=3.6',
     install_requires=[
-        'numpy>=1.17',
-        'pandas>=1.0.5',
-        'ccsyspath>=1.1.0',
-        'clang>=11.0',
-        'libclang>=10.0.1.0',
-        'numba>=0.52.0',
-        'colorama>=0.3.9',
-        'termcolor>=1.1.0',
-        'python-decouple>=3.4',
-        'requests',
+        'numpy==1.19.4',
+        'pandas==1.0.5',
+        'ccsyspath==1.1.0',
+        'clang==11.0',
+        'llvmlite==0.35.0',
+        'libclang==10.0.1.0',
+        'numba==0.52.0',
+        'colorama==0.3.9',
+        'termcolor==1.1.0',
+        'python-decouple==3.4',
+        'requests==2.22.0',
     ],
 )

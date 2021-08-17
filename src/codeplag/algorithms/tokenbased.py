@@ -56,3 +56,8 @@ def lcs(X, Y):
                 L[i][j] = max(L[i-1][j], L[i][j-1])
 
     return L[m][n]
+
+
+@njit(fastmath=True)
+def lcs_based_coeff(tokens1, tokens2):
+    return ((2 * lcs(tokens1, tokens2)) / (len(tokens1) + len(tokens2)))

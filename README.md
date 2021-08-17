@@ -10,17 +10,23 @@
 
 ## 2. Install requirements
 
-- OS Ubuntu Linux
+- OS Ubuntu Linux >= 18.04
 
-- python version 3.6+ or even 3.8+
+- python version >= 3.6
 
 - pip3 version >= 19.0 (pip3 install -U pip)
 
-- sudo apt install clang
+- Ensure that an up-to-date version of setuptools is installed:
 
-- sudo apt install libncurses5
+```
+  pip3 install --upgrade setuptools
+```
 
-- pip3 install ./<name/of/the/cloned/repository>
+- install **clang** and **libncurses5** with apt or other packages manager
+
+- python3 setup.py install --user
+
+- if you want to easy install and test the app then run ./install.sh (it uses apt)
 
 ## 3. Tests
 
