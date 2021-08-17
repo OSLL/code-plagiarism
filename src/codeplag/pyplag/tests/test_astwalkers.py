@@ -30,15 +30,31 @@ class TestASTWalkers(unittest.TestCase):
         keywords['If'] = numba.int64(1)
         literals = Dict.empty(key_type=types.unicode_type,
                               value_type=types.int64)
+
+        # ast.Constant с python >= 3.8 используется для всех констант
+        # до этого были NameConstant, Num и др.
         literals['Constant'] = numba.int64(3)
+
+        file_literals = Dict.empty(key_type=types.unicode_type,
+                                   value_type=types.int64)
+        file_literals['Constant'] = 0
+        if 'Constant' in features.literals:
+            file_literals['Constant'] = features.literals['Constant']
+            unodes = 13
+        else:
+            if 'NameConstant' in features.literals:
+                file_literals['Constant'] += features.literals['NameConstant']
+            if 'Num' in features.literals:
+                file_literals['Constant'] += features.literals['Num']
+            unodes = 14
 
         self.assertEqual(features.count_of_nodes, 27)
         self.assertEqual(features.operators_sequence,
                          List(['AugAssign', 'Add']))
         self.assertEqual(features.operators, operators)
         self.assertEqual(features.keywords, keywords)
-        self.assertEqual(features.literals, literals)
-        self.assertEqual(len(features.unodes), 13)
-        self.assertEqual(len(features.from_num), 13)
-        self.assertEqual(features.count_unodes, numba.int64(13))
+        self.assertEqual(file_literals, literals)
+        self.assertEqual(len(features.unodes), unodes)
+        self.assertEqual(len(features.from_num), unodes)
+        self.assertEqual(features.count_unodes, numba.int64(unodes))
         self.assertEqual(len(features.structure), 27)
