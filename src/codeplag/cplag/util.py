@@ -28,13 +28,14 @@ def prepare_cursors(file1, file2):
     incargs = [b'-I' + inc for inc in syspath]
     args = args + incargs
     directory = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                             './tests/data')
+                             './tests/data')
     files = list(filter(lambda x: (x.endswith('.cpp') or
                                    x.endswith('.c') or
                                    x.endswith('h')), os.listdir(directory)))
 
     if(len(files) < 2):
-        raise FileNotFoundError('At least 2 files in /tests folder are needed') 
+        message = 'At least 2 files in /tests folder are needed'
+        raise FileNotFoundError(message)
     else:
         if(file1 == ""):
             filename = os.path.join(directory, "./rw1.cpp")

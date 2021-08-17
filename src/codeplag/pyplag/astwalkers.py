@@ -1,6 +1,4 @@
 import ast
-from numba.typed import List, Dict
-from numba.core import types
 
 from codeplag.pyplag.const import (
     IGNORE_NODES, OPERATORS,

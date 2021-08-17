@@ -2,6 +2,7 @@ import os
 from clang.cindex import Cursor
 from codeplag.cplag.const import IGNORE
 
+
 # Tested
 def get_not_ignored(tree, src):
     '''

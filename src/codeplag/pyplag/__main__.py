@@ -3,8 +3,6 @@ import numpy as np
 import pandas as pd
 
 from time import perf_counter
-from codeplag.astfeatures import ASTFeatures
-from codeplag.pyplag.astwalkers import ASTWalker
 from codeplag.pyplag.utils import (
     get_ast_from_content, run_compare, get_ast_from_filename,
     print_compare_res, compare_file_pair,
@@ -43,7 +41,7 @@ if mode == 0:
     if tree1 is None:
         exit()
 
-    features1 = get_features_from_ast(tree1)
+    features1 = get_features_from_ast(tree1, args.file)
 
     gh = GitHubParser(file_extensions=['py'], check_policy=args.check_policy,
                       access_token=ACCESS_TOKEN)
@@ -58,22 +56,13 @@ if mode == 0:
             if tree2 is None:
                 continue
 
-            features2 = get_features_from_ast(tree2)
+            features2 = get_features_from_ast(tree2, url_file)
             metrics = run_compare(features1, features2)
             total_similarity = np.sum(metrics * weights) / weights.sum()
 
             if (total_similarity * 100) > args.threshold:
                 print_compare_res(metrics, total_similarity,
-                                  features1.structure,
-                                  features2.structure,
-                                  features1.from_num,
-                                  features2.from_num,
-                                  features1.operators_sequence,
-                                  features2.operators_sequence,
-                                  features1.tokens,
-                                  features2.tokens,
-                                  args.file.split('\\')[-1],
-                                  url_file)
+                                  features1, features2)
 
         iteration += 1
         print(repo_url, " ... OK")
@@ -90,7 +79,7 @@ elif mode == 1:
     if tree1 is None:
         exit()
 
-    features1 = get_features_from_ast(tree1)
+    features1 = get_features_from_ast(tree1, args.git_file)
 
     repos = gh.get_list_of_repos(owner=args.git, reg_exp=args.reg_exp)
     count_iter = len(repos)
@@ -103,22 +92,13 @@ elif mode == 1:
             if tree2 is None:
                 continue
 
-            features2 = get_features_from_ast(tree2)
+            features2 = get_features_from_ast(tree2, url_file)
             metrics = run_compare(features1, features2)
             total_similarity = np.sum(metrics * weights) / weights.sum()
 
             if (total_similarity * 100) > args.threshold:
                 print_compare_res(metrics, total_similarity,
-                                  features1.structure,
-                                  features2.structure,
-                                  features1.from_num,
-                                  features2.from_num,
-                                  features1.operators_sequence,
-                                  features2.operators_sequence,
-                                  features1.tokens,
-                                  features2.tokens,
-                                  args.git_file,
-                                  url_file)
+                                  features1, features2)
 
         iteration += 1
         print(repo_url, " ... OK")
@@ -160,7 +140,7 @@ elif mode == 3:
     if tree1 is None:
         exit()
 
-    features1 = get_features_from_ast(tree1)
+    features1 = get_features_from_ast(tree1, args.git_file)
 
     files = os.listdir(args.dir)
     files = list(filter(lambda x: (x.endswith('.py')), files))
@@ -182,23 +162,14 @@ elif mode == 3:
         if tree2 is None:
             continue
 
-        features2 = get_features_from_ast(tree2)
+        features2 = get_features_from_ast(tree2, filename)
 
         metrics = run_compare(features1, features2)
         total_similarity = np.sum(metrics * weights) / weights.sum()
 
         if (total_similarity * 100) > args.threshold:
             print_compare_res(metrics, total_similarity,
-                              features1.structure,
-                              features2.structure,
-                              features1.from_num,
-                              features2.from_num,
-                              features1.operators_sequence,
-                              features2.operators_sequence,
-                              features1.tokens,
-                              features2.tokens,
-                              args.git_file,
-                              filename.split('/')[-1])
+                              features1, features2)
 
         iterration += 1
         print('  {:.2%}'.format(iterration / iterrations), end="\r")
@@ -251,30 +222,21 @@ elif mode == 5:
             if tree2 is None:
                 continue
 
-            features2 = get_features_from_ast(tree2)
+            features2 = get_features_from_ast(tree2, url_file)
 
             for filepath in project_files:
                 tree1 = get_ast_from_filename(filepath)
                 if tree1 is None:
                     continue
 
-                features1 = get_features_from_ast(tree1)
+                features1 = get_features_from_ast(tree1, filepath)
 
                 metrics = run_compare(features1, features2)
                 total_similarity = np.sum(metrics * weights) / weights.sum()
 
                 if (total_similarity * 100) > args.threshold:
                     print_compare_res(metrics, total_similarity,
-                                      features1.structure,
-                                      features2.structure,
-                                      features1.from_num,
-                                      features2.from_num,
-                                      features1.operators_sequence,
-                                      features2.operators_sequence,
-                                      features1.tokens,
-                                      features2.tokens,
-                                      filepath,
-                                      url_file)
+                                      features1, features2)
 
         iteration += 1
         print(repo_url, " ... OK")
@@ -316,24 +278,15 @@ elif mode == 6:
             if tree2 is None:
                 continue
 
-            features1 = get_features_from_ast(tree1)
-            features2 = get_features_from_ast(tree2)
+            features1 = get_features_from_ast(tree1, url_file)
+            features2 = get_features_from_ast(tree2, filename)
 
             metrics = run_compare(features1, features2)
             total_similarity = np.sum(metrics * weights) / weights.sum()
 
             if (total_similarity * 100) > args.threshold:
                 print_compare_res(metrics, total_similarity,
-                                  features1.structure,
-                                  features2.structure,
-                                  features1.from_num,
-                                  features2.from_num,
-                                  features1.operators_sequence,
-                                  features2.operators_sequence,
-                                  features1.tokens,
-                                  features2.tokens,
-                                  url_file,
-                                  filename)
+                                  features1, features2)
 
             iterration += 1
             print('  {:.2%}'.format(iterration / iterrations), end="\r")
@@ -359,30 +312,21 @@ elif mode == 7:
             if tree2 is None:
                 continue
 
-            features2 = get_features_from_ast(tree2)
+            features2 = get_features_from_ast(tree2, url_file)
 
             for file2, url_file2 in project_files:
                 tree1 = get_ast_from_content(file2, url_file2)
                 if tree1 is None:
                     continue
 
-                features1 = get_features_from_ast(tree1)
+                features1 = get_features_from_ast(tree1, url_file2)
 
                 metrics = run_compare(features1, features2)
                 total_similarity = np.sum(metrics * weights) / weights.sum()
 
                 if (total_similarity * 100) > args.threshold:
                     print_compare_res(metrics, total_similarity,
-                                      features1.structure,
-                                      features2.structure,
-                                      features1.from_num,
-                                      features2.from_num,
-                                      features1.operators_sequence,
-                                      features2.operators_sequence,
-                                      features1.tokens,
-                                      features2.tokens,
-                                      url_file2,
-                                      url_file)
+                                      features1, features2)
 
         iteration += 1
         print(repo_url, " ... OK")

@@ -65,15 +65,15 @@ if __name__ == '__main__':
                         b_sh = sh_res = 0
 
                     similarity = (struct_res * 1.6 + operators_res * 1
-                                    + keywords_res * 1.1 + sh_res * 0.3) / 4
+                                  + keywords_res * 1.1 + sh_res * 0.3) / 4
 
                     if similarity > 0.72:
                         print("         ")
                         print('+' * 40)
                         print('May be similar:', filename.split('/')[-1],
-                                filename2.split('/')[-1])
+                              filename2.split('/')[-1])
                         print("Total similarity -",
-                                '{:.2%}'.format(similarity))
+                              '{:.2%}'.format(similarity))
 
                         ast_compare(cursor, cursor2, filename, filename2, True)
                         text = 'Operators match percentage:'

@@ -1,7 +1,6 @@
 import unittest
 import os
 
-from codeplag.pyplag.astwalkers import ASTWalker
 from codeplag.pyplag.utils import (run_compare, get_ast_from_filename,
                                    get_features_from_ast)
 

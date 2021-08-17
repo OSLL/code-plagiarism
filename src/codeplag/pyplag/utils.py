@@ -10,7 +10,7 @@ from codeplag.algorithms.featurebased import (
     get_children_indexes, counter_metric,
     struct_compare, op_shift_metric
 )
-from codeplag.algorithms.tokenbased import value_jakkar_coef, lcs
+from codeplag.algorithms.tokenbased import value_jakkar_coef, lcs_based_coeff
 
 
 def get_ast_from_content(code, path):
@@ -73,8 +73,8 @@ def get_ast_from_filename(filename):
     return tree
 
 
-def get_features_from_ast(tree):
-    features = ASTFeatures()
+def get_features_from_ast(tree, filepath=''):
+    features = ASTFeatures(filepath)
     walker = ASTWalker(features)
     walker.visit(tree)
 
@@ -94,21 +94,20 @@ def run_compare(features_f, features_s):
 
 
 def print_compare_res(metrics, total_similarity,
-                      struct1, struct2, to_names1, to_names2,
-                      seq_ops_f, seq_ops_s,
-                      tokens_f, tokens_s,
-                      filename1, filename2):
-    ch_inds1, count_ch1 = get_children_indexes(struct1)
-    ch_inds2, count_ch2 = get_children_indexes(struct2)
+                      features1, features2):
+    ch_inds1, count_ch1 = get_children_indexes(features1.structure)
+    ch_inds2, count_ch2 = get_children_indexes(features2.structure)
     compliance_matrix = np.zeros((count_ch1, count_ch2, 2), dtype=np.int64)
-    struct_res = struct_compare(struct1, struct2,
+    struct_res = struct_compare(features1.structure, features2.structure,
                                 compliance_matrix)
     struct_res = struct_res[0] / struct_res[1]
-    best_shift, shift_res = op_shift_metric(seq_ops_f, seq_ops_s)
+    best_shift, shift_res = op_shift_metric(features1.operators_sequence,
+                                            features2.operators_sequence)
 
     print("         ")
     print('+' * 40)
-    print('May be similar:', filename1, filename2, end='\n\n', sep='\n')
+    print('May be similar:', features1.filepath, features2.filepath,
+          end='\n\n', sep='\n')
     main_metrics_df = pd.DataFrame()
     main_metrics_df.loc['Total match', 'Same'] = total_similarity
     main_metrics_df.loc['Jakkar coef', 'Same'] = metrics[0]
@@ -121,14 +120,14 @@ def print_compare_res(metrics, total_similarity,
     additional_metrics_df = pd.DataFrame()
     additional_metrics_df.loc['Structure match', 'Same'] = struct_res
     additional_metrics_df.loc['Op shift match (max)', 'Same'] = shift_res
-    additional_metrics_df.loc['LCS'] = (2 * lcs(tokens_f, tokens_s) /
-                                        (len(tokens_f) + len(tokens_s)))
+    additional_metrics_df.loc['LCS'] = lcs_based_coeff(features1.tokens,
+                                                       features2.tokens)
     print(additional_metrics_df)
     print()
 
     if struct_res > 0.75:
-        indexes = [to_names1[struct1[ind][1]] for ind in ch_inds1]
-        columns = [to_names2[struct2[ind][1]] for ind in ch_inds2]
+        indexes = [features1.from_num[features1.structure[ind][1]] for ind in ch_inds1]
+        columns = [features2.from_num[features2.structure[ind][1]] for ind in ch_inds2]
         data = np.zeros((compliance_matrix.shape[0],
                          compliance_matrix.shape[1]),
                         dtype=np.float32)
@@ -144,13 +143,13 @@ def print_compare_res(metrics, total_similarity,
     print('+' * 40)
 
 
-def compare_file_pair(filename, filename2, threshold, weights):
+def compare_file_pair(filename1, filename2, threshold, weights):
     '''
         Function compares 2 files
-        filename - path to the first file (dir/file1.py)
+        filename1 - path to the first file (dir/file1.py)
         filename2 - path the second file (dir/file2.py)
     '''
-    tree1 = get_ast_from_filename(filename)
+    tree1 = get_ast_from_filename(filename1)
     tree2 = get_ast_from_filename(filename2)
 
     if tree1 is None:
@@ -158,24 +157,15 @@ def compare_file_pair(filename, filename2, threshold, weights):
     if tree2 is None:
         return
 
-    features1 = get_features_from_ast(tree1)
-    features2 = get_features_from_ast(tree2)
+    features1 = get_features_from_ast(tree1, filename1)
+    features2 = get_features_from_ast(tree2, filename2)
 
     metrics = run_compare(features1, features2)
     total_similarity = np.sum(metrics * weights) / weights.sum()
 
     if (total_similarity * 100) > threshold:
         print_compare_res(metrics, total_similarity,
-                          features1.structure,
-                          features2.structure,
-                          features1.from_num,
-                          features2.from_num,
-                          features1.operators_sequence,
-                          features2.operators_sequence,
-                          features1.tokens,
-                          features2.tokens,
-                          filename.split('/')[-1],
-                          filename2.split('/')[-1])
+                          features1, features2)
 
     return (metrics, total_similarity)
 
