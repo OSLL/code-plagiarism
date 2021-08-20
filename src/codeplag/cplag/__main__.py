@@ -17,7 +17,7 @@ syspath = ccsyspath.system_include_paths('clang++')
 incargs = [b'-I' + inc for inc in syspath]
 args = args + incargs
 
-weights = np.array([0, 1, 1, 1], dtype=np.float32)
+weights = np.array([1, 0.4, 0.4, 0.4], dtype=np.float32)
 
 pd.options.display.float_format = '{:,.2%}'.format
 
