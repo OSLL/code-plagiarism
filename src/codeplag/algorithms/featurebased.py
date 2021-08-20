@@ -140,7 +140,7 @@ def matrix_value(array):
         from the compliance matrix.
         @param array - matrix of compliance (np.ndarray object)
     '''
-    # At worst O(n^3 + 2n^2)
+    # At worst n^3 + 2n^2 operations => O(n^3)
     same_struct_metric = [1, 1]
     minimal = min(array.shape[0], array.shape[1])
     indexes = List()

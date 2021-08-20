@@ -1,8 +1,10 @@
 import unittest
 import os
 
-from codeplag.pyplag.utils import (run_compare, get_ast_from_filename,
+from codeplag.utils import run_compare
+from codeplag.pyplag.utils import (get_ast_from_filename,
                                    get_features_from_ast)
+
 
 pwd = os.path.dirname(os.path.abspath(__file__))
 

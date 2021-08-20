@@ -17,22 +17,6 @@ class TestTree(unittest.TestCase):
         self.assertEqual(type(res1), list)
         self.assertEqual(type(res2), list)
 
-    def test_get_not_ignored_bad_file(self):
-        (filename, filename2, cursor, cursor2) = self.init("empty.cpp",
-                                                           "sample2.cpp")
-        res1 = get_not_ignored(cursor, "")
-        res2 = get_not_ignored(cursor2, ["w", 'q'])
-        self.assertEqual(res1, FileNotFoundError)
-        self.assertEqual(res2, TypeError)
-
-    def test_get_not_ignored_bad_cursor(self):
-        (filename, filename2, cursor, cursor2) = self.init("empty.cpp",
-                                                           "sample2.cpp")
-        res1 = get_not_ignored(cursor, filename)
-        res2 = get_not_ignored(['h', 'e', 'l', 'l', 'o'], filename2)
-        self.assertEqual(res1, None)
-        self.assertEqual(res2, TypeError)
-
     # Tests for get_count_of_nodes
     def test_get_count_of_nodes_normal(self):
         (filename, filename2, cursor, cursor2) = self.init("sample1.cpp",

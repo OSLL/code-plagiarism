@@ -1,20 +1,25 @@
 import ccsyspath
 import sys
 import os
+import numpy as np
+import pandas as pd
 
 from time import perf_counter
 from codeplag.cplag.util import get_cursor_from_file
-from codeplag.cplag.metric import (
-    ast_compare, get_operators_frequency,
-    get_op_freq_percent, get_kw_freq_percent
-)
-from codeplag.algorithms.featurebased import op_shift_metric
+from codeplag.cplag.tree import get_features
+from codeplag.algorithms.featurebased import (op_shift_metric,
+                                              counter_metric,
+                                              struct_compare)
+from codeplag.utils import run_compare, print_compare_res
 
 args = '-x c++ --std=c++11'.split()
 syspath = ccsyspath.system_include_paths('clang++')
 incargs = [b'-I' + inc for inc in syspath]
 args = args + incargs
 
+weights = np.array([0, 1, 1, 1], dtype=np.float32)
+
+pd.options.display.float_format = '{:,.2%}'.format
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
@@ -51,43 +56,14 @@ if __name__ == '__main__':
                 cursor = get_cursor_from_file(filename, args)
                 cursor2 = get_cursor_from_file(filename2, args)
                 if cursor and cursor2:
-                    res = ast_compare(cursor, cursor2, filename, filename2)
+                    features1 = get_features(cursor, filename)
+                    features2 = get_features(cursor2, filename2)
+                    metrics = run_compare(features1, features2)
+                    total_similarity = np.sum(metrics * weights) / weights.sum()
 
-                    struct_res = round(res[0] / res[1], 3)
-                    (op, fr, co, ck, seq) = get_operators_frequency(cursor,
-                                                                    cursor2)
-
-                    operators_res = get_op_freq_percent(op, fr, co)
-                    keywords_res = get_kw_freq_percent(ck)
-                    if(len(seq) >= 2):
-                        b_sh, sh_res = op_shift_metric(seq[0], seq[1])
-                    else:
-                        b_sh = sh_res = 0
-
-                    similarity = (struct_res * 1.6 + operators_res * 1
-                                  + keywords_res * 1.1 + sh_res * 0.3) / 4
-
-                    if similarity > 0.72:
-                        print("         ")
-                        print('+' * 40)
-                        print('May be similar:', filename.split('/')[-1],
-                              filename2.split('/')[-1])
-                        print("Total similarity -",
-                              '{:.2%}'.format(similarity))
-
-                        ast_compare(cursor, cursor2, filename, filename2, True)
-                        text = 'Operators match percentage:'
-                        print(text, '{:.2%}'.format(operators_res))
-                        # print_freq_analysis(op, fr, co)
-                        text = 'Keywords match percentage:'
-                        print(text, '{:.2%}'.format(keywords_res))
-
-                        print('---')
-                        print('Op shift metric.')
-                        print('Best op shift:', b_sh)
-                        print('Persent same: {:.2%}'.format(sh_res))
-                        print('---')
-                        print('+' * 40)
+                    if total_similarity > 0.7:
+                        print_compare_res(metrics, total_similarity,
+                                          features1, features2)
 
                 iterration += 1
                 print('  {:.2%}'.format(iterration / iterrations), end="\r")
