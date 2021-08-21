@@ -1,5 +1,4 @@
 import numpy as np
-import ast
 import pandas as pd
 
 from codeplag.algorithms.featurebased import (
@@ -54,8 +53,10 @@ def print_compare_res(metrics, total_similarity,
     print()
 
     if struct_res > 0.75:
-        indexes = [features1.from_num[features1.structure[ind][1]] for ind in ch_inds1]
-        columns = [features2.from_num[features2.structure[ind][1]] for ind in ch_inds2]
+        indexes = [features1.from_num[features1.structure[ind][1]]
+                   for ind in ch_inds1]
+        columns = [features2.from_num[features2.structure[ind][1]]
+                   for ind in ch_inds2]
         data = np.zeros((compliance_matrix.shape[0],
                          compliance_matrix.shape[1]),
                         dtype=np.float32)
@@ -64,7 +65,8 @@ def print_compare_res(metrics, total_similarity,
                 data[row][col] = (compliance_matrix[row][col][0] /
                                   compliance_matrix[row][col][1])
         df = pd.DataFrame(data=data,
-                          index=indexes, columns=columns)
+                          index=indexes,
+                          columns=columns)
 
         print(df, '\n')
 

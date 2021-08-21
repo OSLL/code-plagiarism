@@ -7,9 +7,6 @@ import pandas as pd
 from time import perf_counter
 from codeplag.cplag.util import get_cursor_from_file
 from codeplag.cplag.tree import get_features
-from codeplag.algorithms.featurebased import (op_shift_metric,
-                                              counter_metric,
-                                              struct_compare)
 from codeplag.utils import run_compare, print_compare_res
 
 args = '-x c++ --std=c++11'.split()
@@ -59,7 +56,8 @@ if __name__ == '__main__':
                     features1 = get_features(cursor, filename)
                     features2 = get_features(cursor2, filename2)
                     metrics = run_compare(features1, features2)
-                    total_similarity = np.sum(metrics * weights) / weights.sum()
+                    total_similarity = (np.sum(metrics * weights)
+                                        / weights.sum())
 
                     if total_similarity > 0.7:
                         print_compare_res(metrics, total_similarity,

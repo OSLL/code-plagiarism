@@ -19,7 +19,7 @@ class TestUtils(unittest.TestCase):
 
         metrics = run_compare(features1, features2)
 
-        self.assertAlmostEqual(metrics[0], 0.571, 3)
+        self.assertAlmostEqual(metrics[0], 0.737, 3)
         self.assertAlmostEqual(metrics[1], 0.667,  3)
         self.assertEqual(metrics[2], 1.)
         self.assertEqual(metrics[3], 0.75)

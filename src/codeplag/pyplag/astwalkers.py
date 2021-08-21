@@ -14,6 +14,15 @@ class ASTWalker(ast.NodeVisitor):
         self.features = features
         self.curr_depth = 0
 
+    def add_unique_node(self, node_name):
+        self.features.unodes[node_name] = self.features.count_unodes
+        self.features.from_num[self.features.count_unodes] = node_name
+        self.features.count_unodes += 1
+
+    def add_node_to_structure(self, node_name):
+        self.features.structure.append((self.curr_depth,
+                                        self.features.unodes[node_name]))
+
     def generic_visit(self, node):
         '''
             Function for traverse, counting operators, keywords, literals
@@ -45,18 +54,12 @@ class ASTWalker(ast.NodeVisitor):
             if self.curr_depth != 0:
                 if 'name' in dir(node) and node.name is not None:
                     if node.name not in self.features.unodes:
-                        self.features.unodes[node.name] = self.features.count_unodes
-                        self.features.from_num[self.features.count_unodes] = node.name
-                        self.features.count_unodes += 1
-                    self.features.structure.append((self.curr_depth,
-                                                    self.features.unodes[node.name]))
+                        self.add_unique_node(node.name)
+                    self.add_node_to_structure(node.name)
                 else:
                     if type_name not in self.features.unodes:
-                        self.features.unodes[type_name] = self.features.count_unodes
-                        self.features.from_num[self.features.count_unodes] = type_name
-                        self.features.count_unodes += 1
-                    self.features.structure.append((self.curr_depth,
-                                                    self.features.unodes[type_name]))
+                        self.add_unique_node(type_name)
+                    self.add_node_to_structure(type_name)
                 self.features.count_of_nodes += 1
 
             self.curr_depth += 1

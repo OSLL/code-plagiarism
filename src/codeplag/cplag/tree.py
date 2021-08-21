@@ -1,5 +1,4 @@
-import os
-from clang.cindex import Cursor, TokenKind
+from clang.cindex import TokenKind
 from codeplag.cplag.const import IGNORE, OPERATORS
 from codeplag.astfeatures import ASTFeatures
 
@@ -95,7 +94,7 @@ def get_features(tree, filepath=''):
     features = ASTFeatures(filepath)
     for token in tree.get_tokens():
         if (token.kind == TokenKind.PUNCTUATION and
-            token.spelling in OPERATORS):
+           token.spelling in OPERATORS):
             if token.spelling not in features.operators:
                 features.operators[token.spelling] = 1
             else:
