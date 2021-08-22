@@ -161,6 +161,20 @@ def matrix_value(array):
 
 
 @njit(fastmath=True)
+def add_not_counted(tree, count_ch_f, count_ch_s, key_indexes, indexes, axis):
+    count = 0
+    added = [indexes[i][axis] for i in np.arange(0, count_ch_s, 1)]
+    for k in np.arange(0, count_ch_f, 1):
+        if k in added:
+            continue
+        else:
+            part_of_tree = tree[key_indexes[k]:key_indexes[k + 1]]
+            count += len(part_of_tree)
+
+    return count
+
+
+@njit(fastmath=True)
 def struct_compare(tree1, tree2, matrix=np.array([[[]]]), dtype=np.int64):
     '''
         Function for compare structure of two trees
@@ -200,20 +214,14 @@ def struct_compare(tree1, tree2, matrix=np.array([[[]]]), dtype=np.int64):
 
     same_struct_metric, indexes = matrix_value(array)
     if count_of_children1 > count_of_children2:
-        added = [indexes[i][0] for i in np.arange(0, count_of_children2, 1)]
-        for k in np.arange(0, count_of_children1, 1):
-            if k in added:
-                continue
-            else:
-                part_of_tree = tree1[key_indexes1[k]:key_indexes1[k + 1]]
-                same_struct_metric[1] += len(part_of_tree)
+        same_struct_metric[1] += add_not_counted(tree1, count_of_children1,
+                                                 count_of_children2,
+                                                 key_indexes1, indexes,
+                                                 axis=0)
     elif count_of_children2 > count_of_children1:
-        added = [indexes[i][1] for i in np.arange(0, count_of_children1, 1)]
-        for k in np.arange(0, count_of_children2, 1):
-            if k in added:
-                continue
-            else:
-                part_of_tree = tree2[key_indexes2[k]:key_indexes2[k + 1]]
-                same_struct_metric[1] += len(part_of_tree)
+        same_struct_metric[1] += add_not_counted(tree2, count_of_children2,
+                                                 count_of_children1,
+                                                 key_indexes2, indexes,
+                                                 axis=1)
 
     return same_struct_metric
