@@ -7,8 +7,8 @@ class ASTFeatures:
         self.filepath = filepath
 
         self.count_of_nodes = 0
-        self.operators_sequence = List(['tmp'])
-        self.operators_sequence.clear()
+        self.head_nodes = List(['tmp'])
+        self.head_nodes.clear()
         self.operators = Dict.empty(key_type=types.unicode_type,
                                     value_type=types.int64)
         self.keywords = Dict.empty(key_type=types.unicode_type,

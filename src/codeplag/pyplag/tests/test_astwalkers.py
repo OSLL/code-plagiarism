@@ -2,7 +2,7 @@ import unittest
 import numba
 import os
 
-from numba.typed import List, Dict
+from numba.typed import Dict
 from numba.core import types
 from codeplag.astfeatures import ASTFeatures
 from codeplag.pyplag.astwalkers import ASTWalker
@@ -49,8 +49,6 @@ class TestASTWalkers(unittest.TestCase):
             unodes = 14
 
         self.assertEqual(features.count_of_nodes, 27)
-        self.assertEqual(features.operators_sequence,
-                         List(['AugAssign', 'Add']))
         self.assertEqual(features.operators, operators)
         self.assertEqual(features.keywords, keywords)
         self.assertEqual(file_literals, literals)

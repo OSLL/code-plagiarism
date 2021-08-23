@@ -7,8 +7,6 @@ from codeplag.pyplag.const import (
 )
 
 
-# Можно сохранять название узлов только самого верхнего, первого уровня,
-# чтобы экономить ресурсы
 class ASTWalker(ast.NodeVisitor):
     def __init__(self, features):
         self.features = features
@@ -22,6 +20,8 @@ class ASTWalker(ast.NodeVisitor):
     def add_node_to_structure(self, node_name):
         self.features.structure.append((self.curr_depth,
                                         self.features.unodes[node_name]))
+        if self.curr_depth == 1:
+            self.features.head_nodes.append(node_name)
 
     def generic_visit(self, node):
         '''
@@ -38,7 +38,6 @@ class ASTWalker(ast.NodeVisitor):
                 self.features.operators[type_name] = 1
             else:
                 self.features.operators[type_name] += 1
-            self.features.operators_sequence.append(type_name)
         elif type_name in KEYWORDS:
             if type_name not in self.features.keywords:
                 self.features.keywords[type_name] = 1

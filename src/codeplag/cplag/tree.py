@@ -75,6 +75,9 @@ def generic_visit(node, features, curr_depth=0):
                                    features.unodes[node_name]))
         children = list(node.get_children())
 
+        if curr_depth == 1:
+            features.head_nodes.append(node.spelling)
+
     if len(children) == 0:
         for token in node.get_tokens():
             token_name = repr(token.kind)
@@ -99,7 +102,6 @@ def get_features(tree, filepath=''):
                 features.operators[token.spelling] = 1
             else:
                 features.operators[token.spelling] += 1
-            features.operators_sequence.append(token.spelling)
         if (token.kind == TokenKind.KEYWORD):
             if token.spelling not in features.keywords:
                 features.keywords[token.spelling] = 1
