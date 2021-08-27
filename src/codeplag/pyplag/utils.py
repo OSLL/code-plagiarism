@@ -101,16 +101,3 @@ def compare_file_pair(filename1, filename2, threshold, weights):
                           features1, features2)
 
     return (metrics, total_similarity)
-
-
-def get_files_path_from_directory(directory):
-    cur_dir_files = os.listdir(directory)
-    allowed_files = []
-    for file in cur_dir_files:
-        path = directory + '/' + file
-        if file.endswith('.py'):
-            allowed_files.append(path)
-        elif os.path.isdir(path):
-            allowed_files.extend(get_files_path_from_directory(path))
-
-    return allowed_files

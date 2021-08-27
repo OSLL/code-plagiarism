@@ -5,13 +5,13 @@ import pandas as pd
 from time import perf_counter
 from codeplag.pyplag.utils import (
     get_ast_from_content, get_ast_from_filename,
-    compare_file_pair, get_files_path_from_directory,
-    get_features_from_ast
+    compare_file_pair, get_features_from_ast
 )
 from webparsers.github_parser import GitHubParser
 from codeplag.pyplag.mode import get_mode
 from codeplag.logger import get_logger
-from codeplag.utils import print_compare_res, run_compare
+from codeplag.utils import (print_compare_res, run_compare,
+                            get_files_path_from_directory)
 from codeplag.pyplag.const import LOG_PATH
 from decouple import Config, RepositoryEnv
 
@@ -180,7 +180,8 @@ elif mode == 4:
     # Use variablse 'project' and 'directory'
     dir_files = os.listdir(args.dir)
     dir_files = list(filter(lambda x: (x.endswith('.py')), dir_files))
-    project_files = get_files_path_from_directory(args.project)
+    project_files = get_files_path_from_directory(args.project,
+                                                  extension=r".py\b")
 
     count_files = len(dir_files) * len(project_files)
     if count_files == 0:
@@ -207,7 +208,8 @@ elif mode == 5:
     gh = GitHubParser(file_extensions=['py'], check_policy=args.check_policy,
                       access_token=ACCESS_TOKEN)
 
-    project_files = get_files_path_from_directory(args.project)
+    project_files = get_files_path_from_directory(args.project,
+                                                  extension=r".py\b")
     if len(project_files) == 0:
         print("Folder with project not consist py files.")
         exit()

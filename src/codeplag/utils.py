@@ -1,3 +1,5 @@
+import os
+import re
 import numpy as np
 import pandas as pd
 
@@ -63,3 +65,18 @@ def print_compare_res(metrics, total_similarity,
         print(df, '\n')
 
     print('+' * 40)
+
+
+def get_files_path_from_directory(directory, extension=r".*\b"):
+    '''
+        The function returns paths to all files in the directory
+        and its subdirectories which have the extension transmitted
+        in arguments
+    '''
+    allowed_files = []
+    for current_dir, folders, files in os.walk(directory):
+        for file in files:
+            if re.search(extension, file) is not None:
+                allowed_files.append(os.path.join(current_dir, file))
+
+    return allowed_files
