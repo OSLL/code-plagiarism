@@ -87,6 +87,10 @@ def generic_visit(node, features, curr_depth=0):
                 features.count_unodes += 1
             features.structure.append((curr_depth,
                                        features.unodes[token_name]))
+
+            if curr_depth == 1:
+                features.head_nodes.append(token_name)
+
     else:
         for child in children:
             features.tokens.append(child.kind.value)
