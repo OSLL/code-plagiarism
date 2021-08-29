@@ -1,6 +1,3 @@
-from numba import njit
-
-
 def generate_unique_ngrams(tokens, n=3):
     '''
         The function returns a set of N-grams.
@@ -28,7 +25,6 @@ def value_jakkar_coef(tokens_first, tokens_second):
     return intersection / union
 
 
-@njit(fastmath=True)
 def lcs(X, Y):
     '''
         The function returns the length of the longest common subsequence
@@ -58,7 +54,6 @@ def lcs(X, Y):
     return L[m][n]
 
 
-@njit(fastmath=True)
 def lcs_based_coeff(tokens1, tokens2):
     count_tokens1 = len(tokens1)
     count_tokens2 = len(tokens2)

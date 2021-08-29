@@ -1,10 +1,6 @@
 import numpy as np
-import numba
-from numba import njit
-from numba.typed import List
 
 
-@njit(fastmath=True)
 def counter_metric(counter1, counter2):
     '''
         Function return how same operators or keywords or literals
@@ -38,7 +34,6 @@ def counter_metric(counter1, counter2):
     return percent_of_same[0] / percent_of_same[1]
 
 
-@njit(fastmath=True)
 def op_shift_metric(ops1, ops2):
     '''
         Returns the maximum value of the operator match and the shift under
@@ -88,14 +83,12 @@ def op_shift_metric(ops1, ops2):
         return 0, 0.0
 
 
-@njit(fastmath=True)
 def get_children_indexes(tree):
     '''
         The function returns indexes of her children and their count.
         @param tree - a simple structure of the first AST.
     '''
-    indexes = List([1])
-    indexes.clear()
+    indexes = []
     count_of_children = 0
 
     if len(tree) != 0:
@@ -111,7 +104,6 @@ def get_children_indexes(tree):
     return indexes, count_of_children
 
 
-@njit(fastmath=True)
 def find_max_index(array):
     '''
         The function for finding index of max element in matrix
@@ -119,7 +111,7 @@ def find_max_index(array):
     '''
 
     maximum = 0
-    index = numba.int64([0, 0])
+    index = np.int64([0, 0])
     for i in np.arange(0, array.shape[0], 1):
         for j in np.arange(0, array.shape[1], 1):
             if array[i][j][1] == 0:
@@ -133,7 +125,6 @@ def find_max_index(array):
     return index
 
 
-@njit(fastmath=True)
 def matrix_value(array):
     '''
         The function returns the value of the similarity of nodes
@@ -143,7 +134,7 @@ def matrix_value(array):
     # At worst n^3 + 2n^2 operations => O(n^3)
     same_struct_metric = [1, 1]
     minimal = min(array.shape[0], array.shape[1])
-    indexes = List()
+    indexes = []
     for i in np.arange(0, minimal, 1):
         ind = find_max_index(array)
         indexes.append(ind)
@@ -160,7 +151,6 @@ def matrix_value(array):
     return same_struct_metric, indexes
 
 
-@njit(fastmath=True)
 def add_not_counted(tree, count_ch_f, count_ch_s, key_indexes, indexes, axis):
     count = 0
     added = [indexes[i][axis] for i in np.arange(0, count_ch_s, 1)]
@@ -174,7 +164,6 @@ def add_not_counted(tree, count_ch_f, count_ch_s, key_indexes, indexes, axis):
     return count
 
 
-@njit(fastmath=True)
 def struct_compare(tree1, tree2, matrix=np.array([[[]]]), dtype=np.int64):
     '''
         Function for compare structure of two trees

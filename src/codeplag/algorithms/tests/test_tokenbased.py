@@ -1,6 +1,5 @@
 import unittest
 
-from numba.typed import List
 from codeplag.algorithms.tokenbased import (value_jakkar_coef, lcs,
                                             generate_unique_ngrams)
 
@@ -20,12 +19,12 @@ class TestTokenbased(unittest.TestCase):
         self.assertAlmostEqual(res3, 0.091, 3)
 
     def test_lcs(self):
-        res1 = lcs(List([1, 2, 2, 3, 1, 4]),
-                   List([2, 5, 3, 5, 1, 6, 4]))
-        res2 = lcs(List([1, 2, 3, 4, 5, 6, 7]),
-                   List([1, 3, 4, 4, 5, 7]))
-        res3 = lcs(List([2, 4, 2, 5, 6, 10]),
-                   List([1, 3, 4, 10, 5, 10]))
+        res1 = lcs([1, 2, 2, 3, 1, 4],
+                   [2, 5, 3, 5, 1, 6, 4])
+        res2 = lcs([1, 2, 3, 4, 5, 6, 7],
+                   [1, 3, 4, 4, 5, 7])
+        res3 = lcs([2, 4, 2, 5, 6, 10],
+                   [1, 3, 4, 10, 5, 10])
 
         self.assertEqual(res1, 4)
         self.assertEqual(res2, 5)
