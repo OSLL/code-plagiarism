@@ -12,7 +12,8 @@ class LevenshteinDistance:
                                          self.s2_length + 1),
                                         dtype=np.int64)
 
-    def m(self, symbol1, symbol2):
+    @staticmethod
+    def m(symbol1, symbol2):
         '''
             The function returns 0 if symbol1 is equal symbol2
             else returns 1
