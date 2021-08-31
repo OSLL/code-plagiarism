@@ -22,7 +22,7 @@ def run_compare(features_f, features_s):
 
 
 def print_compare_res(metrics, total_similarity,
-                      features1, features2):
+                      features1, features2, threshold=60):
     compliance_matrix = np.zeros((len(features1.head_nodes),
                                   len(features2.head_nodes), 2),
                                  dtype=np.int64)
@@ -50,7 +50,7 @@ def print_compare_res(metrics, total_similarity,
     print(additional_metrics_df)
     print()
 
-    if struct_res > 0.75:
+    if (struct_res * 100) > threshold:
         data = np.zeros((compliance_matrix.shape[0],
                          compliance_matrix.shape[1]),
                         dtype=np.float32)

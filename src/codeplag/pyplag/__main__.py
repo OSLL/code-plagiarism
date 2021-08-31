@@ -63,7 +63,7 @@ if mode == 0:
 
             if (total_similarity * 100) > args.threshold:
                 print_compare_res(metrics, total_similarity,
-                                  features1, features2)
+                                  features1, features2, args.threshold)
 
         iteration += 1
         print(repo_url, " ... OK")
@@ -99,7 +99,7 @@ elif mode == 1:
 
             if (total_similarity * 100) > args.threshold:
                 print_compare_res(metrics, total_similarity,
-                                  features1, features2)
+                                  features1, features2, args.threshold)
 
         iteration += 1
         print(repo_url, " ... OK")
@@ -170,7 +170,7 @@ elif mode == 3:
 
         if (total_similarity * 100) > args.threshold:
             print_compare_res(metrics, total_similarity,
-                              features1, features2)
+                              features1, features2, args.threshold)
 
         iterration += 1
         print('  {:.2%}'.format(iterration / iterrations), end="\r")
@@ -239,7 +239,7 @@ elif mode == 5:
 
                 if (total_similarity * 100) > args.threshold:
                     print_compare_res(metrics, total_similarity,
-                                      features1, features2)
+                                      features1, features2, args.threshold)
 
         iteration += 1
         print(repo_url, " ... OK")
@@ -289,7 +289,7 @@ elif mode == 6:
 
             if (total_similarity * 100) > args.threshold:
                 print_compare_res(metrics, total_similarity,
-                                  features1, features2)
+                                  features1, features2, args.threshold)
 
             iterration += 1
             print('  {:.2%}'.format(iterration / iterrations), end="\r")
@@ -329,7 +329,7 @@ elif mode == 7:
 
                 if (total_similarity * 100) > args.threshold:
                     print_compare_res(metrics, total_similarity,
-                                      features1, features2)
+                                      features1, features2, args.threshold)
 
         iteration += 1
         print(repo_url, " ... OK")
