@@ -15,3 +15,10 @@ class TestStringbased(unittest.TestCase):
 
         self.assertEqual(LevenshteinDistance.m('a', 'b'), 1)
         self.assertEqual(LevenshteinDistance.m(1, 1), 0)
+
+        dist_object = LevenshteinDistance([1, 2, 3, 4, 5], [1, 1, 3, 3, 5])
+        result2 = dist_object.get_similarity_value()
+
+        self.assertEqual(dist_object.distance_matrix.size, 36)
+        self.assertEqual(dist_object.distance, 2)
+        self.assertEqual(result2, 0.6)
