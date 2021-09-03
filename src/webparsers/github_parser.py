@@ -33,6 +33,8 @@ class GitHubParser:
 
     @staticmethod
     def parse_content_url(content_url):
+        # If the branch name contains '/' like 'dev/example' then behave
+        # of this funciton won't be similar to what expect.
         url_parts = GitHubParser.check_github_url(content_url)
 
         if len(url_parts) <= 7:

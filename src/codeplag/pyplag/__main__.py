@@ -4,13 +4,14 @@ import pandas as pd
 
 from time import perf_counter
 from codeplag.pyplag.utils import (
-    get_ast_from_content, run_compare, get_ast_from_filename,
-    print_compare_res, compare_file_pair,
-    get_files_path_from_directory, get_features_from_ast
+    get_ast_from_content, get_ast_from_filename,
+    compare_file_pair, get_files_path_from_directory,
+    get_features_from_ast
 )
 from webparsers.github_parser import GitHubParser
 from codeplag.pyplag.mode import get_mode
 from codeplag.logger import get_logger
+from codeplag.utils import print_compare_res, run_compare
 from codeplag.pyplag.const import LOG_PATH
 from decouple import Config, RepositoryEnv
 

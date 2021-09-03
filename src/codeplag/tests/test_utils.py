@@ -1,8 +1,10 @@
 import unittest
 import os
 
-from codeplag.pyplag.utils import (run_compare, get_ast_from_filename,
+from codeplag.utils import run_compare
+from codeplag.pyplag.utils import (get_ast_from_filename,
                                    get_features_from_ast)
+
 
 pwd = os.path.dirname(os.path.abspath(__file__))
 
@@ -17,7 +19,7 @@ class TestUtils(unittest.TestCase):
 
         metrics = run_compare(features1, features2)
 
-        self.assertAlmostEqual(metrics[0], 0.571, 3)
+        self.assertAlmostEqual(metrics[0], 0.737, 3)
         self.assertAlmostEqual(metrics[1], 0.667,  3)
         self.assertEqual(metrics[2], 1.)
         self.assertEqual(metrics[3], 0.75)

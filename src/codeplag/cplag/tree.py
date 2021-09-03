@@ -1,6 +1,6 @@
-import os
-from clang.cindex import Cursor
-from codeplag.cplag.const import IGNORE
+from clang.cindex import TokenKind
+from codeplag.cplag.const import IGNORE, OPERATORS
+from codeplag.astfeatures import ASTFeatures
 
 
 # Tested
@@ -11,12 +11,6 @@ def get_not_ignored(tree, src):
         @param src - str path to file
     '''
 
-    if(type(tree) is not Cursor or type(src) is not str):
-        return TypeError
-
-    elif (not os.path.isfile(src)):
-        return FileNotFoundError
-
     children = list(tree.get_children())
     length = len(children)
     parsed_nodes = []
@@ -26,9 +20,7 @@ def get_not_ignored(tree, src):
            and children[i].kind not in IGNORE):
             parsed_nodes.append(children[i])
 
-    if(len(parsed_nodes) > 0):
-        return parsed_nodes
-    return None
+    return parsed_nodes
 
 
 # Tested
@@ -68,3 +60,59 @@ def getn_count_nodes(len_min, len_max, indexes, axis, children):
             count += get_count_of_nodes(children[i]) + 1
 
     return count
+
+
+def generic_visit(node, features, curr_depth=0):
+    if curr_depth == 0:
+        children = get_not_ignored(node, features.filepath)
+    else:
+        node_name = repr(node.kind)
+        if node_name not in features.unodes:
+            features.unodes[node_name] = features.count_unodes
+            features.from_num[features.count_unodes] = node_name
+            features.count_unodes += 1
+        features.structure.append((curr_depth,
+                                   features.unodes[node_name]))
+        children = list(node.get_children())
+
+        if curr_depth == 1:
+            features.head_nodes.append(node.spelling)
+
+    if len(children) == 0:
+        for token in node.get_tokens():
+            token_name = repr(token.kind)
+            if token_name not in features.unodes:
+                features.unodes[token_name] = features.count_unodes
+                features.from_num[features.count_unodes] = token_name
+                features.count_unodes += 1
+            features.structure.append((curr_depth,
+                                       features.unodes[token_name]))
+    else:
+        for child in children:
+            features.tokens.append(child.kind.value)
+            generic_visit(child, features, curr_depth + 1)
+
+
+def get_features(tree, filepath=''):
+    features = ASTFeatures(filepath)
+    for token in tree.get_tokens():
+        if (token.kind == TokenKind.PUNCTUATION and
+           token.spelling in OPERATORS):
+            if token.spelling not in features.operators:
+                features.operators[token.spelling] = 1
+            else:
+                features.operators[token.spelling] += 1
+        if (token.kind == TokenKind.KEYWORD):
+            if token.spelling not in features.keywords:
+                features.keywords[token.spelling] = 1
+            else:
+                features.keywords[token.spelling] += 1
+        if (token.kind == TokenKind.LITERAL):
+            if token.spelling not in features.literals:
+                features.literals[token.spelling] = 1
+            else:
+                features.literals[token.spelling] += 1
+
+    generic_visit(tree, features)
+
+    return features

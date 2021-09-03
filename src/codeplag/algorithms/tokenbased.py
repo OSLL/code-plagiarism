@@ -60,4 +60,10 @@ def lcs(X, Y):
 
 @njit(fastmath=True)
 def lcs_based_coeff(tokens1, tokens2):
-    return ((2 * lcs(tokens1, tokens2)) / (len(tokens1) + len(tokens2)))
+    count_tokens1 = len(tokens1)
+    count_tokens2 = len(tokens2)
+
+    if (count_tokens1 + count_tokens2) == 0:
+        return 0.0
+
+    return ((2 * lcs(tokens1, tokens2)) / (count_tokens1 + count_tokens2))
