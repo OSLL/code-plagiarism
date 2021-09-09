@@ -35,27 +35,6 @@ def generate_ngrams_and_hashit(tokens, n=3):
             for i in range(len(tokens) - n + 1)]
 
 
-def hashes_compair(hashed_sequence1, hashed_sequence2):
-    """The function does a simple check how the same
-    two sequences of hashes.
-
-    @param - the first sequence of hashes
-    @param - the second sequence of hashes
-    """
-
-    same = 0
-    fcount = len(hashed_sequence1)
-    scount = len(hashed_sequence2)
-    if fcount * scount == 0:
-        return 0.0
-
-    for i in range(fcount):
-        if hashed_sequence1[i] in hashed_sequence2:
-            same += 1
-
-    return same * 2 / float(fcount + scount) * 100
-
-
 def value_jakkar_coef(tokens_first, tokens_second, ngrams_length=3):
     '''
         The function returns the value of the Jakkar coefficient
@@ -74,6 +53,7 @@ def value_jakkar_coef(tokens_first, tokens_second, ngrams_length=3):
     return intersection / union
 
 
+# equal to the Levenshtein length
 def lcs(X, Y):
     '''
         The function returns the length of the longest common subsequence
@@ -103,19 +83,19 @@ def lcs(X, Y):
     return L[m][n]
 
 
-def lcs_based_coeff(tokens1, tokens2):
+def lcs_based_coeff(subseq1, subseq2):
     """The function returns coefficient based on the length
-    of the longest common subsequence of tokens.
-    This coefficient describes how same two sequences of tokens.
+    of the longest common subsequence.
+    This coefficient describes how same two sequences.
 
-    @param tokens1 - the first sequence of tokens
-    @param tokens2 - the second sequnce of tokens
+    @param subseq1 - the first sequence
+    @param subseq2 - the second sequnce
     """
 
-    count_tokens1 = len(tokens1)
-    count_tokens2 = len(tokens2)
+    count_elem1 = len(subseq1)
+    count_elem2 = len(subseq2)
 
-    if (count_tokens1 * count_tokens2) == 0:
+    if (count_elem1 * count_elem2) == 0:
         return 0.0
 
-    return ((2 * lcs(tokens1, tokens2)) / (count_tokens1 + count_tokens2))
+    return ((2 * lcs(subseq1, subseq2)) / (count_elem1 + count_elem2))
