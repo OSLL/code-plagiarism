@@ -3,7 +3,8 @@ import numpy as np
 
 from codeplag.algorithms.featurebased import (
     op_shift_metric, counter_metric,
-    get_children_indexes, struct_compare
+    get_children_indexes, struct_compare,
+    find_max_index, matrix_value
 )
 
 
@@ -34,6 +35,95 @@ class TestFeaturebased(unittest.TestCase):
 
     #    self.assertEqual(TypeError, res1)
     #    self.assertEqual(TypeError, res2)
+
+    def test_op_shift_metric_normal(self):
+        empty_list = []
+        example1 = ['+', '-', '=']
+        example2 = ['+', '+=', '/', '%']
+        example3 = ['+', '-=', '/', '%']
+        example4 = ['-', '+', '%', '*', '+=']
+        example5 = ['%', '*', '+=']
+
+        res3 = op_shift_metric(empty_list, empty_list)
+        res4 = op_shift_metric(example1, empty_list)
+        res5 = op_shift_metric(empty_list, example1)
+        res6 = op_shift_metric(example2, example3)
+        res7 = op_shift_metric(example4, example5)
+
+        self.assertEqual(res3, (0, 1.0))
+        self.assertEqual(res4, (0, 0.0))
+        self.assertEqual(res5, (0, 0.0))
+        self.assertEqual(res6[0], 0)
+        self.assertAlmostEqual(res6[1], 0.6, 2)
+        self.assertEqual(res7[0], 2)
+        self.assertAlmostEqual(res7[1], 0.6, 2)
+
+    def test_get_children_indexes_normal(self):
+        example1 = [(1, 2), (2, 3), (3, 5), (2, 4), (2, 5), (1, 6)]
+        example2 = [(3, 4), (3, 2), (4, 5), (3, 1), (4, 8), (3, 8)]
+        example3 = [(2, 1), (3, 4), (3, 10), (4, 1), (2, 5), (2, 9)]
+        ind1, c_ch1 = get_children_indexes(example1)
+        ind2, c_ch2 = get_children_indexes(example2)
+        ind3, c_ch3 = get_children_indexes(example3)
+
+        self.assertEqual(c_ch1, 2)
+        self.assertEqual(ind1[0], 0)
+        self.assertEqual(ind1[1], 5)
+        self.assertEqual(c_ch2, 4)
+        self.assertEqual(ind2[0], 0)
+        self.assertEqual(ind2[1], 1)
+        self.assertEqual(ind2[2], 3)
+        self.assertEqual(ind2[3], 5)
+        self.assertEqual(c_ch3, 3)
+        self.assertEqual(ind3[0], 0)
+        self.assertEqual(ind3[1], 4)
+        self.assertEqual(ind3[2], 5)
+
+    def test_find_max_index(self):
+        arr1 = np.array([[[1, 2], [2, 3]],
+                        [[3, 4], [5, 10]]])
+        res1 = find_max_index(arr1)
+        arr2 = np.array([[[8, 2], [100, 15]],
+                        [[3, 14], [1, 13]]])
+        res2 = find_max_index(arr2)
+        res3 = find_max_index(np.array([[]]))
+
+        self.assertEqual(res1[0], 1)
+        self.assertEqual(res1[1], 0)
+        self.assertEqual(res2[0], 0)
+        self.assertEqual(res2[1], 1)
+        self.assertEqual(res3[0], 0)
+        self.assertEqual(res3[1], 0)
+
+    def test_matrix_value(self):
+        arr1 = np.array([[[1, 2], [2, 3]],
+                        [[3, 4], [5, 10]]])
+        metric1, indexes1 = matrix_value(arr1)
+        arr2 = np.array([[[8, 2], [100, 15]],
+                        [[3, 14], [1, 13]]])
+        metric2, indexes2 = matrix_value(arr2)
+        metric3, indexes3 = matrix_value(np.array([[]]))
+
+        self.assertEqual(metric1[0], 6)
+        self.assertEqual(metric1[1], 8)
+        self.assertEqual(indexes1[0][0], 1)
+        self.assertEqual(indexes1[0][1], 0)
+        self.assertEqual(indexes1[1][0], 0)
+        self.assertEqual(indexes1[1][1], 1)
+
+        self.assertEqual(metric2[0], 104)
+        self.assertEqual(metric2[1], 30)
+        self.assertEqual(indexes2[0][0], 0)
+        self.assertEqual(indexes2[0][1], 1)
+        self.assertEqual(indexes2[1][0], 1)
+        self.assertEqual(indexes2[1][1], 0)
+
+        self.assertEqual(metric3[0], 1)
+        self.assertEqual(metric3[1], 1)
+        self.assertEqual(indexes3, [])
+
+    def test_add_not_counted(self):
+        pass
 
     # Тут хорошо бы переписать под общий случай, а не под codeplag
     def test_struct_compare_normal(self):
@@ -115,46 +205,3 @@ class TestFeaturebased(unittest.TestCase):
 
     #    self.assertEqual(TypeError, res1)
     #    self.assertEqual(TypeError, res2)
-
-    def test_op_shift_metric_normal(self):
-        empty_list = []
-        example1 = ['+', '-', '=']
-        example2 = ['+', '+=', '/', '%']
-        example3 = ['+', '-=', '/', '%']
-        example4 = ['-', '+', '%', '*', '+=']
-        example5 = ['%', '*', '+=']
-
-        res3 = op_shift_metric(empty_list, empty_list)
-        res4 = op_shift_metric(example1, empty_list)
-        res5 = op_shift_metric(empty_list, example1)
-        res6 = op_shift_metric(example2, example3)
-        res7 = op_shift_metric(example4, example5)
-
-        self.assertEqual(res3, (0, 1.0))
-        self.assertEqual(res4, (0, 0.0))
-        self.assertEqual(res5, (0, 0.0))
-        self.assertEqual(res6[0], 0)
-        self.assertAlmostEqual(res6[1], 0.6, 2)
-        self.assertEqual(res7[0], 2)
-        self.assertAlmostEqual(res7[1], 0.6, 2)
-
-    def test_get_children_indexes_normal(self):
-        example1 = [(1, 2), (2, 3), (3, 5), (2, 4), (2, 5), (1, 6)]
-        example2 = [(3, 4), (3, 2), (4, 5), (3, 1), (4, 8), (3, 8)]
-        example3 = [(2, 1), (3, 4), (3, 10), (4, 1), (2, 5), (2, 9)]
-        ind1, c_ch1 = get_children_indexes(example1)
-        ind2, c_ch2 = get_children_indexes(example2)
-        ind3, c_ch3 = get_children_indexes(example3)
-
-        self.assertEqual(c_ch1, 2)
-        self.assertEqual(ind1[0], 0)
-        self.assertEqual(ind1[1], 5)
-        self.assertEqual(c_ch2, 4)
-        self.assertEqual(ind2[0], 0)
-        self.assertEqual(ind2[1], 1)
-        self.assertEqual(ind2[2], 3)
-        self.assertEqual(ind2[3], 5)
-        self.assertEqual(c_ch3, 3)
-        self.assertEqual(ind3[0], 0)
-        self.assertEqual(ind3[1], 4)
-        self.assertEqual(ind3[2], 5)
