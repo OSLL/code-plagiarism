@@ -108,6 +108,10 @@ def find_max_index(array):
     '''
         The function for finding index of max element in matrix
         @param array - matrix of compliance (np.ndarray object)
+
+        rows = array.shape[0]
+        columns = array.shpe[1]
+        O(rows * columns)
     '''
 
     maximum = 0
@@ -130,8 +134,11 @@ def matrix_value(array):
         The function returns the value of the similarity of nodes
         from the compliance matrix.
         @param array - matrix of compliance (np.ndarray object)
+
+        rows = array.shape[0]
+        columns = array.shpe[1]
+        O(min(rows, columns) * rows * columns)
     '''
-    # At worst n^3 + 2n^2 operations => O(n^3)
     same_struct_metric = [1, 1]
     minimal = min(array.shape[0], array.shape[1])
     indexes = []
