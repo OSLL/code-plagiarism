@@ -4,7 +4,8 @@ import numpy as np
 from codeplag.algorithms.featurebased import (
     op_shift_metric, counter_metric,
     get_children_indexes, struct_compare,
-    find_max_index, matrix_value
+    find_max_index, matrix_value,
+    add_not_counted
 )
 
 
@@ -123,7 +124,12 @@ class TestFeaturebased(unittest.TestCase):
         self.assertEqual(indexes3, [])
 
     def test_add_not_counted(self):
-        pass
+        structure = ((1, 2), (2, 1), (1, 3), (2, 4),
+                     (3, 5), (1, 4), (2, 2), (2, 5))
+        res1 = add_not_counted(structure, 3, [0, 2, 5, len(structure)],
+                               [[0, 0], [1, 1]], axis=0)
+
+        self.assertEqual(res1, 3)
 
     # Тут хорошо бы переписать под общий случай, а не под codeplag
     def test_struct_compare_normal(self):
