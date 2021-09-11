@@ -158,10 +158,20 @@ def matrix_value(array):
     return same_struct_metric, indexes
 
 
-def add_not_counted(tree, count_ch_f, count_ch_s, key_indexes, indexes, axis):
+def add_not_counted(tree, count_of_children, key_indexes, indexes, axis):
+    """The function returns the count of nodes that didn't
+    account in the previous step.
+
+    @tree - part of structure
+    @count_of_children - count of top-level nodes in the tree
+    @key_indexes - indexes of top-level nodes in the tree
+    @indexes - indexes of selected nodes which accounted in the metric
+    @axis - 0 - row, 1 - column
+    """
+
     count = 0
-    added = [indexes[i][axis] for i in np.arange(0, count_ch_s, 1)]
-    for k in np.arange(0, count_ch_f, 1):
+    added = [index[axis] for index in indexes]
+    for k in np.arange(0, count_of_children, 1):
         if k in added:
             continue
         else:
@@ -211,12 +221,10 @@ def struct_compare(tree1, tree2, matrix=np.array([[[]]]), dtype=np.int64):
     same_struct_metric, indexes = matrix_value(array)
     if count_of_children1 > count_of_children2:
         same_struct_metric[1] += add_not_counted(tree1, count_of_children1,
-                                                 count_of_children2,
                                                  key_indexes1, indexes,
                                                  axis=0)
     elif count_of_children2 > count_of_children1:
         same_struct_metric[1] += add_not_counted(tree2, count_of_children2,
-                                                 count_of_children1,
                                                  key_indexes2, indexes,
                                                  axis=1)
 
