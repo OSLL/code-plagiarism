@@ -1,9 +1,6 @@
 import unittest
-import numba
 import numpy as np
 
-from numba.typed import Dict, List
-from numba.core import types
 from codeplag.algorithms.featurebased import (
     op_shift_metric, counter_metric,
     get_children_indexes, struct_compare
@@ -13,35 +10,15 @@ from codeplag.algorithms.featurebased import (
 class TestFeaturebased(unittest.TestCase):
 
     def test_counter_metric_normal(self):
-        example1 = Dict.empty(key_type=types.unicode_type,
-                              value_type=types.int64)
-        for key, value in {'a': 2, 'b': 1, 'c': 5, 'd': 7}.items():
-            example1[key] = numba.int64(value)
-
-        example2 = Dict.empty(key_type=types.unicode_type,
-                              value_type=types.int64)
-        for key, value in {'a': 10, 'c': 8, 'e': 2, 'f': 12}.items():
-            example2[key] = numba.int64(value)
-
-        example3 = Dict.empty(key_type=types.unicode_type,
-                              value_type=types.int64)
-        for key, value in {'USub': 3, 'Mor': 3, 'Der': 5}.items():
-            example3[key] = numba.int64(value)
-
-        example4 = Dict.empty(key_type=types.unicode_type,
-                              value_type=types.int64)
-        for key, value in {'USub': 5, 'Mor': 5, 'Ker': 5}.items():
-            example4[key] = numba.int64(value)
+        example1 = {'a': 2, 'b': 1, 'c': 5, 'd': 7}
+        example2 = {'a': 10, 'c': 8, 'e': 2, 'f': 12}
+        example3 = {'USub': 3, 'Mor': 3, 'Der': 5}
+        example4 = {'USub': 5, 'Mor': 5, 'Ker': 5}
 
         res1 = counter_metric(example1, example2)
         res2 = counter_metric(example3, example4)
-        res3 = counter_metric(Dict.empty(key_type=types.unicode_type,
-                                         value_type=types.int64),
-                              example4)
-        res4 = counter_metric(Dict.empty(key_type=types.unicode_type,
-                                         value_type=types.int64),
-                              Dict.empty(key_type=types.unicode_type,
-                                         value_type=types.int64))
+        res3 = counter_metric({}, example4)
+        res4 = counter_metric({}, {})
 
         self.assertEqual(res1, 0.175)
         self.assertEqual(res2, 0.3)
@@ -60,15 +37,15 @@ class TestFeaturebased(unittest.TestCase):
 
     # Тут хорошо бы переписать под общий случай, а не под codeplag
     def test_struct_compare_normal(self):
-        structure1 = List([(1, 0), (2, 1), (3, 2),
-                           (3, 2), (2, 3), (3, 4),
-                           (4, 5), (3, 6), (3, 4),
-                           (4, 7), (2, 8)])
-        structure2 = List([(1, 0), (2, 1), (2, 2),
-                           (3, 3), (4, 4), (5, 5),
-                           (4, 1), (4, 1), (4, 1),
-                           (1, 6), (2, 7), (3, 8),
-                           (3, 8), (3, 8), (2, 9)])
+        structure1 = [(1, 0), (2, 1), (3, 2),
+                      (3, 2), (2, 3), (3, 4),
+                      (4, 5), (3, 6), (3, 4),
+                      (4, 7), (2, 8)]
+        structure2 = [(1, 0), (2, 1), (2, 2),
+                      (3, 3), (4, 4), (5, 5),
+                      (4, 1), (4, 1), (4, 1),
+                      (1, 6), (2, 7), (3, 8),
+                      (3, 8), (3, 8), (2, 9)]
         count_ch1 = (get_children_indexes(structure1))[1]
         count_ch2 = (get_children_indexes(structure2))[1]
         compliance_matrix = np.zeros((count_ch1, count_ch2, 2),
@@ -79,16 +56,16 @@ class TestFeaturebased(unittest.TestCase):
         self.assertEqual(list(compliance_matrix[0][0]), [5, 15])
         self.assertEqual(list(compliance_matrix[0][1]), [5, 12])
 
-        structure1 = List([(1, 0), (2, 1), (3, 2),
-                           (2, 3), (3, 4), (4, 5),
-                           (3, 6), (4, 7), (2, 3),
-                           (3, 4), (4, 5), (3, 6),
-                           (4, 7), (2, 3), (3, 4)])
-        structure2 = List([(1, 0), (2, 1), (3, 2), (2, 3),
-                           (3, 4), (4, 5), (3, 6), (4, 7),
-                           (5, 4), (6, 8), (5, 8), (4, 9),
-                           (2, 3), (3, 4), (4, 5), (3, 6),
-                           (4, 4), (5, 8), (4, 10), (5, 4)])
+        structure1 = [(1, 0), (2, 1), (3, 2),
+                      (2, 3), (3, 4), (4, 5),
+                      (3, 6), (4, 7), (2, 3),
+                      (3, 4), (4, 5), (3, 6),
+                      (4, 7), (2, 3), (3, 4)]
+        structure2 = [(1, 0), (2, 1), (3, 2), (2, 3),
+                      (3, 4), (4, 5), (3, 6), (4, 7),
+                      (5, 4), (6, 8), (5, 8), (4, 9),
+                      (2, 3), (3, 4), (4, 5), (3, 6),
+                      (4, 4), (5, 8), (4, 10), (5, 4)]
         count_ch1 = (get_children_indexes(structure1))[1]
         count_ch2 = (get_children_indexes(structure2))[1]
         compliance_matrix = np.zeros((count_ch1, count_ch2, 2),
@@ -100,26 +77,26 @@ class TestFeaturebased(unittest.TestCase):
         self.assertEqual(compliance_matrix[0][0][1], 22)
 
     def test_struct_compare_file_empty(self):
-        structure1 = List([(1, 2)])
+        structure1 = [(1, 2)]
         structure1.clear()
-        structure2 = List([(1, 0), (2, 1), (2, 2), (3, 3),
-                           (4, 4), (5, 5), (4, 1), (4, 1),
-                           (4, 1), (1, 6), (2, 7), (3, 8),
-                           (3, 8), (3, 8), (2, 9), (3, 4),
-                           (4, 10), (3, 11), (3, 4), (4, 5),
-                           (2, 2), (3, 3), (4, 4), (5, 5), (4, 12),
-                           (5, 4), (6, 5), (5, 13), (5, 4), (6, 5),
-                           (2, 14), (3, 4), (4, 5)])
+        structure2 = [(1, 0), (2, 1), (2, 2), (3, 3),
+                      (4, 4), (5, 5), (4, 1), (4, 1),
+                      (4, 1), (1, 6), (2, 7), (3, 8),
+                      (3, 8), (3, 8), (2, 9), (3, 4),
+                      (4, 10), (3, 11), (3, 4), (4, 5),
+                      (2, 2), (3, 3), (4, 4), (5, 5), (4, 12),
+                      (5, 4), (6, 5), (5, 13), (5, 4), (6, 5),
+                      (2, 14), (3, 4), (4, 5)]
         res = struct_compare(structure1, structure2)
         self.assertEqual(res, [1, 34])
 
-        structure3 = List([(1, 0), (2, 1), (3, 2), (3, 2),
-                           (2, 3), (3, 4), (4, 5), (3, 6),
-                           (3, 4), (4, 7), (2, 8), (3, 9),
-                           (4, 4), (5, 7), (4, 4), (5, 7),
-                           (2, 10), (3, 4), (4, 7), (1, 11),
-                           (2, 12), (2, 8), (3, 9), (4, 4),
-                           (5, 7), (4, 12), (4, 12)])
+        structure3 = [(1, 0), (2, 1), (3, 2), (3, 2),
+                      (2, 3), (3, 4), (4, 5), (3, 6),
+                      (3, 4), (4, 7), (2, 8), (3, 9),
+                      (4, 4), (5, 7), (4, 4), (5, 7),
+                      (2, 10), (3, 4), (4, 7), (1, 11),
+                      (2, 12), (2, 8), (3, 9), (4, 4),
+                      (5, 7), (4, 12), (4, 12)]
         res = struct_compare(structure1, structure3)
         self.assertEqual(res, [1, 28])
 
@@ -140,13 +117,12 @@ class TestFeaturebased(unittest.TestCase):
     #    self.assertEqual(TypeError, res2)
 
     def test_op_shift_metric_normal(self):
-        empty_list = List(['tmp'])
-        empty_list.clear()
-        example1 = List(['+', '-', '='])
-        example2 = List(['+', '+=', '/', '%'])
-        example3 = List(['+', '-=', '/', '%'])
-        example4 = List(['-', '+', '%', '*', '+='])
-        example5 = List(['%', '*', '+='])
+        empty_list = []
+        example1 = ['+', '-', '=']
+        example2 = ['+', '+=', '/', '%']
+        example3 = ['+', '-=', '/', '%']
+        example4 = ['-', '+', '%', '*', '+=']
+        example5 = ['%', '*', '+=']
 
         res3 = op_shift_metric(empty_list, empty_list)
         res4 = op_shift_metric(example1, empty_list)
@@ -163,9 +139,9 @@ class TestFeaturebased(unittest.TestCase):
         self.assertAlmostEqual(res7[1], 0.6, 2)
 
     def test_get_children_indexes_normal(self):
-        example1 = List([(1, 2), (2, 3), (3, 5), (2, 4), (2, 5), (1, 6)])
-        example2 = List([(3, 4), (3, 2), (4, 5), (3, 1), (4, 8), (3, 8)])
-        example3 = List([(2, 1), (3, 4), (3, 10), (4, 1), (2, 5), (2, 9)])
+        example1 = [(1, 2), (2, 3), (3, 5), (2, 4), (2, 5), (1, 6)]
+        example2 = [(3, 4), (3, 2), (4, 5), (3, 1), (4, 8), (3, 8)]
+        example3 = [(2, 1), (3, 4), (3, 10), (4, 1), (2, 5), (2, 9)]
         ind1, c_ch1 = get_children_indexes(example1)
         ind2, c_ch2 = get_children_indexes(example2)
         ind3, c_ch3 = get_children_indexes(example3)
