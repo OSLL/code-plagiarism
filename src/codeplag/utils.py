@@ -10,6 +10,12 @@ from codeplag.algorithms.tokenbased import value_jakkar_coef, lcs_based_coeff
 
 
 def run_compare(features_f, features_s):
+    """The function calculates the similarity of features of two programmes
+    using four algorithms and returns similarity coefficients.
+
+    @features_f - the features of the first  source file
+    @features_s - the features of the second  source file
+    """
     jakkar_coef = value_jakkar_coef(features_f.tokens, features_s.tokens)
     ops_res = counter_metric(features_f.operators, features_s.operators)
     kw_res = counter_metric(features_f.keywords, features_s.keywords)
@@ -21,8 +27,17 @@ def run_compare(features_f, features_s):
     return metrics
 
 
+# Maybe unite run_compare and print_compare_res and add weights
 def print_compare_res(metrics, total_similarity,
                       features1, features2, threshold=60):
+    """The function prints the result of comparing two files
+
+    @metrics - coefficients of the similarity gotten from run_compare
+    @total_similarity - Weighted average value got from metrics
+    @features1 - the features of the first  source file
+    @features2 - the features of the second  source file
+    @threshold - threshold of plagiarism searcher alarm
+    """
     compliance_matrix = np.zeros((len(features1.head_nodes),
                                   len(features2.head_nodes), 2),
                                  dtype=np.int64)
