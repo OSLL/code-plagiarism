@@ -6,7 +6,7 @@ import pandas as pd
 from codeplag.algorithms.featurebased import (
     counter_metric, struct_compare
 )
-from codeplag.algorithms.tokenbased import value_jakkar_coef, lcs_based_coeff
+from codeplag.algorithms.tokenbased import value_jakkar_coef
 
 
 def run_compare(features_f, features_s):
@@ -16,6 +16,7 @@ def run_compare(features_f, features_s):
     @features_f - the features of the first  source file
     @features_s - the features of the second  source file
     """
+
     jakkar_coef = value_jakkar_coef(features_f.tokens, features_s.tokens)
     ops_res = counter_metric(features_f.operators, features_s.operators)
     kw_res = counter_metric(features_f.keywords, features_s.keywords)
@@ -27,17 +28,23 @@ def run_compare(features_f, features_s):
     return metrics
 
 
-# Maybe unite run_compare and print_compare_res and add weights
-def print_compare_res(metrics, total_similarity,
-                      features1, features2, threshold=60):
+def print_compare_res(features1, features2, threshold=60,
+                      weights=np.array([1, 0.4, 0.4, 0.4],
+                                       dtype=np.float32)):
     """The function prints the result of comparing two files
 
-    @metrics - coefficients of the similarity gotten from run_compare
-    @total_similarity - Weighted average value got from metrics
     @features1 - the features of the first  source file
     @features2 - the features of the second  source file
     @threshold - threshold of plagiarism searcher alarm
+    @weights - weights of metrics that participate in
+    counting total similarity coefficient
     """
+
+    metrics = run_compare(features1, features2)
+    total_similarity = np.sum(metrics * weights) / weights.sum()
+    if (total_similarity * 100) < threshold:
+        return
+
     compliance_matrix = np.zeros((len(features1.head_nodes),
                                   len(features2.head_nodes), 2),
                                  dtype=np.int64)
@@ -60,8 +67,6 @@ def print_compare_res(metrics, total_similarity,
     print()
     additional_metrics_df = pd.DataFrame()
     additional_metrics_df.loc['Structure match', 'Same'] = struct_res
-    additional_metrics_df.loc['LCS'] = lcs_based_coeff(features1.tokens,
-                                                       features2.tokens)
     print(additional_metrics_df)
     print()
 
