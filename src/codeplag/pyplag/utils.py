@@ -1,11 +1,10 @@
 import os
-import numpy as np
 import ast
 
 from termcolor import colored
 from codeplag.astfeatures import ASTFeatures
 from codeplag.pyplag.astwalkers import ASTWalker
-from codeplag.utils import print_compare_res, run_compare
+from codeplag.utils import print_compare_res
 
 
 def get_ast_from_content(code, path):
@@ -76,7 +75,7 @@ def get_features_from_ast(tree, filepath=''):
     return features
 
 
-def compare_file_pair(filename1, filename2, threshold, weights):
+def compare_file_pair(filename1, filename2, threshold):
     '''
         Function compares 2 files
         filename1 - path to the first file (dir/file1.py)
@@ -92,12 +91,4 @@ def compare_file_pair(filename1, filename2, threshold, weights):
 
     features1 = get_features_from_ast(tree1, filename1)
     features2 = get_features_from_ast(tree2, filename2)
-
-    metrics = run_compare(features1, features2)
-    total_similarity = np.sum(metrics * weights) / weights.sum()
-
-    if (total_similarity * 100) > threshold:
-        print_compare_res(metrics, total_similarity,
-                          features1, features2)
-
-    return (metrics, total_similarity)
+    print_compare_res(features1, features2, threshold)

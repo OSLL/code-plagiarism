@@ -10,8 +10,7 @@ from codeplag.pyplag.utils import (
 from webparsers.github_parser import GitHubParser
 from codeplag.pyplag.mode import get_mode
 from codeplag.logger import get_logger
-from codeplag.utils import (print_compare_res, run_compare,
-                            get_files_path_from_directory)
+from codeplag.utils import (print_compare_res, get_files_path_from_directory)
 from codeplag.pyplag.const import LOG_PATH
 from decouple import Config, RepositoryEnv
 
@@ -31,7 +30,6 @@ logger.info("Pyplag starting...")
 logger.info("Working mode = " + str(mode))
 
 start_eval = perf_counter()
-weights = np.array([1, 0.4, 0.4, 0.4], dtype=np.float32)
 
 if mode == 0:
     # Local file compares with files in git repositories
@@ -58,12 +56,7 @@ if mode == 0:
                 continue
 
             features2 = get_features_from_ast(tree2, url_file)
-            metrics = run_compare(features1, features2)
-            total_similarity = np.sum(metrics * weights) / weights.sum()
-
-            if (total_similarity * 100) > args.threshold:
-                print_compare_res(metrics, total_similarity,
-                                  features1, features2, args.threshold)
+            print_compare_res(features1, features2, args.threshold)
 
         iteration += 1
         print(repo_url, " ... OK")
@@ -94,12 +87,7 @@ elif mode == 1:
                 continue
 
             features2 = get_features_from_ast(tree2, url_file)
-            metrics = run_compare(features1, features2)
-            total_similarity = np.sum(metrics * weights) / weights.sum()
-
-            if (total_similarity * 100) > args.threshold:
-                print_compare_res(metrics, total_similarity,
-                                  features1, features2, args.threshold)
+            print_compare_res(features1, features2, args.threshold)
 
         iteration += 1
         print(repo_url, " ... OK")
@@ -126,7 +114,7 @@ elif mode == 2:
             args.dir += '/'
 
         filename = args.dir + files[row]
-        compare_file_pair(args.file, filename, args.threshold, weights)
+        compare_file_pair(args.file, filename, args.threshold)
 
         iterration += 1
         print('  {:.2%}'.format(iterration / iterrations), end="\r")
@@ -164,13 +152,7 @@ elif mode == 3:
             continue
 
         features2 = get_features_from_ast(tree2, filename)
-
-        metrics = run_compare(features1, features2)
-        total_similarity = np.sum(metrics * weights) / weights.sum()
-
-        if (total_similarity * 100) > args.threshold:
-            print_compare_res(metrics, total_similarity,
-                              features1, features2, args.threshold)
+        print_compare_res(features1, features2, args.threshold)
 
         iterration += 1
         print('  {:.2%}'.format(iterration / iterrations), end="\r")
@@ -197,7 +179,7 @@ elif mode == 4:
 
         filename = args.dir + dir_files[row]
         for file in project_files:
-            compare_file_pair(file, filename, args.threshold, weights)
+            compare_file_pair(file, filename, args.threshold)
 
             iterration += 1
             print('  {:.2%}'.format(iterration / iterrations), end="\r")
@@ -233,13 +215,7 @@ elif mode == 5:
                     continue
 
                 features1 = get_features_from_ast(tree1, filepath)
-
-                metrics = run_compare(features1, features2)
-                total_similarity = np.sum(metrics * weights) / weights.sum()
-
-                if (total_similarity * 100) > args.threshold:
-                    print_compare_res(metrics, total_similarity,
-                                      features1, features2, args.threshold)
+                print_compare_res(features1, features2, args.threshold)
 
         iteration += 1
         print(repo_url, " ... OK")
@@ -283,13 +259,7 @@ elif mode == 6:
 
             features1 = get_features_from_ast(tree1, url_file)
             features2 = get_features_from_ast(tree2, filename)
-
-            metrics = run_compare(features1, features2)
-            total_similarity = np.sum(metrics * weights) / weights.sum()
-
-            if (total_similarity * 100) > args.threshold:
-                print_compare_res(metrics, total_similarity,
-                                  features1, features2, args.threshold)
+            print_compare_res(features1, features2, args.threshold)
 
             iterration += 1
             print('  {:.2%}'.format(iterration / iterrations), end="\r")
@@ -323,13 +293,7 @@ elif mode == 7:
                     continue
 
                 features1 = get_features_from_ast(tree1, url_file2)
-
-                metrics = run_compare(features1, features2)
-                total_similarity = np.sum(metrics * weights) / weights.sum()
-
-                if (total_similarity * 100) > args.threshold:
-                    print_compare_res(metrics, total_similarity,
-                                      features1, features2, args.threshold)
+                print_compare_res(features1, features2, args.threshold)
 
         iteration += 1
         print(repo_url, " ... OK")
