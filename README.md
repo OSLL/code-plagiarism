@@ -28,6 +28,12 @@
 
 - if you want to easy install and test the app then run ./install.sh (it uses apt)
 
+### 2.1 Docker
+
+- docker build . -t codeplag
+
+- docker run -it --name codeplag codeplag /bin/bash
+
 ## 3. Tests
 
 - Testing for C/C++ and Python 3 analyzers with unittest lib
