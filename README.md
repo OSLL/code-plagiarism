@@ -8,7 +8,9 @@
 
 - Python PEP8 style ([guide](https://www.python.org/dev/peps/pep-0008/))
 
-## 2. Install requirements
+## 2. Install
+
+### 2.1 Manual
 
 - OS Ubuntu Linux >= 18.04
 
@@ -28,11 +30,19 @@
 
 - if you want to easy install and test the app then run ./install.sh (it uses apt)
 
-### 2.1 Docker
+### 2.2 Docker
 
-- docker build . -t codeplag
+- Create a code-plagiarism docker image
 
-- docker run -it --name codeplag codeplag /bin/bash
+```
+  docker build . -t codeplag
+```
+
+- Run a code-plagiarism container
+
+```
+  docker run -it --name codeplag codeplag /bin/bash
+```
 
 ## 3. Tests
 
