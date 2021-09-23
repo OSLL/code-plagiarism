@@ -27,6 +27,6 @@ class TestUtils(unittest.TestCase):
     def test_get_files_path_from_directory(self):
         files = get_files_path_from_directory(pwd, extension=r".py\b")
 
-        self.assertEqual(files[0], os.path.join(pwd, 'test_utils.py'))
-        self.assertEqual(files[1], os.path.join(pwd, 'data/test1.py'))
-        self.assertEqual(files[2], os.path.join(pwd, 'data/test2.py'))
+        self.assertIn(os.path.join(pwd, 'test_utils.py'), files)
+        self.assertIn(os.path.join(pwd, 'data/test1.py'), files)
+        self.assertIn(os.path.join(pwd, 'data/test2.py'), files)
