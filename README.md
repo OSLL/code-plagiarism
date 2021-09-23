@@ -95,3 +95,22 @@
   ```
     $ python3 -m codeplag.cplag <path/to/folder/with/cpp/or/cc/files>
   ```
+
+## 5. Demo examples (works in the project directory and with an installed codeplag package)
+
+- python analyzer
+  ```
+    $ python3 -m codeplag.pyplag --file ./src/codeplag/pyplag/astwalkers.py --dir ./src/codeplag/pyplag
+    $ python3 -m codeplag.pyplag --project ./src --dir ./src/codeplag/algorithms
+    $ python3 -m codeplag.pyplag --file src/codeplag/pyplag/astwalkers.py --git OSLL --reg_exp code- --check_policy 1
+    $ python3 -m codeplag.pyplag --git_file https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/mode.py --git OSLL -e code- -cp 1
+    $ python3 -m codeplag.pyplag --git_file https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/mode.py -d src/codeplag/pyplag/
+    $ python3 -m codeplag.pyplag --project src/ --git OSLL -e code-
+    $ python3 -m codeplag.pyplag --git_project https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag --git OSLL -e code-
+    $ python3 -m codeplag.pyplag --git_project https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag -d src/codeplag/pyplag/
+  ```
+
+- C++/C analyzer
+  ```
+    $ python3 -m codeplag.cplag ./other/cpp/tests
+  ```
