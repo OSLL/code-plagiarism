@@ -36,7 +36,6 @@ setup(
         'clang==11.0',
         'llvmlite==0.35.0',
         'libclang==10.0.1.0',
-        'numba==0.52.0',
         'colorama==0.3.9',
         'termcolor==1.1.0',
         'python-decouple==3.4',

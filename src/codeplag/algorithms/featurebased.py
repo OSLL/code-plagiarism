@@ -1,10 +1,6 @@
 import numpy as np
-import numba
-from numba import njit
-from numba.typed import List
 
 
-@njit(fastmath=True)
 def counter_metric(counter1, counter2):
     '''
         Function return how same operators or keywords or literals
@@ -38,7 +34,6 @@ def counter_metric(counter1, counter2):
     return percent_of_same[0] / percent_of_same[1]
 
 
-@njit(fastmath=True)
 def op_shift_metric(ops1, ops2):
     '''
         Returns the maximum value of the operator match and the shift under
@@ -88,14 +83,12 @@ def op_shift_metric(ops1, ops2):
         return 0, 0.0
 
 
-@njit(fastmath=True)
 def get_children_indexes(tree):
     '''
         The function returns indexes of her children and their count.
         @param tree - a simple structure of the first AST.
     '''
-    indexes = List([1])
-    indexes.clear()
+    indexes = []
     count_of_children = 0
 
     if len(tree) != 0:
@@ -111,15 +104,18 @@ def get_children_indexes(tree):
     return indexes, count_of_children
 
 
-@njit(fastmath=True)
 def find_max_index(array):
     '''
         The function for finding index of max element in matrix
         @param array - matrix of compliance (np.ndarray object)
+
+        rows = array.shape[0]
+        columns = array.shpe[1]
+        O(rows * columns)
     '''
 
     maximum = 0
-    index = numba.int64([0, 0])
+    index = np.int64([0, 0])
     for i in np.arange(0, array.shape[0], 1):
         for j in np.arange(0, array.shape[1], 1):
             if array[i][j][1] == 0:
@@ -133,17 +129,19 @@ def find_max_index(array):
     return index
 
 
-@njit(fastmath=True)
 def matrix_value(array):
     '''
         The function returns the value of the similarity of nodes
         from the compliance matrix.
         @param array - matrix of compliance (np.ndarray object)
+
+        rows = array.shape[0]
+        columns = array.shpe[1]
+        O(min(rows, columns) * rows * columns)
     '''
-    # At worst n^3 + 2n^2 operations => O(n^3)
     same_struct_metric = [1, 1]
     minimal = min(array.shape[0], array.shape[1])
-    indexes = List()
+    indexes = []
     for i in np.arange(0, minimal, 1):
         ind = find_max_index(array)
         indexes.append(ind)
@@ -160,11 +158,20 @@ def matrix_value(array):
     return same_struct_metric, indexes
 
 
-@njit(fastmath=True)
-def add_not_counted(tree, count_ch_f, count_ch_s, key_indexes, indexes, axis):
+def add_not_counted(tree, count_of_children, key_indexes, indexes, axis):
+    """The function returns the count of nodes that didn't
+    account in the previous step.
+
+    @tree - part of structure
+    @count_of_children - count of top-level nodes in the tree
+    @key_indexes - indexes of top-level nodes in the tree
+    @indexes - indexes of selected nodes which accounted in the metric
+    @axis - 0 - row, 1 - column
+    """
+
     count = 0
-    added = [indexes[i][axis] for i in np.arange(0, count_ch_s, 1)]
-    for k in np.arange(0, count_ch_f, 1):
+    added = [index[axis] for index in indexes]
+    for k in np.arange(0, count_of_children, 1):
         if k in added:
             continue
         else:
@@ -174,7 +181,6 @@ def add_not_counted(tree, count_ch_f, count_ch_s, key_indexes, indexes, axis):
     return count
 
 
-@njit(fastmath=True)
 def struct_compare(tree1, tree2, matrix=np.array([[[]]]), dtype=np.int64):
     '''
         Function for compare structure of two trees
@@ -215,12 +221,10 @@ def struct_compare(tree1, tree2, matrix=np.array([[[]]]), dtype=np.int64):
     same_struct_metric, indexes = matrix_value(array)
     if count_of_children1 > count_of_children2:
         same_struct_metric[1] += add_not_counted(tree1, count_of_children1,
-                                                 count_of_children2,
                                                  key_indexes1, indexes,
                                                  axis=0)
     elif count_of_children2 > count_of_children1:
         same_struct_metric[1] += add_not_counted(tree2, count_of_children2,
-                                                 count_of_children1,
                                                  key_indexes2, indexes,
                                                  axis=1)
 

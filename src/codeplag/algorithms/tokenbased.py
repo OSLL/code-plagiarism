@@ -1,23 +1,48 @@
-from numba import njit
+import binascii
 
 
 def generate_unique_ngrams(tokens, n=3):
-    '''
-        The function returns a set of N-grams.
-        @param tokens - list of tokens
-        @param n - count of elements in sequences
-    '''
+    """The function returns a set of N-grams
+    and may use to generate shingles.
+
+    @param tokens - list of tokens
+    @param n - count of elements in sequences
+    """
+
     return {tuple(tokens[i:i + n]) for i in range(len(tokens) - n + 1)}
 
 
-def value_jakkar_coef(tokens_first, tokens_second):
+def generate_ngrams(tokens, n=3):
+    """The function returns a list of N-grams
+    and may use to generate shingles.
+
+    @param tokens - list of tokens
+    @param n - count of elements in sequences
+    """
+
+    return [tuple(tokens[i:i + n]) for i in range(len(tokens) - n + 1)]
+
+
+def generate_ngrams_and_hashit(tokens, n=3):
+    """The function generates and hashes ngrams
+    which gets from the tokens sequence.
+
+    @param tokens - list of tokens
+    @param n - count of elements in sequences
+    """
+
+    return [binascii.crc32(bytearray(tokens[i:i + n]))
+            for i in range(len(tokens) - n + 1)]
+
+
+def value_jakkar_coef(tokens_first, tokens_second, ngrams_length=3):
     '''
         The function returns the value of the Jakkar coefficient
         @param tokens_first - list of tokens of the first program
         @param tokens_second - list of tokens of the second program
     '''
-    ngrams_first = generate_unique_ngrams(tokens_first, 3)
-    ngrams_second = generate_unique_ngrams(tokens_second, 3)
+    ngrams_first = generate_unique_ngrams(tokens_first, ngrams_length)
+    ngrams_second = generate_unique_ngrams(tokens_second, ngrams_length)
 
     intersection = len(ngrams_first.intersection(ngrams_second))
     union = len(ngrams_first | ngrams_second)
@@ -28,7 +53,7 @@ def value_jakkar_coef(tokens_first, tokens_second):
     return intersection / union
 
 
-@njit(fastmath=True)
+# equal to the Levenshtein length
 def lcs(X, Y):
     '''
         The function returns the length of the longest common subsequence
@@ -58,12 +83,19 @@ def lcs(X, Y):
     return L[m][n]
 
 
-@njit(fastmath=True)
-def lcs_based_coeff(tokens1, tokens2):
-    count_tokens1 = len(tokens1)
-    count_tokens2 = len(tokens2)
+def lcs_based_coeff(subseq1, subseq2):
+    """The function returns coefficient based on the length
+    of the longest common subsequence.
+    This coefficient describes how same two sequences.
 
-    if (count_tokens1 + count_tokens2) == 0:
+    @param subseq1 - the first sequence
+    @param subseq2 - the second sequnce
+    """
+
+    count_elem1 = len(subseq1)
+    count_elem2 = len(subseq2)
+
+    if (count_elem1 * count_elem2) == 0:
         return 0.0
 
-    return ((2 * lcs(tokens1, tokens2)) / (count_tokens1 + count_tokens2))
+    return ((2 * lcs(subseq1, subseq2)) / (count_elem1 + count_elem2))

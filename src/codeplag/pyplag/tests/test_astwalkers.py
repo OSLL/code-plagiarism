@@ -1,9 +1,7 @@
 import unittest
-import numba
+import numpy as np
 import os
 
-from numba.typed import Dict
-from numba.core import types
 from codeplag.astfeatures import ASTFeatures
 from codeplag.pyplag.astwalkers import ASTWalker
 from codeplag.pyplag.utils import get_ast_from_filename
@@ -19,24 +17,20 @@ class TestASTWalkers(unittest.TestCase):
         features = ASTFeatures()
         walker = ASTWalker(features)
         walker.visit(tree)
-        operators = Dict.empty(key_type=types.unicode_type,
-                               value_type=types.int64)
-        operators['AugAssign'] = numba.int64(1)
-        operators['Add'] = numba.int64(1)
-        keywords = Dict.empty(key_type=types.unicode_type,
-                              value_type=types.int64)
-        keywords['FunctionDef'] = numba.int64(1)
-        keywords['Return'] = numba.int64(1)
-        keywords['If'] = numba.int64(1)
-        literals = Dict.empty(key_type=types.unicode_type,
-                              value_type=types.int64)
+        operators = {}
+        operators['AugAssign'] = np.int64(1)
+        operators['Add'] = np.int64(1)
+        keywords = {}
+        keywords['FunctionDef'] = np.int64(1)
+        keywords['Return'] = np.int64(1)
+        keywords['If'] = np.int64(1)
+        literals = {}
 
         # ast.Constant с python >= 3.8 используется для всех констант
         # до этого были NameConstant, Num и др.
-        literals['Constant'] = numba.int64(3)
+        literals['Constant'] = np.int64(3)
 
-        file_literals = Dict.empty(key_type=types.unicode_type,
-                                   value_type=types.int64)
+        file_literals = {}
         file_literals['Constant'] = 0
         if 'Constant' in features.literals:
             file_literals['Constant'] = features.literals['Constant']
@@ -54,5 +48,5 @@ class TestASTWalkers(unittest.TestCase):
         self.assertEqual(file_literals, literals)
         self.assertEqual(len(features.unodes), unodes)
         self.assertEqual(len(features.from_num), unodes)
-        self.assertEqual(features.count_unodes, numba.int64(unodes))
+        self.assertEqual(features.count_unodes, np.int64(unodes))
         self.assertEqual(len(features.structure), 27)

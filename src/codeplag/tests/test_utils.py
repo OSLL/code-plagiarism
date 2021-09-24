@@ -1,7 +1,7 @@
 import unittest
 import os
 
-from codeplag.utils import run_compare
+from codeplag.utils import run_compare, get_files_path_from_directory
 from codeplag.pyplag.utils import (get_ast_from_filename,
                                    get_features_from_ast)
 
@@ -23,3 +23,10 @@ class TestUtils(unittest.TestCase):
         self.assertAlmostEqual(metrics[1], 0.667,  3)
         self.assertEqual(metrics[2], 1.)
         self.assertEqual(metrics[3], 0.75)
+
+    def test_get_files_path_from_directory(self):
+        files = get_files_path_from_directory(pwd, extension=r".py\b")
+
+        self.assertIn(os.path.join(pwd, 'test_utils.py'), files)
+        self.assertIn(os.path.join(pwd, 'data/test1.py'), files)
+        self.assertIn(os.path.join(pwd, 'data/test2.py'), files)

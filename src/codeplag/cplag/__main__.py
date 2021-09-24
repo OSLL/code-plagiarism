@@ -1,20 +1,17 @@
 import ccsyspath
 import sys
 import os
-import numpy as np
 import pandas as pd
 
 from time import perf_counter
 from codeplag.cplag.util import get_cursor_from_file
 from codeplag.cplag.tree import get_features
-from codeplag.utils import run_compare, print_compare_res
+from codeplag.utils import print_compare_res
 
 args = '-x c++ --std=c++11'.split()
 syspath = ccsyspath.system_include_paths('clang++')
 incargs = [b'-I' + inc for inc in syspath]
 args = args + incargs
-
-weights = np.array([1, 0.4, 0.4, 0.4], dtype=np.float32)
 
 pd.options.display.float_format = '{:,.2%}'.format
 
@@ -55,13 +52,7 @@ if __name__ == '__main__':
                 if cursor and cursor2:
                     features1 = get_features(cursor, filename)
                     features2 = get_features(cursor2, filename2)
-                    metrics = run_compare(features1, features2)
-                    total_similarity = (np.sum(metrics * weights)
-                                        / weights.sum())
-
-                    if total_similarity > 0.7:
-                        print_compare_res(metrics, total_similarity,
-                                          features1, features2)
+                    print_compare_res(features1, features2)
 
                 iterration += 1
                 print('  {:.2%}'.format(iterration / iterrations), end="\r")

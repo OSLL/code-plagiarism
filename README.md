@@ -8,7 +8,9 @@
 
 - Python PEP8 style ([guide](https://www.python.org/dev/peps/pep-0008/))
 
-## 2. Install requirements
+## 2. Install
+
+### 2.1 Manual
 
 - OS Ubuntu Linux >= 18.04
 
@@ -27,6 +29,20 @@
 - python3 setup.py install --user
 
 - if you want to easy install and test the app then run ./install.sh (it uses apt)
+
+### 2.2 Docker
+
+- Create a code-plagiarism docker image
+
+```
+  docker build . -t codeplag
+```
+
+- Run a code-plagiarism container
+
+```
+  docker run -it --name codeplag codeplag /bin/bash
+```
 
 ## 3. Tests
 
@@ -94,4 +110,23 @@
   > Compare all files in folder
   ```
     $ python3 -m codeplag.cplag <path/to/folder/with/cpp/or/cc/files>
+  ```
+
+## 5. Demo examples (works in the project directory and with an installed codeplag package)
+
+- python analyzer
+  ```
+    $ python3 -m codeplag.pyplag --file ./src/codeplag/pyplag/astwalkers.py --dir ./src/codeplag/pyplag
+    $ python3 -m codeplag.pyplag --project ./src --dir ./src/codeplag/algorithms
+    $ python3 -m codeplag.pyplag --file src/codeplag/pyplag/astwalkers.py --git OSLL --reg_exp code- --check_policy 1
+    $ python3 -m codeplag.pyplag --git_file https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/mode.py --git OSLL -e code- -cp 1
+    $ python3 -m codeplag.pyplag --git_file https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/mode.py -d src/codeplag/pyplag/
+    $ python3 -m codeplag.pyplag --project src/ --git OSLL -e code-
+    $ python3 -m codeplag.pyplag --git_project https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag --git OSLL -e code-
+    $ python3 -m codeplag.pyplag --git_project https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag -d src/codeplag/pyplag/
+  ```
+
+- C++/C analyzer
+  ```
+    $ python3 -m codeplag.cplag ./other/cpp/tests
   ```

@@ -3,7 +3,6 @@ from codeplag.cplag.const import IGNORE, OPERATORS
 from codeplag.astfeatures import ASTFeatures
 
 
-# Tested
 def get_not_ignored(tree, src):
     '''
         Function helps to discard unnecessary nodes such as imports
@@ -21,45 +20,6 @@ def get_not_ignored(tree, src):
             parsed_nodes.append(children[i])
 
     return parsed_nodes
-
-
-# Tested
-def get_count_of_nodes(tree):
-    '''
-        Get count of nodes of tree without head
-        @param tree - clang.cindex.Cursor object
-    '''
-    if(not hasattr(tree, 'get_children')):
-        return TypeError
-
-    count = 0
-    children = list(tree.get_children())
-    length = len(children)
-    count += length
-    for i in range(length):
-        count += get_count_of_nodes(children[i])
-
-    return count
-
-
-def getn_count_nodes(len_min, len_max, indexes, axis, children):
-    '''
-        Function return count of not accounted nodes
-        @param len_min - length of less node
-        @param len_max - length of longer node
-        @param indexes - indexes of metrics taken into account list of tuples
-        @param axis - if 0 then iteration on row
-        if 1 then iteration on column
-        @param children - list of nodes of type clang.cindex.Cursor object
-    '''
-    add = [indexes[i][axis] for i in range(len_min)]
-
-    count = 0
-    for i in range(len_max):
-        if i not in add:
-            count += get_count_of_nodes(children[i]) + 1
-
-    return count
 
 
 def generic_visit(node, features, curr_depth=0):
@@ -87,6 +47,10 @@ def generic_visit(node, features, curr_depth=0):
                 features.count_unodes += 1
             features.structure.append((curr_depth,
                                        features.unodes[token_name]))
+
+            if curr_depth == 1:
+                features.head_nodes.append(token_name)
+
     else:
         for child in children:
             features.tokens.append(child.kind.value)
