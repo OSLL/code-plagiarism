@@ -56,14 +56,29 @@ class LevenshteinDistance:
 
 
 def is_marked_match(marked_string_list, begin, length):
+    """The function returns true if the match consists in
+    the marked list, else false.
+
+    @marked_string_list - list with marked indexes
+    @begin - start index of match
+    @length - length of match
+    """
+
     if begin in marked_string_list or \
-      (begin + length - 1) in marked_string_list:
+       (begin + length - 1) in marked_string_list:
         return True
     else:
         return False
 
 
 def gst(pattern, text, min_match_len):
+    """The Greedy String Tiling algorithm
+
+    @pattern - the first string/sequence
+    @text - the second string/sequence
+    @min_match_len - minimal searching length of match
+    """
+
     tiles = []
     matches = []
     max_match = min_match_len + 1

@@ -1,6 +1,7 @@
 import unittest
 
-from codeplag.algorithms.stringbased import LevenshteinDistance
+from codeplag.algorithms.stringbased import (LevenshteinDistance,
+                                             is_marked_match, gst)
 
 
 class TestStringbased(unittest.TestCase):
@@ -22,3 +23,9 @@ class TestStringbased(unittest.TestCase):
         self.assertEqual(dist_object.distance_matrix.size, 36)
         self.assertEqual(dist_object.distance, 2)
         self.assertEqual(result2, 0.6)
+
+    def test_is_marked_match(self):
+        pass
+
+    def test_gst(self):
+        pass
