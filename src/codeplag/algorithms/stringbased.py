@@ -53,3 +53,48 @@ class LevenshteinDistance:
             self.calculate_distance_matrix()
 
         return 1.0 - self.distance / max(self.s1_length, self.s2_length)
+
+
+def is_marked_match(marked_string_list, begin, length):
+    if begin in marked_string_list or \
+      (begin + length - 1) in marked_string_list:
+        return True
+    else:
+        return False
+
+
+def gst(pattern, text, min_match_len):
+    tiles = []
+    matches = []
+    max_match = min_match_len + 1
+    source_marked = []
+    search_marked = []
+
+    while max_match > min_match_len:
+        max_match = min_match_len
+
+        for p in range(len(pattern)):
+            for t in range(len(text)):
+                j = 0
+                while (p + j) < len(pattern) and (t + j) < len(text) and \
+                    pattern[p + j] == text[t + j] and \
+                      (p + j) not in source_marked and \
+                      (t + j) not in search_marked:
+                    j += 1
+
+                if j == max_match:
+                    matches.append({"p": p, "t": t, "j": j})
+                if j > max_match:
+                    matches = [{"p": p, "t": t, "j": j}]
+                    max_match = j
+
+        for match in matches:
+            if not is_marked_match(source_marked, match["p"], match["j"]) \
+                and not is_marked_match(search_marked, match["t"],
+                                        match["j"]):
+                for k in range(match["j"]):
+                    source_marked.append(match["p"] + k)
+                    search_marked.append(match["t"] + k)
+                tiles.append(pattern[match["p"]:match["p"] + match["j"]])
+
+    return tiles
