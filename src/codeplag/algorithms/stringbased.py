@@ -71,15 +71,14 @@ def is_marked_match(marked_string_list, begin, length):
         return False
 
 
-def gst(pattern, text, min_match_len):
+def gst(sequence1, sequence2, min_match_len):
     """The Greedy String Tiling algorithm
 
-    @pattern - the first string/sequence
-    @text - the second string/sequence
+    @sequence1 - the first string/sequence
+    @sequence2 - the second string/sequence
     @min_match_len - minimal searching length of match
     """
 
-    tiles = []
     matches = []
     max_match = min_match_len + 1
     source_marked = []
@@ -88,11 +87,11 @@ def gst(pattern, text, min_match_len):
     while max_match > min_match_len:
         max_match = min_match_len
 
-        for p in range(len(pattern)):
-            for t in range(len(text)):
+        for p in range(len(sequence1)):
+            for t in range(len(sequence2)):
                 j = 0
-                while (p + j) < len(pattern) and (t + j) < len(text) and \
-                    pattern[p + j] == text[t + j] and \
+                while (p + j) < len(sequence1) and (t + j) < len(sequence2) \
+                    and sequence1[p + j] == sequence2[t + j] and \
                       (p + j) not in source_marked and \
                       (t + j) not in search_marked:
                     j += 1
@@ -110,6 +109,5 @@ def gst(pattern, text, min_match_len):
                 for k in range(match["j"]):
                     source_marked.append(match["p"] + k)
                     search_marked.append(match["t"] + k)
-                tiles.append(pattern[match["p"]:match["p"] + match["j"]])
 
-    return tiles
+    return source_marked, search_marked

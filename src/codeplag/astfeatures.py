@@ -15,3 +15,4 @@ class ASTFeatures:
 
         self.structure = []
         self.tokens = []
+        self.tokens_pos = []
