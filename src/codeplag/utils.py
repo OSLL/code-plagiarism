@@ -9,6 +9,18 @@ from codeplag.algorithms.featurebased import (
 from codeplag.algorithms.tokenbased import value_jakkar_coef
 
 
+class Colors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+
 def run_compare(features_f, features_s):
     """The function calculates the similarity of features of two programmes
     using four algorithms and returns similarity coefficients.
@@ -100,3 +112,24 @@ def get_files_path_from_directory(directory, extension=r".*\b"):
                 allowed_files.append(os.path.join(current_dir, file))
 
     return allowed_files
+
+
+def print_suspect_parts(source_code, marked_tokens, tokens_pos,
+                        color=Colors.FAIL):
+    ROWS = {row for (row, column) in
+            [tokens_pos[index] for index in marked_tokens]}
+
+    row = 1
+    column = 1
+
+    for symbol in source_code:
+        if symbol == '\n':
+            row += 1
+            column = 1
+
+        if row in ROWS:
+            print(color + symbol, end=Colors.ENDC)
+        else:
+            print(symbol, end="")
+
+        column += 1
