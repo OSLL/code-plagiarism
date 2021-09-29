@@ -32,6 +32,11 @@ class ASTWalker(ast.NodeVisitor):
         type_name = type(node).__name__
         if type_name in TO_TOKEN:
             self.features.tokens.append(TO_TOKEN[type_name])
+            if 'lineno' in dir(node) and 'col_offset' in dir(node):
+                self.features.tokens_pos.append((node.lineno,
+                                                 node.col_offset))
+            else:
+                self.features.tokens_pos.append(self.features.tokens_pos[-1])
 
         if type_name in OPERATORS:
             if type_name not in self.features.operators:

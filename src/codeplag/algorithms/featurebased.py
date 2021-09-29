@@ -83,15 +83,19 @@ def op_shift_metric(ops1, ops2):
         return 0, 0.0
 
 
-def get_children_indexes(tree):
-    '''
-        The function returns indexes of her children and their count.
-        @param tree - a simple structure of the first AST.
-    '''
+def get_children_indexes(tree, count_of_nodes):
+    """The function returns indexes of her children and their count.
+
+    @param tree - a simple structure of the AST.
+    @count_of_nodes - count of elements in the tree
+
+    O(len(tree))
+    """
+
     indexes = []
     count_of_children = 0
 
-    if len(tree) != 0:
+    if count_of_nodes != 0:
         current_level = tree[0][0]
 
     current_index = 0
@@ -167,6 +171,8 @@ def add_not_counted(tree, count_of_children, key_indexes, indexes, axis):
     @key_indexes - indexes of top-level nodes in the tree
     @indexes - indexes of selected nodes which accounted in the metric
     @axis - 0 - row, 1 - column
+
+    O(count_of_children * len(tree))
     """
 
     count = 0
@@ -198,8 +204,11 @@ def struct_compare(tree1, tree2, matrix=np.array([[[]]]), dtype=np.int64):
     elif (count_of_nodes2 == 0):
         return [1, (count_of_nodes1 + 1)]
 
-    key_indexes1, count_of_children1 = get_children_indexes(tree1)
-    key_indexes2, count_of_children2 = get_children_indexes(tree2)
+    # Add counting of nodes
+    key_indexes1, count_of_children1 = get_children_indexes(tree1,
+                                                            count_of_nodes1)
+    key_indexes2, count_of_children2 = get_children_indexes(tree2,
+                                                            count_of_nodes2)
     key_indexes1.append(count_of_nodes1)
     key_indexes2.append(count_of_nodes2)
 

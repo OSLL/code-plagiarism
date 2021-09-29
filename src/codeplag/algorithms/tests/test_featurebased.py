@@ -63,9 +63,9 @@ class TestFeaturebased(unittest.TestCase):
         example1 = [(1, 2), (2, 3), (3, 5), (2, 4), (2, 5), (1, 6)]
         example2 = [(3, 4), (3, 2), (4, 5), (3, 1), (4, 8), (3, 8)]
         example3 = [(2, 1), (3, 4), (3, 10), (4, 1), (2, 5), (2, 9)]
-        ind1, c_ch1 = get_children_indexes(example1)
-        ind2, c_ch2 = get_children_indexes(example2)
-        ind3, c_ch3 = get_children_indexes(example3)
+        ind1, c_ch1 = get_children_indexes(example1, len(example1))
+        ind2, c_ch2 = get_children_indexes(example2, len(example2))
+        ind3, c_ch3 = get_children_indexes(example3, len(example3))
 
         self.assertEqual(c_ch1, 2)
         self.assertEqual(ind1[0], 0)
@@ -142,8 +142,8 @@ class TestFeaturebased(unittest.TestCase):
                       (4, 1), (4, 1), (4, 1),
                       (1, 6), (2, 7), (3, 8),
                       (3, 8), (3, 8), (2, 9)]
-        count_ch1 = (get_children_indexes(structure1))[1]
-        count_ch2 = (get_children_indexes(structure2))[1]
+        count_ch1 = (get_children_indexes(structure1, len(structure1)))[1]
+        count_ch2 = (get_children_indexes(structure2, len(structure2)))[1]
         compliance_matrix = np.zeros((count_ch1, count_ch2, 2),
                                      dtype=np.int64)
         res = struct_compare(structure1, structure2,
@@ -162,8 +162,8 @@ class TestFeaturebased(unittest.TestCase):
                       (5, 4), (6, 8), (5, 8), (4, 9),
                       (2, 3), (3, 4), (4, 5), (3, 6),
                       (4, 4), (5, 8), (4, 10), (5, 4)]
-        count_ch1 = (get_children_indexes(structure1))[1]
-        count_ch2 = (get_children_indexes(structure2))[1]
+        count_ch1 = (get_children_indexes(structure1, len(structure1)))[1]
+        count_ch2 = (get_children_indexes(structure2, len(structure2)))[1]
         compliance_matrix = np.zeros((count_ch1, count_ch2, 2),
                                      dtype=np.int64)
         res = struct_compare(structure1, structure2,
