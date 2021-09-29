@@ -10,6 +10,13 @@
 
 ## 2. Install
 
+First of all, clone the repository and moved into this.
+
+```
+  git clone https://github.com/OSLL/code-plagiarism.git
+  cd code-plagiarism/
+```
+
 ### 2.1 Manual
 
 - OS Ubuntu Linux >= 18.04
@@ -27,6 +34,9 @@
 - install **clang** and **libncurses5** with apt or other packages manager
 
 - python3 setup.py install --user
+
+
+#### 2.1.1 With using script
 
 - if you want to easy install and test the app then run ./install.sh (it uses apt)
 
