@@ -129,6 +129,25 @@ def print_suspect_parts(source_code, marked_tokens, tokens_pos,
 
         if row in ROWS:
             print(color + symbol, end=Colors.ENDC)
+
+        column += 1
+
+
+def print_code_and_highlight_suspect(source_code, marked_tokens, tokens_pos,
+                                     color=Colors.FAIL):
+    ROWS = {row for (row, column) in
+            [tokens_pos[index] for index in marked_tokens]}
+
+    row = 1
+    column = 1
+
+    for symbol in source_code:
+        if symbol == '\n':
+            row += 1
+            column = 1
+
+        if row in ROWS:
+            print(color + symbol, end=Colors.ENDC)
         else:
             print(symbol, end="")
 
