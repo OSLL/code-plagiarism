@@ -71,7 +71,7 @@ def is_marked_match(marked_string_list, begin, length):
         return False
 
 
-def gst(sequence1, sequence2, min_match_len):
+def gst(sequence1, sequence2, min_match_len=6):
     """The Greedy String Tiling algorithm
 
     @sequence1 - the first string/sequence
