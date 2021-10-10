@@ -8,7 +8,7 @@ from codeplag.pyplag.utils import (
     compare_file_pair, get_features_from_ast
 )
 from webparsers.github_parser import GitHubParser
-from codeplag.pyplag.mode import get_mode
+from codeplag.mode import get_mode
 from codeplag.logger import get_logger
 from codeplag.utils import (print_compare_res, get_files_path_from_directory)
 from codeplag.pyplag.const import LOG_PATH
