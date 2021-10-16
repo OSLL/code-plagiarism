@@ -99,7 +99,7 @@ def print_compare_res(features1, features2, threshold=60,
     print('+' * 40)
 
 
-def get_files_path_from_directory(directory, extension=r".*\b"):
+def get_files_path_from_directory(directory, extensions=[r".*\b"]):
     '''
         The function returns paths to all files in the directory
         and its subdirectories which have the extension transmitted
@@ -108,7 +108,12 @@ def get_files_path_from_directory(directory, extension=r".*\b"):
     allowed_files = []
     for current_dir, folders, files in os.walk(directory):
         for file in files:
-            if re.search(extension, file) is not None:
+            allowed = False
+            for extension in extensions:
+                if re.search(extension, file) is not None:
+                    allowed = True
+                    break
+            if allowed:
                 allowed_files.append(os.path.join(current_dir, file))
 
     return allowed_files

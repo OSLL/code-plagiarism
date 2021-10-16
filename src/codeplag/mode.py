@@ -5,8 +5,6 @@ import argparse
 
 def get_mode():
     parser = argparse.ArgumentParser()
-    # Добавить bracnh policy
-    # Добавить threshold
     parser.add_argument('-f', "--file", type=str,
                         help="Path to file on a computer")
     parser.add_argument("-F", "--git_file", type=str,

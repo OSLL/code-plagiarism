@@ -117,9 +117,13 @@ First of all, clone the repository and moved into this.
     $ python3 -m codeplag.pyplag --git_project URL --dir PATH [--threshold THRESHOLD]
   ```
 - C++/C analyzer
-  > Compare all files in folder
+  > Local file compares with files in a local directory
   ```
-    $ python3 -m codeplag.cplag <path/to/folder/with/cpp/or/cc/files>
+    $ python3 -m codeplag.cplag --file PATH --dir PATH [--threshold THRESHOLD]
+  ```
+  > Files in local project compares with files in a local directory
+  ```
+    $ python3 -m codeplag.cplag --project PATH --dir PATH [--threshold THRESHOLD]
   ```
 
 ## 5. Demo examples (works in the project directory and with an installed codeplag package)
@@ -129,8 +133,8 @@ First of all, clone the repository and moved into this.
     $ python3 -m codeplag.pyplag --file ./src/codeplag/pyplag/astwalkers.py --dir ./src/codeplag/pyplag
     $ python3 -m codeplag.pyplag --project ./src --dir ./src/codeplag/algorithms
     $ python3 -m codeplag.pyplag --file src/codeplag/pyplag/astwalkers.py --git OSLL --reg_exp code- --check_policy 1
-    $ python3 -m codeplag.pyplag --git_file https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/mode.py --git OSLL -e code- -cp 1
-    $ python3 -m codeplag.pyplag --git_file https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/mode.py -d src/codeplag/pyplag/
+    $ python3 -m codeplag.pyplag --git_file https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/utils.py --git OSLL -e code- -cp 1
+    $ python3 -m codeplag.pyplag --git_file https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/utils.py -d src/codeplag/pyplag/
     $ python3 -m codeplag.pyplag --project src/ --git OSLL -e code-
     $ python3 -m codeplag.pyplag --git_project https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag --git OSLL -e code-
     $ python3 -m codeplag.pyplag --git_project https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag -d src/codeplag/pyplag/
@@ -138,5 +142,6 @@ First of all, clone the repository and moved into this.
 
 - C++/C analyzer
   ```
-    $ python3 -m codeplag.cplag ./other/cpp/tests
+    $ python3 -m codeplag.cplag --file src/codeplag/cplag/tests/data/sample1.cpp --dir src/codeplag/cplag/tests/data
+    $ python3 -m codeplag.cplag --project src/codeplag/cplag/ --dir src/codeplag/cplag/tests/data
   ```
