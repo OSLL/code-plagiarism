@@ -161,7 +161,7 @@ elif mode == 4:
     dir_files = os.listdir(args.dir)
     dir_files = list(filter(lambda x: (x.endswith('.py')), dir_files))
     project_files = get_files_path_from_directory(args.project,
-                                                  extension=r".py\b")
+                                                  extensions=[r".py\b"])
 
     count_files = len(dir_files) * len(project_files)
     if count_files == 0:
@@ -189,7 +189,7 @@ elif mode == 5:
                       access_token=ACCESS_TOKEN)
 
     project_files = get_files_path_from_directory(args.project,
-                                                  extension=r".py\b")
+                                                  extensions=[r".py\b"])
     if len(project_files) == 0:
         print("Folder with project not consist py files.")
         exit()
