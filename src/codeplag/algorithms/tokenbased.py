@@ -1,3 +1,4 @@
+import math
 import binascii
 
 
@@ -33,6 +34,21 @@ def generate_ngrams_and_hashit(tokens, n=3):
 
     return [binascii.crc32(bytearray(tokens[i:i + n]))
             for i in range(len(tokens) - n + 1)]
+
+
+def get_imprints_from_hashes(hashes):
+    """The function return imprints of the given hashes
+
+    @param hashes - list of hashes
+
+    @return - list of each k element in hashes,
+    where k equal log(len(hashes))
+    """
+
+    count_hashes = len(hashes)
+    k = math.floor(math.log(count_hashes, 2))
+
+    return [hashes[index] for index in range(0, count_hashes, k)]
 
 
 def value_jakkar_coef(tokens_first, tokens_second, ngrams_length=3):
