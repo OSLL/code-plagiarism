@@ -13,7 +13,5 @@ if [ -n "$INSTALL" ]; then
 	eval "sudo apt install $INSTALL"
 fi
 
-
-pip3 install pytest --user
 python3 setup.py install --user
-python3 -m pytest
+python3 -m unittest discover -v ./src

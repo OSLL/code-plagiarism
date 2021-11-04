@@ -2,7 +2,8 @@ import unittest
 
 from codeplag.algorithms.tokenbased import (
     value_jakkar_coef, lcs, generate_unique_ngrams, generate_ngrams,
-    generate_ngrams_and_hashit, lcs_based_coeff
+    generate_ngrams_and_hashit, lcs_based_coeff,
+    get_imprints_from_hashes
 )
 
 
@@ -60,6 +61,27 @@ class TestTokenbased(unittest.TestCase):
 
         for el in wait3:
             self.assertIn(el, res3)
+
+    def test_get_imprints_from_hashes(self):
+        test_cases = [
+            {
+                'arguments': {"hashes": [1, 2, 3, 4, 5]},
+                'expected_result': [1, 3, 5],
+            },
+            {
+                'arguments': {"hashes": [3, 4, 7, 8, 15, 3]},
+                'expected_result': [3, 7, 15],
+            },
+            {
+                'arguments': {"hashes": [1, 3, 5, 7, 9, 7, 5, 9]},
+                'expected_result': [1, 7, 5],
+            },
+        ]
+
+        for test_case in test_cases:
+            with self.subTest(test_case=test_case):
+                result = get_imprints_from_hashes(**test_case['arguments'])
+                self.assertEqual(test_case['expected_result'], result)
 
     def test_value_jakkar_coef(self):
         res1 = value_jakkar_coef([1, 2, 3, 4, 5, 4],
