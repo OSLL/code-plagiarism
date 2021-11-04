@@ -36,41 +36,38 @@ First of all, clone the repository and moved into this.
 - python3 setup.py install --user
 
 
-#### 2.1.1 With using script
+#### 2.1.1 With using Makefile
 
-- if you want to easy install and test the app then run ./install.sh (it uses apt)
+- if you want to easy install and test the app then run ```$ make all``` (it uses apt)
 
 ### 2.2 Docker
 
 - Create a code-plagiarism docker image
 
 ```
-  docker build . -t codeplag
+  $ make docker
+```
+
+- Starting tests with using created image
+```
+  $ make docker-test
 ```
 
 - Run a code-plagiarism container
 
 ```
-  docker run -it --name codeplag codeplag /bin/bash
+  $ make docker-run
 ```
 
 ## 3. Tests
 
 - Testing for C/C++ and Python 3 analyzers with unittest lib
   ```
-    $ python3 -m unittest discover <path/to/the/src/folder/of/the/project>
+    $ make test
   ```
-  > For getting more testing information add the `-v` flag
+- Testing for C/C++ and Python 3 analyzers with pytest lib (if installed)
   ```
-    $ python3 -m unittest discover <path/to/the/src/folder/of/the/project> -v
-  ```
-- Testing for C/C++ and Python 3 analyzers with pytest lib (Works from the cloned repository)
-  ```
-    $ python3 -m pytest
-  ```
-  > For getting more testing information add the `-v` flag
-  ```
-    $ python3 -m pytest -v
+    $ make test-pytest
   ```
 
 ## 4. Work with analyzers
