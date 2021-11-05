@@ -26,6 +26,9 @@ test-pytest:
 clear-cache:
 	find . -type d | grep -E "__pycache__" | xargs rm -r
 
+rm:
+	pip3 uninstall codeplag -y
+
 docker:
 	docker image build \
 		--tag  "$(DOCKER_TAG)" \
@@ -53,6 +56,7 @@ help:
 	@echo "  test                             Run unittest"
 	@echo "  test-pytest                      Run pytest"
 	@echo "  clear-cache                      Delete __pycache__ folders"
+	@echo "  rm                               Remove installed package"
 	@echo "  help                             Display this message and exit"
 	@echo
 	@echo "Docker:"
