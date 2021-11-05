@@ -24,7 +24,8 @@ def get_mode():
                         choices=[0, 1], default=0)
     parser.add_argument("-t", "--threshold",
                         help="Threshold of analyzer", type=int,
-                        default=65, choices=range(50, 100))
+                        default=65, choices=range(50, 100),
+                        metavar="{50, 51, ..., 99}")
 
     args = parser.parse_args()
 
