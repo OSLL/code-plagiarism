@@ -17,9 +17,14 @@ install:
 
 test:
 	python3 -m unittest discover -v ./src
+	make clear-cache
 
 test-pytest:
 	python3 -m pytest -v
+	make clear-cache
+
+clear-cache:
+	find . -type d | grep -E "__pycache__" | xargs rm -r
 
 docker:
 	docker image build \
@@ -35,3 +40,24 @@ docker-test:
 docker-run:
 	docker run --rm --tty --interactive \
 		"$(DOCKER_TAG)" /bin/bash
+
+docker-rmi:
+	docker rmi $(DOCKER_TAG)
+
+help:
+	@echo "Usage:"
+	@echo "  make [command]"
+	@echo
+	@echo "Commands:"
+	@echo "  install                          Install on the local computer"
+	@echo "  test                             Run unittest"
+	@echo "  test-pytest                      Run pytest"
+	@echo "  clear-cache                      Delete __pycache__ folders"
+	@echo "  help                             Display this message and exit"
+	@echo
+	@echo "Docker:"
+	@echo "  docker:                          Build docker image"
+	@echo "  docker-test:                     Test code in docker container"
+	@echo "  docker-run:                      Run docker container"
+	@echo "  docker-rmi:                      Delete docker image"
+	@echo
