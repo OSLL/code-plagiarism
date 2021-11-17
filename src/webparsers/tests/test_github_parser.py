@@ -124,27 +124,27 @@ class TestGitHubParser(unittest.TestCase):
         test_cases = [
             {
                 'arguments': {
-                    "content_url": "ttps://github.com/index"
+                    'content_url': 'ttps://github.com/index'
                 },
             },
             {
                 'arguments': {
-                    "content_url": "http:/j/github.com/OSLL/test.py"
+                    'content_url': 'http:/j/github.com/OSLL/test.py'
                 },
             },
             {
                 'arguments': {
-                    "content_url": "http://githUb.com/OSLL/test.py"
+                    'content_url': 'http://githUb.com/OSLL/test.py'
                 },
             },
             {
                 'arguments': {
-                    "content_url": "http://github.com/OSLL"
+                    'content_url': 'http://github.com/OSLL'
                 },
             },
             {
                 'arguments': {
-                    "content_url": "http://github.com/OSLL/test/tmp"
+                    'content_url': 'http://github.com/OSLL/test/tmp'
                 },
             }
         ]
@@ -153,6 +153,57 @@ class TestGitHubParser(unittest.TestCase):
             with self.subTest(test_case=test_case):
                 with self.assertRaises(ValueError):
                     GitHubParser.parse_content_url(**test_case['arguments'])
+
+    def test_is_accepted_extension(self):
+        test_cases = [
+            {
+                'arguments': {
+                    'path': 'some/path/module.py'
+                },
+                'parser': GitHubParser(),
+                'expected_result': True
+            },
+            {
+                'arguments': {
+                    'path': 'some/path/module.cpp'
+                },
+                'parser': GitHubParser(),
+                'expected_result': True
+            },
+            {
+                'arguments': {
+                    'path': 'some/path/module.c'
+                },
+                'parser': GitHubParser(),
+                'expected_result': True
+            },
+            {
+                'arguments': {
+                    'path': 'some/path/module.in.py'
+                },
+                'parser': GitHubParser(),
+                'expected_result': True
+            },
+            {
+                'arguments': {
+                    'path': 'some/path/module.c'
+                },
+                'parser': GitHubParser(file_extensions=['py']),
+                'expected_result': False
+            },
+            {
+                'arguments': {
+                    'path': 'some/path/module.in'
+                },
+                'parser': GitHubParser(file_extensions=['cpp', 'c']),
+                'expected_result': False
+            },
+        ]
+
+        for test_case in test_cases:
+            with self.subTest(test_case=test_case):
+                rv = test_case['parser'].is_accepted_extension(**test_case['arguments'])
+                self.assertEqual(rv, test_case['expected_result'])
 
 
 if __name__ == '__main__':

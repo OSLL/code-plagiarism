@@ -44,7 +44,11 @@ class GitHubParser:
                 url_parts[6], '/'.join(url_parts[7:]))
 
     def is_accepted_extension(self, path):
-        return path.split('.')[-1].lower() in self.__file_extensions
+        extension = path.split('.')[-1].lower()
+        if extension in self.__file_extensions:
+            return True
+
+        return False
 
     def send_get_request(self, api_url, params={}):
         address = 'https://api.github.com'
