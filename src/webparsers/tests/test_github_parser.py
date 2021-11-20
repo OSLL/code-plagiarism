@@ -1,6 +1,6 @@
 import unittest
 
-from unittest.mock import patch
+from unittest.mock import patch, call
 from webparsers.github_parser import GitHubParser
 
 
@@ -337,6 +337,171 @@ class TestGitHubParser(unittest.TestCase):
 
                 mock_get.assert_called_once_with(*test_case['get_posargs'],
                                                  **test_case['get_kwargs'])
+
+    @patch('webparsers.github_parser.GitHubParser.send_get_request')
+    def test_get_list_of_repos(self, mock_send_get_request):
+        class Response:
+            def __init__(self, response):
+                self.response_json = response
+
+            def json(self):
+                return self.response_json
+
+        test_cases = [
+            {
+                'arguments': {
+                    'owner': 'OSLL',
+                    'per_page': 50,
+                    'reg_exp': None
+                },
+                'send_calls': [
+                    call(
+                        '/users/OSLL/repos',
+                        params={
+                            'per_page': 50,
+                            'page': 1
+                        }
+                    )
+                ],
+                'send_rvs': [Response([])],
+                'expected_result': {}
+            },
+            {
+                'arguments': {
+                    'owner': 'OSLL',
+                    'per_page': 20,
+                    'reg_exp': None
+                },
+                'send_calls': [
+                    call(
+                        '/users/OSLL/repos',
+                        params={
+                            'per_page': 20,
+                            'page': 1
+                        }
+                    ),
+                    call(
+                        '/users/OSLL/repos',
+                        params={
+                            'per_page': 20,
+                            'page': 2
+                        }
+                    ),
+                    call(
+                        '/users/OSLL/repos',
+                        params={
+                            'per_page': 20,
+                            'page': 3
+                        }
+                    )
+                ],
+                'send_rvs': [
+                    Response(
+                        [
+                            {
+                                'name': 'asm_web_debug',
+                                'html_url': 'https://github.com/OSLL/asm_web_debug'
+                            },
+                            {
+                                'name': 'aido-auto-feedback',
+                                'html_url': 'https://github.com/OSLL/aido-auto-feedback'
+                            }
+                        ]
+                    ),
+                    Response(
+                        [
+                            {
+                                'name': 'MD-Code_generator',
+                                'html_url': 'https://github.com/OSLL/MD-Code_generator'
+                            },
+                            {
+                                'name': 'code-plagiarism',
+                                'html_url': 'https://github.com/OSLL/code-plagiarism'
+                            }
+                        ]
+                    ),
+                    Response([])
+                ],
+                'expected_result': {
+                    'aido-auto-feedback': 'https://github.com/OSLL/aido-auto-feedback',
+                    'asm_web_debug': 'https://github.com/OSLL/asm_web_debug',
+                    'MD-Code_generator': 'https://github.com/OSLL/MD-Code_generator',
+                    'code-plagiarism': 'https://github.com/OSLL/code-plagiarism'
+                }
+            },
+            {
+                'arguments': {
+                    'owner': 'OSLL',
+                    'per_page': 20,
+                    'reg_exp': r'\ba'
+                },
+                'send_calls': [
+                    call(
+                        '/users/OSLL/repos',
+                        params={
+                            'per_page': 20,
+                            'page': 1
+                        }
+                    ),
+                    call(
+                        '/users/OSLL/repos',
+                        params={
+                            'per_page': 20,
+                            'page': 2
+                        }
+                    ),
+                    call(
+                        '/users/OSLL/repos',
+                        params={
+                            'per_page': 20,
+                            'page': 3
+                        }
+                    )
+                ],
+                'send_rvs': [
+                    Response(
+                        [
+                            {
+                                'name': 'asm_web_debug',
+                                'html_url': 'https://github.com/OSLL/asm_web_debug'
+                            },
+                            {
+                                'name': 'aido-auto-feedback',
+                                'html_url': 'https://github.com/OSLL/aido-auto-feedback'
+                            }
+                        ]
+                    ),
+                    Response(
+                        [
+                            {
+                                'name': 'MD-Code_generator',
+                                'html_url': 'https://github.com/OSLL/MD-Code_generator'
+                            },
+                            {
+                                'name': 'code-plagiarism',
+                                'html_url': 'https://github.com/OSLL/code-plagiarism'
+                            }
+                        ]
+                    ),
+                    Response([])
+                ],
+                'expected_result': {
+                    'aido-auto-feedback': 'https://github.com/OSLL/aido-auto-feedback',
+                    'asm_web_debug': 'https://github.com/OSLL/asm_web_debug',
+                }
+            }
+        ]
+
+        parser = GitHubParser()
+        for test_case in test_cases:
+            mock_send_get_request.reset_mock()
+            mock_send_get_request.side_effect = test_case['send_rvs']
+
+            with self.subTest(test_case=test_case):
+                rv = parser.get_list_of_repos(**test_case['arguments'])
+                self.assertEqual(rv, test_case['expected_result'])
+
+                self.assertEqual(mock_send_get_request.mock_calls, test_case['send_calls'])
 
 
 if __name__ == '__main__':

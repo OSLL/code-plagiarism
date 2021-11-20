@@ -84,8 +84,8 @@ class GitHubParser:
         while True:
             api_url = '/users/{}/repos'.format(owner)
             params = {
-                "per_page": per_page,
-                "page": page
+                'per_page': per_page,
+                'page': page
             }
             response_json = self.send_get_request(
                                 api_url,
