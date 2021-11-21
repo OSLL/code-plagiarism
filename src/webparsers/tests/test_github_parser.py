@@ -503,6 +503,50 @@ class TestGitHubParser(unittest.TestCase):
 
                 self.assertEqual(mock_send_get_request.mock_calls, test_case['send_calls'])
 
+    @patch('webparsers.github_parser.GitHubParser.send_get_request')
+    def test_get_name_default_branch(self, mock_send_get_request):
+        class Response:
+            def __init__(self, response):
+                self.response_json = response
+
+            def json(self):
+                return self.response_json
+
+        test_cases = [
+            {
+                'arguments': {
+                    'owner': 'OSLL',
+                    'repo': 'aido-auto-feedback'
+                },
+                'send_calls': [
+                    call('/repos/OSLL/aido-auto-feedback')
+                ],
+                'send_rv': Response({'default_branch': 'main'}),
+                'expected_result': 'main'
+            },
+            {
+                'arguments': {
+                    'owner': 'moevm',
+                    'repo': 'asm_web_debug'
+                },
+                'send_calls': [
+                    call('/repos/moevm/asm_web_debug')
+                ],
+                'send_rv': Response({'default_branch': 'issue2'}),
+                'expected_result': 'issue2'
+            },
+        ]
+
+        parser = GitHubParser()
+        for test_case in test_cases:
+            mock_send_get_request.reset_mock()
+            mock_send_get_request.return_value = test_case['send_rv']
+
+            with self.subTest(test_case=test_case):
+                rv = parser.get_name_default_branch(**test_case['arguments'])
+                self.assertEqual(rv, test_case['expected_result'])
+
+                self.assertEqual(mock_send_get_request.mock_calls, test_case['send_calls'])
 
 if __name__ == '__main__':
     unittest.main()
