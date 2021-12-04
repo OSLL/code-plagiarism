@@ -43,6 +43,26 @@ class GitHubParser:
         return (url_parts[3], url_parts[4],
                 url_parts[6], '/'.join(url_parts[7:]))
 
+    @staticmethod
+    def decode_file_content(file_in_bytes):
+        attempt = 1
+        code = None
+        while not code:
+            try:
+                code = file_in_bytes.decode('utf-8')
+                if attempt >= 2:
+                    print()
+            except UnicodeDecodeError as error:
+                attempt += 1
+                # TODO: Log to file
+                print(
+                    f"Trying to decode content, attempt - {attempt}",
+                    end='\r'
+                )
+                file_in_bytes[error.args[2]] = 32
+
+        return code
+
     def is_accepted_extension(self, path):
         extension = path.split('.')[-1].lower()
         if extension in self.__file_extensions:
@@ -121,21 +141,8 @@ class GitHubParser:
         api_url = '/repos/{}/{}/git/blobs/{}'.format(owner, repo, sha)
         response_json = self.send_get_request(api_url).json()
 
-        file_bytes = bytearray(base64.b64decode(response_json['content']))
-        code = None
-
-        attempt = 1
-        while True:
-            try:
-                code = file_bytes.decode('utf-8')
-                break
-            except UnicodeDecodeError as e:
-                attempt += 1
-                print(f"Trying to decode content, attempt - {attempt}",
-                      end='\r')
-                file_bytes[e.args[2]] = 32
-        if attempt >= 2:
-            print()
+        file_in_bytes = bytearray(base64.b64decode(response_json['content']))
+        code = self.decode_file_content(file_in_bytes)
 
         return code, file_path
 

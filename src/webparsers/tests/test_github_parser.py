@@ -1,5 +1,7 @@
 import unittest
+import io
 
+from contextlib import redirect_stdout
 from unittest.mock import patch, call
 from webparsers.github_parser import GitHubParser
 
@@ -154,6 +156,29 @@ class TestGitHubParser(unittest.TestCase):
             with self.subTest(test_case=test_case):
                 with self.assertRaises(ValueError):
                     GitHubParser.parse_content_url(**test_case['arguments'])
+
+    def test_decode_file_content(self):
+        test_cases = [
+            {
+                'arguments': {
+                    'file_in_bytes': 'Good message'.encode('utf-8')
+                },
+                'expected_result': 'Good message',
+            },
+            {
+                'arguments': {
+                    'file_in_bytes': bytearray(b'Bad\xee\xeemessage')
+                },
+                'expected_result': 'Bad  message',
+            }
+        ]
+
+        for test_case in test_cases:
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                with self.subTest(test_case=test_case):
+                    result = GitHubParser.decode_file_content(**test_case['arguments'])
+                    self.assertEqual(result, test_case['expected_result'])
 
     def test_is_accepted_extension(self):
         test_cases = [
@@ -544,6 +569,64 @@ class TestGitHubParser(unittest.TestCase):
 
             with self.subTest(test_case=test_case):
                 rv = parser.get_name_default_branch(**test_case['arguments'])
+                self.assertEqual(rv, test_case['expected_result'])
+
+                self.assertEqual(mock_send_get_request.mock_calls, test_case['send_calls'])
+
+    @patch('webparsers.github_parser.GitHubParser.send_get_request')
+    def test_get_sha_last_branch_commit(self, mock_send_get_request):
+        class Response:
+            def __init__(self, response):
+                self.response_json = response
+
+            def json(self):
+                return self.response_json
+
+        test_cases = [
+            {
+                'arguments': {
+                    'owner': 'OSLL',
+                    'repo': 'aido-auto-feedback',
+                },
+                'send_calls': [
+                    call('/repos/OSLL/aido-auto-feedback/branches/main')
+                ],
+                'send_rv': Response(
+                    {
+                        'commit': {
+                            'sha': 'jal934304'
+                        }
+                    }
+                ),
+                'expected_result': 'jal934304'
+            },
+            {
+                'arguments': {
+                    'owner': 'moevm',
+                    'repo': 'asm_web_debug',
+                    'branch': 'iss76'
+                },
+                'send_calls': [
+                    call('/repos/moevm/asm_web_debug/branches/iss76')
+                ],
+                'send_rv': Response(
+                    {
+                        'commit': {
+                            'sha': 'xyuwr934hsd'
+                        }
+                    }
+                ),
+                'expected_result': 'xyuwr934hsd'
+            },
+        ]
+
+        parser = GitHubParser()
+        for test_case in test_cases:
+            mock_send_get_request.reset_mock()
+            mock_send_get_request.return_value = test_case['send_rv']
+
+            with self.subTest(test_case=test_case):
+                rv = parser.get_sha_last_branch_commit(**test_case['arguments'])
                 self.assertEqual(rv, test_case['expected_result'])
 
                 self.assertEqual(mock_send_get_request.mock_calls, test_case['send_calls'])
