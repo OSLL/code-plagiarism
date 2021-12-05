@@ -47,7 +47,7 @@ class GitHubParser:
     def decode_file_content(file_in_bytes):
         attempt = 1
         code = None
-        while not code:
+        while code is None:
             try:
                 code = file_in_bytes.decode('utf-8')
                 if attempt >= 2:
