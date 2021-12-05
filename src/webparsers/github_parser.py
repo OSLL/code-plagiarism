@@ -34,7 +34,7 @@ class GitHubParser:
     @staticmethod
     def parse_content_url(content_url):
         # If the branch name contains '/' like 'dev/example' then behave
-        # of this funciton won't be similar to what expect.
+        # of this funciton won't be similar to what expect
         url_parts = GitHubParser.check_github_url(content_url)
 
         if len(url_parts) <= 7:
@@ -137,7 +137,7 @@ class GitHubParser:
 
         return response_json['commit']['sha']
 
-    def get_file_content_from_sha(self, owner, repo, branch, sha, file_path):
+    def get_file_content_from_sha(self, owner, repo, sha, file_path):
         api_url = '/repos/{}/{}/git/blobs/{}'.format(owner, repo, sha)
         response_json = self.send_get_request(api_url).json()
 
@@ -172,7 +172,7 @@ class GitHubParser:
                                 current_path[1:]
                             )
                 yield self.get_file_content_from_sha(owner, repo,
-                                                     branch, node["sha"],
+                                                     node["sha"],
                                                      file_link)
 
     def get_list_repo_branches(self, owner, repo, per_page=100):
@@ -229,7 +229,6 @@ class GitHubParser:
         file_content, file_url = self.get_file_content_from_sha(
                                     owner,
                                     repo,
-                                    branch,
                                     response_json['sha'],
                                     file_url
                                  )
@@ -266,7 +265,6 @@ class GitHubParser:
                 yield self.get_file_content_from_sha(
                           owner,
                           repo,
-                          branch,
                           node["sha"],
                           file_link
                       )

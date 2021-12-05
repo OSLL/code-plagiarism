@@ -646,7 +646,6 @@ class TestGitHubParser(unittest.TestCase):
                 'arguments': {
                     'owner': 'OSLL',
                     'repo': 'aido-auto-feedback',
-                    'branch': 'main',
                     'sha': 'kljsdfkiwe0341',
                     'file_path': 'http://api.github.com/repos'
                 },
@@ -664,7 +663,6 @@ class TestGitHubParser(unittest.TestCase):
                 'arguments': {
                     'owner': 'moevm',
                     'repo': 'asm_web_debug',
-                    'branch': 'iss76',
                     'sha': 'jsadlkf3904',
                     'file_path': 'http://api.github.com/test'
                 },
