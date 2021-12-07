@@ -198,7 +198,7 @@ class GitHubParser:
         return branches
 
     def get_files_generator_from_repo_url(self, repo_url):
-        owner, repo = GitHubParser.parse_repo_url(repo_url)
+        owner, repo = self.parse_repo_url(repo_url)
 
         default_branch = self.get_name_default_branch(owner, repo)
         if self.__check_all_branches:

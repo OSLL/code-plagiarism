@@ -9,6 +9,10 @@ from webparsers.github_parser import GitHubParser
 
 class TestGitHubParser(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        cls.maxDiff = None
+
     def test_check_github_url(self):
         test_cases = [
             {
@@ -690,6 +694,164 @@ class TestGitHubParser(unittest.TestCase):
                     self.assertEqual(rv, test_case['expected_result'])
 
                     self.assertEqual(mock_send_get_request.mock_calls, test_case['send_calls'])
+
+    @patch('webparsers.github_parser.GitHubParser.get_file_content_from_sha')
+    @patch('webparsers.github_parser.GitHubParser.send_get_request')
+    def test_get_files_generator_from_sha_commit(self, mock_send_get_request,
+                                                 mock_get_file_content_from_sha):
+        pass
+
+    @patch('webparsers.github_parser.GitHubParser.send_get_request')
+    def test_get_list_repo_branches(self, mock_send_get_request):
+        class Response:
+            def __init__(self, response):
+                self.response_json = response
+
+            def json(self):
+                return self.response_json
+
+        test_cases = [
+            {
+                'arguments': {
+                    'owner': 'OSLL',
+                    'repo': 'aido-auto-feedback',
+                    'per_page': 50
+                },
+                'send_calls': [
+                    call(
+                        '/repos/OSLL/aido-auto-feedback/branches',
+                        params={
+                            'per_page': 50,
+                            'page': 1
+                        }
+                    ),
+                    call(
+                        '/repos/OSLL/aido-auto-feedback/branches',
+                        params={
+                            'per_page': 50,
+                            'page': 2
+                        }
+                    ),
+                ],
+                'send_se': [
+                    Response(
+                        [
+                            {
+                                'name': 'main',
+                                'commit': {
+                                    'sha': '0928jlskdfj'
+                                }
+                            },
+                            {
+                                'name': 'iss76',
+                                'commit': {
+                                    'sha': 'kjsadfwi'
+                                }
+                            },
+                        ]
+                    ),
+                    Response([])
+                ],
+                'expected_result': {
+                    'main': '0928jlskdfj',
+                    'iss76': 'kjsadfwi'
+                }
+            },
+            {
+                'arguments': {
+                    'owner': 'moevm',
+                    'repo': 'asm_web_debug',
+                    'per_page': 1
+                },
+                'send_calls': [
+                    call(
+                        '/repos/moevm/asm_web_debug/branches',
+                        params={
+                            'per_page': 1,
+                            'page': 1
+                        }
+                    ),
+                    call(
+                        '/repos/moevm/asm_web_debug/branches',
+                        params={
+                            'per_page': 1,
+                            'page': 2
+                        }
+                    ),
+                    call(
+                        '/repos/moevm/asm_web_debug/branches',
+                        params={
+                            'per_page': 1,
+                            'page': 3
+                        }
+                    ),
+                ],
+                'send_se': [
+                    Response(
+                        [
+                            {
+                                'name': 'main',
+                                'commit': {
+                                    'sha': '0928jlskdfj'
+                                }
+                            },
+                        ]
+                    ),
+                    Response(
+                        [
+                            {
+                                'name': 'iss76',
+                                'commit': {
+                                    'sha': 'kjsadfwi'
+                                }
+                            },
+                        ]
+                    ),
+                    Response([])
+                ],
+                'expected_result': {
+                    'main': '0928jlskdfj',
+                    'iss76': 'kjsadfwi'
+                }
+            },
+        ]
+
+        parser = GitHubParser()
+        for test_case in test_cases:
+            mock_send_get_request.reset_mock()
+            mock_send_get_request.side_effect = test_case['send_se']
+
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                with self.subTest(test_case=test_case):
+                    rv = parser.get_list_repo_branches(**test_case['arguments'])
+                    self.assertEqual(rv, test_case['expected_result'])
+
+                    self.assertEqual(mock_send_get_request.mock_calls, test_case['send_calls'])
+
+    @patch('webparsers.github_parser.GitHubParser.get_name_default_branch')
+    @patch('webparsers.github_parser.GitHubParser.get_list_repo_branches')
+    @patch('webparsers.github_parser.GitHubParser.get_sha_last_branch_commit')
+    @patch('webparsers.github_parser.GitHubParser.get_files_generator_from_sha_commit')
+    def test_get_files_generator_from_repo_url(self, mock_get_files_generator_from_sha_commit,
+                                               mock_get_sha_last_branch_commit,
+                                               mock_get_list_repo_branches,
+                                               mock_get_name_default_branch):
+        pass
+
+    @patch('webparsers.github_parser.GitHubParser.get_file_content_from_sha')
+    @patch('webparsers.github_parser.GitHubParser.send_get_request')
+    def test_get_file_from_url(self, mock_send_get_request,
+                               mock_get_file_content_from_sha):
+        pass
+
+    @patch('webparsers.github_parser.GitHubParser.get_file_content_from_sha')
+    @patch('webparsers.github_parser.GitHubParser.get_files_generator_from_sha_commit')
+    @patch('webparsers.github_parser.GitHubParser.send_get_request')
+    def test_get_files_generator_from_dir_url(self, mock_send_get_request,
+                                              mock_get_files_generator_from_sha_commit,
+                                              mock_get_file_content_from_sha):
+        pass
 
 if __name__ == '__main__':
     unittest.main()
