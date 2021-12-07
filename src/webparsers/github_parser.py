@@ -147,12 +147,12 @@ class GitHubParser:
         return code, file_path
 
     def get_files_generator_from_sha_commit(self, owner, repo, branch,
-                                            sha, path='.'):
+                                            sha, path=''):
         api_url = '/repos/{}/{}/git/trees/{}'.format(owner, repo, sha)
         response_json = self.send_get_request(api_url).json()
         tree = response_json['tree']
         for node in tree:
-            current_path = path + "/" + node["path"]
+            current_path = "{}/{}".format(path, node["path"])
             if node["type"] == "tree":
                 yield from self.get_files_generator_from_sha_commit(
                                owner,
@@ -169,7 +169,7 @@ class GitHubParser:
                                 owner,
                                 repo,
                                 branch,
-                                current_path[1:]
+                                current_path
                             )
                 yield self.get_file_content_from_sha(owner, repo,
                                                      node["sha"],

@@ -699,7 +699,109 @@ class TestGitHubParser(unittest.TestCase):
     @patch('webparsers.github_parser.GitHubParser.send_get_request')
     def test_get_files_generator_from_sha_commit(self, mock_send_get_request,
                                                  mock_get_file_content_from_sha):
-        pass
+        class Response:
+            def __init__(self, response):
+                self.response_json = response
+
+            def json(self):
+                return self.response_json
+
+        test_cases = [
+            {
+                'arguments': {
+                    'owner': 'OSLL',
+                    'repo': 'aido-auto-feedback',
+                    'branch': 'iss76',
+                    'sha': 'kljsdfkiwe0341',
+                },
+                'send_calls': [
+                    call(
+                        '/repos/OSLL/aido-auto-feedback/git/trees/kljsdfkiwe0341'
+                    ),
+                    call(
+                        '/repos/OSLL/aido-auto-feedback/git/trees/jslkfjjeuwijsdmvd'
+                    )
+                ],
+                'send_se': [
+                    Response(
+                        {
+                            'tree': [
+                                {
+                                    'type': 'tree',
+                                    'path': 'src',
+                                    'sha': 'jslkfjjeuwijsdmvd'
+                                },
+                                {
+                                    'type': 'blob',
+                                    'path': 'main.py',
+                                    'sha': 'ixiuerjs9430',
+                                }
+                            ],
+                        }
+                    ),
+                    Response(
+                        {
+                            'tree': [
+                                {
+                                    'type': 'blob',
+                                    'path': 'utils.py',
+                                    'sha': 'uwrcbasrew94'
+                                },
+                                {
+                                    'type': 'blob',
+                                    'path': 'tests.py',
+                                    'sha': 'vbuqcvxpiwe'
+                                }
+                            ]
+                        }
+                    )
+                ],
+                'get_file_content_calls': [
+                    call(
+                        'OSLL',
+                        'aido-auto-feedback',
+                        'uwrcbasrew94',
+                        'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/utils.py'
+                    ),
+                    call(
+                        'OSLL',
+                        'aido-auto-feedback',
+                        'vbuqcvxpiwe',
+                        'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/tests.py'
+                    ),
+                    call(
+                        'OSLL',
+                        'aido-auto-feedback',
+                        'ixiuerjs9430',
+                        'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py'
+                    ),
+                ],
+                'get_file_content_se': [
+                    ('Some code 2', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/utils.py'),
+                    ('Some code 3', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/tests.py'),
+                    ('Some code 1', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py'),
+                ],
+                'expected_result': [
+                    ('Some code 2', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/utils.py'),
+                    ('Some code 3', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/tests.py'),
+                    ('Some code 1', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py'),
+                ]
+            },
+        ]
+
+        parser = GitHubParser()
+        for test_case in test_cases:
+            mock_send_get_request.reset_mock()
+            mock_send_get_request.side_effect = test_case['send_se']
+            mock_get_file_content_from_sha.reset_mock()
+            mock_get_file_content_from_sha.side_effect = test_case['get_file_content_se']
+
+            with self.subTest(test_case=test_case):
+                rv = list(parser.get_files_generator_from_sha_commit(**test_case['arguments']))
+                self.assertEqual(rv, test_case['expected_result'])
+
+                self.assertEqual(mock_send_get_request.mock_calls, test_case['send_calls'])
+                self.assertEqual(mock_get_file_content_from_sha.mock_calls, test_case['get_file_content_calls'])
 
     @patch('webparsers.github_parser.GitHubParser.send_get_request')
     def test_get_list_repo_branches(self, mock_send_get_request):
