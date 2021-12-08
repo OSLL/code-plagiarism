@@ -939,7 +939,54 @@ class TestGitHubParser(unittest.TestCase):
                                                mock_get_sha_last_branch_commit,
                                                mock_get_list_repo_branches,
                                                mock_get_name_default_branch):
-        pass
+        test_cases = [
+            {
+                'check_policy': 0,
+                'arguments': {
+                    'repo_url': 'https://github.com/OSLL/code-plagiarism',
+                },
+                'name_default_branch': 'iss76',
+                'branch_sha': 'uixbwupreiljlsdf',
+                'branches_dict': None,
+                'files': [('Some code 1', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py')],
+                'expected_result': [
+                    ('Some code 1', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py'),
+                ]
+            },
+            {
+                'check_policy': 1,
+                'arguments': {
+                    'repo_url': 'https://github.com/OSLL/code-plagiarism',
+                },
+                'name_default_branch': None,
+                'branch_sha': None,
+                'branches_dict': {
+                    'master': 'iobiqirsad',
+                    'iss76': 'iobxzewqrsf'
+                },
+                'files': [('Some code 1', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py')],
+                'expected_result': [
+                    ('Some code 1', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py'),
+                    ('Some code 1', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py')
+                ]
+            },
+        ]
+
+        for test_case in test_cases:
+            parser = GitHubParser(check_policy=test_case['check_policy'])
+            mock_get_files_generator_from_sha_commit.reset_mock()
+            mock_get_list_repo_branches.reset_mock()
+            mock_get_sha_last_branch_commit.reset_mock()
+            mock_get_name_default_branch.reset_mock()
+
+            mock_get_name_default_branch.return_value = test_case['name_default_branch']
+            mock_get_sha_last_branch_commit.return_value = test_case['branch_sha']
+            mock_get_files_generator_from_sha_commit.return_value = test_case['files']
+            mock_get_list_repo_branches.return_value = test_case['branches_dict']
+
+            with self.subTest(test_case=test_case):
+                rv = list(parser.get_files_generator_from_repo_url(**test_case['arguments']))
+                self.assertEqual(rv, test_case['expected_result'])
 
     @patch('webparsers.github_parser.GitHubParser.get_file_content_from_sha')
     @patch('webparsers.github_parser.GitHubParser.send_get_request')
