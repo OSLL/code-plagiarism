@@ -992,7 +992,32 @@ class TestGitHubParser(unittest.TestCase):
     @patch('webparsers.github_parser.GitHubParser.send_get_request')
     def test_get_file_from_url(self, mock_send_get_request,
                                mock_get_file_content_from_sha):
-        pass
+        class Response:
+            def __init__(self, response):
+                self.response_json = response
+
+            def json(self):
+                return self.response_json
+
+        test_cases = [
+            {
+                'arguments': {
+                    'file_url': 'https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/astfeatures.py'
+                },
+                'send_rv': Response({'sha': 'ioujxbwurqer'}),
+                'get_file_content_rv': ('Some code 1', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py'),
+                'expected_result': ('Some code 1', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py'),
+            }
+        ]
+
+        parser = GitHubParser()
+        for test_case in test_cases:
+            mock_send_get_request.return_value = test_case['send_rv']
+            mock_get_file_content_from_sha.return_value = test_case['get_file_content_rv']
+
+            with self.subTest(test_case=test_case):
+                rv = parser.get_file_from_url(**test_case['arguments'])
+                self.assertEqual(rv, test_case['expected_result'])
 
     @patch('webparsers.github_parser.GitHubParser.get_file_content_from_sha')
     @patch('webparsers.github_parser.GitHubParser.get_files_generator_from_sha_commit')
@@ -1000,7 +1025,48 @@ class TestGitHubParser(unittest.TestCase):
     def test_get_files_generator_from_dir_url(self, mock_send_get_request,
                                               mock_get_files_generator_from_sha_commit,
                                               mock_get_file_content_from_sha):
-        pass
+        class Response:
+            def __init__(self, response):
+                self.response_json = response
+
+            def json(self):
+                return self.response_json
+
+        test_cases = [
+            {
+                'arguments': {
+                    'dir_url': 'https://github.com/OSLL/code-plagiarism/tree/main/src'
+                },
+                'send_rv': Response(
+                    [
+                        {
+                            'path': 'src',
+                            'type': 'dir',
+                            'sha': 'xvbupqrjdf',
+                        },
+                        {
+                            'path': 'src',
+                            'name': 'main.py',
+                            'type': 'file',
+                            'sha': 'iouxpoewre',
+                        }
+                    ]
+                ),
+                'files_gen': ['dummy 1', 'dummy 2'],
+                'file_gen': 'dummy 3',
+                'expected_result': ['dummy 1', 'dummy 2', 'dummy 3']
+            }
+        ]
+
+        parser = GitHubParser()
+        for test_case in test_cases:
+            mock_send_get_request.return_value = test_case['send_rv']
+            mock_get_files_generator_from_sha_commit.return_value = test_case['files_gen']
+            mock_get_file_content_from_sha.return_value = test_case['file_gen']
+
+            with self.subTest(test_case=test_case):
+                rv = list(parser.get_files_generator_from_dir_url(**test_case['arguments']))
+                self.assertEqual(rv, test_case['expected_result'])
 
 if __name__ == '__main__':
     unittest.main()

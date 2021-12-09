@@ -226,14 +226,13 @@ class GitHubParser:
             'ref': branch
         }
         response_json = self.send_get_request(api_url, params=params).json()
-        file_content, file_url = self.get_file_content_from_sha(
-                                    owner,
-                                    repo,
-                                    response_json['sha'],
-                                    file_url
-                                 )
 
-        return file_content, file_url
+        return self.get_file_content_from_sha(
+                    owner,
+                    repo,
+                    response_json['sha'],
+                    file_url
+                )
 
     def get_files_generator_from_dir_url(self, dir_url):
         owner, repo, branch, path = GitHubParser.parse_content_url(dir_url)
