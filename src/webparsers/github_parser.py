@@ -34,7 +34,7 @@ class GitHubParser:
     @staticmethod
     def parse_content_url(content_url):
         # If the branch name contains '/' like 'dev/example' then behave
-        # of this funciton won't be similar to what expect.
+        # of this funciton won't be similar to what expect
         url_parts = GitHubParser.check_github_url(content_url)
 
         if len(url_parts) <= 7:
@@ -43,8 +43,32 @@ class GitHubParser:
         return (url_parts[3], url_parts[4],
                 url_parts[6], '/'.join(url_parts[7:]))
 
+    @staticmethod
+    def decode_file_content(file_in_bytes):
+        attempt = 1
+        code = None
+        while code is None:
+            try:
+                code = file_in_bytes.decode('utf-8')
+                if attempt >= 2:
+                    print()
+            except UnicodeDecodeError as error:
+                attempt += 1
+                # TODO: Log to file
+                print(
+                    f"Trying to decode content, attempt - {attempt}",
+                    end='\r'
+                )
+                file_in_bytes[error.args[2]] = 32
+
+        return code
+
     def is_accepted_extension(self, path):
-        return path.split('.')[-1].lower() in self.__file_extensions
+        extension = path.split('.')[-1].lower()
+        if extension in self.__file_extensions:
+            return True
+
+        return False
 
     def send_get_request(self, api_url, params={}):
         address = 'https://api.github.com'
@@ -80,8 +104,8 @@ class GitHubParser:
         while True:
             api_url = '/users/{}/repos'.format(owner)
             params = {
-                "per_page": per_page,
-                "page": page
+                'per_page': per_page,
+                'page': page
             }
             response_json = self.send_get_request(
                                 api_url,
@@ -113,35 +137,22 @@ class GitHubParser:
 
         return response_json['commit']['sha']
 
-    def get_file_content_from_sha(self, owner, repo, branch, sha, file_path):
+    def get_file_content_from_sha(self, owner, repo, sha, file_path):
         api_url = '/repos/{}/{}/git/blobs/{}'.format(owner, repo, sha)
         response_json = self.send_get_request(api_url).json()
 
-        file_bytes = bytearray(base64.b64decode(response_json['content']))
-        code = None
-
-        attempt = 1
-        while True:
-            try:
-                code = file_bytes.decode('utf-8')
-                break
-            except UnicodeDecodeError as e:
-                attempt += 1
-                print(f"Trying to decode content, attempt - {attempt}",
-                      end='\r')
-                file_bytes[e.args[2]] = 32
-        if attempt >= 2:
-            print()
+        file_in_bytes = bytearray(base64.b64decode(response_json['content']))
+        code = self.decode_file_content(file_in_bytes)
 
         return code, file_path
 
     def get_files_generator_from_sha_commit(self, owner, repo, branch,
-                                            sha, path='.'):
+                                            sha, path=''):
         api_url = '/repos/{}/{}/git/trees/{}'.format(owner, repo, sha)
         response_json = self.send_get_request(api_url).json()
         tree = response_json['tree']
         for node in tree:
-            current_path = path + "/" + node["path"]
+            current_path = "{}/{}".format(path, node["path"])
             if node["type"] == "tree":
                 yield from self.get_files_generator_from_sha_commit(
                                owner,
@@ -158,10 +169,10 @@ class GitHubParser:
                                 owner,
                                 repo,
                                 branch,
-                                current_path[1:]
+                                current_path
                             )
                 yield self.get_file_content_from_sha(owner, repo,
-                                                     branch, node["sha"],
+                                                     node["sha"],
                                                      file_link)
 
     def get_list_repo_branches(self, owner, repo, per_page=100):
@@ -187,7 +198,7 @@ class GitHubParser:
         return branches
 
     def get_files_generator_from_repo_url(self, repo_url):
-        owner, repo = GitHubParser.parse_repo_url(repo_url)
+        owner, repo = self.parse_repo_url(repo_url)
 
         default_branch = self.get_name_default_branch(owner, repo)
         if self.__check_all_branches:
@@ -215,15 +226,13 @@ class GitHubParser:
             'ref': branch
         }
         response_json = self.send_get_request(api_url, params=params).json()
-        file_content, file_url = self.get_file_content_from_sha(
-                                    owner,
-                                    repo,
-                                    branch,
-                                    response_json['sha'],
-                                    file_url
-                                 )
 
-        return file_content, file_url
+        return self.get_file_content_from_sha(
+                    owner,
+                    repo,
+                    response_json['sha'],
+                    file_url
+                )
 
     def get_files_generator_from_dir_url(self, dir_url):
         owner, repo, branch, path = GitHubParser.parse_content_url(dir_url)
@@ -255,7 +264,6 @@ class GitHubParser:
                 yield self.get_file_content_from_sha(
                           owner,
                           repo,
-                          branch,
                           node["sha"],
                           file_link
                       )

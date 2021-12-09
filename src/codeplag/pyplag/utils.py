@@ -59,10 +59,12 @@ def get_ast_from_filename(filename):
     try:
         with open(filename) as f:
             tree = get_ast_from_content(f.read(), filename)
+    except UnicodeDecodeError:
+        print("Can't decode file {}".format(filename))
     except PermissionError:
         print("File denied.")
     except FileNotFoundError:
-        print("File not found")
+        print("{} not found".format(filename))
 
     return tree
 
