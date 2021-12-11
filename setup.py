@@ -4,7 +4,7 @@ from pathlib import Path
 
 setup(
     name='codeplag',
-    version='0.0.1',
+    version='0.0.2',
     description='Code plagiarism searching package',
     author='Artyom Semidolin, Dmitry Nikolaev, Alexander Evsikov',
     project_urls={
