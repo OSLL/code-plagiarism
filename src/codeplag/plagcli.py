@@ -17,69 +17,86 @@ def file_path(path_to_file):
     return path_to_file
 
 
-parser = argparse.ArgumentParser(
-             prog="CODEPLAG",
-             description="Program help to find similar parts of source "
-                         "codes for the different languages.",
-         )
-parser.add_argument(
-    '-v', '--version',
-    help="Print current version number and exit",
-    action="version",
-    version="codeplag 0.0.2"
-)
+def get_parser():
+    parser = argparse.ArgumentParser(
+                 prog="CODEPLAG",
+                 description="Program help to find similar parts of source "
+                             "codes for the different languages.",
+             )
+    parser.add_argument(
+        "-t", "--threshold",
+        help="Threshold of analyzer",
+        type=int,
+        default=65,
+        choices=range(50, 100),
+        metavar="{50, 51, ..., 99}"
+    )
+    parser.add_argument(
+        '-v', '--version',
+        help="Print current version number and exit",
+        action="version",
+        version="codeplag 0.0.2"
+    )
 
-parser.add_argument(
-    "-ext", "--extension",
-    help="Extension responsible for the analyzed programming language",
-    type=str,
-    choices=["py", "cpp"],
-    default="py",
-    required=True
-)
-parser.add_argument(
-    "-f", "--files",
-    type=file_path,
-    help="Full path to files on a computer",
-    nargs="+"
-)
-parser.add_argument(
-    "-gf", "--git_files",
-    type=str,
-    help="URL to file in a GIT repository"
-)
-parser.add_argument(
-    "-g", "--git",
-    type=str,
-    help="GitHub organisation/user name"
-)
-parser.add_argument(
-    "-d", "--directory",
-    type=dir_path,
-    help="Path to a local directory with python project/files",
-)
-parser.add_argument(
-    "-gp", "--git_project",
-    type=str,
-    help="Path to a GIT project"
-)
-parser.add_argument(
-    "-E", "--reg_exp",
-    type=str,
-    help="A regular expression to filter searching repositories on GitHub"
-)
-parser.add_argument(
-    "-ab", "--all_branches",
-    help="Searching in all branches",
-    action="store_true"
-)
-parser.add_argument(
-    "-t", "--threshold",
-    help="Threshold of analyzer",
-    type=int,
-    default=65,
-    choices=range(50, 100),
-    metavar="{50, 51, ..., 99}"
-)
+    parser_required = parser.add_argument_group("required options")
+    parser_required.add_argument(
+        "-ext", "--extension",
+        help="Extension responsible for the analyzed programming language",
+        type=str,
+        choices=["py", "cpp"],
+        default="py",
+        required=True
+    )
 
-parser.parse_args()
+    parser_git = parser.add_argument_group("GitHub options")
+    parser_git.add_argument(
+        "-ab", "--all_branches",
+        help="Searching in all branches",
+        action="store_true"
+    )
+    parser_git.add_argument(
+        "-E", "--reg_exp",
+        type=str,
+        help="A regular expression to filter searching repositories on GitHub"
+    )
+    # TODO: Checks for correct input
+    parser_git.add_argument(
+        "-gf", "--git_files",
+        metavar="GIT_FILE",
+        type=str,
+        help="URL to file in a GIT repository",
+        nargs="+"
+    )
+    # TODO: Checks for correct input
+    parser_git.add_argument(
+        "-g", "--git_user",
+        type=str,
+        help="GitHub organisation/user name"
+    )
+    parser_git.add_argument(
+        "-gp", "--git_project",
+        type=str,
+        help="Path to a GIT project"
+    )
+
+
+    parser.add_argument(
+        "-f", "--files",
+        metavar="FILE",
+        type=file_path,
+        help="Full path to files on a computer",
+        nargs="+"
+    )
+    parser.add_argument(
+        "-d", "--directories",
+        metavar="DIRECTORY",
+        type=dir_path,
+        help="Full path to a local directories with python project/files",
+        nargs="+"
+    )
+
+    return parser
+
+if __name__ == '__main__':
+    parser = get_parser()
+    parser.parse_args()
