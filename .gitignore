@@ -44,3 +44,6 @@ other/*
 dist/*
 build/*
 .env
+notebooks/*
+Man/*
+src/codeplag.egg-info/*
