@@ -1,5 +1,6 @@
 IMAGE_NAME			:= $(shell basename $(PWD))
-DOCKER_TAG			?= $(IMAGE_NAME)-ubuntu:0.0.1
+DOCKER_TAG			?= $(IMAGE_NAME)-ubuntu:0.0.2
+UTIL_NAME			:= codeplag
 
 all: install test
 
@@ -27,7 +28,7 @@ clear-cache:
 	find . -type d | grep -E "__pycache__" | xargs rm -r
 
 rm:
-	pip3 uninstall codeplag -y
+	pip3 uninstall $(UTIL_NAME) -y
 
 docker:
 	docker image build \

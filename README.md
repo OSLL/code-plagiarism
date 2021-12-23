@@ -1,14 +1,6 @@
 # Code Plagiarism Analysis
 
-## 1. Collaboration rules
-
-### 1.1. Code style
-
-- C++ google style ([guide](https://google.github.io/styleguide/cppguide.html))
-
-- Python PEP8 style ([guide](https://www.python.org/dev/peps/pep-0008/))
-
-## 2. Install
+## 1. Install
 
 First of all, clone the repository and moved into this.
 
@@ -17,30 +9,38 @@ First of all, clone the repository and moved into this.
   cd code-plagiarism/
 ```
 
-### 2.1 Manual
+### 1.1 On local computer
 
 - OS Ubuntu Linux >= 18.04
 
-- python version >= 3.6
+- python version >= 3.6 && < 3.8
 
-- pip3 version >= 19.0 (pip3 install -U pip)
+### 1.1.1 Manual installation
 
-- Ensure that an up-to-date version of setuptools is installed:
+- Run these commands:
 
 ```
-  pip3 install --upgrade setuptools
+    sudo apt update
+    sudo apt install git
+    sudo apt install python3 python3-pip python3-venv
+    sudo apt install clang libncurses5
+
+    pip3 install virtualenv
+    python3 -m venv venv
+    source venv/bin/activate
+
+    pip3 install -U pip # pip3 version >= 19.0
+    pip3 install --upgrade setuptools # Ensure that an up-to-date version of setuptools is installed
+    python3 setup.py install
+
+    make test # Run tests to check work of the util
 ```
 
-- install **clang** and **libncurses5** with apt or other packages manager
-
-- python3 setup.py install --user
-
-
-#### 2.1.1 With using Makefile
+#### 1.1.2 With using Makefile
 
 - if you want to easy install and test the app then run ```$ make all``` (it uses apt)
 
-### 2.2 Docker
+### 1.2 Docker
 
 - Create a code-plagiarism docker image
 
@@ -59,7 +59,7 @@ First of all, clone the repository and moved into this.
   $ make docker-run
 ```
 
-## 3. Tests
+## 2. Tests
 
 - Testing for C/C++ and Python 3 analyzers with unittest lib
   ```
@@ -70,7 +70,7 @@ First of all, clone the repository and moved into this.
     $ make test-pytest
   ```
 
-## 4. Work with analyzers
+## 3. Work with analyzers
 
 - python analyzer
   > call help
@@ -123,7 +123,7 @@ First of all, clone the repository and moved into this.
     $ python3 -m codeplag.cplag --project PATH --dir PATH [--threshold THRESHOLD]
   ```
 
-## 5. Demo examples (works in the project directory and with an installed codeplag package)
+## 4. Demo examples (works in the project directory and with an installed codeplag package)
 
 - python analyzer
   ```

@@ -21,7 +21,7 @@ mode, args = get_mode()
 try:
     env_config = Config(RepositoryEnv('./.env'))
 except FileNotFoundError:
-    print('The environment file did not define.')
+    logger.info('The environment file did not define.')
 else:
     ACCESS_TOKEN = env_config.get('ACCESS_TOKEN', default='')
 
@@ -299,10 +299,10 @@ elif mode == 7:
         print('In repos {:.2%}'.format(iteration / count_iter), end="\r")
 
 else:
-    logger.warning("Incorrect arguments!")
+    logger.info("Empty or incorrect options!")
     print("Check the arguments (use --help)")
     logger.info("Pyplag stopping...")
-    exit()
+    exit(1)
 
 print("Analysis complete")
 print('Time for all {:.2f}'.format(perf_counter() - start_eval))
