@@ -9,13 +9,11 @@ First of all, clone the repository and moved into this.
   cd code-plagiarism/
 ```
 
-### 1.1 On local computer
+### 1.1 Manual installation on local computer
 
 - OS Ubuntu Linux >= 18.04
 
 - python version >= 3.6 && < 3.8
-
-### 1.1.1 Manual installation
 
 - Run these commands:
 
@@ -31,14 +29,10 @@ First of all, clone the repository and moved into this.
 
     pip3 install -U pip # pip3 version >= 19.0
     pip3 install --upgrade setuptools # Ensure that an up-to-date version of setuptools is installed
-    python3 setup.py install
+    python3 setup.py install || make install
 
     make test # Run tests to check work of the util
 ```
-
-#### 1.1.2 With using Makefile
-
-- if you want to easy install and test the app then run ```$ make all``` (it uses apt)
 
 ### 1.2 Docker
 

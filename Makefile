@@ -1,34 +1,25 @@
+PWD 				:= $(shell pwd)
 IMAGE_NAME			:= $(shell basename $(PWD))
 DOCKER_TAG			?= $(IMAGE_NAME)-ubuntu:0.0.2
 UTIL_NAME			:= codeplag
 
-all: install test
+all: install install-man test
 
 install:
-	eval "apt update"
-
-	echo "Starting installing requirements..."
-	for PACKAGE in clang libncurses5 python3 python3-pip ; do \
-		if ! dpkg -l $$PACKAGE >/dev/null 2>/dev/null; then \
-			eval "apt install $$PACKAGE" ; \
-		fi \
-	done
-
-	install -D -m 0755 src/sbin/$(UTIL_NAME) /usr/sbin/$(UTIL_NAME)
-
 	python3 setup.py install
+	install -D -m 0755 src/sbin/$(UTIL_NAME) /usr/sbin/$(UTIL_NAME)
 
 install-man:
 	mkdir -p Man
-	argparse-manpage --pyfile src/codeplag/plagcli.py \
+	argparse-manpage --pyfile src/codeplag/codeplagcli.py \
 					 --function get_parser \
 					 --author "Codeplag Development Team" \
 					 --author-email "inbox@moevm.info" \
-					 --project-name "Codeplag 0.0.2" \
+					 --project-name "$(UTIL_NAME) 0.0.2" \
 					 --url "https://github.com/OSLL/code-plagiarism" \
-					 --output Man/codeplagcli.1
+					 --output man/codeplag.1
 
-	install -D -m 0644 MAN/codeplag.1 /usr/share/man/man1/codeplag.1
+	install -D -m 0644 man/codeplag.1 /usr/share/man/man1/codeplag.1
 
 test:
 	python3 -m unittest discover -v ./src

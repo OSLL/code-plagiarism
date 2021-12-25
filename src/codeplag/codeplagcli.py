@@ -25,7 +25,9 @@ def get_parser():
              )
     parser.add_argument(
         "-t", "--threshold",
-        help="Threshold of analyzer",
+        help="Threshold of analyzer which classifies two work as same. "
+             "If this number is too large, such as 99, then completely matching jobs will be found. "
+             "Otherwise, if this number is small, such as 50, then all work with minimal similarity will be found. ",
         type=int,
         default=65,
         choices=range(50, 100),
@@ -91,7 +93,7 @@ def get_parser():
         "-d", "--directories",
         metavar="DIRECTORY",
         type=dir_path,
-        help="Full path to a local directories with python project/files",
+        help="Full path to a local directories with project/files",
         nargs="+"
     )
 
