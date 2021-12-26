@@ -85,11 +85,11 @@ First of all, clone the repository and moved into this.
 
   > Local file compares with files in git repositories
   ```
-    $ codeplag --file PATH --git URL [--reg_exp EXPR] [--check_policy CHECK_POLICY] [--threshold THRESHOLD]
+    $ codeplag --file PATH --git URL [--regexp EXPR] [--check_policy CHECK_POLICY] [--threshold THRESHOLD]
   ```
   > Git file compares with files in git repositories
   ```
-    $ codeplag --git_file URL --git URL [--reg_exp EXPR] [--check_policy CHECK_POLICY] [--threshold THRESHOLD]
+    $ codeplag --git_file URL --git URL [--regexp EXPR] [--check_policy CHECK_POLICY] [--threshold THRESHOLD]
   ```
   > Git file compares with files in a local directory
   ```
@@ -97,11 +97,11 @@ First of all, clone the repository and moved into this.
   ```
   > Files in local project compares with git repositories
   ```
-    $ codeplag --project PATH --git URL [--reg_exp EXPR]  [--check_policy CHECK_POLICY] [--threshold THRESHOLD]
+    $ codeplag --project PATH --git URL [--regexp EXPR]  [--check_policy CHECK_POLICY] [--threshold THRESHOLD]
   ```
   > Files in git project compares with git repositories
   ```
-    $ codeplag --git_project URL --git URL [--reg_exp EXPR]  [--check_policy CHECK_POLICY] [--threshold THRESHOLD]
+    $ codeplag --git_project URL --git URL [--regexp EXPR]  [--check_policy CHECK_POLICY] [--threshold THRESHOLD]
   ```
   > Files in git project compares with files in a local directory
   ```
@@ -123,7 +123,7 @@ First of all, clone the repository and moved into this.
   ```
     $ codeplag --file ./src/codeplag/pyplag/astwalkers.py --dir ./src/codeplag/pyplag
     $ codeplag --project ./src --dir ./src/codeplag/algorithms
-    $ codeplag --file src/codeplag/pyplag/astwalkers.py --git OSLL --reg_exp code- --check_policy 1
+    $ codeplag --file src/codeplag/pyplag/astwalkers.py --git OSLL --regexp code- --check_policy 1
     $ codeplag --git_file https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/utils.py --git OSLL -e code- -cp 1
     $ codeplag --git_file https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/utils.py -d src/codeplag/pyplag/
     $ codeplag --project src/ --git OSLL -e code-

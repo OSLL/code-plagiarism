@@ -63,7 +63,7 @@ def get_parser():
         action="store_true"
     )
     parser_git.add_argument(
-        "-E", "--reg_exp",
+        "-e", "--regexp",
         type=str,
         help="A regular expression to filter searching repositories on GitHub"
     )
