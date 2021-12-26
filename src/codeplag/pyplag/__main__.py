@@ -306,6 +306,6 @@ else:
     logger.info("Pyplag stopping...")
     exit(1)
 
-print("Analysis complete")
-print('Time for all {:.2f}'.format(perf_counter() - start_eval))
+logger.info("Analysis complete")
+logger.info('Time for all {:.2f}'.format(perf_counter() - start_eval))
 logger.info("Pyplag ending...")

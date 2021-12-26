@@ -55,11 +55,11 @@ First of all, clone the repository and moved into this.
 
 ## 2. Tests
 
-- Testing for C/C++ and Python 3 analyzers with unittest lib
+- Testing for analyzers with unittest lib
   ```
     $ make test
   ```
-- Testing for C/C++ and Python 3 analyzers with pytest lib (if installed)
+- Testing for analyzers with pytest lib (if installed)
   ```
     $ make test-pytest
   ```
@@ -69,15 +69,15 @@ First of all, clone the repository and moved into this.
 - python analyzer
   > call help
   ```
-    $ python3 -m codeplag.pyplag --help
+    $ codeplag --help
   ```
   > Local file compares with files in a local directory
   ```
-    $ python3 -m codeplag.pyplag --file PATH --dir PATH [--threshold THRESHOLD]
+    $ codeplag --file PATH --dir PATH [--threshold THRESHOLD]
   ```
   > Files in local project compares with files in a local directory
   ```
-    $ python3 -m codeplag.pyplag --project PATH --dir PATH [--threshold THRESHOLD]
+    $ codeplag --project PATH --dir PATH [--threshold THRESHOLD]
   ```
   Before starting work with searching on GitHub, you may define variable ACCESS_TOKEN in file .env in the folder from which you want to run the app:
 
@@ -85,54 +85,54 @@ First of all, clone the repository and moved into this.
 
   > Local file compares with files in git repositories
   ```
-    $ python3 -m codeplag.pyplag --file PATH --git URL [--reg_exp EXPR] [--check_policy CHECK_POLICY] [--threshold THRESHOLD]
+    $ codeplag --file PATH --git URL [--reg_exp EXPR] [--check_policy CHECK_POLICY] [--threshold THRESHOLD]
   ```
   > Git file compares with files in git repositories
   ```
-    $ python3 -m codeplag.pyplag --git_file URL --git URL [--reg_exp EXPR] [--check_policy CHECK_POLICY] [--threshold THRESHOLD]
+    $ codeplag --git_file URL --git URL [--reg_exp EXPR] [--check_policy CHECK_POLICY] [--threshold THRESHOLD]
   ```
   > Git file compares with files in a local directory
   ```
-    $ python3 -m codeplag.pyplag --git_file URL --dir PATH [--threshold THRESHOLD]
+    $ codeplag --git_file URL --dir PATH [--threshold THRESHOLD]
   ```
   > Files in local project compares with git repositories
   ```
-    $ python3 -m codeplag.pyplag --project PATH --git URL [--reg_exp EXPR]  [--check_policy CHECK_POLICY] [--threshold THRESHOLD]
+    $ codeplag --project PATH --git URL [--reg_exp EXPR]  [--check_policy CHECK_POLICY] [--threshold THRESHOLD]
   ```
   > Files in git project compares with git repositories
   ```
-    $ python3 -m codeplag.pyplag --git_project URL --git URL [--reg_exp EXPR]  [--check_policy CHECK_POLICY] [--threshold THRESHOLD]
+    $ codeplag --git_project URL --git URL [--reg_exp EXPR]  [--check_policy CHECK_POLICY] [--threshold THRESHOLD]
   ```
   > Files in git project compares with files in a local directory
   ```
-    $ python3 -m codeplag.pyplag --git_project URL --dir PATH [--threshold THRESHOLD]
+    $ codeplag --git_project URL --dir PATH [--threshold THRESHOLD]
   ```
 - C++/C analyzer
   > Local file compares with files in a local directory
   ```
-    $ python3 -m codeplag.cplag --file PATH --dir PATH [--threshold THRESHOLD]
+    $ codeplag --file PATH --dir PATH [--threshold THRESHOLD]
   ```
   > Files in local project compares with files in a local directory
   ```
-    $ python3 -m codeplag.cplag --project PATH --dir PATH [--threshold THRESHOLD]
+    $ codeplag --project PATH --dir PATH [--threshold THRESHOLD]
   ```
 
 ## 4. Demo examples (works in the project directory and with an installed codeplag package)
 
 - python analyzer
   ```
-    $ python3 -m codeplag.pyplag --file ./src/codeplag/pyplag/astwalkers.py --dir ./src/codeplag/pyplag
-    $ python3 -m codeplag.pyplag --project ./src --dir ./src/codeplag/algorithms
-    $ python3 -m codeplag.pyplag --file src/codeplag/pyplag/astwalkers.py --git OSLL --reg_exp code- --check_policy 1
-    $ python3 -m codeplag.pyplag --git_file https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/utils.py --git OSLL -e code- -cp 1
-    $ python3 -m codeplag.pyplag --git_file https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/utils.py -d src/codeplag/pyplag/
-    $ python3 -m codeplag.pyplag --project src/ --git OSLL -e code-
-    $ python3 -m codeplag.pyplag --git_project https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag --git OSLL -e code-
-    $ python3 -m codeplag.pyplag --git_project https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag -d src/codeplag/pyplag/
+    $ codeplag --file ./src/codeplag/pyplag/astwalkers.py --dir ./src/codeplag/pyplag
+    $ codeplag --project ./src --dir ./src/codeplag/algorithms
+    $ codeplag --file src/codeplag/pyplag/astwalkers.py --git OSLL --reg_exp code- --check_policy 1
+    $ codeplag --git_file https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/utils.py --git OSLL -e code- -cp 1
+    $ codeplag --git_file https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/utils.py -d src/codeplag/pyplag/
+    $ codeplag --project src/ --git OSLL -e code-
+    $ codeplag --git_project https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag --git OSLL -e code-
+    $ codeplag --git_project https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag -d src/codeplag/pyplag/
   ```
 
 - C++/C analyzer
   ```
-    $ python3 -m codeplag.cplag --file src/codeplag/cplag/tests/data/sample1.cpp --dir src/codeplag/cplag/tests/data
-    $ python3 -m codeplag.cplag --project src/codeplag/cplag/ --dir src/codeplag/cplag/tests/data
+    $ codeplag --file src/codeplag/cplag/tests/data/sample1.cpp --dir src/codeplag/cplag/tests/data
+    $ codeplag --project src/codeplag/cplag/ --dir src/codeplag/cplag/tests/data
   ```

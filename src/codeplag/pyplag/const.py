@@ -53,5 +53,3 @@ TO_TOKEN = {'UAdd': 0, 'USub': 0, 'Not': 0, 'Invert': 0,
             'Str': 31, 'Bytes': 32, 'NameConstant': 33, 'Ellipsis': 34,
             'Name': 35
             }
-
-LOG_PATH = "pyplag.log"

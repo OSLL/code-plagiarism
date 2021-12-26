@@ -46,8 +46,14 @@ def get_parser():
         help="Extension responsible for the analyzed programming language",
         type=str,
         choices=["py", "cpp"],
-        default="py",
         required=True
+    )
+    parser_required.add_argument(
+        "mode",
+        help="Choose one of the following modes of searching plagiarism. "
+             "The 'many_to_many' mode may require a lot of free memory.",
+        type=str,
+        choices=["many_to_many"]
     )
 
     parser_git = parser.add_argument_group("GitHub options")
