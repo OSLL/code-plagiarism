@@ -1,8 +1,10 @@
 from time import perf_counter
 from codeplag.logger import get_logger
-from codeplag.codeplagcli import get_parser
 from codeplag.consts import LOG_PATH
-
+from codeplag.codeplagcli import get_parser
+from codeplag.pyplag.utils import (
+    get_ast_from_filename, get_features_from_ast
+)
 
 logger = get_logger(__name__, LOG_PATH)
 
@@ -22,7 +24,14 @@ if __name__ == '__main__':
 
     begin_time = perf_counter()
     if MODE == 'many_to_many':
-        print(args)
+        works = []
+        if EXTENSION == 'py':
+            for file in (args.get('files') if args.get('files') else []):
+                tree = get_ast_from_filename(file)
+                features = get_features_from_ast(tree, file)
+                works.append(features)
+
+        print(works)
 
     logger.debug('Time for all {:.2f} m'.format((perf_counter() - begin_time) / 60))
 

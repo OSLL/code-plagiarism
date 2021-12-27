@@ -1,17 +1,23 @@
 import os
 import argparse
 
+from codeplag.logger import get_logger
+from codeplag.consts import LOG_PATH
+
+logger = get_logger(__name__, LOG_PATH)
+
 
 def dir_path(path_to_directory):
     if not os.path.isdir(path_to_directory):
-        print("Directory not found or not a directory")
+        logger.error("Directory {} not found or not a directory".format(path_to_directory))
         exit(1)
 
     return path_to_directory
 
+
 def file_path(path_to_file):
     if not os.path.isfile(path_to_file):
-        print("File not found or not a file")
+        logger.error("File {} not found or not a file".format(path_to_file))
         exit(1)
 
     return path_to_file
@@ -75,7 +81,6 @@ def get_parser():
         help="URL to file in a GIT repository",
         nargs="+"
     )
-    # TODO: Checks for correct input
     parser_git.add_argument(
         "-g", "--git_user",
         type=str,
