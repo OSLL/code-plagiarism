@@ -7,7 +7,8 @@ RUN apt-get install -y man groff
 RUN pip3 install --upgrade setuptools
 RUN pip3 install argparse-manpage
 
-ADD . /usr/src/code-plagiarism
-WORKDIR /usr/src/code-plagiarism
+ARG UTIL_NAME
+ADD . /usr/src/${UTIL_NAME}
+WORKDIR /usr/src/${UTIL_NAME}
 
 RUN make all

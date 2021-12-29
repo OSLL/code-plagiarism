@@ -22,11 +22,11 @@ install-man:
 	install -D -m 0644 man/codeplag.1 /usr/share/man/man1/codeplag.1
 
 test:
-	python3 -m unittest discover -v ./src
+	python3 -m unittest discover ./src
 	make clear-cache
 
 test-pytest:
-	python3 -m pytest -v
+	python3 -m pytest
 	make clear-cache
 
 clear-cache:
@@ -39,6 +39,7 @@ docker:
 	docker image build \
 		--tag  "$(DOCKER_TAG)" \
 		--file Dockerfile \
+		--build-arg UTIL_NAME="$(UTIL_NAME)" \
 		.
 
 docker-test:

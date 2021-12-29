@@ -96,7 +96,7 @@ def compare_file_pair(filename1, filename2, threshold):
     print_compare_res(features1, features2, threshold)
 
 
-def get_works_from_filenames(filenames):
+def get_works_from_filepaths(filenames):
     if not filenames:
         return []
 

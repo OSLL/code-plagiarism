@@ -1,9 +1,11 @@
 from time import perf_counter
+
 from codeplag.logger import get_logger
 from codeplag.consts import LOG_PATH
 from codeplag.codeplagcli import get_parser
+from codeplag.utils import get_files_path_from_directory
 from codeplag.pyplag.utils import (
-    get_works_from_filenames as get_works_from_filenames_py
+    get_works_from_filepaths as get_works_from_filepaths_py
 )
 
 
@@ -27,7 +29,10 @@ if __name__ == '__main__':
     if MODE == 'many_to_many':
         works = []
         if EXTENSION == 'py':
-            works.extend(get_works_from_filenames_py(args.get('files')))
+            works.extend(get_works_from_filepaths_py(args.get('files')))
+            for directory in (args.get('directories') if args.get('directories') else []):
+                filepaths = get_files_path_from_directory(directory, extensions=[r".py\b"])
+                works.extend(get_works_from_filepaths_py(filepaths))
 
         print(works)
 
