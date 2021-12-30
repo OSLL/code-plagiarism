@@ -7,7 +7,9 @@ from codeplag.consts import LOG_PATH
 from codeplag.codeplagcli import get_parser
 from codeplag.utils import get_files_path_from_directory
 from codeplag.pyplag.utils import (
-    get_works_from_filepaths as get_works_from_filepaths_py
+    get_works_from_filepaths as get_works_from_filepaths_py,
+    get_ast_from_content as get_ast_from_content_py,
+    get_features_from_ast as get_features_from_ast_py
 )
 
 
@@ -39,14 +41,20 @@ if __name__ == '__main__':
     if MODE == 'many_to_many':
         works = []
         if EXTENSION == 'py':
-            gh = GitHubParser(file_extensions=['py'], check_policy=BRANCH_POLICY,
+            gh = GitHubParser(file_extensions=[EXTENSION], check_policy=BRANCH_POLICY,
                               access_token=ACCESS_TOKEN)
 
             works.extend(get_works_from_filepaths_py(args.get('files')))
-            for directory in (args.get('directories') if args.get('directories') else []):
+            for directory in args.get('directories'):
                 filepaths = get_files_path_from_directory(directory, extensions=[r".py\b"])
                 works.extend(get_works_from_filepaths_py(filepaths))
-            # TODO git_user, git_project, git_file
+
+            for github_file in args.get('github_files'):
+                tree = get_ast_from_content_py(gh.get_file_from_url(github_file)[0],
+                                               github_file)
+                features = get_features_from_ast_py(tree, github_file)
+                works.append(features)
+            # TODO git_user, git_project
         # TODO cpp/c
 
         print(works)

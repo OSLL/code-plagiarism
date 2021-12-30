@@ -73,33 +73,37 @@ def get_parser():
         choices=["many_to_many"]
     )
 
-    parser_git = parser.add_argument_group("GitHub options")
-    parser_git.add_argument(
+    parser_github = parser.add_argument_group("GitHub options")
+    parser_github.add_argument(
         "-ab", "--all_branches",
         help="Searching in all branches",
         action="store_true"
     )
-    parser_git.add_argument(
+    parser_github.add_argument(
         "-e", "--regexp",
         type=str,
         help="A regular expression to filter searching repositories on GitHub"
     )
-    parser_git.add_argument(
-        "-gf", "--git_files",
+    parser_github.add_argument(
+        "-gf", "--github_files",
         metavar="GIT_FILE",
         type=github_link,
-        help="URL to file in a GIT repository",
-        nargs="+"
+        help="URL to file in a GitHub repository",
+        nargs="+",
+        default=[]
     )
-    parser_git.add_argument(
-        "-g", "--git_user",
+    parser_github.add_argument(
+        "-g", "--github_user",
         type=str,
         help="GitHub organisation/user name"
     )
-    parser_git.add_argument(
-        "-gp", "--git_project",
+    parser_github.add_argument(
+        "-gp", "--github_projects",
+        metavar="GIT_PROJECT",
         type=github_link,
-        help="Path to a GIT project"
+        help="Path to a GitHub project",
+        nargs="+",
+        default=[]
     )
 
 
@@ -108,14 +112,16 @@ def get_parser():
         metavar="FILE",
         type=file_path,
         help="Full path to files on a computer",
-        nargs="+"
+        nargs="+",
+        default=[]
     )
     parser.add_argument(
         "-d", "--directories",
         metavar="DIRECTORY",
         type=dir_path,
         help="Full path to a local directories with project/files",
-        nargs="+"
+        nargs="+",
+        default=[]
     )
 
     return parser
