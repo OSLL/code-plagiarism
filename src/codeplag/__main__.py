@@ -3,7 +3,9 @@ from decouple import Config, RepositoryEnv
 
 from webparsers.github_parser import GitHubParser
 from codeplag.logger import get_logger
-from codeplag.consts import LOG_PATH
+from codeplag.consts import (
+    LOG_PATH, SUPPORTED_EXTENSIONS
+)
 from codeplag.codeplagcli import get_parser
 from codeplag.utils import get_files_path_from_directory
 from codeplag.pyplag.utils import (
@@ -36,26 +38,51 @@ if __name__ == '__main__':
     THRESHOLD = args.pop('threshold')
     BRANCH_POLICY = args.pop('all_branches')
     REG_EXP = args.pop('regexp')
+    FILES = args.pop('files')
+    DIRECTORIES = args.pop('directories')
+    GITHUB_FILES = args.pop('github_files')
+    GITHUB_PROJECT_FOLDERS = args.pop('github_project_folders')
+    GITHUB_USER = args.pop('github_user')
 
     begin_time = perf_counter()
     if MODE == 'many_to_many':
         works = []
+        gh = GitHubParser(file_extensions=SUPPORTED_EXTENSIONS[EXTENSION],
+                          check_policy=BRANCH_POLICY,
+                          access_token=ACCESS_TOKEN)
+        # TODO: Logging progress of getting works features
         if EXTENSION == 'py':
-            gh = GitHubParser(file_extensions=[EXTENSION], check_policy=BRANCH_POLICY,
-                              access_token=ACCESS_TOKEN)
-
-            works.extend(get_works_from_filepaths_py(args.get('files')))
-            for directory in args.get('directories'):
-                filepaths = get_files_path_from_directory(directory, extensions=[r".py\b"])
+            works.extend(get_works_from_filepaths_py(FILES))
+            for directory in DIRECTORIES:
+                filepaths = get_files_path_from_directory(directory, extensions=SUPPORTED_EXTENSIONS[EXTENSION])
                 works.extend(get_works_from_filepaths_py(filepaths))
 
-            for github_file in args.get('github_files'):
+            for github_file in GITHUB_FILES:
                 tree = get_ast_from_content_py(gh.get_file_from_url(github_file)[0],
                                                github_file)
                 features = get_features_from_ast_py(tree, github_file)
                 works.append(features)
-            # TODO git_user, git_project
-        # TODO cpp/c
+
+            for github_project in GITHUB_PROJECT_FOLDERS:
+                github_project_files = gh.get_files_generator_from_dir_url(github_project)
+                for file, url_file in github_project_files:
+                    tree = get_ast_from_content_py(file, url_file)
+                    features = get_features_from_ast_py(tree, url_file)
+                    works.append(features)
+
+            if GITHUB_USER:
+                repos = gh.get_list_of_repos(owner=GITHUB_USER,
+                                             reg_exp=REG_EXP)
+                for repo, repo_url in repos.items():
+                    files = gh.get_files_generator_from_repo_url(repo_url)
+                    for file, url_file in files:
+                        tree = get_ast_from_content_py(file, url_file)
+                        features = get_features_from_ast_py(tree, url_file)
+                        works.append(features)
+        if EXTENSION == 'cpp':
+            pass
+
+        # TODO: Add checks
 
         print(works)
 

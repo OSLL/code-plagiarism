@@ -41,6 +41,14 @@ def get_parser():
                              "codes for the different languages.",
              )
     parser.add_argument(
+        "--mode",
+        help="Choose one of the following modes of searching plagiarism. "
+             "The 'many_to_many' mode may require a lot of free memory.",
+        type=str,
+        choices=["many_to_many"],
+        default="many_to_many"
+    )
+    parser.add_argument(
         "-t", "--threshold",
         help="Threshold of analyzer which classifies two work as same. "
              "If this number is too large, such as 99, then completely matching jobs will be found. "
@@ -65,17 +73,11 @@ def get_parser():
         choices=["py", "cpp"],
         required=True
     )
-    parser_required.add_argument(
-        "mode",
-        help="Choose one of the following modes of searching plagiarism. "
-             "The 'many_to_many' mode may require a lot of free memory.",
-        type=str,
-        choices=["many_to_many"]
-    )
+
 
     parser_github = parser.add_argument_group("GitHub options")
     parser_github.add_argument(
-        "-ab", "--all_branches",
+        "-ab", "--all-branches",
         help="Searching in all branches",
         action="store_true"
     )
@@ -85,23 +87,23 @@ def get_parser():
         help="A regular expression to filter searching repositories on GitHub"
     )
     parser_github.add_argument(
-        "-gf", "--github_files",
-        metavar="GIT_FILE",
+        "-gf", "--github-files",
+        metavar="GITHUB_FILE",
         type=github_link,
         help="URL to file in a GitHub repository",
         nargs="+",
         default=[]
     )
     parser_github.add_argument(
-        "-g", "--github_user",
+        "-g", "--github-user",
         type=str,
         help="GitHub organisation/user name"
     )
     parser_github.add_argument(
-        "-gp", "--github_projects",
-        metavar="GIT_PROJECT",
+        "-gp", "--github-project-folders",
+        metavar="GITHUB_PROJECT_FOLDER",
         type=github_link,
-        help="Path to a GitHub project",
+        help="Path to a GitHub project folder",
         nargs="+",
         default=[]
     )

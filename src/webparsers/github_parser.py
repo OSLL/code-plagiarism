@@ -66,9 +66,9 @@ class GitHubParser:
         return code
 
     def is_accepted_extension(self, path):
-        extension = path.split('.')[-1].lower()
-        if extension in self.__file_extensions:
-            return True
+        for extension in self.__file_extensions:
+            if re.search(extension, path):
+                return True
 
         return False
 
