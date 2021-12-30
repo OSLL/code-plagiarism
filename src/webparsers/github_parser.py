@@ -13,6 +13,8 @@ class GitHubParser:
     @staticmethod
     def check_github_url(github_url):
         url_parts = github_url.rstrip('/').split('/')
+        if len(url_parts) < 3:
+            raise ValueError('Incorrect link to GitHub')
         if url_parts[0] != 'https:' and url_parts[0] != 'http:':
             raise ValueError('Incorrect link to GitHub')
         elif url_parts[1] != '':

@@ -28,7 +28,6 @@ except FileNotFoundError:
     logger.info('The environment file did not define.')
 else:
     ACCESS_TOKEN = env_config.get('ACCESS_TOKEN', default='')
-logger = get_logger(__name__, LOG_PATH)
 logger.info("Pyplag starting...")
 logger.info("Working mode = " + str(mode))
 start_eval = perf_counter()

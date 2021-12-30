@@ -1,6 +1,7 @@
 import os
 import argparse
 
+from webparsers.github_parser import GitHubParser
 from codeplag.logger import get_logger
 from codeplag.consts import LOG_PATH
 
@@ -21,6 +22,16 @@ def file_path(path_to_file):
         exit(1)
 
     return path_to_file
+
+
+def github_link(link):
+    try:
+        GitHubParser.check_github_url(link)
+    except ValueError:
+        logger.error("'{}' is not correct GitHub link".format(link))
+        exit(1)
+
+    return link
 
 
 def get_parser():
@@ -73,11 +84,10 @@ def get_parser():
         type=str,
         help="A regular expression to filter searching repositories on GitHub"
     )
-    # TODO: Checks for correct input
     parser_git.add_argument(
         "-gf", "--git_files",
         metavar="GIT_FILE",
-        type=str,
+        type=github_link,
         help="URL to file in a GIT repository",
         nargs="+"
     )
@@ -88,7 +98,7 @@ def get_parser():
     )
     parser_git.add_argument(
         "-gp", "--git_project",
-        type=str,
+        type=github_link,
         help="Path to a GIT project"
     )
 

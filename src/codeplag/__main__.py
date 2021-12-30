@@ -1,5 +1,7 @@
 from time import perf_counter
+from decouple import Config, RepositoryEnv
 
+from webparsers.github_parser import GitHubParser
 from codeplag.logger import get_logger
 from codeplag.consts import LOG_PATH
 from codeplag.codeplagcli import get_parser
@@ -10,6 +12,14 @@ from codeplag.pyplag.utils import (
 
 
 logger = get_logger(__name__, LOG_PATH)
+try:
+    env_config = Config(RepositoryEnv('./.env'))
+except FileNotFoundError:
+    logger.debug('The environment file did not define')
+else:
+    ACCESS_TOKEN = env_config.get('ACCESS_TOKEN', default='')
+    if not ACCESS_TOKEN:
+        logger.debug('GitHub access token is not defined')
 
 
 if __name__ == '__main__':
@@ -29,10 +39,15 @@ if __name__ == '__main__':
     if MODE == 'many_to_many':
         works = []
         if EXTENSION == 'py':
+            gh = GitHubParser(file_extensions=['py'], check_policy=BRANCH_POLICY,
+                              access_token=ACCESS_TOKEN)
+
             works.extend(get_works_from_filepaths_py(args.get('files')))
             for directory in (args.get('directories') if args.get('directories') else []):
                 filepaths = get_files_path_from_directory(directory, extensions=[r".py\b"])
                 works.extend(get_works_from_filepaths_py(filepaths))
+            # TODO git_user, git_project, git_file
+        # TODO cpp/c
 
         print(works)
 
