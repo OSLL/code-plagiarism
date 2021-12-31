@@ -24,10 +24,10 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: Run build docker container
+      - name: Run build docker image
         run: |
           make docker
 
-      - name: Run tests in the created docker container
+      - name: Run tests in the docker container based on the created image
         run: |
           make docker-test
