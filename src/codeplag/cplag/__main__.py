@@ -7,7 +7,7 @@ import pandas as pd
 from time import perf_counter
 from codeplag.cplag.util import get_cursor_from_file
 from codeplag.cplag.tree import get_features
-from codeplag.utils import print_compare_res, get_files_path_from_directory
+from codeplag.utils import compare_works, get_files_path_from_directory
 from codeplag.mode import get_mode
 
 mode, args = get_mode()
@@ -44,7 +44,7 @@ if mode == 2:
         cursor2 = get_cursor_from_file(filename, compile_args)
         if cursor1 and cursor2:
             features2 = get_features(cursor2, filename)
-            print_compare_res(features1, features2, args.threshold)
+            compare_works(features1, features2, args.threshold)
 
         iterration += 1
         print('  {:.2%}'.format(iterration / iterrations), end="\r")
@@ -77,7 +77,7 @@ elif mode == 4:
         for file in project_files:
             cursor2 = get_cursor_from_file(file, compile_args)
             features2 = get_features(cursor2, file)
-            print_compare_res(features1, features2, args.threshold)
+            compare_works(features1, features2, args.threshold)
 
             iterration += 1
             print('  {:.2%}'.format(iterration / iterrations), end="\r")

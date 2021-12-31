@@ -3,6 +3,7 @@ import base64
 import re
 
 
+# TODO: Check Ethernet connection and requests limit
 class GitHubParser:
     def __init__(self, file_extensions=['py', 'c', 'cpp', 'h'],
                  check_policy=0, access_token=''):
