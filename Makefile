@@ -3,7 +3,7 @@ IMAGE_NAME			:= $(shell basename $(PWD))
 DOCKER_TAG			?= $(IMAGE_NAME)-ubuntu:0.0.2
 UTIL_NAME			:= codeplag
 
-all: install install-man test
+all: install install-man
 
 install:
 	python3 setup.py install
