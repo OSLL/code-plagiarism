@@ -51,6 +51,11 @@ class TestGitHubParser(unittest.TestCase):
                 'arguments': {
                     "github_url": "https://githUb.com/OSLL"
                 },
+            },
+            {
+                'arguments': {
+                    "github_url": "https:/"
+                },
             }
         ]
 

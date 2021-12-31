@@ -1,8 +1,9 @@
 import os
 import warnings
 import ccsyspath
-
 from clang.cindex import Index, TranslationUnit
+
+from codeplag.cplag.tree import get_features
 
 
 def get_cursor_from_file(filename, args=[]):
@@ -19,6 +20,7 @@ def get_cursor_from_file(filename, args=[]):
     options = TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD
 
     file_obj = index.parse(filename, args=args, options=options) or 0
+
     return file_obj.cursor
 
 
@@ -51,3 +53,16 @@ def prepare_cursors(file1, file2):
         cursor = get_cursor_from_file(filename, args)
         cursor2 = get_cursor_from_file(filename2, args)
         return (filename, filename2, cursor, cursor2)
+
+
+def get_works_from_filepaths(filenames, compile_args):
+    if not filenames:
+        return []
+
+    works = []
+    for filename in filenames:
+        cursor = get_cursor_from_file(filename, compile_args)
+        features = get_features(cursor, filename)
+        works.append(features)
+
+    return works

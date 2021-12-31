@@ -40,7 +40,7 @@ def run_compare(features_f, features_s):
     return metrics
 
 
-def print_compare_res(features1, features2, threshold=60,
+def compare_works(features1, features2, threshold=60,
                       weights=np.array([1, 0.4, 0.4, 0.4],
                                        dtype=np.float32)):
     """The function prints the result of comparing two files
@@ -64,7 +64,7 @@ def print_compare_res(features1, features2, threshold=60,
                                 compliance_matrix)
     struct_res = struct_res[0] / struct_res[1]
 
-    print("         ")
+    print(" " * 40)
     print('+' * 40)
     print('May be similar:', features1.filepath, features2.filepath,
           end='\n\n', sep='\n')
@@ -110,7 +110,7 @@ def get_files_path_from_directory(directory, extensions=[r".*\b"]):
         for file in files:
             allowed = False
             for extension in extensions:
-                if re.search(extension, file) is not None:
+                if re.search(extension, file):
                     allowed = True
                     break
             if allowed:

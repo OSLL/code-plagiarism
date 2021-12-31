@@ -1,38 +1,45 @@
+PWD 				:= $(shell pwd)
 IMAGE_NAME			:= $(shell basename $(PWD))
-DOCKER_TAG			?= $(IMAGE_NAME)-ubuntu:0.0.1
+DOCKER_TAG			?= $(IMAGE_NAME)-ubuntu:0.0.2
+UTIL_NAME			:= codeplag
 
-all: install test
+all: install install-man
 
 install:
-	eval "sudo apt update"
+	python3 setup.py install
+	install -D -m 0755 src/sbin/$(UTIL_NAME) /usr/sbin/$(UTIL_NAME)
 
-	echo "Starting installing requirements..."
-	for PACKAGE in clang libncurses5 python3 python3-pip ; do \
-		if ! dpkg -l $$PACKAGE >/dev/null 2>/dev/null; then \
-			eval "sudo apt install $$PACKAGE" ; \
-		fi \
-	done
+install-man:
+	mkdir -p Man
+	argparse-manpage --pyfile src/codeplag/codeplagcli.py \
+					 --function get_parser \
+					 --author "Codeplag Development Team" \
+					 --author-email "inbox@moevm.info" \
+					 --project-name "$(UTIL_NAME) 0.0.2" \
+					 --url "https://github.com/OSLL/code-plagiarism" \
+					 --output man/codeplag.1
 
-	python3 setup.py install --user
+	install -D -m 0644 man/codeplag.1 /usr/share/man/man1/codeplag.1
 
 test:
-	python3 -m unittest discover -v ./src
+	python3 -m unittest discover ./src
 	make clear-cache
 
 test-pytest:
-	python3 -m pytest -v
+	python3 -m pytest
 	make clear-cache
 
 clear-cache:
 	find . -type d | grep -E "__pycache__" | xargs rm -r
 
 rm:
-	pip3 uninstall codeplag -y
+	pip3 uninstall $(UTIL_NAME) -y
 
 docker:
 	docker image build \
 		--tag  "$(DOCKER_TAG)" \
 		--file Dockerfile \
+		--build-arg UTIL_NAME="$(UTIL_NAME)" \
 		.
 
 docker-test:
@@ -53,6 +60,8 @@ help:
 	@echo
 	@echo "Commands:"
 	@echo "  install                          Install on the local computer"
+	@echo "  install-man                      Create and install man file."
+	@echo "                                   Required argparse-manpage and sudo privilege"
 	@echo "  test                             Run unittest"
 	@echo "  test-pytest                      Run pytest"
 	@echo "  clear-cache                      Delete __pycache__ folders"
@@ -60,8 +69,8 @@ help:
 	@echo "  help                             Display this message and exit"
 	@echo
 	@echo "Docker:"
-	@echo "  docker:                          Build docker image"
-	@echo "  docker-test:                     Test code in docker container"
-	@echo "  docker-run:                      Run docker container"
-	@echo "  docker-rmi:                      Delete docker image"
+	@echo "  docker                           Build docker image"
+	@echo "  docker-test                      Test code in docker container"
+	@echo "  docker-run                       Run docker container"
+	@echo "  docker-rmi                       Delete docker image"
 	@echo

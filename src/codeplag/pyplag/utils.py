@@ -4,7 +4,7 @@ import ast
 from termcolor import colored
 from codeplag.astfeatures import ASTFeatures
 from codeplag.pyplag.astwalkers import ASTWalker
-from codeplag.utils import print_compare_res
+from codeplag.utils import compare_works
 
 
 def get_ast_from_content(code, path):
@@ -93,4 +93,17 @@ def compare_file_pair(filename1, filename2, threshold):
 
     features1 = get_features_from_ast(tree1, filename1)
     features2 = get_features_from_ast(tree2, filename2)
-    print_compare_res(features1, features2, threshold)
+    compare_works(features1, features2, threshold)
+
+
+def get_works_from_filepaths(filenames):
+    if not filenames:
+        return []
+
+    works = []
+    for filename in filenames:
+        tree = get_ast_from_filename(filename)
+        features = get_features_from_ast(tree, filename)
+        works.append(features)
+
+    return works

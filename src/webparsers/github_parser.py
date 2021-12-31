@@ -13,6 +13,8 @@ class GitHubParser:
     @staticmethod
     def check_github_url(github_url):
         url_parts = github_url.rstrip('/').split('/')
+        if len(url_parts) < 3:
+            raise ValueError('Incorrect link to GitHub')
         if url_parts[0] != 'https:' and url_parts[0] != 'http:':
             raise ValueError('Incorrect link to GitHub')
         elif url_parts[1] != '':
@@ -64,9 +66,9 @@ class GitHubParser:
         return code
 
     def is_accepted_extension(self, path):
-        extension = path.split('.')[-1].lower()
-        if extension in self.__file_extensions:
-            return True
+        for extension in self.__file_extensions:
+            if re.search(extension, path):
+                return True
 
         return False
 
@@ -84,6 +86,8 @@ class GitHubParser:
                 'Authorization': 'token ' + self.__access_token,
             })
 
+        # TODO: Check Ethernet connection and requests limit
+        # requests.exceptions.ConnectionError
         response = requests.get(address + api_url, headers=headers,
                                 params=params)
         if response.status_code == 403:
