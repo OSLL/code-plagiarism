@@ -110,7 +110,7 @@ def get_files_path_from_directory(directory, extensions=[r".*\b"]):
         for file in files:
             allowed = False
             for extension in extensions:
-                if re.search(extension, file) is not None:
+                if re.search(extension, file):
                     allowed = True
                     break
             if allowed:

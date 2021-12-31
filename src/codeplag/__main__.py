@@ -1,10 +1,12 @@
+import pandas as pd
 from time import perf_counter
 from decouple import Config, RepositoryEnv
 
 from webparsers.github_parser import GitHubParser
 from codeplag.logger import get_logger
 from codeplag.consts import (
-    LOG_PATH, SUPPORTED_EXTENSIONS
+    LOG_PATH, SUPPORTED_EXTENSIONS,
+    COMPILE_ARGS
 )
 from codeplag.codeplagcli import get_parser
 from codeplag.utils import (
@@ -16,13 +18,18 @@ from codeplag.pyplag.utils import (
     get_ast_from_content as get_ast_from_content_py,
     get_features_from_ast as get_features_from_ast_py
 )
+from codeplag.cplag.util import (
+    get_works_from_filepaths as get_works_from_filepaths_cpp
+)
 
+
+pd.options.display.float_format = '{:,.2%}'.format
 
 logger = get_logger(__name__, LOG_PATH)
 try:
     env_config = Config(RepositoryEnv('./.env'))
 except FileNotFoundError:
-    logger.debug('The environment file did not define')
+    logger.debug('The environment file is not defined')
 else:
     ACCESS_TOKEN = env_config.get('ACCESS_TOKEN', default='')
     if not ACCESS_TOKEN:
@@ -90,8 +97,14 @@ if __name__ == '__main__':
                         features = get_features_from_ast_py(tree, url_file)
                         works.append(features)
         if EXTENSION == 'cpp':
-            # TODO
-            pass
+            if FILES:
+                logger.info("Getting works features from files")
+                works.extend(get_works_from_filepaths_cpp(FILES, COMPILE_ARGS))
+
+            for directory in DIRECTORIES:
+                logger.info('Getting works features from {}'.format(directory))
+                filepaths = get_files_path_from_directory(directory, extensions=SUPPORTED_EXTENSIONS[EXTENSION])
+                works.extend(get_works_from_filepaths_cpp(filepaths, COMPILE_ARGS))
 
         logger.info("Starting searching for plagiarism")
         count_works = len(works)
