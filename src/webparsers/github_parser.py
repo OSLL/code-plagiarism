@@ -3,7 +3,6 @@ import base64
 import re
 
 
-# TODO: Check Ethernet connection and requests limit
 class GitHubParser:
     def __init__(self, file_extensions=['py', 'c', 'cpp', 'h'],
                  check_policy=0, access_token=''):
@@ -87,6 +86,8 @@ class GitHubParser:
                 'Authorization': 'token ' + self.__access_token,
             })
 
+        # TODO: Check Ethernet connection and requests limit
+        # requests.exceptions.ConnectionError
         response = requests.get(address + api_url, headers=headers,
                                 params=params)
         if response.status_code == 403:
