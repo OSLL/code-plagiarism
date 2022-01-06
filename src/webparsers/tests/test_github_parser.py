@@ -1,10 +1,14 @@
 import unittest
 import io
 import base64
+import logging
 
 from contextlib import redirect_stdout
 from unittest.mock import patch, call
 from webparsers.github_parser import GitHubParser
+
+
+logging.disable(logging.CRITICAL)
 
 
 class TestGitHubParser(unittest.TestCase):
@@ -305,7 +309,7 @@ class TestGitHubParser(unittest.TestCase):
                     'params': {}
                 },
                 'response': Response(403, "Not Found"),
-                'raised': Exception
+                'raised': SystemExit
             },
             {
                 'arguments': {

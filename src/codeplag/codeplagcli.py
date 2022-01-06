@@ -62,7 +62,7 @@ def get_parser():
         '-v', '--version',
         help="Print current version number and exit",
         action="version",
-        version="codeplag 0.0.2"
+        version="codeplag 0.0.3"
     )
 
     parser_required = parser.add_argument_group("required options")
