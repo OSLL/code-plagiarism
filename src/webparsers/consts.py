@@ -1,0 +1,1 @@
+LOG_PATH = "/var/log/webparsers.log"
