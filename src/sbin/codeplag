@@ -1,9 +1,0 @@
-#!/usr/bin/env python3
-
-import os
-import sys
-
-command = 'python3 -m codeplag'
-arguments = ' '.join(sys.argv[1:])
-
-os.system('{} {}'.format(command, arguments))
