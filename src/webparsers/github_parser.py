@@ -2,6 +2,12 @@ import requests
 import base64
 import re
 
+from webparsers.logger import get_logger
+from webparsers.consts import LOG_PATH
+
+
+logger = get_logger(__name__, LOG_PATH)
+
 
 class GitHubParser:
     def __init__(self, file_extensions=['py', 'c', 'cpp', 'h'],
@@ -88,13 +94,27 @@ class GitHubParser:
 
         # TODO: Check Ethernet connection and requests limit
         # requests.exceptions.ConnectionError
-        response = requests.get(address + api_url, headers=headers,
-                                params=params)
+        try:
+            response = requests.get(address + api_url, headers=headers,
+                                    params=params)
+        except requests.exceptions.ConnectionError as err:
+            logger.error("Connection error. Please check the Internet connection")
+            logger.debug(str(err))
+            exit(1)
+
         if response.status_code == 403:
-            if 'message' in response.json().keys():
-                raise Exception(response.json()['message'])
+            if 'message' in response.json():
+                logger.error("GitHub " + response.json()['message'])
+                exit(1)
+
             raise KeyError
-        response.raise_for_status()
+
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as err:
+            logger.error("The access token is bad")
+            logger.debug(str(err))
+            exit(1)
 
         return response
 

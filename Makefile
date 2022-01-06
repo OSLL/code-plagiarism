@@ -1,6 +1,6 @@
 PWD 				:= $(shell pwd)
 IMAGE_NAME			:= $(shell basename $(PWD))
-DOCKER_TAG			?= $(IMAGE_NAME)-ubuntu:0.0.2
+DOCKER_TAG			?= $(IMAGE_NAME)-ubuntu:0.0.3
 UTIL_NAME			:= codeplag
 
 all: install install-man
@@ -15,7 +15,7 @@ install-man:
 					 --function get_parser \
 					 --author "Codeplag Development Team" \
 					 --author-email "inbox@moevm.info" \
-					 --project-name "$(UTIL_NAME) 0.0.2" \
+					 --project-name "$(UTIL_NAME) 0.0.3" \
 					 --url "https://github.com/OSLL/code-plagiarism" \
 					 --output man/codeplag.1
 
