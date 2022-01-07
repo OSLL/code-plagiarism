@@ -1,7 +1,8 @@
 PWD 				:= $(shell pwd)
 IMAGE_NAME			:= $(shell basename $(PWD))
-DOCKER_TAG			?= $(IMAGE_NAME)-ubuntu:0.0.3
+UTIL_VERSION		:= $(shell /usr/bin/env python3 src/codeplag/brand_consts.py --version)
 UTIL_NAME			:= codeplag
+DOCKER_TAG			?= $(IMAGE_NAME)-ubuntu:$(UTIL_VERSION)
 
 all: install install-man
 
@@ -15,7 +16,7 @@ install-man:
 					 --function get_parser \
 					 --author "Codeplag Development Team" \
 					 --author-email "inbox@moevm.info" \
-					 --project-name "$(UTIL_NAME) 0.0.3" \
+					 --project-name "$(UTIL_NAME) $(UTIL_VERSION)" \
 					 --url "https://github.com/OSLL/code-plagiarism" \
 					 --output man/codeplag.1
 

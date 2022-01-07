@@ -3,6 +3,7 @@ import argparse
 
 from webparsers.github_parser import GitHubParser
 from codeplag.logger import get_logger
+from codeplag.brand_consts import UTIL_VERSION
 from codeplag.consts import LOG_PATH
 
 logger = get_logger(__name__, LOG_PATH)
@@ -62,7 +63,7 @@ def get_parser():
         '-v', '--version',
         help="Print current version number and exit",
         action="version",
-        version="codeplag 0.0.3"
+        version="codeplag {}".format(UTIL_VERSION)
     )
 
     parser_required = parser.add_argument_group("required options")
