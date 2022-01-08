@@ -1,10 +1,11 @@
+from src.codeplag.brand_consts import UTIL_VERSION
 from setuptools import setup, find_packages
 from pathlib import Path
 
 
 setup(
     name='codeplag',
-    version='0.0.3',
+    version='{}'.format(UTIL_VERSION),
     description='Code plagiarism searching package',
     author='Artyom Semidolin, Dmitry Nikolaev, Alexander Evsikov',
     project_urls={
@@ -23,7 +24,6 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
         'Topic :: Software Development :: Plagiarism Detection',
     ],
     package_dir={"": "src"},

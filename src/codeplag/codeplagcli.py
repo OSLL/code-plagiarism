@@ -3,6 +3,7 @@ import argparse
 
 from webparsers.github_parser import GitHubParser
 from codeplag.logger import get_logger
+from codeplag.brand_consts import UTIL_VERSION, UTIL_NAME
 from codeplag.consts import LOG_PATH
 
 logger = get_logger(__name__, LOG_PATH)
@@ -36,7 +37,7 @@ def github_link(link):
 
 def get_parser():
     parser = argparse.ArgumentParser(
-                 prog="CODEPLAG",
+                 prog="{}".format(UTIL_NAME.upper()),
                  description="Program help to find similar parts of source "
                              "codes for the different languages.",
              )
@@ -62,7 +63,7 @@ def get_parser():
         '-v', '--version',
         help="Print current version number and exit",
         action="version",
-        version="codeplag 0.0.3"
+        version="{} {}".format(UTIL_NAME, UTIL_VERSION)
     )
 
     parser_required = parser.add_argument_group("required options")
