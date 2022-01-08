@@ -1,1 +1,1 @@
-LOG_PATH = "/var/log/webparsers.log"
+LOG_PATH = "/tmp/webparsers.log"

@@ -1,7 +1,7 @@
 import ccsyspath
 
 
-LOG_PATH = "/var/log/codeplag.log"
+LOG_PATH = "/tmp/codeplag.log"
 SUPPORTED_EXTENSIONS = {
     'py': [
         r'.py\b'
