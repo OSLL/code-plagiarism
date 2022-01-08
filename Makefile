@@ -1,7 +1,7 @@
 PWD 				:= $(shell pwd)
 IMAGE_NAME			:= $(shell basename $(PWD))
 UTIL_VERSION		:= $(shell /usr/bin/env python3 src/codeplag/brand_consts.py --version)
-UTIL_NAME			:= codeplag
+UTIL_NAME			:= $(shell /usr/bin/env python3 src/codeplag/brand_consts.py --util_name)
 DOCKER_TAG			?= $(IMAGE_NAME)-ubuntu:$(UTIL_VERSION)
 
 all: install install-man
