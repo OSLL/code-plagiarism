@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  docker:
+  docker-test:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
@@ -22,10 +22,6 @@ jobs:
         run: |
           make docker
 
-  test:
-    needs: docker
-    runs-on: ubuntu-18.04
-    steps:
       - name: Run tests in the docker container based on the created image
         run: |
           make docker-test
