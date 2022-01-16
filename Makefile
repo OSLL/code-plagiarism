@@ -2,7 +2,7 @@ PWD 				:= $(shell pwd)
 IMAGE_NAME			:= $(shell basename $(PWD))
 UTIL_VERSION		:= $(shell /usr/bin/env python3 src/codeplag/brand_consts.py --version)
 UTIL_NAME			:= $(shell /usr/bin/env python3 src/codeplag/brand_consts.py --util_name)
-DOCKER_TAG			?= $(IMAGE_NAME)-ubuntu:$(UTIL_VERSION)
+DOCKER_TAG			?= $(shell echo $(IMAGE_NAME)-ubuntu18.04:$(UTIL_VERSION) | tr A-Z a-z)
 
 all: install install-man
 
