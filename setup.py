@@ -30,6 +30,7 @@ setup(
     packages=find_packages("src"),
     python_requires='>=3.6',
     install_requires=[
+        'argcomplete==2.0.0',
         'numpy==1.19.4',
         'pandas==1.0.5',
         'ccsyspath==1.1.0',

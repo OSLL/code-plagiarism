@@ -6,12 +6,10 @@ from webparsers.logger import get_logger
 from webparsers.consts import LOG_PATH
 
 
-logger = get_logger(__name__, LOG_PATH)
-
-
 class GitHubParser:
     def __init__(self, file_extensions=['py', 'c', 'cpp', 'h'],
                  check_policy=0, access_token=''):
+        self.logger = get_logger(__name__, LOG_PATH)
         self.__access_token = access_token
         self.__check_all_branches = check_policy
         self.__file_extensions = file_extensions
@@ -98,13 +96,13 @@ class GitHubParser:
             response = requests.get(address + api_url, headers=headers,
                                     params=params)
         except requests.exceptions.ConnectionError as err:
-            logger.error("Connection error. Please check the Internet connection")
-            logger.debug(str(err))
+            self.logger.error("Connection error. Please check the Internet connection")
+            self.logger.debug(str(err))
             exit(1)
 
         if response.status_code == 403:
             if 'message' in response.json():
-                logger.error("GitHub " + response.json()['message'])
+                self.logger.error("GitHub " + response.json()['message'])
                 exit(1)
 
             raise KeyError
@@ -112,8 +110,8 @@ class GitHubParser:
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError as err:
-            logger.error("The access token is bad")
-            logger.debug(str(err))
+            self.logger.error("The access token is bad")
+            self.logger.debug(str(err))
             exit(1)
 
         return response

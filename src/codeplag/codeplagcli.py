@@ -1,4 +1,5 @@
 import os
+import argcomplete
 import argparse
 
 from webparsers.github_parser import GitHubParser
@@ -126,5 +127,7 @@ def get_parser():
         nargs="+",
         default=[]
     )
+
+    argcomplete.autocomplete(parser)
 
     return parser
