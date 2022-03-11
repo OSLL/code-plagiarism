@@ -41,7 +41,7 @@ test-pytest:
 	make clear-cache
 
 run:
-	sudo bash -login
+	bash -login
 
 clear-cache:
 	find . -type d | grep -E "__pycache__" | xargs rm -r
