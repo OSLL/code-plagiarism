@@ -7,9 +7,10 @@ from webparsers.consts import LOG_PATH
 
 
 class GitHubParser:
+    logger = get_logger(__name__, LOG_PATH)
+
     def __init__(self, file_extensions=['py', 'c', 'cpp', 'h'],
                  check_policy=0, access_token=''):
-        self.logger = get_logger(__name__, LOG_PATH)
         self.__access_token = access_token
         self.__check_all_branches = check_policy
         self.__file_extensions = file_extensions
@@ -18,12 +19,16 @@ class GitHubParser:
     def check_github_url(github_url):
         url_parts = github_url.rstrip('/').split('/')
         if len(url_parts) < 3:
+            GitHubParser.logger.error(f'{github_url} is incorrect link to GitHub')
             raise ValueError('Incorrect link to GitHub')
         if url_parts[0] != 'https:' and url_parts[0] != 'http:':
+            GitHubParser.logger.error(f'{github_url} is incorrect link to GitHub')
             raise ValueError('Incorrect link to GitHub')
         elif url_parts[1] != '':
+            GitHubParser.logger.error(f'{github_url} is incorrect link to GitHub')
             raise ValueError('Incorrect link to GitHub')
         elif url_parts[2] != 'github.com':
+            GitHubParser.logger.error(f'{github_url} is incorrect link to GitHub')
             raise ValueError('Incorrect link to GitHub')
 
         return url_parts
@@ -33,6 +38,7 @@ class GitHubParser:
         url_parts = GitHubParser.check_github_url(repo_url)
 
         if len(url_parts) != 5:
+            GitHubParser.logger.error(f'{repo_url} is incorrect link to GitHub repository')
             raise ValueError('Incorrect link to GitHub repository')
 
         return url_parts[3], url_parts[4]
@@ -44,6 +50,7 @@ class GitHubParser:
         url_parts = GitHubParser.check_github_url(content_url)
 
         if len(url_parts) <= 7:
+            GitHubParser.logger.error(f'{content_url} is incorrect link to content of GitHub repository')
             raise ValueError('Incorrect link to content of GitHub repository')
 
         return (url_parts[3], url_parts[4],
@@ -56,15 +63,10 @@ class GitHubParser:
         while code is None:
             try:
                 code = file_in_bytes.decode('utf-8')
-                if attempt >= 2:
-                    print()
             except UnicodeDecodeError as error:
                 attempt += 1
-                # TODO: Log to file
-                print(
-                    f"Trying to decode content, attempt - {attempt}",
-                    end='\r'
-                )
+                if attempt % 25 == 0:
+                    GitHubParser.logger.debug(f"Trying to decode content, attempt - {attempt}")
                 file_in_bytes[error.args[2]] = 32
 
         return code
@@ -96,13 +98,13 @@ class GitHubParser:
             response = requests.get(address + api_url, headers=headers,
                                     params=params)
         except requests.exceptions.ConnectionError as err:
-            self.logger.error("Connection error. Please check the Internet connection")
-            self.logger.debug(str(err))
+            GitHubParser.logger.error("Connection error. Please check the Internet connection")
+            GitHubParser.logger.debug(str(err))
             exit(1)
 
         if response.status_code == 403:
             if 'message' in response.json():
-                self.logger.error("GitHub " + response.json()['message'])
+                GitHubParser.logger.error("GitHub " + response.json()['message'])
                 exit(1)
 
             raise KeyError
@@ -110,8 +112,8 @@ class GitHubParser:
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError as err:
-            self.logger.error("The access token is bad")
-            self.logger.debug(str(err))
+            GitHubParser.logger.error("The access token is bad")
+            GitHubParser.logger.debug(str(err))
             exit(1)
 
         return response

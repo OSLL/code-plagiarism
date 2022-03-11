@@ -26,14 +26,13 @@ def file_path(path_to_file):
     return path_to_file
 
 
-def github_link(link):
+def github_url(url):
     try:
-        GitHubParser.check_github_url(link)
+        GitHubParser.parse_content_url(url)
     except ValueError:
-        logger.error("'{}' is not correct GitHub link".format(link))
         exit(1)
 
-    return link
+    return url
 
 
 def get_parser():
@@ -91,7 +90,7 @@ def get_parser():
     parser_github.add_argument(
         "-gf", "--github-files",
         metavar="GITHUB_FILE",
-        type=github_link,
+        type=github_url,
         help="URL to file in a GitHub repository",
         nargs="+",
         default=[]
@@ -104,7 +103,7 @@ def get_parser():
     parser_github.add_argument(
         "-gp", "--github-project-folders",
         metavar="GITHUB_PROJECT_FOLDER",
-        type=github_link,
+        type=github_url,
         help="Path to a GitHub project folder",
         nargs="+",
         default=[]
