@@ -1,7 +1,7 @@
 import argparse
 
 
-UTIL_VERSION = "0.0.6"
+UTIL_VERSION = "0.0.7"
 UTIL_NAME = "codeplag"
 
 
