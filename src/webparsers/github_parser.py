@@ -9,7 +9,7 @@ from webparsers.consts import LOG_PATH
 class GitHubParser:
     logger = get_logger(__name__, LOG_PATH)
 
-    def __init__(self, file_extensions=['py', 'c', 'cpp', 'h'],
+    def __init__(self, file_extensions=[r'.py$', r'.cpp$', r'.c$', r'.h$'],
                  check_policy=0, access_token=''):
         self.__access_token = access_token
         self.__check_all_branches = check_policy

@@ -26,21 +26,23 @@ from codeplag.cplag.util import (
 pd.options.display.float_format = '{:,.2%}'.format
 
 logger = get_logger(__name__, LOG_PATH)
-try:
-    env_config = Config(RepositoryEnv('./.env'))
-except FileNotFoundError:
-    logger.debug('The environment file is not defined')
-else:
-    ACCESS_TOKEN = env_config.get('ACCESS_TOKEN', default='')
-    if not ACCESS_TOKEN:
-        logger.debug('GitHub access token is not defined')
 
 
 if __name__ == '__main__':
+    logger.debug("Starting codeplag util")
+    try:
+        env_config = Config(RepositoryEnv('./.env'))
+    except FileNotFoundError:
+        ACCESS_TOKEN = ''
+        logger.debug('The environment file is not defined')
+    else:
+        ACCESS_TOKEN = env_config.get('ACCESS_TOKEN', default='')
+        if not ACCESS_TOKEN:
+            logger.debug('GitHub access token is not defined')
+
     parser = get_parser()
     args = vars(parser.parse_args())
 
-    logger.debug("Starting codeplag util")
     logger.debug("Mode: {}; Extension: {}".format(args['mode'], args['extension']))
 
     MODE = args.pop('mode')

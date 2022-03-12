@@ -4,12 +4,12 @@ import argparse
 LOG_PATH = "/tmp/codeplag.log"
 SUPPORTED_EXTENSIONS = {
     'py': [
-        r'.py\b'
+        r'.py$'
     ],
     'cpp': [
-        r'.cpp\b',
-        r'.c\b',
-        r'.h\b'
+        r'.cpp$',
+        r'.c$',
+        r'.h$'
     ]
 }
 COMPILE_ARGS = '-x c++ --std=c++11'.split()
