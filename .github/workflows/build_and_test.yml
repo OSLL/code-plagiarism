@@ -45,6 +45,9 @@ jobs:
           sudo make install
 
       - name: Run autotests
+        env:
+            ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         run: |
           cd ~/work/code-plagiarism/code-plagiarism
+          echo "ACCESS_TOKEN = '${ACCESS_TOKEN}'" > .env
           sh ./autotests.sh

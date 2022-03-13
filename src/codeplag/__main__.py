@@ -30,22 +30,20 @@ logger = get_logger(__name__, LOG_PATH)
 
 if __name__ == '__main__':
     logger.debug("Starting codeplag util")
-    try:
-        env_config = Config(RepositoryEnv('./.env'))
-    except FileNotFoundError:
-        ACCESS_TOKEN = ''
-        logger.debug('The environment file is not defined')
-    else:
-        ACCESS_TOKEN = env_config.get('ACCESS_TOKEN', default='')
-        if not ACCESS_TOKEN:
-            logger.debug('GitHub access token is not defined')
 
     parser = get_parser()
     args = vars(parser.parse_args())
 
-    logger.debug("Mode: {}; Extension: {}".format(args['mode'], args['extension']))
+    logger.debug(
+        "Mode: {}; Extension: {}; Environment path: {}.".format(
+            args['mode'],
+            args['extension'],
+            args['environment']
+        )
+    )
 
     MODE = args.pop('mode')
+    ENVIRONMENT = args.pop('environment')
     EXTENSION = args.pop('extension')
     THRESHOLD = args.pop('threshold')
     BRANCH_POLICY = args.pop('all_branches')
@@ -55,6 +53,14 @@ if __name__ == '__main__':
     GITHUB_FILES = args.pop('github_files')
     GITHUB_PROJECT_FOLDERS = args.pop('github_project_folders')
     GITHUB_USER = args.pop('github_user')
+
+    if ENVIRONMENT:
+        env_config = Config(RepositoryEnv(ENVIRONMENT))
+        ACCESS_TOKEN = env_config.get('ACCESS_TOKEN', default='')
+        if not ACCESS_TOKEN:
+            logger.debug('GitHub access token is not defined.')
+    else:
+        ACCESS_TOKEN = ''
 
     begin_time = perf_counter()
     if MODE == 'many_to_many':
