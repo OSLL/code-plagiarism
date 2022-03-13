@@ -92,13 +92,12 @@ class GitHubParser:
                 'Authorization': 'token ' + self.__access_token,
             })
 
-        # TODO: Check Ethernet connection and requests limit
-        # requests.exceptions.ConnectionError
+        # Check Ethernet connection and requests limit
         try:
             response = requests.get(address + api_url, headers=headers,
                                     params=params)
         except requests.exceptions.ConnectionError as err:
-            GitHubParser.logger.error("Connection error. Please check the Internet connection")
+            GitHubParser.logger.error("Connection error. Please check the Internet connection.")
             GitHubParser.logger.debug(str(err))
             exit(1)
 
