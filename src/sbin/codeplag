@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-import os
+import subprocess
 import sys
 
-command = 'python3 -m codeplag'
-arguments = ' '.join(sys.argv[1:])
-
-os.system('{} {}'.format(command, arguments))
+try:
+    return_code = subprocess.run(['python3', '-m', 'codeplag'] + sys.argv[1:], check=True)
+except subprocess.CalledProcessError as error:
+    sys.exit(error.returncode)
