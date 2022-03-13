@@ -25,3 +25,35 @@ jobs:
       - name: Run tests in the docker container based on the created image
         run: |
           make docker-test
+
+  autotests:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install codeplag
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          sudo apt-get install -y clang libncurses5
+          sudo apt-get install -y man
+          sudo pip3 install --upgrade setuptools
+          sudo pip3 install argparse-manpage
+          cd /usr/src/
+          sudo git clone https://github.com/OSLL/code-plagiarism.git
+          cd code-plagiarism/
+          sudo make install
+
+      - name: Run autotests
+        run: |
+          cd ~/work/code-plagiarism/code-plagiarism
+          codeplag --version && \
+          codeplag --directories src/codeplag/cplag/tests/data src/ --files src/codeplag/cplag/tests/data/sample1.cpp src/codeplag/cplag/tests/data/sample2.cpp -ext cpp && \
+          codeplag -ext py --files ./src/codeplag/pyplag/astwalkers.py --directories ./src/codeplag/pyplag && \
+          codeplag -ext py --directories ./src/codeplag/algorithms ./src && \
+          codeplag -ext py --files src/codeplag/pyplag/astwalkers.py --github-user OSLL --regexp "code-" --all-branches && \
+          codeplag -ext py --github-files https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/utils.py --github-user OSLL -e "code-" -ab && \
+          codeplag -ext py --github-files https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/utils.py -d src/codeplag/pyplag/ && \
+          codeplag -ext py --directories src/ --github-user OSLL -e "code-" && \
+          codeplag -ext py --github-project-folders https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag --github-user OSLL -e "code-" && \
+          codeplag -ext py --github-project-folders https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag --directories src/codeplag/pyplag/
