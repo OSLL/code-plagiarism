@@ -47,4 +47,4 @@ jobs:
       - name: Run autotests
         run: |
           cd ~/work/code-plagiarism/code-plagiarism
-          sudo ./autotests.sh
+          sh ./autotests.sh
