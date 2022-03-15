@@ -19,7 +19,10 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Build docker image
+        env:
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         run: |
+          echo "ACCESS_TOKEN = '${ACCESS_TOKEN}'" > .env
           make docker
 
       - name: Run tests in the docker container based on the created image
@@ -27,8 +30,5 @@ jobs:
           make docker-test
 
       - name: Run autotests in the docker container based on the created image
-        env:
-          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         run: |
-          echo "ACCESS_TOKEN = '${ACCESS_TOKEN}'" > .env
-          docker run --rm "code-plagiarism-ubuntu18.04:0.0.9" ./autotests.sh
+          make docker-autotest

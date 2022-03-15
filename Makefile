@@ -40,6 +40,24 @@ test-pytest:
 	python3 -m pytest
 	make clear-cache
 
+autotest:
+	codeplag --version && \
+	codeplag --extension cpp \
+			 --files src/codeplag/cplag/tests/data/sample1.cpp src/codeplag/cplag/tests/data/sample2.cpp && \
+	codeplag --extension cpp \
+			 --directories src/codeplag/cplag/tests/data && \
+	codeplag --extension py \
+			 --directories src/codeplag/cplag/tests/data src/codeplag/cplag/tests \
+			 --files ./src/codeplag/pyplag/astwalkers.py && \
+	codeplag --extension py \
+			 --github-files https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/utils.py \
+							https://github.com/OSLL/code-plagiarism/blob/main/setup.py && \
+	codeplag --extension py \
+			 --github-user OSLL \
+			 --regexp "code-plag" && \
+	codeplag --extension py \
+			 --github-project-folders https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/tests
+
 run:
 	bash -login
 
@@ -47,12 +65,12 @@ clear-cache:
 	find . -type d | grep -E "__pycache__" | xargs rm -r
 
 rm:
-	rm -f /etc/profile.d/$(UTIL_NAME).sh
-	rm -f /usr/sbin/$(UTIL_NAME)
-	rm -f /usr/share/man/man1/$(UTIL_NAME).1
-	rm -f man/$(UTIL_NAME).1
-	rm -f $(CODEPLAG_LOG_PATH)
-	rm -f $(WEBPARSERS_LOG_PATH)
+	rm --force /etc/profile.d/$(UTIL_NAME).sh
+	rm --force /usr/sbin/$(UTIL_NAME)
+	rm --force /usr/share/man/man1/$(UTIL_NAME).1
+	rm --force man/$(UTIL_NAME).1
+	rm --force $(CODEPLAG_LOG_PATH)
+	rm --force $(WEBPARSERS_LOG_PATH)
 	pip3 uninstall $(UTIL_NAME) -y
 
 docker:
@@ -65,7 +83,12 @@ docker:
 docker-test:
 	docker run --rm \
 		"$(DOCKER_TAG)" bash -c \
-		'make test'
+		"make test"
+
+docker-autotest:
+	docker run --rm \
+		"$(DOCKER_TAG)" bash -c \
+		"make autotest"
 
 docker-run:
 	docker run --rm --tty --interactive \
