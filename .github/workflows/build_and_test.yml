@@ -26,28 +26,10 @@ jobs:
         run: |
           make docker-test
 
-  autotests:
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Install codeplag
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-pip
-          sudo apt-get install -y clang libncurses5
-          sudo apt-get install -y man
-          sudo pip3 install --upgrade setuptools
-          sudo pip3 install argparse-manpage
-          cd /usr/src/
-          sudo git clone https://github.com/OSLL/code-plagiarism.git
-          cd code-plagiarism/
-          sudo make install
-
-      - name: Run autotests
+      - name: Run autotests in the docker container based on the created image
         env:
-            ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         run: |
-          cd ~/work/code-plagiarism/code-plagiarism
+          make docker-run
           echo "ACCESS_TOKEN = '${ACCESS_TOKEN}'" > .env
           sh ./autotests.sh
