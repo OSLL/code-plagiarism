@@ -8,6 +8,7 @@ from codeplag.pyplag.const import (
 
 
 class ASTWalker(ast.NodeVisitor):
+
     def __init__(self, features):
         self.features = features
         self.curr_depth = 0
@@ -121,7 +122,6 @@ class NodeGetter(ast.NodeVisitor):
             if self.depth == 1:
                 self.nodes.append(node)
 
-            # Будет ли работать, если эти три строки заккоментировать?
             self.depth += 1
             ast.NodeVisitor.generic_visit(self, node)
             self.depth -= 1

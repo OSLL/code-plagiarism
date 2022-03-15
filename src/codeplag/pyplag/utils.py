@@ -5,6 +5,11 @@ from termcolor import colored
 from codeplag.astfeatures import ASTFeatures
 from codeplag.pyplag.astwalkers import ASTWalker
 from codeplag.utils import compare_works
+from codeplag.consts import LOG_PATH
+from codeplag.logger import get_logger
+
+
+logger = get_logger(__name__, LOG_PATH)
 
 
 def get_ast_from_content(code, path):
@@ -49,10 +54,11 @@ def get_ast_from_filename(filename):
         analyzed
     '''
     if type(filename) is not str:
-        return TypeError
+        logger.error("Filename is not a string type.")
+        raise TypeError
 
     if not os.path.isfile(filename):
-        print(filename, "Is not a file / doesn't exist")
+        logger.error(f"{filename} is not a file / doesn't exist.")
         return None
 
     tree = None
@@ -60,11 +66,12 @@ def get_ast_from_filename(filename):
         with open(filename) as f:
             tree = get_ast_from_content(f.read(), filename)
     except UnicodeDecodeError:
-        print("Can't decode file {}".format(filename))
+        # TODO: Process this such as in the GitHubParser
+        logger.error("Can't decode file {}.".format(filename))
+        return None
     except PermissionError:
-        print("File denied.")
-    except FileNotFoundError:
-        print("{} not found".format(filename))
+        logger.error(f"Can't access to the file {filename}.")
+        return None
 
     return tree
 
@@ -103,6 +110,9 @@ def get_works_from_filepaths(filenames):
     works = []
     for filename in filenames:
         tree = get_ast_from_filename(filename)
+        if not tree:
+            continue
+
         features = get_features_from_ast(tree, filename)
         works.append(features)
 
