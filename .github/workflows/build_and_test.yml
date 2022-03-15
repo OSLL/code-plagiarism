@@ -30,6 +30,5 @@ jobs:
         env:
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         run: |
-          make docker-run
           echo "ACCESS_TOKEN = '${ACCESS_TOKEN}'" > .env
-          sh ./autotests.sh
+          docker run --rm "code-plagiarism-ubuntu18.04:0.0.9" ./autotests.sh
