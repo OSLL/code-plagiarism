@@ -2,6 +2,9 @@ name: Docker Hub
 
 on:
   push:
+    paths-ignore:
+      - 'docs/**'
+
     branches:
       - 'main'
 

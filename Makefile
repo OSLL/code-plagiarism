@@ -41,22 +41,41 @@ test-pytest:
 	make clear-cache
 
 autotest:
-	codeplag --version && \
+	codeplag --version || \
+	exit $?
+	@echo
+
 	codeplag --extension cpp \
-			 --files src/codeplag/cplag/tests/data/sample1.cpp src/codeplag/cplag/tests/data/sample2.cpp && \
+			 --files src/codeplag/cplag/tests/data/sample1.cpp src/codeplag/cplag/tests/data/sample2.cpp || \
+	exit $?
+	@echo
+
 	codeplag --extension cpp \
-			 --directories src/codeplag/cplag/tests/data && \
+			 --directories src/codeplag/cplag/tests/data || \
+	exit $?
+	@echo
+
 	codeplag --extension py \
 			 --directories src/codeplag/cplag/tests/data src/codeplag/cplag/tests \
-			 --files ./src/codeplag/pyplag/astwalkers.py && \
+			 --files ./src/codeplag/pyplag/astwalkers.py || \
+	exit $?
+	@echo
+
 	codeplag --extension py \
 			 --github-files https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/utils.py \
-							https://github.com/OSLL/code-plagiarism/blob/main/setup.py && \
+							https://github.com/OSLL/code-plagiarism/blob/main/setup.py || \
+	exit $?
+	@echo
+
 	codeplag --extension py \
 			 --github-user OSLL \
-			 --regexp "code-plag" && \
+			 --regexp "code-plag" || \
+	exit $?
+	@echo
+
 	codeplag --extension py \
-			 --github-project-folders https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/tests
+			 --github-project-folders https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/tests || \
+	exit $?
 
 run:
 	bash -login
