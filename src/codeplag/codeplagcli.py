@@ -59,10 +59,15 @@ def get_parser():
     parser.add_argument(
         "--mode",
         help="Choose one of the following modes of searching plagiarism. "
-             "The 'many_to_many' mode may require a lot of free memory.",
+             "The 'many_to_many' mode may require more free memory.",
         type=str,
         choices=["many_to_many"],
         default="many_to_many"
+    )
+    parser.add_argument(
+        "--show_progress",
+        help="Show current progress of searching plagiarism.",
+        action="store_true"
     )
     parser.add_argument(
         "-t", "--threshold",
