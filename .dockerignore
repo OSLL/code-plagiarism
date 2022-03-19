@@ -1,0 +1,8 @@
+Dockerfile
+docs/
+
+# Hidden
+.dockerignore
+.gitignore
+.git/
+.github/

@@ -46,6 +46,7 @@ if __name__ == '__main__':
     ENVIRONMENT = args.pop('environment')
     EXTENSION = args.pop('extension')
     THRESHOLD = args.pop('threshold')
+    SHOW_PROGRESS = args.pop('show_progress')
     BRANCH_POLICY = args.pop('all_branches')
     REG_EXP = args.pop('regexp')
     FILES = args.pop('files')
@@ -123,7 +124,9 @@ if __name__ == '__main__':
                 if i <= j:
                     continue
 
-                print("Check progress: {:.2%}".format(iteration / iterations), end='\r')
+                if SHOW_PROGRESS:
+                    print("Check progress: {:.2%}".format(iteration / iterations), end='\r')
+
                 compare_works(work1, work2, THRESHOLD)
                 iteration += 1
 
