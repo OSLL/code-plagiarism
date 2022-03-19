@@ -33,6 +33,6 @@ jobs:
               file: ./Dockerfile
               builder: ${{ steps.buildx.outputs.name }}
               push: true
-              tags: ${{ secrets.DOCKER_HUB_USERNAME }}/code-plagiarism-ubuntu18.04:0.0.9
+              tags: ${{ secrets.DOCKER_HUB_USERNAME }}/code-plagiarism-ubuntu18.04:0.1.0
               cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/code-plagiarism-ubuntu18.04:buildcache
               cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/code-plagiarism-ubuntu18.04:buildcache,mode=max

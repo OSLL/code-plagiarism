@@ -43,35 +43,35 @@ test-pytest:
 autotest:
 	codeplag --version || \
 	exit $?
-	@echo
+	@echo "\n\n"
 
 	codeplag --extension cpp \
 			 --files src/codeplag/cplag/tests/data/sample1.cpp src/codeplag/cplag/tests/data/sample2.cpp || \
 	exit $?
-	@echo
+	@echo "\n\n"
 
 	codeplag --extension cpp \
 			 --directories src/codeplag/cplag/tests/data || \
 	exit $?
-	@echo
+	@echo "\n\n"
 
 	codeplag --extension py \
 			 --directories src/codeplag/cplag/tests/data src/codeplag/cplag/tests \
 			 --files ./src/codeplag/pyplag/astwalkers.py || \
 	exit $?
-	@echo
+	@echo "\n\n"
 
 	codeplag --extension py \
 			 --github-files https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/utils.py \
 							https://github.com/OSLL/code-plagiarism/blob/main/setup.py || \
 	exit $?
-	@echo
+	@echo "\n\n"
 
 	codeplag --extension py \
 			 --github-user OSLL \
 			 --regexp "code-plag" || \
 	exit $?
-	@echo
+	@echo "\n\n"
 
 	codeplag --extension py \
 			 --github-project-folders https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/tests || \
@@ -81,6 +81,7 @@ run:
 	bash -login
 
 clear-cache:
+	find . -maxdepth 1 -type d | grep -E "pytest_cache" | (xargs rm -r 2> /dev/null || exit 0)
 	find . -type d | grep -E "__pycache__" | xargs rm -r
 
 rm:
