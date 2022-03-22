@@ -21,7 +21,7 @@ jobs:
       - name: Test version
         id: version
         run: |
-          shell /usr/bin/env python3 src/codeplag/brand_consts.py --version
+          /usr/bin/env python3 src/codeplag/brand_consts.py --version
 
       - name: Get output_version
         run: |
