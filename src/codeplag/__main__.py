@@ -23,12 +23,7 @@ from codeplag.cplag.util import (
 )
 
 
-pd.options.display.float_format = '{:,.2%}'.format
-
-logger = get_logger(__name__, LOG_PATH)
-
-
-if __name__ == '__main__':
+def run(logger):
     logger.debug("Starting codeplag util")
 
     parser = get_parser()
@@ -125,11 +120,24 @@ if __name__ == '__main__':
                     continue
 
                 if SHOW_PROGRESS:
-                    print("Check progress: {:.2%}".format(iteration / iterations), end='\r')
+                    print("Check progress: {:.2%}.".format(iteration / iterations), end='\r')
 
                 compare_works(work1, work2, THRESHOLD)
                 iteration += 1
 
     logger.debug('Time for all {:.2f} s'.format(perf_counter() - begin_time))
 
-    logger.info("Ending searching for plagiarism")
+    logger.info("Ending searching for plagiarism.")
+
+
+if __name__ == '__main__':
+    pd.options.display.float_format = '{:,.2%}'.format
+    logger = get_logger(__name__, LOG_PATH)
+    try:
+        run(logger)
+    except Exception:
+        logger.error(
+            "An unexpected error occurred while running the utility. "
+            f"For getting more information, check file '{LOG_PATH}'."
+        )
+        logger.debug("Trace:", exc_info=True)
