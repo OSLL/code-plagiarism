@@ -1,13 +1,15 @@
+import os
 import pandas as pd
+
 from time import perf_counter
 from decouple import Config, RepositoryEnv
 
 from webparsers.github_parser import GitHubParser
 from codeplag.logger import get_logger
 from codeplag.consts import (
-    LOG_PATH, SUPPORTED_EXTENSIONS,
-    COMPILE_ARGS
+    FILE_DOWNLOAD_PATH, LOG_PATH, SUPPORTED_EXTENSIONS
 )
+from codeplag.cplag.const import COMPILE_ARGS
 from codeplag.codeplagcli import get_parser
 from codeplag.utils import (
     get_files_path_from_directory,
@@ -19,7 +21,11 @@ from codeplag.pyplag.utils import (
     get_features_from_ast as get_features_from_ast_py
 )
 from codeplag.cplag.util import (
+    get_cursor_from_file as get_cursor_from_file_cpp,
     get_works_from_filepaths as get_works_from_filepaths_cpp
+)
+from codeplag.cplag.tree import (
+    get_features as get_features_cpp
 )
 
 
@@ -61,9 +67,11 @@ def run(logger):
     begin_time = perf_counter()
     if MODE == 'many_to_many':
         works = []
-        gh = GitHubParser(file_extensions=SUPPORTED_EXTENSIONS[EXTENSION],
-                          check_policy=BRANCH_POLICY,
-                          access_token=ACCESS_TOKEN)
+        gh = GitHubParser(
+            file_extensions=SUPPORTED_EXTENSIONS[EXTENSION],
+            check_policy=BRANCH_POLICY,
+            access_token=ACCESS_TOKEN
+        )
         if EXTENSION == 'py':
             if FILES:
                 logger.info("Getting works features from files")
@@ -102,13 +110,45 @@ def run(logger):
                         works.append(features)
         if EXTENSION == 'cpp':
             if FILES:
-                logger.info("Getting works features from files")
+                logger.info("Getting works features from files.")
                 works.extend(get_works_from_filepaths_cpp(FILES, COMPILE_ARGS))
 
             for directory in DIRECTORIES:
-                logger.info('Getting works features from {}'.format(directory))
+                logger.info('Getting works features from {}.'.format(directory))
                 filepaths = get_files_path_from_directory(directory, extensions=SUPPORTED_EXTENSIONS[EXTENSION])
                 works.extend(get_works_from_filepaths_cpp(filepaths, COMPILE_ARGS))
+
+            if GITHUB_FILES:
+                logger.info("Getting GitHub files from urls.")
+            for github_file in GITHUB_FILES:
+                file_content = gh.get_file_from_url(github_file)[0]
+                with open(FILE_DOWNLOAD_PATH, 'w') as out_file:
+                    out_file.write(file_content)
+                cursor = get_cursor_from_file_cpp(FILE_DOWNLOAD_PATH, COMPILE_ARGS)
+                features = get_features_cpp(cursor, FILE_DOWNLOAD_PATH)
+                os.remove(FILE_DOWNLOAD_PATH)
+                features.filepath = github_file
+                works.append(features)
+
+            """
+            for github_project in GITHUB_PROJECT_FOLDERS:
+                logger.info('Getting works features from {}.'.format(github_project))
+                github_project_files = gh.get_files_generator_from_dir_url(github_project)
+                for file, url_file in github_project_files:
+                    tree = get_ast_from_content_py(file, url_file)
+                    features = get_features_from_ast_py(tree, url_file)
+                    works.append(features)
+
+            if GITHUB_USER:
+                repos = gh.get_list_of_repos(owner=GITHUB_USER,
+                                             reg_exp=REG_EXP)
+                for repo, repo_url in repos.items():
+                    logger.info('Getting works features from {}.'.format(repo_url))
+                    files = gh.get_files_generator_from_repo_url(repo_url)
+                    for file, url_file in files:
+                        tree = get_ast_from_content_py(file, url_file)
+                        features = get_features_from_ast_py(tree, url_file)
+            """
 
         logger.info("Starting searching for plagiarism")
         count_works = len(works)
