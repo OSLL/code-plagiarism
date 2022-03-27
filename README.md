@@ -83,17 +83,20 @@ First of all, clone the repository and moved into this.
 
 - python analyzer
   ```
-    $ codeplag -ext py --files ./src/codeplag/pyplag/astwalkers.py --directories ./src/codeplag/pyplag
-    $ codeplag -ext py --directories ./src/codeplag/algorithms ./src
-    $ codeplag -ext py --files src/codeplag/pyplag/astwalkers.py --github-user OSLL --regexp code- --all-branches
-    $ codeplag -ext py --github-files https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/utils.py --github-user OSLL -e code- -ab
-    $ codeplag -ext py --github-files https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/utils.py -d src/codeplag/pyplag/
-    $ codeplag -ext py --directories src/ --github-user OSLL -e code-
-    $ codeplag -ext py --github-project-folders https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag --github-user OSLL -e code-
-    $ codeplag -ext py --github-project-folders https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag --directories src/codeplag/pyplag/
+    $ codeplag --extension py --files ./src/codeplag/pyplag/astwalkers.py --directories ./src/codeplag/pyplag
+    $ codeplag --extension py --directories ./src/codeplag/algorithms ./src
+    $ codeplag --extension py --files src/codeplag/pyplag/astwalkers.py --github-user OSLL --regexp code- --all-branches
+    $ codeplag --extension py --github-files https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/utils.py --github-user OSLL --regexp code- --all-branches
+    $ codeplag --extension py --github-files https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/utils.py --directories src/codeplag/pyplag/
+    $ codeplag --extension py --directories src/ --github-user OSLL --regexp code-
+    $ codeplag --extension py --github-project-folders https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag --github-user OSLL --regexp code-
+    $ codeplag --extension py --github-project-folders https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag --directories src/codeplag/pyplag/
   ```
 
 - C++/C analyzer
   ```
-    $ codeplag -ext cpp --directories src/codeplag/cplag/tests/data src/ --files src/codeplag/cplag/tests/data/sample1.cpp src/codeplag/cplag/tests/data/sample2.cpp
+    $ codeplag --extension cpp --directories src/codeplag/cplag/tests/data src/ --files src/codeplag/cplag/tests/data/sample1.cpp src/codeplag/cplag/tests/data/sample2.cpp
+    $ codeplag --extension cpp --github-files https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/cplag/tests/data/sample3.cpp https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/cplag/tests/data/sample4.cpp
+    $ codeplag --extension cpp --github-project-folders https://github.com/OSLL/code-plagiarism/tree/main/src/codeplag
+    $ codeplag --extension cpp --github-user OSLL --regexp "code-plag"
   ```

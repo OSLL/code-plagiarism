@@ -38,6 +38,8 @@ jobs:
               file: ./Dockerfile
               builder: ${{ steps.buildx.outputs.name }}
               push: true
-              tags: ${{ secrets.DOCKER_HUB_USERNAME }}/code-plagiarism-ubuntu18.04:${{ steps.get_version.outputs.version }}
+              tags: |
+                ${{ secrets.DOCKER_HUB_USERNAME }}/code-plagiarism-ubuntu18.04:latest
+                ${{ secrets.DOCKER_HUB_USERNAME }}/code-plagiarism-ubuntu18.04:${{ steps.get_version.outputs.version }}
               cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/code-plagiarism-ubuntu18.04:buildcache
               cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/code-plagiarism-ubuntu18.04:buildcache,mode=max

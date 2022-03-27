@@ -1,10 +1,11 @@
-PWD 				:= $(shell pwd)
-IMAGE_NAME			:= $(shell basename $(PWD))
-UTIL_VERSION		:= $(shell /usr/bin/env python3 src/codeplag/brand_consts.py --version)
-UTIL_NAME			:= $(shell /usr/bin/env python3 src/codeplag/brand_consts.py --util_name)
-DOCKER_TAG			?= $(shell echo $(IMAGE_NAME)-ubuntu18.04:$(UTIL_VERSION) | tr A-Z a-z)
-CODEPLAG_LOG_PATH	:= $(shell /usr/bin/env python3 src/codeplag/consts.py --get_log_path)
-WEBPARSERS_LOG_PATH	:= $(shell /usr/bin/env python3 src/webparsers/consts.py --get_log_path)
+PWD 					:= $(shell pwd)
+IMAGE_NAME				:= $(shell basename $(PWD))
+UTIL_VERSION			:= $(shell /usr/bin/env python3 src/codeplag/brand_consts.py --version)
+UTIL_NAME				:= $(shell /usr/bin/env python3 src/codeplag/brand_consts.py --util_name)
+DOCKER_TAG				?= $(shell echo $(IMAGE_NAME)-ubuntu18.04:$(UTIL_VERSION) | tr A-Z a-z)
+CODEPLAG_TMP_FILES_PATH ?= $(shell /usr/bin/env python3 src/codeplag/consts.py --get_tpm_files_path)
+CODEPLAG_LOG_PATH		:= $(shell /usr/bin/env python3 src/codeplag/consts.py --get_log_path)
+WEBPARSERS_LOG_PATH		:= $(shell /usr/bin/env python3 src/webparsers/consts.py --get_log_path)
 
 
 all: install install-man
@@ -13,6 +14,9 @@ install:
 	python3 setup.py install
 	install -D -m 0755 src/sbin/$(UTIL_NAME) /usr/sbin/$(UTIL_NAME)
 	install -D -m 0744 profile.d/$(UTIL_NAME) /etc/profile.d/$(UTIL_NAME).sh
+
+	mkdir -p $(CODEPLAG_TMP_FILES_PATH)
+	chmod 0777 $(CODEPLAG_TMP_FILES_PATH)
 
 	touch $(CODEPLAG_LOG_PATH)
 	chmod 0666 $(CODEPLAG_LOG_PATH)
@@ -55,6 +59,23 @@ autotest:
 	exit $?
 	@echo "\n\n"
 
+	codeplag --extension cpp \
+			 --github-files https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/cplag/tests/data/sample3.cpp \
+			 				https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/cplag/tests/data/sample4.cpp || \
+	exit $?
+	@echo "\n\n"
+
+	codeplag --extension cpp \
+			--github-project-folders https://github.com/OSLL/code-plagiarism/tree/main/src/codeplag || \
+	exit $?
+	@echo "\n\n"
+
+	codeplag --extension cpp \
+			 --github-user OSLL \
+			 --regexp "code-plag" || \
+	exit $?
+	@echo "\n\n"
+
 	codeplag --extension py \
 			 --directories src/codeplag/cplag/tests/data src/codeplag/cplag/tests \
 			 --files ./src/codeplag/pyplag/astwalkers.py || \
@@ -89,7 +110,7 @@ rm:
 	rm --force /usr/sbin/$(UTIL_NAME)
 	rm --force /usr/share/man/man1/$(UTIL_NAME).1
 	rm --force man/$(UTIL_NAME).1
-	rm --force $(CODEPLAG_LOG_PATH)
+	rm --force --recursive $(CODEPLAG_TMP_FILES_PATH)
 	rm --force $(WEBPARSERS_LOG_PATH)
 	pip3 uninstall $(UTIL_NAME) -y
 

@@ -12,7 +12,7 @@ logger = get_logger(__name__, LOG_PATH)
 
 def dir_path(path_to_directory):
     if not os.path.isdir(path_to_directory):
-        logger.error("Directory {} not found or not a directory.".format(path_to_directory))
+        logger.error("Directory '{}' not found or not a directory.".format(path_to_directory))
         exit(1)
 
     return path_to_directory
@@ -20,7 +20,7 @@ def dir_path(path_to_directory):
 
 def file_path(path_to_file):
     if not os.path.isfile(path_to_file):
-        logger.error("File {} not found or not a file.".format(path_to_file))
+        logger.error("File '{}' not found or not a file.".format(path_to_file))
         exit(1)
 
     return path_to_file
@@ -28,7 +28,7 @@ def file_path(path_to_file):
 
 def env_path(path_to_env):
     if not os.path.isfile(path_to_env):
-        logger.info("Env file {} not found or not a file.".format(path_to_env))
+        logger.info("Env file '{}' not found or not a file.".format(path_to_env))
         return None
 
     return path_to_env
