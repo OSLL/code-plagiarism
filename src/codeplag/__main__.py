@@ -29,6 +29,23 @@ from codeplag.cplag.tree import (
 )
 
 
+
+def append_work_features_py(file_content, url_to_file, works):
+    tree = get_ast_from_content_py(file_content, url_to_file)
+    features = get_features_from_ast_py(tree, url_to_file)
+    works.append(features)
+
+
+def append_work_features_cpp(file_content, url_to_file, works):
+    with open(FILE_DOWNLOAD_PATH, 'w') as out_file:
+        out_file.write(file_content)
+    cursor = get_cursor_from_file_cpp(FILE_DOWNLOAD_PATH, COMPILE_ARGS)
+    features = get_features_cpp(cursor, FILE_DOWNLOAD_PATH)
+    os.remove(FILE_DOWNLOAD_PATH)
+    features.filepath = url_to_file
+    works.append(features)
+
+
 def run(logger):
     logger.debug("Starting codeplag util")
 
@@ -85,18 +102,14 @@ def run(logger):
             if GITHUB_FILES:
                 logger.info("Getting GitHub files from urls")
             for github_file in GITHUB_FILES:
-                tree = get_ast_from_content_py(gh.get_file_from_url(github_file)[0],
-                                               github_file)
-                features = get_features_from_ast_py(tree, github_file)
-                works.append(features)
+                file_content = gh.get_file_from_url(github_file)[0]
+                append_work_features_py(file_content, github_file, works)
 
             for github_project in GITHUB_PROJECT_FOLDERS:
                 logger.info('Getting works features from {}'.format(github_project))
                 github_project_files = gh.get_files_generator_from_dir_url(github_project)
-                for file, url_file in github_project_files:
-                    tree = get_ast_from_content_py(file, url_file)
-                    features = get_features_from_ast_py(tree, url_file)
-                    works.append(features)
+                for file_content, url_file in github_project_files:
+                    append_work_features_py(file_content, url_file, works)
 
             if GITHUB_USER:
                 repos = gh.get_list_of_repos(owner=GITHUB_USER,
@@ -104,10 +117,8 @@ def run(logger):
                 for repo, repo_url in repos.items():
                     logger.info('Getting works features from {}'.format(repo_url))
                     files = gh.get_files_generator_from_repo_url(repo_url)
-                    for file, url_file in files:
-                        tree = get_ast_from_content_py(file, url_file)
-                        features = get_features_from_ast_py(tree, url_file)
-                        works.append(features)
+                    for file_content, url_file in files:
+                        append_work_features_py(file_content, url_file, works)
         if EXTENSION == 'cpp':
             if FILES:
                 logger.info("Getting works features from files.")
@@ -122,33 +133,24 @@ def run(logger):
                 logger.info("Getting GitHub files from urls.")
             for github_file in GITHUB_FILES:
                 file_content = gh.get_file_from_url(github_file)[0]
-                with open(FILE_DOWNLOAD_PATH, 'w') as out_file:
-                    out_file.write(file_content)
-                cursor = get_cursor_from_file_cpp(FILE_DOWNLOAD_PATH, COMPILE_ARGS)
-                features = get_features_cpp(cursor, FILE_DOWNLOAD_PATH)
-                os.remove(FILE_DOWNLOAD_PATH)
-                features.filepath = github_file
-                works.append(features)
+                append_work_features_cpp(file_content, github_file, works)
 
-            """
             for github_project in GITHUB_PROJECT_FOLDERS:
                 logger.info('Getting works features from {}.'.format(github_project))
                 github_project_files = gh.get_files_generator_from_dir_url(github_project)
-                for file, url_file in github_project_files:
-                    tree = get_ast_from_content_py(file, url_file)
-                    features = get_features_from_ast_py(tree, url_file)
-                    works.append(features)
+                for file_content, url_file in github_project_files:
+                    append_work_features_cpp(file_content, url_file, works)
 
             if GITHUB_USER:
-                repos = gh.get_list_of_repos(owner=GITHUB_USER,
-                                             reg_exp=REG_EXP)
+                repos = gh.get_list_of_repos(
+                    owner=GITHUB_USER,
+                    reg_exp=REG_EXP
+                )
                 for repo, repo_url in repos.items():
                     logger.info('Getting works features from {}.'.format(repo_url))
                     files = gh.get_files_generator_from_repo_url(repo_url)
-                    for file, url_file in files:
-                        tree = get_ast_from_content_py(file, url_file)
-                        features = get_features_from_ast_py(tree, url_file)
-            """
+                    for file_content, url_file in files:
+                        append_work_features_cpp(file_content, url_file, works)
 
         logger.info("Starting searching for plagiarism")
         count_works = len(works)

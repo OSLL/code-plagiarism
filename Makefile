@@ -65,6 +65,17 @@ autotest:
 	exit $?
 	@echo "\n\n"
 
+	codeplag --extension cpp \
+			--github-project-folders https://github.com/OSLL/code-plagiarism/tree/main/src/codeplag || \
+	exit $?
+	@echo "\n\n"
+
+	codeplag --extension cpp \
+			 --github-user OSLL \
+			 --regexp "code-plag" || \
+	exit $?
+	@echo "\n\n"
+
 	codeplag --extension py \
 			 --directories src/codeplag/cplag/tests/data src/codeplag/cplag/tests \
 			 --files ./src/codeplag/pyplag/astwalkers.py || \
