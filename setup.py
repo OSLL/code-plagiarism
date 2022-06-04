@@ -1,4 +1,4 @@
-from src.codeplag.brand_consts import UTIL_VERSION
+from src.codeplag.consts import UTIL_VERSION
 from setuptools import setup, find_packages
 from pathlib import Path
 
@@ -35,7 +35,7 @@ setup(
         'pandas==1.0.5',
         'ccsyspath==1.1.0',
         'clang==11.0',
-        'llvmlite==0.35.0',
+        'llvmlite==0.33.0',
         'libclang==10.0.1.0',
         'colorama==0.3.9',
         'termcolor==1.1.0',

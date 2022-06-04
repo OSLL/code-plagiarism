@@ -3,12 +3,12 @@ IMAGE_NAME				:= $(shell basename $(PWD))
 UTIL_VERSION			:= 0.1.3
 UTIL_NAME				:= codeplag
 DOCKER_TAG				?= $(shell echo $(IMAGE_NAME)-ubuntu18.04:$(UTIL_VERSION) | tr A-Z a-z)
-CODEPLAG_TMP_FILES_PATH ?= $(shell /usr/bin/env python3 src/codeplag/consts.py --get_tpm_files_path)
-CODEPLAG_LOG_PATH		:= $(shell /usr/bin/env python3 src/codeplag/consts.py --get_log_path)
+CODEPLAG_TMP_FILES_PATH ?= /tmp/$(UTIL_NAME)
+CODEPLAG_LOG_PATH		:= $(CODEPLAG_TMP_FILES_PATH)/$(UTIL_NAME).log
 WEBPARSERS_LOG_PATH		:= $(shell /usr/bin/env python3 src/webparsers/consts.py --get_log_path)
 
 
-CONVERTED_FILES 		:= src/codeplag/brand_consts.py
+CONVERTED_FILES 		:= src/codeplag/consts.py
 
 
 all: substitute install install-man
@@ -18,10 +18,12 @@ all: substitute install install-man
 	sed \
 		-e "s|@UTIL_NAME@|${UTIL_NAME}|g" \
 		-e "s|@UTIL_VERSION@|${UTIL_VERSION}|g" \
+		-e "s|@CODEPLAG_TMP_FILES_PATH@|${CODEPLAG_TMP_FILES_PATH}|g" \
+		-e "s|@CODEPLAG_LOG_PATH@|${CODEPLAG_LOG_PATH}|g" \
 		$< > $@
 
 substitute: $(CONVERTED_FILES)
-	echo "Substituting of information about the utility in files"
+	@echo "Substituting of information about the utility in files"
 
 install: substitute
 	python3 -m pip install .
