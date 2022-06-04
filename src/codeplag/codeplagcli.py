@@ -4,8 +4,9 @@ import argparse
 
 from webparsers.github_parser import GitHubParser
 from codeplag.logger import get_logger
-from codeplag.brand_consts import UTIL_VERSION, UTIL_NAME
-from codeplag.consts import LOG_PATH
+from codeplag.consts import (
+    LOG_PATH, UTIL_NAME, UTIL_VERSION
+)
 
 logger = get_logger(__name__, LOG_PATH)
 

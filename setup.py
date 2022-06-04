@@ -1,4 +1,4 @@
-from src.codeplag.brand_consts import UTIL_VERSION
+from src.codeplag.consts import UTIL_VERSION
 from setuptools import setup, find_packages
 from pathlib import Path
 
@@ -31,11 +31,11 @@ setup(
     python_requires='>=3.6',
     install_requires=[
         'argcomplete==2.0.0',
-        'numpy==1.19.4',
+        'numpy==1.18.5',
         'pandas==1.0.5',
         'ccsyspath==1.1.0',
         'clang==11.0',
-        'llvmlite==0.35.0',
+        'llvmlite==0.33.0',
         'libclang==10.0.1.0',
         'colorama==0.3.9',
         'termcolor==1.1.0',

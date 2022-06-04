@@ -1,17 +1,32 @@
 PWD 					:= $(shell pwd)
 IMAGE_NAME				:= $(shell basename $(PWD))
-UTIL_VERSION			:= $(shell /usr/bin/env python3 src/codeplag/brand_consts.py --version)
-UTIL_NAME				:= $(shell /usr/bin/env python3 src/codeplag/brand_consts.py --util_name)
+UTIL_VERSION			:= 0.1.3
+UTIL_NAME				:= codeplag
 DOCKER_TAG				?= $(shell echo $(IMAGE_NAME)-ubuntu18.04:$(UTIL_VERSION) | tr A-Z a-z)
-CODEPLAG_TMP_FILES_PATH ?= $(shell /usr/bin/env python3 src/codeplag/consts.py --get_tpm_files_path)
-CODEPLAG_LOG_PATH		:= $(shell /usr/bin/env python3 src/codeplag/consts.py --get_log_path)
+CODEPLAG_TMP_FILES_PATH ?= /tmp/$(UTIL_NAME)
+CODEPLAG_LOG_PATH		:= $(CODEPLAG_TMP_FILES_PATH)/$(UTIL_NAME).log
 WEBPARSERS_LOG_PATH		:= $(shell /usr/bin/env python3 src/webparsers/consts.py --get_log_path)
 
 
-all: install install-man
+CONVERTED_FILES 		:= src/codeplag/consts.py
 
-install:
-	python3 setup.py install
+
+all: substitute install install-man
+
+# $< - %.in file, $@ desired file %
+%: %.in
+	sed \
+		-e "s|@UTIL_NAME@|${UTIL_NAME}|g" \
+		-e "s|@UTIL_VERSION@|${UTIL_VERSION}|g" \
+		-e "s|@CODEPLAG_TMP_FILES_PATH@|${CODEPLAG_TMP_FILES_PATH}|g" \
+		-e "s|@CODEPLAG_LOG_PATH@|${CODEPLAG_LOG_PATH}|g" \
+		$< > $@
+
+substitute: $(CONVERTED_FILES)
+	@echo "Substituting of information about the utility in files"
+
+install: substitute
+	python3 -m pip install .
 	install -D -m 0755 src/sbin/$(UTIL_NAME) /usr/sbin/$(UTIL_NAME)
 	install -D -m 0744 profile.d/$(UTIL_NAME) /etc/profile.d/$(UTIL_NAME).sh
 
@@ -24,7 +39,7 @@ install:
 	touch $(WEBPARSERS_LOG_PATH)
 	chmod 0666 $(WEBPARSERS_LOG_PATH)
 
-install-man:
+install-man: substitute
 	mkdir -p Man
 	argparse-manpage --pyfile src/codeplag/codeplagcli.py \
 					 --function get_parser \
@@ -36,15 +51,15 @@ install-man:
 
 	install -D -m 0644 man/codeplag.1 /usr/share/man/man1/$(UTIL_NAME).1
 
-test:
+test: substitute
 	python3 -m unittest discover ./src
 	make clear-cache
 
-test-pytest:
+test-pytest: substitute
 	python3 -m pytest
 	make clear-cache
 
-autotest:
+autotest: substitute
 	codeplag --version || \
 	exit $?
 	@echo "\n\n"
@@ -105,13 +120,15 @@ clear-cache:
 	find . -maxdepth 1 -type d | grep -E "pytest_cache" | (xargs rm -r 2> /dev/null || exit 0)
 	find . -type d | grep -E "__pycache__" | xargs rm -r
 
-rm:
+uninstall:
 	rm --force /etc/profile.d/$(UTIL_NAME).sh
 	rm --force /usr/sbin/$(UTIL_NAME)
 	rm --force /usr/share/man/man1/$(UTIL_NAME).1
 	rm --force man/$(UTIL_NAME).1
-	rm --force --recursive $(CODEPLAG_TMP_FILES_PATH)
 	rm --force $(WEBPARSERS_LOG_PATH)
+	rm --force --recursive $(CODEPLAG_TMP_FILES_PATH)
+	rm --force --recursive build/
+	rm --force --recursive dist/
 	pip3 uninstall $(UTIL_NAME) -y
 
 docker:
@@ -151,7 +168,7 @@ help:
 	@echo "  test                             Run unittest;"
 	@echo "  test-pytest                      Run pytest;"
 	@echo "  clear-cache                      Delete __pycache__ folders;"
-	@echo "  rm                               Remove installed package;"
+	@echo "  uninstall                        Remove installed package;"
 	@echo "  help                             Display this message and exit."
 	@echo
 	@echo "Docker:"
