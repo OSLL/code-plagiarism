@@ -1,8 +1,7 @@
 import argparse
 
-
-UTIL_VERSION = "0.1.2"
-UTIL_NAME = "codeplag"
+UTIL_VERSION = "@UTIL_VERSION@"
+UTIL_NAME = "@UTIL_NAME@"
 
 
 def _get_parser():

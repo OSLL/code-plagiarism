@@ -29,6 +29,7 @@ jobs:
             name: Get current util version
             id: get_version
             run: |
+              make substitute
               echo "::set-output name=version::$(/usr/bin/env python3 src/codeplag/brand_consts.py --version)"
           -
             name: Build and push

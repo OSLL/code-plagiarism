@@ -1,10 +1,12 @@
 import os
 import argparse
 
+from codeplag.brand_consts import UTIL_NAME
 
-FILE_DOWNLOAD_PATH = '/tmp/codeplag/download.out'
-TMP_FILES_PATH = '/tmp/codeplag'
-LOG_PATH = os.path.join(TMP_FILES_PATH, 'codeplag.log')
+
+TMP_FILES_PATH = f'/tmp/{UTIL_NAME}'
+FILE_DOWNLOAD_PATH = os.path.join(TMP_FILES_PATH, 'download.out')
+LOG_PATH = os.path.join(TMP_FILES_PATH, f'{UTIL_NAME}.log')
 SUPPORTED_EXTENSIONS = {
     'py': [
         r'.py$'

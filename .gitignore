@@ -44,3 +44,6 @@ build/*
 Man/*
 src/codeplag.egg-info/*
 docs/notebooks/.ipynb_checkpoints/
+
+# Substituting
+src/codeplag/brand_consts.py
