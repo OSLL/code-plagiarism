@@ -31,7 +31,7 @@ setup(
     python_requires='>=3.6',
     install_requires=[
         'argcomplete==2.0.0',
-        'numpy==1.19.4',
+        'numpy==1.18.5',
         'pandas==1.0.5',
         'ccsyspath==1.1.0',
         'clang==11.0',
