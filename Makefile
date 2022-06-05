@@ -1,6 +1,6 @@
 PWD 					:= $(shell pwd)
 IMAGE_NAME				:= $(shell basename $(PWD))
-UTIL_VERSION			:= 0.1.3
+UTIL_VERSION			:= 0.1.4
 UTIL_NAME				:= codeplag
 DOCKER_TAG				?= $(shell echo $(IMAGE_NAME)-ubuntu18.04:$(UTIL_VERSION) | tr A-Z a-z)
 CODEPLAG_TMP_FILES_PATH ?= /tmp/$(UTIL_NAME)
@@ -51,12 +51,9 @@ install-man: substitute
 
 	install -D -m 0644 man/codeplag.1 /usr/share/man/man1/$(UTIL_NAME).1
 
-test: substitute
-	python3 -m unittest discover ./src
-	make clear-cache
 
-test-pytest: substitute
-	python3 -m pytest
+test: substitute
+	python3 -m pytest -q
 	make clear-cache
 
 autotest: substitute
@@ -129,6 +126,7 @@ uninstall:
 	rm --force --recursive $(CODEPLAG_TMP_FILES_PATH)
 	rm --force --recursive build/
 	rm --force --recursive dist/
+	rm --force src/codeplag/consts.py
 	pip3 uninstall $(UTIL_NAME) -y
 
 docker:
@@ -165,8 +163,7 @@ help:
 	@echo "                                   Required argparse-manpage and sudo privilege;"
 	@echo "  run                              Run bash with root privileges and in an interactive mode."
 	@echo "                                   This is required for correct work of the autocomlete;"
-	@echo "  test                             Run unittest;"
-	@echo "  test-pytest                      Run pytest;"
+	@echo "  test                             Run pytest;"
 	@echo "  clear-cache                      Delete __pycache__ folders;"
 	@echo "  uninstall                        Remove installed package;"
 	@echo "  help                             Display this message and exit."
