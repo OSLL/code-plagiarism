@@ -38,7 +38,6 @@ class GitHubParser:
         url_parts = GitHubParser.check_github_url(repo_url)
 
         if len(url_parts) != 5:
-            GitHubParser.logger.error(f'{repo_url} is incorrect link to GitHub repository')
             raise ValueError('Incorrect link to GitHub repository')
 
         return url_parts[3], url_parts[4]
@@ -50,7 +49,6 @@ class GitHubParser:
         url_parts = GitHubParser.check_github_url(content_url)
 
         if len(url_parts) <= 7:
-            GitHubParser.logger.error(f'{content_url} is incorrect link to content of GitHub repository')
             raise ValueError('Incorrect link to content of GitHub repository')
 
         return (url_parts[3], url_parts[4],
@@ -221,7 +219,13 @@ class GitHubParser:
         return branches
 
     def get_files_generator_from_repo_url(self, repo_url):
-        owner, repo = self.parse_repo_url(repo_url)
+        try:
+            owner, repo = self.parse_repo_url(repo_url)
+        except ValueError as error:
+            GitHubParser.logger.error(
+                f'{repo_url} is incorrect link to GitHub repository'
+            )
+            raise error
 
         default_branch = self.get_name_default_branch(owner, repo)
         if self.__check_all_branches:
@@ -243,7 +247,14 @@ class GitHubParser:
                         )
 
     def get_file_from_url(self, file_url):
-        owner, repo, branch, path = self.parse_content_url(file_url)
+        try:
+            owner, repo, branch, path = GitHubParser.parse_content_url(file_url)
+        except ValueError as error:
+            GitHubParser.logger.error(
+                f'{file_url} is incorrect link to content of GitHub repository'
+            )
+            raise error
+
         api_url = '/repos/{}/{}/contents/{}'.format(owner, repo, path)
         params = {
             'ref': branch
@@ -258,7 +269,14 @@ class GitHubParser:
                 )
 
     def get_files_generator_from_dir_url(self, dir_url):
-        owner, repo, branch, path = GitHubParser.parse_content_url(dir_url)
+        try:
+            owner, repo, branch, path = GitHubParser.parse_content_url(dir_url)
+        except ValueError as error:
+            GitHubParser.logger.error(
+                f'{dir_url} is incorrect link to content of GitHub repository'
+            )
+            raise error
+
         api_url = '/repos/{}/{}/contents/{}'.format(owner, repo, path)
         params = {
             'ref': branch

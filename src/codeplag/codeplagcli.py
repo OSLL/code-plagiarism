@@ -1,6 +1,7 @@
-import os
 import argcomplete
 import argparse
+import os
+import sys
 
 from webparsers.github_parser import GitHubParser
 from codeplag.logger import get_logger
@@ -11,46 +12,50 @@ from codeplag.consts import (
 logger = get_logger(__name__, LOG_PATH)
 
 
-def dir_path(path_to_directory):
+def dir_path(path_to_directory: str) -> str:
     if not os.path.isdir(path_to_directory):
-        logger.error("Directory '{}' not found or not a directory.".format(path_to_directory))
-        exit(1)
+        raise argparse.ArgumentTypeError(
+            f"Directory '{path_to_directory}' not found or not a directory."
+        )
 
     return path_to_directory
 
 
-def file_path(path_to_file):
+def file_path(path_to_file: str) -> str:
     if not os.path.isfile(path_to_file):
-        logger.error("File '{}' not found or not a file.".format(path_to_file))
-        exit(1)
+        raise argparse.ArgumentTypeError(
+            f"File '{path_to_file}' not found or not a file."
+        )
 
     return path_to_file
 
 
-def env_path(path_to_env):
+def env_path(path_to_env: str) -> str:
     if not os.path.isfile(path_to_env):
-        logger.info("Env file '{}' not found or not a file.".format(path_to_env))
-        return None
+        logger.warning(f"Env file '{path_to_env}' not found or not a file.")
+        return ""
 
     return path_to_env
 
 
-def github_url(url):
+def github_url(url: str) -> str:
     try:
         GitHubParser.parse_content_url(url)
     except ValueError:
-        exit(1)
+        raise argparse.ArgumentTypeError(
+            f"'{url}' is incorrect link to GitHub."
+        )
 
     return url
 
 
-def get_parser():
+def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-                 prog="{}".format(UTIL_NAME.upper()),
-                 formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-                 description="Program help to find similar parts of source "
-                             "codes for the different languages.",
-             )
+        prog=f"{UTIL_NAME.upper()}",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description="Program help to find similar parts of source "
+                    "codes for the different languages.",
+    )
     parser.add_argument(
         "-env", "--environment",
         help="Path to the environment file with GitHub access token.",
@@ -84,7 +89,7 @@ def get_parser():
         '-v', '--version',
         help="Print current version number and exit.",
         action="version",
-        version="{} {}".format(UTIL_NAME, UTIL_VERSION)
+        version=f"{UTIL_NAME} {UTIL_VERSION}"
     )
 
     parser_required = parser.add_argument_group("required options")
@@ -95,7 +100,6 @@ def get_parser():
         choices=["py", "cpp"],
         required=True
     )
-
 
     parser_github = parser.add_argument_group("GitHub options")
     parser_github.add_argument(
@@ -129,7 +133,6 @@ def get_parser():
         nargs="+",
         default=[]
     )
-
 
     parser.add_argument(
         "-f", "--files",
