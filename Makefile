@@ -1,14 +1,15 @@
 PWD 					:= $(shell pwd)
 IMAGE_NAME				:= $(shell basename $(PWD))
-UTIL_VERSION			:= 0.1.4
+UTIL_VERSION			:= 0.1.5
 UTIL_NAME				:= codeplag
 DOCKER_TAG				?= $(shell echo $(IMAGE_NAME)-ubuntu18.04:$(UTIL_VERSION) | tr A-Z a-z)
-CODEPLAG_TMP_FILES_PATH ?= /tmp/$(UTIL_NAME)
-CODEPLAG_LOG_PATH		:= $(CODEPLAG_TMP_FILES_PATH)/$(UTIL_NAME).log
-WEBPARSERS_LOG_PATH		:= $(shell /usr/bin/env python3 src/webparsers/consts.py --get_log_path)
+LOGS_PATH				:= /var/log
+CODEPLAG_LOG_PATH		:= $(LOGS_PATH)/$(UTIL_NAME).log
+WEBPARSERS_LOG_PATH		:= $(LOGS_PATH)/webparsers.log
 
 
-CONVERTED_FILES 		:= src/codeplag/consts.py
+CONVERTED_FILES 		:= src/codeplag/consts.py \
+						   src/webparsers/consts.py
 
 
 all: substitute install install-man
@@ -18,7 +19,7 @@ all: substitute install install-man
 	sed \
 		-e "s|@UTIL_NAME@|${UTIL_NAME}|g" \
 		-e "s|@UTIL_VERSION@|${UTIL_VERSION}|g" \
-		-e "s|@CODEPLAG_TMP_FILES_PATH@|${CODEPLAG_TMP_FILES_PATH}|g" \
+		-e "s|@WEBPARSERS_LOG_PATH@|${WEBPARSERS_LOG_PATH}|g" \
 		-e "s|@CODEPLAG_LOG_PATH@|${CODEPLAG_LOG_PATH}|g" \
 		$< > $@
 
@@ -29,9 +30,6 @@ install: substitute
 	python3 -m pip install .
 	install -D -m 0755 src/sbin/$(UTIL_NAME) /usr/sbin/$(UTIL_NAME)
 	install -D -m 0744 profile.d/$(UTIL_NAME) /etc/profile.d/$(UTIL_NAME).sh
-
-	mkdir -p $(CODEPLAG_TMP_FILES_PATH)
-	chmod 0777 $(CODEPLAG_TMP_FILES_PATH)
 
 	touch $(CODEPLAG_LOG_PATH)
 	chmod 0666 $(CODEPLAG_LOG_PATH)
@@ -62,23 +60,23 @@ autotest: substitute
 	@echo "\n\n"
 
 	codeplag --extension cpp \
-			 --files src/codeplag/cplag/tests/data/sample1.cpp src/codeplag/cplag/tests/data/sample2.cpp || \
+			 --files test/codeplag/cplag/data/sample1.cpp test/codeplag/cplag/data/sample2.cpp || \
 	exit $?
 	@echo "\n\n"
 
 	codeplag --extension cpp \
-			 --directories src/codeplag/cplag/tests/data || \
+			 --directories test/codeplag/cplag/data || \
 	exit $?
 	@echo "\n\n"
 
 	codeplag --extension cpp \
-			 --github-files https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/cplag/tests/data/sample3.cpp \
-			 				https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/cplag/tests/data/sample4.cpp || \
+			 --github-files https://github.com/OSLL/code-plagiarism/blob/main/test/codeplag/cplag/data/sample3.cpp \
+			 				https://github.com/OSLL/code-plagiarism/blob/main/test/codeplag/cplag/data/sample4.cpp || \
 	exit $?
 	@echo "\n\n"
 
 	codeplag --extension cpp \
-			--github-project-folders https://github.com/OSLL/code-plagiarism/tree/main/src/codeplag || \
+			--github-project-folders https://github.com/OSLL/code-plagiarism/tree/main/test || \
 	exit $?
 	@echo "\n\n"
 
@@ -89,8 +87,8 @@ autotest: substitute
 	@echo "\n\n"
 
 	codeplag --extension py \
-			 --directories src/codeplag/cplag/tests/data src/codeplag/cplag/tests \
-			 --files ./src/codeplag/pyplag/astwalkers.py || \
+			 --directories test/codeplag/cplag \
+			 --files src/codeplag/pyplag/astwalkers.py || \
 	exit $?
 	@echo "\n\n"
 
@@ -107,7 +105,7 @@ autotest: substitute
 	@echo "\n\n"
 
 	codeplag --extension py \
-			 --github-project-folders https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/tests || \
+			 --github-project-folders https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag || \
 	exit $?
 
 run:
@@ -115,7 +113,7 @@ run:
 
 clear-cache:
 	find . -maxdepth 1 -type d | grep -E "pytest_cache" | (xargs rm -r 2> /dev/null || exit 0)
-	find . -type d | grep -E "__pycache__" | xargs rm -r
+	find . -type d | grep -E "__pycache__" | (xargs rm -r 2> /dev/null || exit 0)
 
 uninstall:
 	rm --force /etc/profile.d/$(UTIL_NAME).sh
@@ -123,7 +121,6 @@ uninstall:
 	rm --force /usr/share/man/man1/$(UTIL_NAME).1
 	rm --force man/$(UTIL_NAME).1
 	rm --force $(WEBPARSERS_LOG_PATH)
-	rm --force --recursive $(CODEPLAG_TMP_FILES_PATH)
 	rm --force --recursive build/
 	rm --force --recursive dist/
 	rm --force src/codeplag/consts.py

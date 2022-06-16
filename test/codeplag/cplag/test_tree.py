@@ -1,19 +1,33 @@
+import os
 import unittest
-from codeplag.cplag.util import prepare_cursors
+
+from codeplag.cplag.const import COMPILE_ARGS
+from codeplag.cplag.util import get_cursor_from_file
 from codeplag.cplag.tree import get_not_ignored, generic_visit, get_features
 from codeplag.astfeatures import ASTFeatures
 
 
 class TestTree(unittest.TestCase):
 
-    def init(self, file1="", file2=""):
-        return prepare_cursors(file1, file2)
+    def setUp(self):
+        self.first_sample_path = os.path.abspath(
+            "test/codeplag/cplag/data/sample1.cpp"
+        )
+        self.second_sample_path = os.path.abspath(
+            "test/codeplag/cplag/data/sample2.cpp"
+        )
+        if os.path.exists(self.first_sample_path) and \
+           os.path.exists(self.second_sample_path):
+            self.first_cursor = get_cursor_from_file(
+                self.first_sample_path, COMPILE_ARGS
+            )
+            self.second_cursor = get_cursor_from_file(
+                self.second_sample_path, COMPILE_ARGS
+            )
 
     def test_get_not_ignored_normal(self):
-        (filename, filename2, cursor, cursor2) = self.init("sample1.cpp",
-                                                           "sample2.cpp")
-        res1 = get_not_ignored(cursor, filename)
-        res2 = get_not_ignored(cursor2, filename2)
+        res1 = get_not_ignored(self.first_cursor, self.first_sample_path)
+        res2 = get_not_ignored(self.second_cursor, self.second_sample_path)
 
         self.assertEqual(type(res1), list)
         self.assertEqual(type(res2), list)
@@ -21,13 +35,10 @@ class TestTree(unittest.TestCase):
         self.assertEqual(len(res2), 1)
 
     def test_generic_visit(self):
-        (filename, filename2, cursor, cursor2) = self.init("sample1.cpp",
-                                                           "sample2.cpp")
+        features = ASTFeatures(self.first_sample_path)
+        generic_visit(self.first_cursor, features)
 
-        features = ASTFeatures(filename)
-        generic_visit(cursor, features)
-
-        self.assertEqual(features.filepath, filename)
+        self.assertEqual(features.filepath, self.first_sample_path)
         self.assertEqual(features.count_of_nodes, 0)
         self.assertEqual(features.head_nodes, ['gcd'])
         self.assertEqual(features.operators, {})
@@ -43,12 +54,9 @@ class TestTree(unittest.TestCase):
                                            100, 101, 100, 101])
 
     def test_get_features(self):
-        (filename, filename2, cursor, cursor2) = self.init("sample1.cpp",
-                                                           "sample2.cpp")
+        features = get_features(self.first_cursor, self.first_sample_path)
 
-        features = get_features(cursor, filename)
-
-        self.assertEqual(features.filepath, filename)
+        self.assertEqual(features.filepath, self.first_sample_path)
         self.assertEqual(features.count_of_nodes, 0)
         self.assertEqual(features.head_nodes, ['gcd'])
         self.assertEqual(features.operators, {'==': 1, '%': 1})
