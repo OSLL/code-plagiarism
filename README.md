@@ -79,12 +79,29 @@ First of all, clone the repository and moved into this.
   $ man codeplag
   ```
 
-## 4. Demo examples (works in the project directory and with an installed codeplag package)
+## 4. Using the Docker Image
 
-- python analyzer
+- Pull an image from Docker Hub
   ```
-    $ codeplag --extension py --files ./src/codeplag/pyplag/astwalkers.py --directories ./src/codeplag/pyplag
-    $ codeplag --extension py --directories ./src/codeplag/algorithms ./src
+    $ docker pull artanias/code-plagiarism-ubuntu18.04:latest
+  ```
+
+- Run container based on pulled image and connect volume with your data
+  ```
+    $ docker run --rm --tty --interactive -v <absolute_local_path_with_data>:<absolute_containter_path_with_data> "artanias/code-plagiarism-ubuntu18.04:latest" /bin/bash
+  ```
+
+- Run plagiarism search on connected directory.
+  ```
+    $ codeplag --ext py --directories <absolute_containter_path_with_data>
+  ```
+
+## 5. Demo examples (works in the project directory and with an installed codeplag package)
+
+- Python analyzer
+  ```
+    $ codeplag --extension py --files src/codeplag/pyplag/astwalkers.py --directories src/codeplag/pyplag
+    $ codeplag --extension py --directories src/codeplag/algorithms src
     $ codeplag --extension py --files src/codeplag/pyplag/astwalkers.py --github-user OSLL --regexp code- --all-branches
     $ codeplag --extension py --github-files https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/utils.py --github-user OSLL --regexp code- --all-branches
     $ codeplag --extension py --github-files https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/utils.py --directories src/codeplag/pyplag/
@@ -95,8 +112,8 @@ First of all, clone the repository and moved into this.
 
 - C++/C analyzer
   ```
-    $ codeplag --extension cpp --directories src/codeplag/cplag/tests/data src/ --files src/codeplag/cplag/tests/data/sample1.cpp src/codeplag/cplag/tests/data/sample2.cpp
-    $ codeplag --extension cpp --github-files https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/cplag/tests/data/sample3.cpp https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/cplag/tests/data/sample4.cpp
-    $ codeplag --extension cpp --github-project-folders https://github.com/OSLL/code-plagiarism/tree/main/src/codeplag
+    $ codeplag --extension cpp --directories src/codeplag/cplag/tests/data src/ --files test/codeplag/cplag/data/sample1.cpp test/codeplag/cplag/data/sample2.cpp
+    $ codeplag --extension cpp --github-files https://github.com/OSLL/code-plagiarism/blob/main/test/codeplag/cplag/data/sample3.cpp https://github.com/OSLL/code-plagiarism/blob/main/test/codeplag/cplag/data/sample4.cpp
+    $ codeplag --extension cpp --github-project-folders https://github.com/OSLL/code-plagiarism/tree/main/test
     $ codeplag --extension cpp --github-user OSLL --regexp "code-plag"
   ```

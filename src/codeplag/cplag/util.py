@@ -1,10 +1,7 @@
 import os
-import warnings
-import ccsyspath
 
 
 from clang.cindex import Index, TranslationUnit
-from codeplag.cplag.const import COMPILE_ARGS
 from codeplag.cplag.tree import get_features
 
 
@@ -24,33 +21,6 @@ def get_cursor_from_file(filename, args=[]):
     file_obj = index.parse(filename, args=args, options=options) or 0
 
     return file_obj.cursor
-
-
-def prepare_cursors(file1, file2):
-    warnings.simplefilter("ignore", ResourceWarning)
-    directory = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                             './tests/data')
-    files = list(filter(lambda x: (x.endswith('.cpp') or
-                                   x.endswith('.c') or
-                                   x.endswith('h')), os.listdir(directory)))
-
-    if(len(files) < 2):
-        message = 'At least 2 files in /tests folder are needed'
-        raise FileNotFoundError(message)
-    else:
-        if(file1 == ""):
-            filename = os.path.join(directory, "./rw1.cpp")
-        else:
-            filename = os.path.join(directory, "./" + file1)
-
-        if(file2 == ""):
-            filename2 = os.path.join(directory, "./rw2.cpp")
-        else:
-            filename2 = os.path.join(directory, "./" + file2)
-
-        cursor = get_cursor_from_file(filename, COMPILE_ARGS)
-        cursor2 = get_cursor_from_file(filename2, COMPILE_ARGS)
-        return (filename, filename2, cursor, cursor2)
 
 
 def get_works_from_filepaths(filenames, compile_args):
