@@ -47,3 +47,4 @@ docs/notebooks/.ipynb_checkpoints/
 
 # Substituting
 src/codeplag/consts.py
+src/webparsers/consts.py

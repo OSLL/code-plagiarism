@@ -4,9 +4,11 @@ on:
   push:
     paths-ignore:
       - 'docs/**'
+      - '**.md'
 
     branches:
       - 'main'
+      - '**.md'
 
 jobs:
   build:
