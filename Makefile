@@ -1,6 +1,6 @@
 PWD 					:= $(shell pwd)
 IMAGE_NAME				:= $(shell basename $(PWD))
-UTIL_VERSION			:= 0.1.5
+UTIL_VERSION			:= 0.1.6
 UTIL_NAME				:= codeplag
 DOCKER_TAG				?= $(shell echo $(IMAGE_NAME)-ubuntu18.04:$(UTIL_VERSION) | tr A-Z a-z)
 LOGS_PATH				:= /var/log
@@ -54,7 +54,7 @@ test: substitute
 	python3 -m pytest -q
 	make clear-cache
 
-autotest: substitute
+autotest:
 	codeplag --version || \
 	exit $?
 	@echo "\n\n"
@@ -111,6 +111,13 @@ autotest: substitute
 run:
 	bash -login
 
+clear: clear-cache
+	rm --force --recursive Man/
+	rm --force --recursive build/
+	rm --force --recursive dist/
+	rm --force src/codeplag/consts.py
+	rm --force src/webparsers/consts.py
+
 clear-cache:
 	find . -maxdepth 1 -type d | grep -E "pytest_cache" | (xargs rm -r 2> /dev/null || exit 0)
 	find . -type d | grep -E "__pycache__" | (xargs rm -r 2> /dev/null || exit 0)
@@ -119,11 +126,8 @@ uninstall:
 	rm --force /etc/profile.d/$(UTIL_NAME).sh
 	rm --force /usr/sbin/$(UTIL_NAME)
 	rm --force /usr/share/man/man1/$(UTIL_NAME).1
-	rm --force man/$(UTIL_NAME).1
 	rm --force $(WEBPARSERS_LOG_PATH)
-	rm --force --recursive build/
-	rm --force --recursive dist/
-	rm --force src/codeplag/consts.py
+	rm --force $(CODEPLAG_LOG_PATH)
 	pip3 uninstall $(UTIL_NAME) -y
 
 docker:
@@ -161,6 +165,7 @@ help:
 	@echo "  run                              Run bash with root privileges and in an interactive mode."
 	@echo "                                   This is required for correct work of the autocomlete;"
 	@echo "  test                             Run pytest;"
+	@echo "  clear                            Remove generated while installing and testing files in the source directory;"
 	@echo "  clear-cache                      Delete __pycache__ folders;"
 	@echo "  uninstall                        Remove installed package;"
 	@echo "  help                             Display this message and exit."

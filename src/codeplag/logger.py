@@ -2,8 +2,10 @@ import logging
 
 
 def get_file_handler(filename):
-    log_format = ('%(asctime)s - [%(levelname)s] - %(name)s - '
-                   + '(%(filename)s).%(funcName)s(%(lineno)d) - %(message)s')
+    log_format = (
+        '%(asctime)s - [%(levelname)s] - %(name)s - '
+        '(%(filename)s).%(funcName)s(%(lineno)d) - %(message)s'
+    )
     log_arguments = {
                        'fmt': log_format,
                        'datefmt': '%b %-d %T'

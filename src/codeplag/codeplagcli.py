@@ -1,7 +1,6 @@
 import argcomplete
 import argparse
 import os
-import sys
 
 from webparsers.github_parser import GitHubParser
 from codeplag.logger import get_logger
@@ -71,15 +70,17 @@ def get_parser() -> argparse.ArgumentParser:
         default="many_to_many"
     )
     parser.add_argument(
-        "--show_progress",
+        "-sp", "--show_progress",
         help="Show current progress of searching plagiarism.",
         action="store_true"
     )
     parser.add_argument(
         "-t", "--threshold",
         help="Threshold of analyzer which classifies two work as same. "
-             "If this number is too large, such as 99, then completely matching jobs will be found. "
-             "Otherwise, if this number is small, such as 50, then all work with minimal similarity will be found.",
+             "If this number is too large, such as 99, "
+             "then completely matching jobs will be found. "
+             "Otherwise, if this number is small, such as 50, "
+             "then all work with minimal similarity will be found.",
         type=int,
         default=65,
         choices=range(50, 100),
@@ -121,7 +122,7 @@ def get_parser() -> argparse.ArgumentParser:
         default=[]
     )
     parser_github.add_argument(
-        "-g", "--github-user",
+        "-gu", "--github-user",
         type=str,
         help="GitHub organisation/user name."
     )

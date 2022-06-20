@@ -29,7 +29,6 @@ from codeplag.cplag.tree import (
 )
 
 
-
 def append_work_features_py(file_content, url_to_file, works):
     tree = get_ast_from_content_py(file_content, url_to_file)
     features = get_features_from_ast_py(tree, url_to_file)
@@ -96,7 +95,10 @@ def run(logger):
 
             for directory in DIRECTORIES:
                 logger.info('Getting works features from {}'.format(directory))
-                filepaths = get_files_path_from_directory(directory, extensions=SUPPORTED_EXTENSIONS[EXTENSION])
+                filepaths = get_files_path_from_directory(
+                    directory,
+                    extensions=SUPPORTED_EXTENSIONS[EXTENSION]
+                )
                 works.extend(get_works_from_filepaths_py(filepaths))
 
             if GITHUB_FILES:
@@ -126,7 +128,10 @@ def run(logger):
 
             for directory in DIRECTORIES:
                 logger.info('Getting works features from {}.'.format(directory))
-                filepaths = get_files_path_from_directory(directory, extensions=SUPPORTED_EXTENSIONS[EXTENSION])
+                filepaths = get_files_path_from_directory(
+                    directory,
+                    extensions=SUPPORTED_EXTENSIONS[EXTENSION]
+                )
                 works.extend(get_works_from_filepaths_cpp(filepaths, COMPILE_ARGS))
 
             if GITHUB_FILES:
