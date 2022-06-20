@@ -1,12 +1,11 @@
-import argcomplete
 import argparse
 import os
 
-from webparsers.github_parser import GitHubParser
+import argcomplete
+
+from codeplag.consts import LOG_PATH, UTIL_NAME, UTIL_VERSION
 from codeplag.logger import get_logger
-from codeplag.consts import (
-    LOG_PATH, UTIL_NAME, UTIL_VERSION
-)
+from webparsers.github_parser import GitHubParser
 
 logger = get_logger(__name__, LOG_PATH)
 
@@ -31,7 +30,9 @@ def file_path(path_to_file: str) -> str:
 
 def env_path(path_to_env: str) -> str:
     if not os.path.isfile(path_to_env):
-        logger.warning(f"Env file '{path_to_env}' not found or not a file.")
+        logger.warning(
+            f"Env file '{path_to_env}' not found or not a file."
+        )
         return ""
 
     return path_to_env

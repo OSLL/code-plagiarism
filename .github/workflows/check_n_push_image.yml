@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  check_code:
+  check-code:
     runs-on: ubuntu-18.04
 
     steps:
@@ -31,6 +31,8 @@ jobs:
       run: |
         pip install flake8
         flake8 src/ --statistic --max-line-length=100 -qq
+
+        pip install pylint
 
   docker-build-test-autotest:
     runs-on: ubuntu-18.04
@@ -52,9 +54,9 @@ jobs:
         run: |
           make docker-autotest
 
-  push_image:
+  push-image:
     runs-on: ubuntu-18.04
-    needs: [check_code, docker-build-test-autotest]
+    needs: [check-code, docker-build-test-autotest]
     if: github.ref == 'refs/heads/main'
 
     steps:

@@ -1,5 +1,5 @@
-import math
 import binascii
+import math
 
 
 def generate_unique_ngrams(tokens, n=3):

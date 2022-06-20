@@ -1,10 +1,7 @@
 import ast
 
-from codeplag.pyplag.const import (
-    IGNORE_NODES, OPERATORS,
-    KEYWORDS, LITERALS,
-    TO_TOKEN
-)
+from codeplag.pyplag.const import (IGNORE_NODES, KEYWORDS, LITERALS, OPERATORS,
+                                   TO_TOKEN)
 
 
 class ASTWalker(ast.NodeVisitor):

@@ -1,11 +1,10 @@
 import os
 import re
+
 import numpy as np
 import pandas as pd
 
-from codeplag.algorithms.featurebased import (
-    counter_metric, struct_compare
-)
+from codeplag.algorithms.featurebased import counter_metric, struct_compare
 from codeplag.algorithms.tokenbased import value_jakkar_coef
 from codeplag.astfeatures import ASTFeatures
 
@@ -102,12 +101,15 @@ def compare_works(features1: ASTFeatures,
 
 
 def get_files_path_from_directory(directory: str,
-                                  extensions: list = [r".*\b"]):
+                                  extensions: list = None):
     '''
         The function returns paths to all files in the directory
         and its subdirectories which have the extension transmitted
         in arguments
     '''
+    if not extensions:
+        extensions = [r".*\b"]
+
     allowed_files = []
     for current_dir, folders, files in os.walk(directory):
         for file in files:

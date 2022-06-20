@@ -1,7 +1,7 @@
 import os
 
-
 from clang.cindex import Index, TranslationUnit
+
 from codeplag.cplag.tree import get_features
 
 
