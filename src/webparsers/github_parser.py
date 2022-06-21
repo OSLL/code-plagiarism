@@ -20,7 +20,6 @@ class GitHubParser:
 
         self.__access_token = access_token
         self.__check_all_branches = check_policy
-        self.__file_extensions = file_extensions
 
     @staticmethod
     def check_github_url(github_url):
