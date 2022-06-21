@@ -93,7 +93,7 @@ class GitHubParser:
         return False
 
     def send_get_request(self, api_url, params=None):
-        if not params:
+        if params is None:
             params = {}
 
         address = 'https://api.github.com'
