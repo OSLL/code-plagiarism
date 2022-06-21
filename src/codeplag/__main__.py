@@ -112,7 +112,7 @@ def run(logger):
                     owner=GITHUB_USER,
                     reg_exp=REG_EXP
                 )
-                for repo, repo_url in repos.items():
+                for repo_url in repos.values():
                     logger.info(
                         f'Getting works features from {repo_url}'
                     )
@@ -153,7 +153,7 @@ def run(logger):
                     owner=GITHUB_USER,
                     reg_exp=REG_EXP
                 )
-                for repo, repo_url in repos.items():
+                for repo_url in repos.values():
                     logger.info(f'Getting works features from {repo_url}.')
                     files = gh.get_files_generator_from_repo_url(repo_url)
                     for file_content, url_file in files:

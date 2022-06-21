@@ -4,15 +4,20 @@ import sys
 
 import requests
 
-from webparsers.consts import LOG_PATH
+from webparsers.consts import DEFAULT_FILE_EXTENSIONS, LOG_PATH
 from webparsers.logger import get_logger
 
 
 class GitHubParser:
     logger = get_logger(__name__, LOG_PATH)
 
-    def __init__(self, file_extensions=[r'.py$', r'.cpp$', r'.c$', r'.h$'],
+    def __init__(self, file_extensions=None,
                  check_policy=0, access_token=''):
+        if file_extensions is None:
+            self.__file_extensions = DEFAULT_FILE_EXTENSIONS
+        else:
+            self.__file_extensions = file_extensions
+
         self.__access_token = access_token
         self.__check_all_branches = check_policy
         self.__file_extensions = file_extensions
@@ -88,7 +93,10 @@ class GitHubParser:
 
         return False
 
-    def send_get_request(self, api_url, params={}):
+    def send_get_request(self, api_url, params=None):
+        if not params:
+            params = {}
+
         address = 'https://api.github.com'
         if api_url[0] != "/":
             address += "/"
@@ -111,7 +119,7 @@ class GitHubParser:
                 "Connection error. Please check the Internet connection."
             )
             GitHubParser.logger.debug(str(err))
-            exit(1)
+            sys.exit(1)
 
         if response.status_code == 403:
             if 'message' in response.json():
@@ -127,7 +135,7 @@ class GitHubParser:
         except requests.exceptions.HTTPError as err:
             GitHubParser.logger.error("The access token is bad")
             GitHubParser.logger.debug(str(err))
-            exit(1)
+            sys.exit(1)
 
         return response
 

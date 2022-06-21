@@ -111,12 +111,13 @@ def get_files_path_from_directory(directory: str,
         extensions = [r".*\b"]
 
     allowed_files = []
-    for current_dir, folders, files in os.walk(directory):
+    for current_dir, _folders, files in os.walk(directory):
         for file in files:
             allowed = False
             for extension in extensions:
                 if re.search(extension, file):
                     allowed = True
+
                     break
             if allowed:
                 allowed_files.append(os.path.join(current_dir, file))
