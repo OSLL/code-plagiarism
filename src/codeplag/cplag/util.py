@@ -1,16 +1,20 @@
 import os
 
-
 from clang.cindex import Index, TranslationUnit
+
 from codeplag.cplag.tree import get_features
 
 
-def get_cursor_from_file(filename, args=[]):
+def get_cursor_from_file(filename, args=None):
     '''
         Returns clang.cindex.Cursor object or 0 if file is undefined
         @param filename - full path to source file
         @param args - list of arguments for clang.cindex.Index.parse() method
     '''
+
+    if args is None:
+        args = []
+
     if not os.path.isfile(filename):
         print(filename, "Is not a file / doesn't exist")
         return 0

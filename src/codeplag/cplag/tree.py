@@ -1,6 +1,7 @@
 from clang.cindex import TokenKind
-from codeplag.cplag.const import IGNORE, OPERATORS
+
 from codeplag.astfeatures import ASTFeatures
+from codeplag.cplag.const import IGNORE, OPERATORS
 
 
 def get_not_ignored(tree, src):

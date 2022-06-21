@@ -1,13 +1,13 @@
-import os
 import ast
+import os
 
 from termcolor import colored
+
 from codeplag.astfeatures import ASTFeatures
-from codeplag.pyplag.astwalkers import ASTWalker
-from codeplag.utils import compare_works
 from codeplag.consts import LOG_PATH
 from codeplag.logger import get_logger
-
+from codeplag.pyplag.astwalkers import ASTWalker
+from codeplag.utils import compare_works
 
 logger = get_logger(__name__, LOG_PATH)
 

@@ -1,1 +1,2 @@
+DEFAULT_FILE_EXTENSIONS = [r'.py$', r'.cpp$', r'.c$', r'.h$']
 LOG_PATH = "@WEBPARSERS_LOG_PATH@"

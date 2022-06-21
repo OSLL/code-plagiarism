@@ -1,12 +1,12 @@
 import os
 import re
+
 import numpy as np
 import pandas as pd
 
-from codeplag.algorithms.featurebased import (
-    counter_metric, struct_compare
-)
+from codeplag.algorithms.featurebased import counter_metric, struct_compare
 from codeplag.algorithms.tokenbased import value_jakkar_coef
+from codeplag.astfeatures import ASTFeatures
 
 
 class Colors:
@@ -21,7 +21,7 @@ class Colors:
     UNDERLINE = '\033[4m'
 
 
-def run_compare(features_f, features_s):
+def run_compare(features_f: ASTFeatures, features_s: ASTFeatures) -> np.array:
     """The function calculates the similarity of features of two programmes
     using four algorithms and returns similarity coefficients.
 
@@ -40,9 +40,10 @@ def run_compare(features_f, features_s):
     return metrics
 
 
-def compare_works(features1, features2, threshold=60,
-                      weights=np.array([1, 0.4, 0.4, 0.4],
-                                       dtype=np.float32)):
+def compare_works(features1: ASTFeatures,
+                  features2: ASTFeatures,
+                  threshold: int = 60,
+                  weights: tuple = (1, 0.4, 0.4, 0.4)) -> None:
     """The function prints the result of comparing two files
 
     @features1 - the features of the first  source file
@@ -53,7 +54,7 @@ def compare_works(features1, features2, threshold=60,
     """
 
     metrics = run_compare(features1, features2)
-    total_similarity = np.sum(metrics * weights) / weights.sum()
+    total_similarity = np.sum(metrics * weights) / sum(weights)
     if (total_similarity * 100) < threshold:
         return
 
@@ -99,19 +100,24 @@ def compare_works(features1, features2, threshold=60,
     print('+' * 40)
 
 
-def get_files_path_from_directory(directory, extensions=[r".*\b"]):
+def get_files_path_from_directory(directory: str,
+                                  extensions: list = None):
     '''
         The function returns paths to all files in the directory
         and its subdirectories which have the extension transmitted
         in arguments
     '''
+    if not extensions:
+        extensions = [r".*\b"]
+
     allowed_files = []
-    for current_dir, folders, files in os.walk(directory):
+    for current_dir, _folders, files in os.walk(directory):
         for file in files:
             allowed = False
             for extension in extensions:
                 if re.search(extension, file):
                     allowed = True
+
                     break
             if allowed:
                 allowed_files.append(os.path.join(current_dir, file))
@@ -119,7 +125,9 @@ def get_files_path_from_directory(directory, extensions=[r".*\b"]):
     return allowed_files
 
 
-def print_suspect_parts(source_code, marked_tokens, tokens_pos,
+def print_suspect_parts(source_code: str,
+                        marked_tokens,
+                        tokens_pos,
                         color=Colors.FAIL):
     ROWS = {row for (row, column) in
             [tokens_pos[index] for index in marked_tokens]}
@@ -138,7 +146,9 @@ def print_suspect_parts(source_code, marked_tokens, tokens_pos,
         column += 1
 
 
-def print_code_and_highlight_suspect(source_code, marked_tokens, tokens_pos,
+def print_code_and_highlight_suspect(source_code: str,
+                                     marked_tokens,
+                                     tokens_pos,
                                      color=Colors.FAIL):
     ROWS = {row for (row, column) in
             [tokens_pos[index] for index in marked_tokens]}

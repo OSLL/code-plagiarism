@@ -1,34 +1,48 @@
-import requests
 import base64
 import re
+import sys
 
+import requests
+
+from webparsers.consts import DEFAULT_FILE_EXTENSIONS, LOG_PATH
 from webparsers.logger import get_logger
-from webparsers.consts import LOG_PATH
 
 
 class GitHubParser:
     logger = get_logger(__name__, LOG_PATH)
 
-    def __init__(self, file_extensions=[r'.py$', r'.cpp$', r'.c$', r'.h$'],
+    def __init__(self, file_extensions=None,
                  check_policy=0, access_token=''):
+        if file_extensions is None:
+            self.__file_extensions = DEFAULT_FILE_EXTENSIONS
+        else:
+            self.__file_extensions = file_extensions
+
         self.__access_token = access_token
         self.__check_all_branches = check_policy
-        self.__file_extensions = file_extensions
 
     @staticmethod
     def check_github_url(github_url):
         url_parts = github_url.rstrip('/').split('/')
         if len(url_parts) < 3:
-            GitHubParser.logger.error(f'{github_url} is incorrect link to GitHub')
+            GitHubParser.logger.error(
+                f'{github_url} is incorrect link to GitHub'
+            )
             raise ValueError('Incorrect link to GitHub')
         if url_parts[0] != 'https:' and url_parts[0] != 'http:':
-            GitHubParser.logger.error(f'{github_url} is incorrect link to GitHub')
+            GitHubParser.logger.error(
+                f'{github_url} is incorrect link to GitHub'
+            )
             raise ValueError('Incorrect link to GitHub')
         elif url_parts[1] != '':
-            GitHubParser.logger.error(f'{github_url} is incorrect link to GitHub')
+            GitHubParser.logger.error(
+                f'{github_url} is incorrect link to GitHub'
+            )
             raise ValueError('Incorrect link to GitHub')
         elif url_parts[2] != 'github.com':
-            GitHubParser.logger.error(f'{github_url} is incorrect link to GitHub')
+            GitHubParser.logger.error(
+                f'{github_url} is incorrect link to GitHub'
+            )
             raise ValueError('Incorrect link to GitHub')
 
         return url_parts
@@ -64,7 +78,9 @@ class GitHubParser:
             except UnicodeDecodeError as error:
                 attempt += 1
                 if attempt % 25 == 0:
-                    GitHubParser.logger.debug(f"Trying to decode content, attempt - {attempt}")
+                    GitHubParser.logger.debug(
+                        f"Trying to decode content, attempt - {attempt}"
+                    )
                 file_in_bytes[error.args[2]] = 32
 
         return code
@@ -76,7 +92,10 @@ class GitHubParser:
 
         return False
 
-    def send_get_request(self, api_url, params={}):
+    def send_get_request(self, api_url, params=None):
+        if params is None:
+            params = {}
+
         address = 'https://api.github.com'
         if api_url[0] != "/":
             address += "/"
@@ -95,14 +114,18 @@ class GitHubParser:
             response = requests.get(address + api_url, headers=headers,
                                     params=params)
         except requests.exceptions.ConnectionError as err:
-            GitHubParser.logger.error("Connection error. Please check the Internet connection.")
+            GitHubParser.logger.error(
+                "Connection error. Please check the Internet connection."
+            )
             GitHubParser.logger.debug(str(err))
-            exit(1)
+            sys.exit(1)
 
         if response.status_code == 403:
             if 'message' in response.json():
-                GitHubParser.logger.error("GitHub " + response.json()['message'])
-                exit(1)
+                GitHubParser.logger.error(
+                    "GitHub " + response.json()['message']
+                )
+                sys.exit(1)
 
             raise KeyError
 
@@ -111,7 +134,7 @@ class GitHubParser:
         except requests.exceptions.HTTPError as err:
             GitHubParser.logger.error("The access token is bad")
             GitHubParser.logger.debug(str(err))
-            exit(1)
+            sys.exit(1)
 
         return response
 
@@ -123,7 +146,7 @@ class GitHubParser:
         repos = {}
         page = 1
         while True:
-            api_url = '/users/{}/repos'.format(owner)
+            api_url = f'/users/{owner}/repos'
             params = {
                 'per_page': per_page,
                 'page': page
@@ -147,19 +170,19 @@ class GitHubParser:
         return repos
 
     def get_name_default_branch(self, owner, repo):
-        api_url = '/repos/{}/{}'.format(owner, repo)
+        api_url = f'/repos/{owner}/{repo}'
         response_json = self.send_get_request(api_url).json()
 
         return response_json['default_branch']
 
     def get_sha_last_branch_commit(self, owner, repo, branch='main'):
-        api_url = '/repos/{}/{}/branches/{}'.format(owner, repo, branch)
+        api_url = f'/repos/{owner}/{repo}/branches/{branch}'
         response_json = self.send_get_request(api_url).json()
 
         return response_json['commit']['sha']
 
     def get_file_content_from_sha(self, owner, repo, sha, file_path):
-        api_url = '/repos/{}/{}/git/blobs/{}'.format(owner, repo, sha)
+        api_url = f'/repos/{owner}/{repo}/git/blobs/{sha}'
         response_json = self.send_get_request(api_url).json()
 
         file_in_bytes = bytearray(base64.b64decode(response_json['content']))
@@ -169,11 +192,11 @@ class GitHubParser:
 
     def get_files_generator_from_sha_commit(self, owner, repo, branch,
                                             sha, path=''):
-        api_url = '/repos/{}/{}/git/trees/{}'.format(owner, repo, sha)
+        api_url = f'/repos/{owner}/{repo}/git/trees/{sha}'
         response_json = self.send_get_request(api_url).json()
         tree = response_json['tree']
         for node in tree:
-            current_path = "{}/{}".format(path, node["path"])
+            current_path = f"{path}/{node['path']}"
             if node["type"] == "tree":
                 yield from self.get_files_generator_from_sha_commit(
                                owner,
@@ -186,12 +209,10 @@ class GitHubParser:
             if node["type"] == "blob" and self.is_accepted_extension(
                                               current_path
                                           ):
-                file_link = "https://github.com/{}/{}/blob/{}{}".format(
-                                owner,
-                                repo,
-                                branch,
-                                current_path
-                            )
+                file_link = (
+                    "https://github.com/"
+                    f"{owner}/{repo}/blob/{branch}{current_path}"
+                )
                 yield self.get_file_content_from_sha(owner, repo,
                                                      node["sha"],
                                                      file_link)
@@ -200,7 +221,7 @@ class GitHubParser:
         branches = {}
         page = 1
         while True:
-            api_url = '/repos/{}/{}/branches'.format(owner, repo)
+            api_url = f'/repos/{owner}/{repo}/branches'
             params = {
                 "per_page": per_page,
                 "page": page
@@ -248,14 +269,16 @@ class GitHubParser:
 
     def get_file_from_url(self, file_url):
         try:
-            owner, repo, branch, path = GitHubParser.parse_content_url(file_url)
+            owner, repo, branch, path = GitHubParser.parse_content_url(
+                file_url
+            )
         except ValueError as error:
             GitHubParser.logger.error(
                 f'{file_url} is incorrect link to content of GitHub repository'
             )
             raise error
 
-        api_url = '/repos/{}/{}/contents/{}'.format(owner, repo, path)
+        api_url = f'/repos/{owner}/{repo}/contents/{path}'
         params = {
             'ref': branch
         }
@@ -277,7 +300,7 @@ class GitHubParser:
             )
             raise error
 
-        api_url = '/repos/{}/{}/contents/{}'.format(owner, repo, path)
+        api_url = f'/repos/{owner}/{repo}/contents/{path}'
         params = {
             'ref': branch
         }
@@ -296,12 +319,10 @@ class GitHubParser:
             if node["type"] == "file" and self.is_accepted_extension(
                                               node["name"]
                                           ):
-                file_link = 'https://github.com/{}/{}/tree/{}/{}'.format(
-                                owner,
-                                repo,
-                                branch,
-                                current_path[2:]
-                             )
+                file_link = (
+                    'https://github.com/'
+                    f'{owner}/{repo}/tree/{branch}/{current_path[2:]}'
+                )
                 yield self.get_file_content_from_sha(
                           owner,
                           repo,

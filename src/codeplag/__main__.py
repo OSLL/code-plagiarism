@@ -1,33 +1,26 @@
 import os
-import pandas as pd
-
 from time import perf_counter
+
+import pandas as pd
 from decouple import Config, RepositoryEnv
 
-from webparsers.github_parser import GitHubParser
-from codeplag.logger import get_logger
-from codeplag.consts import (
-    FILE_DOWNLOAD_PATH, LOG_PATH, SUPPORTED_EXTENSIONS
-)
-from codeplag.cplag.const import COMPILE_ARGS
 from codeplag.codeplagcli import get_parser
-from codeplag.utils import (
-    get_files_path_from_directory,
-    compare_works
-)
-from codeplag.pyplag.utils import (
-    get_works_from_filepaths as get_works_from_filepaths_py,
-    get_ast_from_content as get_ast_from_content_py,
-    get_features_from_ast as get_features_from_ast_py
-)
-from codeplag.cplag.util import (
-    get_cursor_from_file as get_cursor_from_file_cpp,
+from codeplag.consts import FILE_DOWNLOAD_PATH, LOG_PATH, SUPPORTED_EXTENSIONS
+from codeplag.cplag.const import COMPILE_ARGS
+from codeplag.cplag.tree import get_features as get_features_cpp
+from codeplag.cplag.util import \
+    get_cursor_from_file as get_cursor_from_file_cpp
+from codeplag.cplag.util import \
     get_works_from_filepaths as get_works_from_filepaths_cpp
-)
-from codeplag.cplag.tree import (
-    get_features as get_features_cpp
-)
-
+from codeplag.logger import get_logger
+from codeplag.pyplag.utils import \
+    get_ast_from_content as get_ast_from_content_py
+from codeplag.pyplag.utils import \
+    get_features_from_ast as get_features_from_ast_py
+from codeplag.pyplag.utils import \
+    get_works_from_filepaths as get_works_from_filepaths_py
+from codeplag.utils import compare_works, get_files_path_from_directory
+from webparsers.github_parser import GitHubParser
 
 
 def append_work_features_py(file_content, url_to_file, works):
@@ -37,7 +30,7 @@ def append_work_features_py(file_content, url_to_file, works):
 
 
 def append_work_features_cpp(file_content, url_to_file, works):
-    with open(FILE_DOWNLOAD_PATH, 'w') as out_file:
+    with open(FILE_DOWNLOAD_PATH, 'w', encoding='utf-8') as out_file:
         out_file.write(file_content)
     cursor = get_cursor_from_file_cpp(FILE_DOWNLOAD_PATH, COMPILE_ARGS)
     features = get_features_cpp(cursor, FILE_DOWNLOAD_PATH)
@@ -53,11 +46,9 @@ def run(logger):
     args = vars(parser.parse_args())
 
     logger.debug(
-        "Mode: {}; Extension: {}; Environment path: {}.".format(
-            args['mode'],
-            args['extension'],
-            args['environment']
-        )
+        f"Mode: {args['mode']}; "
+        f"Extension: {args['extension']}; "
+        f"Environment path: {args['environment']}."
     )
 
     MODE = args.pop('mode')
@@ -96,7 +87,10 @@ def run(logger):
 
             for directory in DIRECTORIES:
                 logger.info('Getting works features from {}'.format(directory))
-                filepaths = get_files_path_from_directory(directory, extensions=SUPPORTED_EXTENSIONS[EXTENSION])
+                filepaths = get_files_path_from_directory(
+                    directory,
+                    extensions=SUPPORTED_EXTENSIONS[EXTENSION]
+                )
                 works.extend(get_works_from_filepaths_py(filepaths))
 
             if GITHUB_FILES:
@@ -106,16 +100,22 @@ def run(logger):
                 append_work_features_py(file_content, github_file, works)
 
             for github_project in GITHUB_PROJECT_FOLDERS:
-                logger.info('Getting works features from {}'.format(github_project))
-                github_project_files = gh.get_files_generator_from_dir_url(github_project)
+                logger.info(f'Getting works features from {github_project}')
+                github_project_files = gh.get_files_generator_from_dir_url(
+                    github_project
+                )
                 for file_content, url_file in github_project_files:
                     append_work_features_py(file_content, url_file, works)
 
             if GITHUB_USER:
-                repos = gh.get_list_of_repos(owner=GITHUB_USER,
-                                             reg_exp=REG_EXP)
-                for repo, repo_url in repos.items():
-                    logger.info('Getting works features from {}'.format(repo_url))
+                repos = gh.get_list_of_repos(
+                    owner=GITHUB_USER,
+                    reg_exp=REG_EXP
+                )
+                for repo_url in repos.values():
+                    logger.info(
+                        f'Getting works features from {repo_url}'
+                    )
                     files = gh.get_files_generator_from_repo_url(repo_url)
                     for file_content, url_file in files:
                         append_work_features_py(file_content, url_file, works)
@@ -125,9 +125,14 @@ def run(logger):
                 works.extend(get_works_from_filepaths_cpp(FILES, COMPILE_ARGS))
 
             for directory in DIRECTORIES:
-                logger.info('Getting works features from {}.'.format(directory))
-                filepaths = get_files_path_from_directory(directory, extensions=SUPPORTED_EXTENSIONS[EXTENSION])
-                works.extend(get_works_from_filepaths_cpp(filepaths, COMPILE_ARGS))
+                logger.info(f'Getting works features from {directory}.')
+                filepaths = get_files_path_from_directory(
+                    directory,
+                    extensions=SUPPORTED_EXTENSIONS[EXTENSION]
+                )
+                works.extend(
+                    get_works_from_filepaths_cpp(filepaths, COMPILE_ARGS)
+                )
 
             if GITHUB_FILES:
                 logger.info("Getting GitHub files from urls.")
@@ -136,8 +141,10 @@ def run(logger):
                 append_work_features_cpp(file_content, github_file, works)
 
             for github_project in GITHUB_PROJECT_FOLDERS:
-                logger.info('Getting works features from {}.'.format(github_project))
-                github_project_files = gh.get_files_generator_from_dir_url(github_project)
+                logger.info(f'Getting works features from {github_project}.')
+                github_project_files = gh.get_files_generator_from_dir_url(
+                    github_project
+                )
                 for file_content, url_file in github_project_files:
                     append_work_features_cpp(file_content, url_file, works)
 
@@ -146,8 +153,8 @@ def run(logger):
                     owner=GITHUB_USER,
                     reg_exp=REG_EXP
                 )
-                for repo, repo_url in repos.items():
-                    logger.info('Getting works features from {}.'.format(repo_url))
+                for repo_url in repos.values():
+                    logger.info(f'Getting works features from {repo_url}.')
                     files = gh.get_files_generator_from_repo_url(repo_url)
                     for file_content, url_file in files:
                         append_work_features_cpp(file_content, url_file, works)
@@ -162,12 +169,15 @@ def run(logger):
                     continue
 
                 if SHOW_PROGRESS:
-                    print("Check progress: {:.2%}.".format(iteration / iterations), end='\r')
+                    print(
+                        f"Check progress: {iteration / iterations:.2%}.",
+                        end='\r'
+                    )
 
                 compare_works(work1, work2, THRESHOLD)
                 iteration += 1
 
-    logger.debug('Time for all {:.2f} s'.format(perf_counter() - begin_time))
+    logger.debug(f'Time for all {perf_counter() - begin_time:.2f} s')
 
     logger.info("Ending searching for plagiarism.")
 

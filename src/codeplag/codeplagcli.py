@@ -1,13 +1,11 @@
-import argcomplete
 import argparse
 import os
-import sys
 
-from webparsers.github_parser import GitHubParser
+import argcomplete
+
+from codeplag.consts import LOG_PATH, UTIL_NAME, UTIL_VERSION
 from codeplag.logger import get_logger
-from codeplag.consts import (
-    LOG_PATH, UTIL_NAME, UTIL_VERSION
-)
+from webparsers.github_parser import GitHubParser
 
 logger = get_logger(__name__, LOG_PATH)
 
@@ -32,7 +30,9 @@ def file_path(path_to_file: str) -> str:
 
 def env_path(path_to_env: str) -> str:
     if not os.path.isfile(path_to_env):
-        logger.warning(f"Env file '{path_to_env}' not found or not a file.")
+        logger.warning(
+            f"Env file '{path_to_env}' not found or not a file."
+        )
         return ""
 
     return path_to_env
@@ -71,15 +71,17 @@ def get_parser() -> argparse.ArgumentParser:
         default="many_to_many"
     )
     parser.add_argument(
-        "--show_progress",
+        "-sp", "--show_progress",
         help="Show current progress of searching plagiarism.",
         action="store_true"
     )
     parser.add_argument(
         "-t", "--threshold",
         help="Threshold of analyzer which classifies two work as same. "
-             "If this number is too large, such as 99, then completely matching jobs will be found. "
-             "Otherwise, if this number is small, such as 50, then all work with minimal similarity will be found.",
+             "If this number is too large, such as 99, "
+             "then completely matching jobs will be found. "
+             "Otherwise, if this number is small, such as 50, "
+             "then all work with minimal similarity will be found.",
         type=int,
         default=65,
         choices=range(50, 100),
@@ -121,7 +123,7 @@ def get_parser() -> argparse.ArgumentParser:
         default=[]
     )
     parser_github.add_argument(
-        "-g", "--github-user",
+        "-gu", "--github-user",
         type=str,
         help="GitHub organisation/user name."
     )

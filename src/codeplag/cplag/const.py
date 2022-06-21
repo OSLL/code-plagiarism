@@ -1,5 +1,4 @@
 import ccsyspath
-
 from clang.cindex import CursorKind
 
 

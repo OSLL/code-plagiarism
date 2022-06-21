@@ -1,6 +1,9 @@
 import numpy as np
 
 
+DEFAULT_EMPTY_ARRAY = np.array([[[]]], dtype=np.int64)
+
+
 def counter_metric(counter1, counter2):
     '''
         Function return how same operators or keywords or literals
@@ -187,7 +190,7 @@ def add_not_counted(tree, count_of_children, key_indexes, indexes, axis):
     return count
 
 
-def struct_compare(tree1, tree2, matrix=np.array([[[]]]), dtype=np.int64):
+def struct_compare(tree1, tree2, matrix=DEFAULT_EMPTY_ARRAY):
     '''
         Function for compare structure of two trees
         @param tree1 - a simple structure of the first AST.
