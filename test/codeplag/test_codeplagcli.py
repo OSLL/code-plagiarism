@@ -108,4 +108,4 @@ def test_github_url():
 )
 def test_get_parsed_args(args, raises):
     with raises:
-        get_parsed_args(args)
+        get_parsed_args(args=args)

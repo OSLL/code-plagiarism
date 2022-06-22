@@ -63,7 +63,7 @@ def github_url(url: str) -> str:
     return url
 
 
-def get_parsed_args(args=None) -> argparse.Namespace:
+def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog=f"{UTIL_NAME.upper()}",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -172,6 +172,13 @@ def get_parsed_args(args=None) -> argparse.Namespace:
     )
 
     argcomplete.autocomplete(parser)
+
+    return parser
+
+
+def get_parsed_args(parser=None, args=None) -> argparse.Namespace:
+    if parser is None:
+        parser = get_parser()
 
     if args is None:
         args = sys.argv[1:]
