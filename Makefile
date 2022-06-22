@@ -1,6 +1,6 @@
 PWD 					:= $(shell pwd)
 IMAGE_NAME				:= $(shell basename $(PWD))
-UTIL_VERSION			:= 0.1.6
+UTIL_VERSION			:= 0.1.7
 UTIL_NAME				:= codeplag
 DOCKER_TAG				?= $(shell echo $(IMAGE_NAME)-ubuntu18.04:$(UTIL_VERSION) | tr A-Z a-z)
 LOGS_PATH				:= /var/log

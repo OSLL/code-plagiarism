@@ -1,12 +1,11 @@
-import unittest
-import io
 import base64
+import io
 import logging
-
+import unittest
 from contextlib import redirect_stdout
-from unittest.mock import patch, call
-from webparsers.github_parser import GitHubParser
+from unittest.mock import call, patch
 
+from webparsers.github_parser import GitHubParser
 
 logging.disable(logging.CRITICAL)
 
@@ -1076,6 +1075,7 @@ class TestGitHubParser(unittest.TestCase):
             with self.subTest(test_case=test_case):
                 rv = list(parser.get_files_generator_from_dir_url(**test_case['arguments']))
                 self.assertEqual(rv, test_case['expected_result'])
+
 
 if __name__ == '__main__':
     unittest.main()
