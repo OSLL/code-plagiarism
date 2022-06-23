@@ -4,6 +4,9 @@ import subprocess
 import sys
 
 try:
-    return_code = subprocess.run(['python3', '-m', 'codeplag'] + sys.argv[1:], check=True)
+    completed = subprocess.run(
+        ['python3', '-m', 'codeplag'] + sys.argv[1:],
+        check=True
+    )
 except subprocess.CalledProcessError as error:
     sys.exit(error.returncode)

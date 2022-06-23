@@ -4,7 +4,7 @@ from time import perf_counter
 import pandas as pd
 from decouple import Config, RepositoryEnv
 
-from codeplag.codeplagcli import get_parser
+from codeplag.codeplagcli import get_parsed_args
 from codeplag.consts import FILE_DOWNLOAD_PATH, LOG_PATH, SUPPORTED_EXTENSIONS
 from codeplag.cplag.const import COMPILE_ARGS
 from codeplag.cplag.tree import get_features as get_features_cpp
@@ -19,7 +19,8 @@ from codeplag.pyplag.utils import \
     get_features_from_ast as get_features_from_ast_py
 from codeplag.pyplag.utils import \
     get_works_from_filepaths as get_works_from_filepaths_py
-from codeplag.utils import compare_works, get_files_path_from_directory
+from codeplag.utils import (compare_works, get_files_path_from_directory,
+                            print_compare_result)
 from webparsers.github_parser import GitHubParser
 
 
@@ -42,8 +43,7 @@ def append_work_features_cpp(file_content, url_to_file, works):
 def run(logger):
     logger.debug("Starting codeplag util")
 
-    parser = get_parser()
-    args = vars(parser.parse_args())
+    args = vars(get_parsed_args())
 
     logger.debug(
         f"Mode: {args['mode']}; "
@@ -174,7 +174,15 @@ def run(logger):
                         end='\r'
                     )
 
-                compare_works(work1, work2, THRESHOLD)
+                metrics = compare_works(work1, work2, THRESHOLD)
+                if len(metrics.keys()) > 1:
+                    print_compare_result(
+                        work1,
+                        work2,
+                        metrics,
+                        THRESHOLD
+                    )
+
                 iteration += 1
 
     logger.debug(f'Time for all {perf_counter() - begin_time:.2f} s')

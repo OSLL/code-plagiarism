@@ -1,12 +1,12 @@
 import unittest
+
 import numpy as np
 
-from codeplag.algorithms.featurebased import (
-    op_shift_metric, counter_metric,
-    get_children_indexes, struct_compare,
-    find_max_index, matrix_value,
-    add_not_counted
-)
+from codeplag.algorithms.featurebased import (add_not_counted, counter_metric,
+                                              find_max_index,
+                                              get_children_indexes,
+                                              matrix_value, op_shift_metric,
+                                              struct_compare)
 
 
 class TestFeaturebased(unittest.TestCase):
@@ -26,16 +26,6 @@ class TestFeaturebased(unittest.TestCase):
         self.assertEqual(res2, 0.3)
         self.assertEqual(res3, 0.0)
         self.assertEqual(res4, 1.0)
-
-    '''
-        Numba forbid bad arguments
-    def test_counter_metric_bad_args(self):
-        res1 = counter_metric("", [])
-        res2 = counter_metric([], [])
-    '''
-
-    #    self.assertEqual(TypeError, res1)
-    #    self.assertEqual(TypeError, res2)
 
     def test_op_shift_metric_normal(self):
         empty_list = []
@@ -195,19 +185,3 @@ class TestFeaturebased(unittest.TestCase):
                       (5, 7), (4, 12), (4, 12)]
         res = struct_compare(structure1, structure3)
         self.assertEqual(res, [1, 28])
-
-    # Numba forbid bad arguments
-    # def test_struct_compare_bad_args(self):
-    #    tree, tree2 = self.init('empty.py', 'test2.py')
-    #    res1 = struct_compare("", "")
-    #    res2 = struct_compare(tree, tree2, "")
-    #    self.assertEqual(TypeError, res1)
-    #    self.assertEqual(TypeError, res2)
-
-    # Numba forbid bad arguments
-    # def test_op_shift_metric_bad_args(self):
-    #    res1 = op_shift_metric([], 34)
-    #    res2 = op_shift_metric(56, [])
-
-    #    self.assertEqual(TypeError, res1)
-    #    self.assertEqual(TypeError, res2)

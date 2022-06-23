@@ -1,5 +1,6 @@
 import os
 import re
+from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -21,12 +22,16 @@ class Colors:
     UNDERLINE = '\033[4m'
 
 
-def run_compare(features_f: ASTFeatures, features_s: ASTFeatures) -> np.array:
+def fast_compare(features_f: ASTFeatures,
+                 features_s: ASTFeatures,
+                 weights: tuple = (1, 0.4, 0.4, 0.4)) -> dict:
     """The function calculates the similarity of features of two programmes
     using four algorithms and returns similarity coefficients.
 
     @features_f - the features of the first  source file
     @features_s - the features of the second  source file
+    @weights - weights of fast metrics that participate in
+    counting total similarity coefficient
     """
 
     jakkar_coef = value_jakkar_coef(features_f.tokens, features_s.tokens)
@@ -34,63 +39,107 @@ def run_compare(features_f: ASTFeatures, features_s: ASTFeatures) -> np.array:
     kw_res = counter_metric(features_f.keywords, features_s.keywords)
     lits_res = counter_metric(features_f.literals, features_s.literals)
 
-    metrics = np.array([jakkar_coef, ops_res, kw_res, lits_res],
-                       dtype=np.float32)
+    fast_metrics = {
+        'Jakkar': jakkar_coef,
+        'Operators': ops_res,
+        'Keywords': kw_res,
+        'Literals': lits_res
+    }
+    weighted_average = np.average(
+        [jakkar_coef, ops_res, kw_res, lits_res],
+        weights=weights
+    )
+    fast_metrics['WeightedAverage'] = weighted_average
 
-    return metrics
+    return fast_metrics
 
 
 def compare_works(features1: ASTFeatures,
                   features2: ASTFeatures,
-                  threshold: int = 60,
-                  weights: tuple = (1, 0.4, 0.4, 0.4)) -> None:
-    """The function prints the result of comparing two files
+                  threshold: int = 60) -> dict:
+    """The function returns the result of comparing two files
 
     @features1 - the features of the first  source file
     @features2 - the features of the second  source file
     @threshold - threshold of plagiarism searcher alarm
-    @weights - weights of metrics that participate in
-    counting total similarity coefficient
     """
 
-    metrics = run_compare(features1, features2)
-    total_similarity = np.sum(metrics * weights) / sum(weights)
-    if (total_similarity * 100) < threshold:
-        return
+    metrics = {}
+    fast_metrics = fast_compare(features1, features2)
+    metrics['fast'] = fast_metrics
+    if (metrics['fast']['WeightedAverage'] * 100) < threshold:
+        return metrics
 
-    compliance_matrix = np.zeros((len(features1.head_nodes),
-                                  len(features2.head_nodes), 2),
-                                 dtype=np.int64)
+    compliance_matrix = np.zeros(
+        (len(features1.head_nodes), len(features2.head_nodes), 2),
+        dtype=np.int64
+    )
     struct_res = struct_compare(features1.structure, features2.structure,
                                 compliance_matrix)
     struct_res = struct_res[0] / struct_res[1]
 
+    metrics['structure'] = {
+        'similarity': struct_res,
+        'matrix': compliance_matrix
+    }
+
+    return metrics
+
+
+def print_compare_result(features1: ASTFeatures,
+                         features2: ASTFeatures,
+                         metrics: dict,
+                         threshold: int = 60) -> None:
+    """The function prints the result of comparing two files
+
+    @features1 - the features of the first  source file
+    @features2 - the features of the second  source file
+    @metrics - dictionary with fast and structure metrics information
+    @threshold - threshold of plagiarism searcher alarm
+    """
+
     print(" " * 40)
     print('+' * 40)
-    print('May be similar:', features1.filepath, features2.filepath,
-          end='\n\n', sep='\n')
-    main_metrics_df = pd.DataFrame()
-    main_metrics_df.loc['Total match', 'Same'] = total_similarity
-    main_metrics_df.loc['Jakkar coef', 'Same'] = metrics[0]
-    main_metrics_df.loc['Operators match', 'Same'] = metrics[1]
-    main_metrics_df.loc['Keywords match', 'Same'] = metrics[2]
-    main_metrics_df.loc['Literals match', 'Same'] = metrics[3]
-
+    print(
+        'May be similar:',
+        features1.filepath,
+        features2.filepath,
+        end='\n\n', sep='\n'
+    )
+    main_metrics_df = pd.DataFrame(
+        metrics['fast'], index=['Similarity'],
+        columns=pd.Index(
+            metrics['fast'].keys(),
+            name='FastMetrics:'
+        )
+    )
     print(main_metrics_df)
     print()
-    additional_metrics_df = pd.DataFrame()
-    additional_metrics_df.loc['Structure match', 'Same'] = struct_res
+
+    additional_metrics_df = pd.DataFrame(
+        metrics['structure']['similarity'], index=['Similarity'],
+        columns=pd.Index(
+            ['Structure'],
+            name='AdditionalMetrics:'
+        )
+    )
     print(additional_metrics_df)
     print()
 
-    if (struct_res * 100) > threshold:
-        data = np.zeros((compliance_matrix.shape[0],
-                         compliance_matrix.shape[1]),
-                        dtype=np.float32)
-        for row in range(compliance_matrix.shape[0]):
-            for col in range(compliance_matrix.shape[1]):
-                data[row][col] = (compliance_matrix[row][col][0] /
-                                  compliance_matrix[row][col][1])
+    if (metrics['structure']['similarity'] * 100) > threshold:
+        data = np.zeros(
+            (
+                metrics['structure']['matrix'].shape[0],
+                metrics['structure']['matrix'].shape[1]
+            ),
+            dtype=np.float64
+        )
+        for row in range(metrics['structure']['matrix'].shape[0]):
+            for col in range(metrics['structure']['matrix'].shape[1]):
+                data[row][col] = (
+                    metrics['structure']['matrix'][row][col][0] /
+                    metrics['structure']['matrix'][row][col][1]
+                )
         df = pd.DataFrame(data=data,
                           index=features1.head_nodes,
                           columns=features2.head_nodes)
@@ -126,11 +175,13 @@ def get_files_path_from_directory(directory: str,
 
 
 def print_suspect_parts(source_code: str,
-                        marked_tokens,
-                        tokens_pos,
-                        color=Colors.FAIL):
-    ROWS = {row for (row, column) in
-            [tokens_pos[index] for index in marked_tokens]}
+                        marked_tokens: List[int],
+                        tokens_pos: List[Tuple[int, int]],
+                        color: str = Colors.FAIL):
+    ROWS = {
+        row for (row, _column) in
+        [tokens_pos[index] for index in marked_tokens]
+    }
 
     row = 1
     column = 1
@@ -147,8 +198,8 @@ def print_suspect_parts(source_code: str,
 
 
 def print_code_and_highlight_suspect(source_code: str,
-                                     marked_tokens,
-                                     tokens_pos,
+                                     marked_tokens: List[int],
+                                     tokens_pos: List[Tuple[int, int]],
                                      color=Colors.FAIL):
     ROWS = {row for (row, column) in
             [tokens_pos[index] for index in marked_tokens]}

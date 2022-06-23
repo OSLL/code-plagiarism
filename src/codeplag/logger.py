@@ -7,9 +7,9 @@ def get_file_handler(filename):
         '(%(filename)s).%(funcName)s(%(lineno)d) - %(message)s'
     )
     log_arguments = {
-                       'fmt': log_format,
-                       'datefmt': '%b %-d %T'
-                    }
+        'fmt': log_format,
+        'datefmt': '%b %-d %T'
+    }
     file_handler = logging.FileHandler(filename)
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(logging.Formatter(**log_arguments))

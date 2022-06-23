@@ -1,10 +1,10 @@
 import os
 import unittest
 
-from codeplag.cplag.const import COMPILE_ARGS
-from codeplag.cplag.util import get_cursor_from_file
-from codeplag.cplag.tree import get_not_ignored, generic_visit, get_features
 from codeplag.astfeatures import ASTFeatures
+from codeplag.cplag.const import COMPILE_ARGS
+from codeplag.cplag.tree import generic_visit, get_features, get_not_ignored
+from codeplag.cplag.util import get_cursor_from_file
 
 
 class TestTree(unittest.TestCase):

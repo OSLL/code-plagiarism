@@ -1,7 +1,7 @@
 import unittest
 
-from codeplag.algorithms.stringbased import (LevenshteinDistance,
-                                             is_marked_match, gst)
+from codeplag.algorithms.stringbased import (LevenshteinDistance, gst,
+                                             is_marked_match)
 
 
 class TestStringbased(unittest.TestCase):

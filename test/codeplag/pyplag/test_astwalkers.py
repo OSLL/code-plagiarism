@@ -1,11 +1,11 @@
-import unittest
-import numpy as np
 import os
+import unittest
+
+import numpy as np
 
 from codeplag.astfeatures import ASTFeatures
 from codeplag.pyplag.astwalkers import ASTWalker
 from codeplag.pyplag.utils import get_ast_from_filename
-
 
 pwd = os.path.dirname(os.path.abspath(__file__))
 

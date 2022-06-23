@@ -1,6 +1,5 @@
 import numpy as np
 
-
 DEFAULT_EMPTY_ARRAY = np.array([[[]]], dtype=np.int64)
 
 

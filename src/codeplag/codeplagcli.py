@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 
 import argcomplete
 
@@ -10,13 +11,26 @@ from webparsers.github_parser import GitHubParser
 logger = get_logger(__name__, LOG_PATH)
 
 
+class CheckUniqueStore(argparse.Action):
+    """Checks that the list of arguments contains no duplicates, then stores"""
+
+    def __call__(self, _parser, namespace, values, _option_string=None):
+        if len(values) > len(set(values)):
+            raise argparse.ArgumentError(
+                self,
+                "You cannot specify the same value multiple times. "
+                f"You provided {values}",
+            )
+        setattr(namespace, self.dest, values)
+
+
 def dir_path(path_to_directory: str) -> str:
     if not os.path.isdir(path_to_directory):
         raise argparse.ArgumentTypeError(
             f"Directory '{path_to_directory}' not found or not a directory."
         )
 
-    return path_to_directory
+    return os.path.normpath(path_to_directory)
 
 
 def file_path(path_to_file: str) -> str:
@@ -25,7 +39,7 @@ def file_path(path_to_file: str) -> str:
             f"File '{path_to_file}' not found or not a file."
         )
 
-    return path_to_file
+    return os.path.normpath(path_to_file)
 
 
 def env_path(path_to_env: str) -> str:
@@ -35,7 +49,7 @@ def env_path(path_to_env: str) -> str:
         )
         return ""
 
-    return path_to_env
+    return os.path.normpath(path_to_env)
 
 
 def github_url(url: str) -> str:
@@ -120,6 +134,7 @@ def get_parser() -> argparse.ArgumentParser:
         type=github_url,
         help="URL to file in a GitHub repository.",
         nargs="+",
+        action=CheckUniqueStore,
         default=[]
     )
     parser_github.add_argument(
@@ -133,6 +148,7 @@ def get_parser() -> argparse.ArgumentParser:
         type=github_url,
         help="Path to a GitHub project folder.",
         nargs="+",
+        action=CheckUniqueStore,
         default=[]
     )
 
@@ -142,6 +158,7 @@ def get_parser() -> argparse.ArgumentParser:
         type=file_path,
         help="Full path to files on a computer.",
         nargs="+",
+        action=CheckUniqueStore,
         default=[]
     )
     parser.add_argument(
@@ -150,9 +167,20 @@ def get_parser() -> argparse.ArgumentParser:
         type=dir_path,
         help="Full path to a local directories with project/files.",
         nargs="+",
+        action=CheckUniqueStore,
         default=[]
     )
 
     argcomplete.autocomplete(parser)
 
     return parser
+
+
+def get_parsed_args(parser=None, args=None) -> argparse.Namespace:
+    if parser is None:
+        parser = get_parser()
+
+    if args is None:
+        args = sys.argv[1:]
+
+    return parser.parse_args(args)

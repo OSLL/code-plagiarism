@@ -1,10 +1,10 @@
 import unittest
 
-from codeplag.algorithms.tokenbased import (
-    value_jakkar_coef, lcs, generate_unique_ngrams, generate_ngrams,
-    generate_ngrams_and_hashit, lcs_based_coeff,
-    get_imprints_from_hashes
-)
+from codeplag.algorithms.tokenbased import (generate_ngrams,
+                                            generate_ngrams_and_hashit,
+                                            generate_unique_ngrams,
+                                            get_imprints_from_hashes, lcs,
+                                            lcs_based_coeff, value_jakkar_coef)
 
 
 class TestTokenbased(unittest.TestCase):
