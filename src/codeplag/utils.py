@@ -1,5 +1,6 @@
 import os
 import re
+from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -23,7 +24,7 @@ class Colors:
 
 def fast_compare(features_f: ASTFeatures,
                  features_s: ASTFeatures,
-                 weights: tuple = (1, 0.4, 0.4, 0.4)) -> np.array:
+                 weights: tuple = (1, 0.4, 0.4, 0.4)) -> dict:
     """The function calculates the similarity of features of two programmes
     using four algorithms and returns similarity coefficients.
 
@@ -174,11 +175,13 @@ def get_files_path_from_directory(directory: str,
 
 
 def print_suspect_parts(source_code: str,
-                        marked_tokens,
-                        tokens_pos,
-                        color=Colors.FAIL):
-    ROWS = {row for (row, column) in
-            [tokens_pos[index] for index in marked_tokens]}
+                        marked_tokens: List[int],
+                        tokens_pos: List[Tuple[int, int]],
+                        color: str = Colors.FAIL):
+    ROWS = {
+        row for (row, _column) in
+        [tokens_pos[index] for index in marked_tokens]
+    }
 
     row = 1
     column = 1
@@ -195,8 +198,8 @@ def print_suspect_parts(source_code: str,
 
 
 def print_code_and_highlight_suspect(source_code: str,
-                                     marked_tokens,
-                                     tokens_pos,
+                                     marked_tokens: List[int],
+                                     tokens_pos: List[Tuple[int, int]],
                                      color=Colors.FAIL):
     ROWS = {row for (row, column) in
             [tokens_pos[index] for index in marked_tokens]}
