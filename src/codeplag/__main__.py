@@ -175,7 +175,7 @@ def run(logger):
                     )
 
                 metrics = compare_works(work1, work2, THRESHOLD)
-                if len(metrics.keys()) > 1:
+                if len(metrics) > 1:
                     print_compare_result(
                         work1,
                         work2,

@@ -1,7 +1,8 @@
-from src.codeplag.consts import UTIL_VERSION
-from setuptools import setup, find_packages
 from pathlib import Path
 
+from setuptools import find_packages, setup
+
+from src.codeplag.consts import UTIL_VERSION
 
 setup(
     name='codeplag',
