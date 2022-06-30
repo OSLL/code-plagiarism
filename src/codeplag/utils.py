@@ -1,13 +1,33 @@
 import os
 import re
+import sys
+from time import perf_counter
 from typing import List, Tuple
 
+import argcomplete
 import numpy as np
 import pandas as pd
+from decouple import Config, RepositoryEnv
 
 from codeplag.algorithms.featurebased import counter_metric, struct_compare
 from codeplag.algorithms.tokenbased import value_jakkar_coef
 from codeplag.astfeatures import ASTFeatures
+from codeplag.codeplagcli import CodeplagCLI
+from codeplag.consts import FILE_DOWNLOAD_PATH, LOG_PATH, SUPPORTED_EXTENSIONS
+from codeplag.cplag.const import COMPILE_ARGS
+from codeplag.cplag.tree import get_features as get_features_cpp
+from codeplag.cplag.util import \
+    get_cursor_from_file as get_cursor_from_file_cpp
+from codeplag.cplag.util import \
+    get_works_from_filepaths as get_works_from_filepaths_cpp
+from codeplag.logger import get_logger
+from codeplag.pyplag.utils import \
+    get_ast_from_content as get_ast_from_content_py
+from codeplag.pyplag.utils import \
+    get_features_from_ast as get_features_from_ast_py
+from codeplag.pyplag.utils import \
+    get_works_from_filepaths as get_works_from_filepaths_py
+from webparsers.github_parser import GitHubParser
 
 
 class Colors:
@@ -218,3 +238,183 @@ def print_code_and_highlight_suspect(source_code: str,
             print(symbol, end="")
 
         column += 1
+
+
+class CodeplagEngine:
+
+    def __init__(self):
+        self.logger = get_logger(__name__, LOG_PATH)
+
+        self.parser = CodeplagCLI()
+        argcomplete.autocomplete(self.parser)
+
+    def set_access_token(self, env_path: str) -> None:
+        if not env_path:
+            self.logger.warning(
+                "Env file not found or not a file."
+            )
+            self.access_token = ''
+        else:
+            env_config = Config(RepositoryEnv(env_path))
+            self.access_token = env_config.get('ACCESS_TOKEN', default='')
+            if not self.access_token:
+                self.logger.warning('GitHub access token is not defined.')
+
+    def append_work_features(self, file_content, url_to_file) -> None:
+        if self.extension == 'py':
+            tree = get_ast_from_content_py(file_content, url_to_file)
+            features = get_features_from_ast_py(tree, url_to_file)
+            self.works.append(features)
+        elif self.extension == 'cpp':
+            with open(FILE_DOWNLOAD_PATH, 'w', encoding='utf-8') as out_file:
+                out_file.write(file_content)
+            cursor = get_cursor_from_file_cpp(FILE_DOWNLOAD_PATH, COMPILE_ARGS)
+            features = get_features_cpp(cursor, FILE_DOWNLOAD_PATH)
+            os.remove(FILE_DOWNLOAD_PATH)
+            features.filepath = url_to_file
+            self.works.append(features)
+
+    def get_works_from_files(self, files: List[str]) -> None:
+        if not files:
+            return
+
+        self.logger.info("Getting works features from files")
+        if self.extension == 'py':
+            self.works.extend(get_works_from_filepaths_py(files))
+        elif self.extension == 'cpp':
+            self.works.extend(
+                get_works_from_filepaths_cpp(
+                    files,
+                    COMPILE_ARGS
+                )
+            )
+
+    def get_works_from_dirs(self, dirs: List[str]) -> None:
+        for dir in dirs:
+            self.logger.info(f'Getting works features from {dir}')
+            filepaths = get_files_path_from_directory(
+                dir,
+                extensions=SUPPORTED_EXTENSIONS[self.extension]
+            )
+            if self.extension == 'py':
+                self.works.extend(
+                    get_works_from_filepaths_py(filepaths)
+                )
+            elif self.extension == 'cpp':
+                self.works.extend(
+                    get_works_from_filepaths_cpp(
+                        filepaths,
+                        COMPILE_ARGS
+                    )
+                )
+
+    def get_works_from_github_files(self,
+                                    github_files: List[str]) -> None:
+        if github_files:
+            self.logger.info("Getting GitHub files from urls")
+        for github_file in github_files:
+            file_content = self.github_parser.get_file_from_url(github_file)[0]
+            self.append_work_features(file_content, github_file)
+
+    def get_works_from_github_project_folders(self,
+                                              github_projects: List[str]) -> None:
+        for github_project in github_projects:
+            self.logger.info(f'Getting works features from {github_project}')
+            gh_prj_files = self.github_parser.get_files_generator_from_dir_url(
+                github_project
+            )
+            for file_content, url_file in gh_prj_files:
+                self.append_work_features(file_content, url_file)
+
+    def get_works_from_users_repos(self,
+                                   github_user: str,
+                                   reg_exp: str) -> None:
+        if not github_user:
+            return
+
+        repos = self.github_parser.get_list_of_repos(
+            owner=github_user,
+            reg_exp=reg_exp
+        )
+        for repo_url in repos.values():
+            self.logger.info(
+                f'Getting works features from {repo_url}'
+            )
+            files = self.github_parser.get_files_generator_from_repo_url(
+                repo_url
+            )
+            for file_content, url_file in files:
+                self.append_work_features(file_content, url_file)
+
+    def run(self, args=None) -> None:
+        self.logger.debug("Starting codeplag util")
+
+        if args is None:
+            args = sys.argv[1:]
+
+        parsed_args = vars(self.parser.parse_args(args))
+        self.set_access_token(parsed_args.get('environment'))
+        self.extension = parsed_args.get('extension')
+
+        self.logger.debug(
+            f"Mode: {parsed_args['mode']}; "
+            f"Extension: {parsed_args['extension']}."
+        )
+
+        begin_time = perf_counter()
+
+        if parsed_args.get('mode') == 'many_to_many':
+            self.works = []
+            self.github_parser = GitHubParser(
+                file_extensions=SUPPORTED_EXTENSIONS[
+                    self.extension
+                ],
+                check_policy=parsed_args.get('all_branches'),
+                access_token=self.access_token
+            )
+
+            self.get_works_from_files(parsed_args.get('files'))
+            self.get_works_from_dirs(parsed_args.get('directories'))
+            self.get_works_from_github_files(
+                parsed_args.get('github_files')
+            )
+            self.get_works_from_github_project_folders(
+                parsed_args.get('github_project_folders')
+            )
+            self.get_works_from_users_repos(
+                parsed_args.get('github_user'),
+                parsed_args.get('regexp')
+            )
+
+            self.logger.info("Starting searching for plagiarism")
+            count_works = len(self.works)
+            iterations = int((count_works * (count_works - 1)) / 2)
+            iteration = 1
+            for i, work1 in enumerate(self.works):
+                for j, work2 in enumerate(self.works):
+                    if i <= j:
+                        continue
+
+                    if parsed_args.get('show_progress'):
+                        print(
+                            f"Check progress: {iteration / iterations:.2%}.",
+                            end='\r'
+                        )
+
+                    metrics = compare_works(
+                        work1,
+                        work2,
+                        parsed_args.get('threshold')
+                    )
+                    if len(metrics) > 1:
+                        print_compare_result(
+                            work1,
+                            work2,
+                            metrics,
+                            parsed_args.get('threshold')
+                        )
+
+                    iteration += 1
+
+        self.logger.debug(f'Time for all {perf_counter() - begin_time:.2f} s')
+        self.logger.info("Ending searching for plagiarism.")

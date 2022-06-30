@@ -8,6 +8,49 @@ from webparsers.consts import DEFAULT_FILE_EXTENSIONS, LOG_PATH
 from webparsers.logger import get_logger
 
 
+class GitHubUrl(str):
+
+    def __new__(cls, url: str):
+        url_parts = url.rstrip('/').split('/')
+        error_msg = f"'{url}' is incorrect link to GitHub"
+        if len(url_parts) < 3:
+            raise ValueError(error_msg)
+        if url_parts[0] != 'https:' and url_parts[0] != 'http:':
+            raise ValueError(error_msg)
+        elif url_parts[1] != '':
+            raise ValueError(error_msg)
+        elif url_parts[2] != 'github.com':
+            raise ValueError(error_msg)
+
+        obj = str.__new__(cls, url)
+        obj.url_parts = url_parts
+        return obj
+
+
+class GitHubRepoUrl(GitHubUrl):
+
+    def __new__(cls, url: str):
+        obj = GitHubUrl.__new__(cls, url)
+        if len(obj.url_parts) != 5:
+            error_msg = f"'{url}' is incorrect link to GitHub repository"
+            raise ValueError(error_msg)
+
+        return obj
+
+
+class GitHubContentUrl(GitHubUrl):
+
+    def __new__(cls, url: str):
+        obj = GitHubUrl.__new__(cls, url)
+        if len(obj.url_parts) <= 7:
+            error_msg = (
+                f"'{url}' is incorrect link to content of GitHub repository"
+            )
+            raise ValueError(error_msg)
+
+        return obj
+
+
 class GitHubParser:
     logger = get_logger(__name__, LOG_PATH)
 
@@ -23,36 +66,25 @@ class GitHubParser:
 
     @staticmethod
     def check_github_url(github_url):
-        url_parts = github_url.rstrip('/').split('/')
-        if len(url_parts) < 3:
+        try:
+            url_parts = GitHubUrl(github_url).url_parts
+        except ValueError as error:
             GitHubParser.logger.error(
                 f'{github_url} is incorrect link to GitHub'
             )
-            raise ValueError('Incorrect link to GitHub')
-        if url_parts[0] != 'https:' and url_parts[0] != 'http:':
-            GitHubParser.logger.error(
-                f'{github_url} is incorrect link to GitHub'
-            )
-            raise ValueError('Incorrect link to GitHub')
-        elif url_parts[1] != '':
-            GitHubParser.logger.error(
-                f'{github_url} is incorrect link to GitHub'
-            )
-            raise ValueError('Incorrect link to GitHub')
-        elif url_parts[2] != 'github.com':
-            GitHubParser.logger.error(
-                f'{github_url} is incorrect link to GitHub'
-            )
-            raise ValueError('Incorrect link to GitHub')
+            raise error
 
         return url_parts
 
     @staticmethod
     def parse_repo_url(repo_url):
-        url_parts = GitHubParser.check_github_url(repo_url)
-
-        if len(url_parts) != 5:
-            raise ValueError('Incorrect link to GitHub repository')
+        try:
+            url_parts = GitHubRepoUrl(repo_url).url_parts
+        except ValueError as error:
+            GitHubParser.logger.error(
+                f'{repo_url} is incorrect link to GitHub repository'
+            )
+            raise error
 
         return url_parts[3], url_parts[4]
 
@@ -60,10 +92,14 @@ class GitHubParser:
     def parse_content_url(content_url):
         # If the branch name contains '/' like 'dev/example' then behave
         # of this funciton won't be similar to what expect
-        url_parts = GitHubParser.check_github_url(content_url)
-
-        if len(url_parts) <= 7:
-            raise ValueError('Incorrect link to content of GitHub repository')
+        try:
+            url_parts = GitHubContentUrl(content_url).url_parts
+        except ValueError as error:
+            GitHubParser.logger.error(
+                f'{content_url} is incorrect link '
+                'to content of GitHub repository'
+            )
+            raise error
 
         return (url_parts[3], url_parts[4],
                 url_parts[6], '/'.join(url_parts[7:]))

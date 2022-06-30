@@ -1,6 +1,6 @@
 PWD 					:= $(shell pwd)
 IMAGE_NAME				:= $(shell basename $(PWD))
-UTIL_VERSION			:= 0.1.7
+UTIL_VERSION			:= 0.1.8
 UTIL_NAME				:= codeplag
 DOCKER_TAG				?= $(shell echo $(IMAGE_NAME)-ubuntu18.04:$(UTIL_VERSION) | tr A-Z a-z)
 LOGS_PATH				:= /var/log
@@ -40,7 +40,7 @@ install: substitute
 install-man: substitute
 	mkdir -p Man
 	argparse-manpage --pyfile src/codeplag/codeplagcli.py \
-					 --function get_parser \
+					 --function CodeplagCLI \
 					 --author "Codeplag Development Team" \
 					 --author-email "inbox@moevm.info" \
 					 --project-name "$(UTIL_NAME) $(UTIL_VERSION)" \
@@ -52,7 +52,7 @@ install-man: substitute
 
 test: substitute
 	python3 -m pytest -q
-	make clear-cache
+	make clean-cache
 
 autotest:
 	codeplag --version || \
@@ -111,14 +111,14 @@ autotest:
 run:
 	bash -login
 
-clear: clear-cache
+clean: clean-cache
 	rm --force --recursive Man/
 	rm --force --recursive build/
 	rm --force --recursive dist/
 	rm --force src/codeplag/consts.py
 	rm --force src/webparsers/consts.py
 
-clear-cache:
+clean-cache:
 	find . -maxdepth 1 -type d | grep -E "pytest_cache" | (xargs rm -r 2> /dev/null || exit 0)
 	find . -type d | grep -E "__pycache__" | (xargs rm -r 2> /dev/null || exit 0)
 
@@ -165,8 +165,8 @@ help:
 	@echo "  run                              Run bash with root privileges and in an interactive mode."
 	@echo "                                   This is required for correct work of the autocomlete;"
 	@echo "  test                             Run pytest;"
-	@echo "  clear                            Remove generated while installing and testing files in the source directory;"
-	@echo "  clear-cache                      Delete __pycache__ folders;"
+	@echo "  clean                            Remove generated while installing and testing files in the source directory;"
+	@echo "  clean-cache                      Delete __pycache__ folders;"
 	@echo "  uninstall                        Remove installed package;"
 	@echo "  help                             Display this message and exit."
 	@echo

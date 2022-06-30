@@ -1,39 +1,42 @@
-import binascii
+"""Token based algorithms for getting more information about two sequences
+
+This module provides obtaining N-grams, fingerprints from a sequence of tokens,
+a quantitative assessment of the similarity of two sequences of tokens.
+Also provides the ability to get the length of the longest common subsequence
+of two token sequences.
+"""
+
+
 import math
 
 
-def generate_unique_ngrams(tokens, n=3):
-    """The function returns a set of N-grams
-    and may use to generate shingles.
+def generate_ngrams(tokens, n=3, hashit=False, unique=False):
+    """The function returns a list or set of N-grams or list or set of hashes
+    of ngrams and may use to generate shingles.
 
     @param tokens - list of tokens
     @param n - count of elements in sequences
+    @param hashit - If is True,
+    then the function returns a list or set of hashes of N-grams
+    @param unique - If is True,
+    then the function returns a set of N-grams or hashes of N-grams
     """
 
-    return {tuple(tokens[i:i + n]) for i in range(len(tokens) - n + 1)}
+    if hashit:
+        if unique:
+            return {
+                hash(tuple(tokens[i:i + n]))
+                for i in range(len(tokens) - n + 1)
+            }
+        return [
+            hash(tuple(tokens[i:i + n]))
+            for i in range(len(tokens) - n + 1)
+        ]
 
-
-def generate_ngrams(tokens, n=3):
-    """The function returns a list of N-grams
-    and may use to generate shingles.
-
-    @param tokens - list of tokens
-    @param n - count of elements in sequences
-    """
+    if unique:
+        return {tuple(tokens[i:i + n]) for i in range(len(tokens) - n + 1)}
 
     return [tuple(tokens[i:i + n]) for i in range(len(tokens) - n + 1)]
-
-
-def generate_ngrams_and_hashit(tokens, n=3):
-    """The function generates and hashes ngrams
-    which gets from the tokens sequence.
-
-    @param tokens - list of tokens
-    @param n - count of elements in sequences
-    """
-
-    return [binascii.crc32(bytearray(tokens[i:i + n]))
-            for i in range(len(tokens) - n + 1)]
 
 
 def get_imprints_from_hashes(hashes):
@@ -57,8 +60,8 @@ def value_jakkar_coef(tokens_first, tokens_second, ngrams_length=3):
         @param tokens_first - list of tokens of the first program
         @param tokens_second - list of tokens of the second program
     '''
-    ngrams_first = generate_unique_ngrams(tokens_first, ngrams_length)
-    ngrams_second = generate_unique_ngrams(tokens_second, ngrams_length)
+    ngrams_first = generate_ngrams(tokens_first, ngrams_length, unique=True)
+    ngrams_second = generate_ngrams(tokens_second, ngrams_length, unique=True)
 
     intersection = len(ngrams_first.intersection(ngrams_second))
     union = len(ngrams_first | ngrams_second)
