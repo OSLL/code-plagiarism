@@ -52,7 +52,7 @@ def get_ast_from_filename(filename):
         @param filename - full path to file with code which will have
         analyzed
     '''
-    if type(filename) is not str:
+    if not issubclass(type(filename), str):
         logger.error("Filename is not a string type.")
         raise TypeError
 
