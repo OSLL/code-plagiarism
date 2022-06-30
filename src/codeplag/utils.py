@@ -369,7 +369,7 @@ class CodeplagEngine:
                 file_extensions=SUPPORTED_EXTENSIONS[
                     self.extension
                 ],
-                check_policy=parsed_args('all_branches'),
+                check_policy=parsed_args.get('all_branches'),
                 access_token=self.access_token
             )
 
@@ -404,14 +404,14 @@ class CodeplagEngine:
                     metrics = compare_works(
                         work1,
                         work2,
-                        parsed_args.pop('threshold')
+                        parsed_args.get('threshold')
                     )
                     if len(metrics) > 1:
                         print_compare_result(
                             work1,
                             work2,
                             metrics,
-                            parsed_args.pop('threshold')
+                            parsed_args.get('threshold')
                         )
 
                     iteration += 1

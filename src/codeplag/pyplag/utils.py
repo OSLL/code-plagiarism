@@ -8,7 +8,6 @@ from codeplag.consts import LOG_PATH
 from codeplag.logger import get_logger
 from codeplag.pyplag.astwalkers import ASTWalker
 
-
 logger = get_logger(__name__, LOG_PATH)
 
 

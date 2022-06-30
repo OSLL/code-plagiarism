@@ -1,3 +1,5 @@
+import sys
+
 import pandas as pd
 
 from codeplag.consts import LOG_PATH
@@ -16,3 +18,4 @@ if __name__ == '__main__':
             f"For getting more information, check file '{LOG_PATH}'."
         )
         logger.debug("Trace:", exc_info=True)
+        sys.exit(1)
