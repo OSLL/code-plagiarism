@@ -260,19 +260,19 @@ class CodeplagEngine:
             if not self.access_token:
                 self.logger.warning('GitHub access token is not defined.')
 
-    def append_work_features_py(self, file_content, url_to_file) -> None:
-        tree = get_ast_from_content_py(file_content, url_to_file)
-        features = get_features_from_ast_py(tree, url_to_file)
-        self.works.append(features)
-
-    def append_work_features_cpp(self, file_content, url_to_file) -> None:
-        with open(FILE_DOWNLOAD_PATH, 'w', encoding='utf-8') as out_file:
-            out_file.write(file_content)
-        cursor = get_cursor_from_file_cpp(FILE_DOWNLOAD_PATH, COMPILE_ARGS)
-        features = get_features_cpp(cursor, FILE_DOWNLOAD_PATH)
-        os.remove(FILE_DOWNLOAD_PATH)
-        features.filepath = url_to_file
-        self.works.append(features)
+    def append_work_features(self, file_content, url_to_file) -> None:
+        if self.extension == 'py':
+            tree = get_ast_from_content_py(file_content, url_to_file)
+            features = get_features_from_ast_py(tree, url_to_file)
+            self.works.append(features)
+        elif self.extension == 'cpp':
+            with open(FILE_DOWNLOAD_PATH, 'w', encoding='utf-8') as out_file:
+                out_file.write(file_content)
+            cursor = get_cursor_from_file_cpp(FILE_DOWNLOAD_PATH, COMPILE_ARGS)
+            features = get_features_cpp(cursor, FILE_DOWNLOAD_PATH)
+            os.remove(FILE_DOWNLOAD_PATH)
+            features.filepath = url_to_file
+            self.works.append(features)
 
     def get_works_from_files(self, files: List[str]) -> None:
         if not files:
@@ -314,13 +314,7 @@ class CodeplagEngine:
             self.logger.info("Getting GitHub files from urls")
         for github_file in github_files:
             file_content = self.github_parser.get_file_from_url(github_file)[0]
-            if self.extension == 'py':
-                self.append_work_features_py(file_content, github_file)
-            elif self.extension == 'cpp':
-                self.append_work_features_cpp(
-                    file_content,
-                    github_file
-                )
+            self.append_work_features(file_content, github_file)
 
     def get_works_from_github_project_folders(self,
                                               github_projects: List[str]) -> None:
@@ -330,10 +324,7 @@ class CodeplagEngine:
                 github_project
             )
             for file_content, url_file in gh_prj_files:
-                if self.extension == 'py':
-                    self.append_work_features_py(file_content, url_file)
-                elif self.extension == 'cpp':
-                    self.append_work_features_cpp(file_content, url_file)
+                self.append_work_features(file_content, url_file)
 
     def get_works_from_users_repos(self,
                                    github_user: str,
@@ -353,10 +344,7 @@ class CodeplagEngine:
                 repo_url
             )
             for file_content, url_file in files:
-                if self.extension == 'py':
-                    self.append_work_features_py(file_content, url_file)
-                elif self.extension == 'cpp':
-                    self.append_work_features_cpp(file_content, url_file)
+                self.append_work_features(file_content, url_file)
 
     def run(self, args=None) -> None:
         self.logger.debug("Starting codeplag util")

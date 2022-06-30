@@ -34,26 +34,25 @@ class TestTokenbased(unittest.TestCase):
         self.assertEqual(res3, fourgrams)
 
     def test_generate_ngrams_and_hashit(self):
-        res1 = generate_ngrams([1, 2, 3, 4, 5], 2, hashit=True)
+        for_bigrams = [1, 2, 3, 4, 5]
+        res1 = generate_ngrams(for_bigrams, 2, hashit=True)
         wait1 = [
-            -3550055125485641917,
-            8409376899596376432,
-            1079245023883434373,
-            -1009709641759730766
+            hash(tuple(for_bigrams[i:i+2]))
+            for i in range(len(for_bigrams) - 1)
         ]
-        res2 = generate_ngrams([3, 4, 7, 8, 15, 3], 3, hashit=True)
+
+        for_trigrams = [3, 4, 7, 8, 15, 3]
+        res2 = generate_ngrams(for_trigrams, 3, hashit=True)
         wait2 = [
-            5617592821626103454,
-            -2108273749650792378,
-            -4048189021248499647,
-            1798021051504873848
+            hash(tuple(for_trigrams[i:i+3]))
+            for i in range(len(for_trigrams) - 2)
         ]
-        res3 = generate_ngrams([1, 3, 5, 7, 9, 7, 5], 4, hashit=True)
+
+        for_fourgrams = [1, 3, 5, 7, 9, 7, 5]
+        res3 = generate_ngrams(for_fourgrams, 4, hashit=True)
         wait3 = [
-            2508163325525924145,
-            -1561549316688687092,
-            -3547738729872137598,
-            3728966320797093116
+            hash(tuple(for_fourgrams[i:i+4]))
+            for i in range(len(for_fourgrams) - 3)
         ]
 
         self.assertEqual(res1, wait1)
@@ -61,28 +60,29 @@ class TestTokenbased(unittest.TestCase):
         self.assertEqual(res3, wait3)
 
     def test_generate_unique_ngrams_and_hashit(self):
-        res1 = generate_ngrams([1, 2, 2, 2, 5], 2, unique=True, hashit=True)
+        for_bigrams = [1, 2, 2, 2, 5]
+        res1 = generate_ngrams(for_bigrams, 2, unique=True, hashit=True)
         wait1 = {
-            -8422800446983873125,
-            -3550055125485641917,
-            1901736143494378007
+            hash(tuple(for_bigrams[i:i+2]))
+            for i in range(len(for_bigrams) - 1)
         }
+
+        for_trigrams = [3, 4, 3, 3, 3, 3]
         res2 = generate_ngrams(
-            [3, 4, 3, 3, 3, 3], 3, unique=True, hashit=True
+            for_trigrams, 3, unique=True, hashit=True
         )
         wait2 = {
-            3982697387022336237,
-            8890040762135969019,
-            -4613898034722827327
+            hash(tuple(for_trigrams[i:i+3]))
+            for i in range(len(for_trigrams) - 2)
         }
+
+        for_fourgrams = [1, 3, 5, 7, 9, 7, 5]
         res3 = generate_ngrams(
-            [1, 3, 5, 7, 9, 7, 5], 4, unique=True, hashit=True
+            for_fourgrams, 4, unique=True, hashit=True
         )
         wait3 = {
-            2508163325525924145,
-            -1561549316688687092,
-            -3547738729872137598,
-            3728966320797093116
+            hash(tuple(for_fourgrams[i:i+4]))
+            for i in range(len(for_fourgrams) - 3)
         }
 
         self.assertEqual(res1, wait1)
