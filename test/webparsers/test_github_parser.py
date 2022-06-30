@@ -5,7 +5,10 @@ import unittest
 from contextlib import redirect_stdout
 from unittest.mock import call, patch
 
-from webparsers.github_parser import GitHubParser
+import pytest
+
+from webparsers.github_parser import (GitHubContentUrl, GitHubParser,
+                                      GitHubRepoUrl, GitHubUrl)
 
 logging.disable(logging.CRITICAL)
 
@@ -1075,6 +1078,87 @@ class TestGitHubParser(unittest.TestCase):
             with self.subTest(test_case=test_case):
                 rv = list(parser.get_files_generator_from_dir_url(**test_case['arguments']))
                 self.assertEqual(rv, test_case['expected_result'])
+
+
+@pytest.mark.parametrize(
+    'arg, expected',
+    [
+        ("https://github.com/OSLL", ["https:", "", "github.com", "OSLL"]),
+        (
+            "http://github.com/OSLL/code-plagiarism/", [
+                "http:", "", "github.com", "OSLL", "code-plagiarism"
+            ]
+        ),
+        ("ttps://github.com/OSLL", ValueError),
+        ("https:/j/github.com/OSLL", ValueError),
+        ("https://githUb.com/OSLL", ValueError),
+        ("https:/", ValueError)
+    ]
+)
+def test_github_url(arg, expected):
+    if type(expected) == type and issubclass(expected, Exception):
+        with pytest.raises(expected):
+            GitHubUrl(arg)
+    else:
+        assert GitHubUrl(arg).url_parts == expected
+
+
+@pytest.mark.parametrize(
+    'arg, expected',
+    [
+        (
+            "http://github.com/OSLL/code-plagiarism/", [
+                "http:", "", "github.com", "OSLL", "code-plagiarism"
+            ]
+        ),
+        (
+            "http://github.com/OSLL/test.py", [
+                "http:", "", "github.com", "OSLL", "test.py"
+            ]
+        ),
+        ("https://github.com/OSLL", ValueError),
+        ("ttps://github.com/OSLL", ValueError),
+        ("https:/j/github.com/OSLL", ValueError),
+        ("https://githUb.com/OSLL", ValueError),
+        ("https:/", ValueError)
+    ]
+)
+def test_github_repo_url(arg, expected):
+    if type(expected) == type and issubclass(expected, Exception):
+        with pytest.raises(expected):
+            GitHubRepoUrl(arg)
+    else:
+        assert GitHubRepoUrl(arg).url_parts == expected
+
+
+@pytest.mark.parametrize(
+    'arg, expected',
+    [
+        (
+            "https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/astfeatures.py", [
+                "https:", "", "github.com", "OSLL", "code-plagiarism", "blob"
+            ]
+        ),
+        (
+            "https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/logger.py", [
+                "https:", "", "github.com", "OSLL", "code-plagiarism", "blob"
+            ]
+        ),
+        ("https://github.com/OSLL", ValueError),
+        ("http://github.com/OSLL/code-plagiarism/", ValueError),
+        ("ttps://github.com/OSLL", ValueError),
+        ("https:/j/github.com/OSLL", ValueError),
+        ("https://githUb.com/OSLL", ValueError),
+        ("https:/", ValueError)
+    ]
+)
+def test_github_content_url(arg, expected):
+    if type(expected) == type and issubclass(expected, Exception):
+        with pytest.raises(expected):
+            GitHubContentUrl(arg)
+    else:
+        for value in expected:
+            assert value in GitHubContentUrl(arg).url_parts
 
 
 if __name__ == '__main__':

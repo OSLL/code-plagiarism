@@ -7,7 +7,7 @@ from codeplag.astfeatures import ASTFeatures
 from codeplag.consts import LOG_PATH
 from codeplag.logger import get_logger
 from codeplag.pyplag.astwalkers import ASTWalker
-from codeplag.utils import compare_works
+
 
 logger = get_logger(__name__, LOG_PATH)
 
@@ -82,25 +82,6 @@ def get_features_from_ast(tree, filepath=''):
     walker.visit(tree)
 
     return features
-
-
-def compare_file_pair(filename1, filename2, threshold):
-    '''
-        Function compares 2 files
-        filename1 - path to the first file (dir/file1.py)
-        filename2 - path the second file (dir/file2.py)
-    '''
-    tree1 = get_ast_from_filename(filename1)
-    tree2 = get_ast_from_filename(filename2)
-
-    if tree1 is None:
-        return
-    if tree2 is None:
-        return
-
-    features1 = get_features_from_ast(tree1, filename1)
-    features2 = get_features_from_ast(tree2, filename2)
-    compare_works(features1, features2, threshold)
 
 
 def get_works_from_filepaths(filenames):

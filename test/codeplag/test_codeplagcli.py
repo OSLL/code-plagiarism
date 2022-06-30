@@ -2,8 +2,7 @@ import argparse
 
 import pytest
 
-from codeplag.codeplagcli import (dir_path, env_path, file_path,
-                                  get_parsed_args, github_url)
+from codeplag.codeplagcli import CodeplagCLI, DirPath, EnvPath, FilePath
 
 
 @pytest.mark.parametrize(
@@ -15,7 +14,7 @@ from codeplag.codeplagcli import (dir_path, env_path, file_path,
     ]
 )
 def test_dir_path(path, out):
-    assert dir_path(path) == out
+    assert DirPath(path) == out
 
 
 @pytest.mark.parametrize(
@@ -27,7 +26,7 @@ def test_dir_path(path, out):
 )
 def test_dir_path_bad(path):
     with pytest.raises(argparse.ArgumentTypeError):
-        dir_path(path)
+        DirPath(path)
 
 
 @pytest.mark.parametrize(
@@ -38,7 +37,7 @@ def test_dir_path_bad(path):
     ]
 )
 def test_file_path(path, out):
-    assert file_path(path) == out
+    assert FilePath(path) == out
 
 
 @pytest.mark.parametrize(
@@ -51,7 +50,7 @@ def test_file_path(path, out):
 )
 def test_file_path_bad(path):
     with pytest.raises(argparse.ArgumentTypeError):
-        file_path(path)
+        FilePath(path)
 
 
 @pytest.mark.parametrize(
@@ -65,16 +64,7 @@ def test_file_path_bad(path):
     ]
 )
 def test_env_path(filepath, out):
-    assert env_path(filepath) == out
-
-
-def test_github_url():
-    assert github_url(
-        'https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/logger.py'
-    ) == 'https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/logger.py'
-
-    with pytest.raises(argparse.ArgumentTypeError):
-        github_url("bad_link")
+    assert EnvPath(filepath) == out
 
 
 @pytest.mark.parametrize(
@@ -107,5 +97,6 @@ def test_github_url():
     ]
 )
 def test_get_parsed_args(args, raises):
+    codeplagcli = CodeplagCLI()
     with raises:
-        get_parsed_args(args=args)
+        codeplagcli.parse_args(args=args)
