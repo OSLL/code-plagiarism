@@ -41,8 +41,8 @@ jobs:
         env:
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         run: |
-          echo "ACCESS_TOKEN = '${ACCESS_TOKEN}'" > .env
-          make docker
+          echo "ACCESS_TOKEN=${ACCESS_TOKEN}" > .env
+          make docker-image
 
       - name: Run tests in the docker container based on the created image
         run: |
