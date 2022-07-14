@@ -170,7 +170,7 @@ def print_compare_result(features1: ASTFeatures,
 
 
 def get_files_path_from_directory(directory: str,
-                                  extensions: list = None):
+                                  extensions: list = None) -> List[str]:
     '''
         The function returns paths to all files in the directory
         and its subdirectories which have the extension transmitted
@@ -197,7 +197,7 @@ def get_files_path_from_directory(directory: str,
 def print_suspect_parts(source_code: str,
                         marked_tokens: List[int],
                         tokens_pos: List[Tuple[int, int]],
-                        color: str = Colors.FAIL):
+                        color: str = Colors.FAIL) -> None:
     ROWS = {
         row for (row, _column) in
         [tokens_pos[index] for index in marked_tokens]
@@ -220,7 +220,7 @@ def print_suspect_parts(source_code: str,
 def print_code_and_highlight_suspect(source_code: str,
                                      marked_tokens: List[int],
                                      tokens_pos: List[Tuple[int, int]],
-                                     color=Colors.FAIL):
+                                     color=Colors.FAIL) -> None:
     ROWS = {row for (row, column) in
             [tokens_pos[index] for index in marked_tokens]}
 
@@ -242,7 +242,7 @@ def print_code_and_highlight_suspect(source_code: str,
 
 class CodeplagEngine:
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(__name__, LOG_PATH)
 
         self.parser = CodeplagCLI()
@@ -251,16 +251,20 @@ class CodeplagEngine:
     def set_access_token(self, env_path: str) -> None:
         if not env_path:
             self.logger.warning(
-                "Env file not found or not a file."
+                "Env file not found or not a file. "
+                "Trying to get token from environment."
             )
-            self.access_token = ''
+            self.access_token = os.environ.get('ACCESS_TOKEN', '')
         else:
             env_config = Config(RepositoryEnv(env_path))
             self.access_token = env_config.get('ACCESS_TOKEN', default='')
-            if not self.access_token:
-                self.logger.warning('GitHub access token is not defined.')
 
-    def append_work_features(self, file_content, url_to_file) -> None:
+        if not self.access_token:
+            self.logger.warning('GitHub access token is not defined.')
+
+    def append_work_features(self,
+                             file_content: str,
+                             url_to_file: str) -> None:
         if self.extension == 'py':
             tree = get_ast_from_content_py(file_content, url_to_file)
             features = get_features_from_ast_py(tree, url_to_file)
@@ -346,7 +350,7 @@ class CodeplagEngine:
             for file_content, url_file in files:
                 self.append_work_features(file_content, url_file)
 
-    def run(self, args=None) -> None:
+    def run(self, args: List[str] = None) -> None:
         self.logger.debug("Starting codeplag util")
 
         if args is None:

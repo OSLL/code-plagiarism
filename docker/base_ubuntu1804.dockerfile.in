@@ -1,0 +1,16 @@
+FROM ubuntu:18.04
+
+RUN apt-get update
+RUN apt-get install -y python3-pip
+RUN apt-get install -y clang libncurses5
+RUN apt-get install -y man
+RUN pip3 install --upgrade setuptools
+
+ADD setup.py /usr/src/@UTIL_NAME@/setup.py
+ADD src/ /usr/src/@UTIL_NAME@/src
+ADD README.md /usr/src/@UTIL_NAME@/README.md
+ADD LICENSE /usr/src/@UTIL_NAME@/LICENSE
+ADD Makefile /usr/src/@UTIL_NAME@/Makefile
+
+WORKDIR /usr/src/@UTIL_NAME@
+RUN pip3 install $(python3 setup.py --install_requires)

@@ -37,14 +37,16 @@
 .vscode
 
 __pycache__
-other/*
 dist/*
 build/*
 .env
-Man/*
+man/*
 src/codeplag.egg-info/*
 docs/notebooks/.ipynb_checkpoints/
 
 # Substituting
 src/codeplag/consts.py
 src/webparsers/consts.py
+docker/base_ubuntu1804.dockerfile
+docker/test_ubuntu1804.dockerfile
+docker/ubuntu1804.dockerfile
