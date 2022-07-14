@@ -152,18 +152,18 @@ docker-test-image: substitute docker-base-image
 		--file docker/test_ubuntu1804.dockerfile \
 		.
 
-docker-image: substitute docker-base-image
-	docker image inspect $(DOCKER_TAG) > /dev/null 2>&1 || \
-	docker image build \
-		--tag  "$(DOCKER_TAG)" \
-		--file docker/ubuntu1804.dockerfile \
-		.
-
 docker-test: docker-test-image
 	docker run --rm \
 		--volume $(PWD)/man:/usr/src/$(UTIL_NAME)/man \
 		--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
 		"$(TEST_DOCKER_TAG)"
+
+docker-image: substitute docker-test
+	docker image inspect $(DOCKER_TAG) > /dev/null 2>&1 || \
+	docker image build \
+		--tag  "$(DOCKER_TAG)" \
+		--file docker/ubuntu1804.dockerfile \
+		.
 
 docker-autotest: docker-image
 	docker run --rm \
