@@ -145,7 +145,7 @@ docker-base-image: substitute
 			. \
 	)
 
-docker-test-image: substitute docker-base-image
+docker-test-image: docker-base-image
 	docker image inspect $(TEST_DOCKER_TAG) > /dev/null 2>&1 || \
 	docker image build \
 		--tag  "$(TEST_DOCKER_TAG)" \
@@ -158,7 +158,7 @@ docker-test: docker-test-image
 		--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
 		"$(TEST_DOCKER_TAG)"
 
-docker-image: substitute docker-test
+docker-image: docker-test
 	docker image inspect $(DOCKER_TAG) > /dev/null 2>&1 || \
 	docker image build \
 		--tag  "$(DOCKER_TAG)" \

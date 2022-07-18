@@ -56,7 +56,7 @@ jobs:
   push-image:
     runs-on: ubuntu-18.04
     needs: [check-code, docker-build-test-autotest]
-    if: github.ref == 'refs/heads/main'
+    # if: github.ref == 'refs/heads/main'
 
     steps:
           -
@@ -81,7 +81,7 @@ jobs:
             uses: docker/build-push-action@v2
             with:
               context: ./
-              file: ./Dockerfile
+              file: ./docker/ubuntu1804.dockerfile
               builder: ${{ steps.buildx.outputs.name }}
               push: true
               tags: |
