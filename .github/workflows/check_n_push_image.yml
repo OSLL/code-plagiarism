@@ -16,7 +16,7 @@ on:
 
   workflow_dispatch:
 
-#jobs:
+jobs:
 #  check-code:
 #    runs-on: ubuntu-18.04
 
