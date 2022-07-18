@@ -85,6 +85,7 @@ jobs:
             uses: docker/build-push-action@v2
             with:
               context: ./
+              load: true
               file: docker/ubuntu1804.dockerfile
               builder: ${{ steps.buildx.outputs.name }}
               push: true
