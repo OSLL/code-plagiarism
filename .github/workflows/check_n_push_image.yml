@@ -62,6 +62,11 @@ jobs:
           - name: Checkout
             uses: actions/checkout@v2
 
+          - name: Create base docker image and run tests in the docker container based on it
+            run: |
+              make docker-base-image
+              make docker-test
+
           - name: Login to Docker Hub
             uses: docker/login-action@v1
             with:
