@@ -69,7 +69,7 @@ jobs:
 
           - name: Create base docker image and run tests in the docker container based on it
             run: |
-              make docker-image
+              make docker-image DOCKER_TAG=${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu18.04:${{ steps.get_version.outputs.version }}
               docker image tag codeplag-ubuntu18.04:${{ steps.get_version.outputs.version }} codeplag-ubuntu18.04:latest
 
           - name: Login to Docker Hub
@@ -82,7 +82,7 @@ jobs:
             uses: docker/setup-buildx-action@v1
 
           - name: Push docker image
-            run: docker image push --all-tags codeplag-ubuntu18.04
+            run: docker image push --all-tags ${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu18.04:${{ steps.get_version.outputs.version }}
 
           #- name: Build and push
           #  uses: docker/build-push-action@v2
