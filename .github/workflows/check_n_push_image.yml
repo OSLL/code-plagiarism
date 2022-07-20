@@ -55,7 +55,7 @@ jobs:
           make docker-image DOCKER_TAG=${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu18.04:${{ steps.get_version.outputs.version }}
           make docker-autotest DOCKER_TAG=${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu18.04:${{ steps.get_version.outputs.version }}
           docker image tag ${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu18.04:${{ steps.get_version.outputs.version }} ${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu18.04:latest
-          docker image save --output /tmp/codeplag-ubuntu18.04 ${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu18.04:${{ steps.get_version.outputs.version }}
+          docker image save --output /tmp/codeplag-ubuntu18.04.tar ${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu18.04:${{ steps.get_version.outputs.version }}
 
       - name: Upload created image
         uses: actions/upload-artifact@v3
