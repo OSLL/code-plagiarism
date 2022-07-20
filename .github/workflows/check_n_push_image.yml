@@ -45,6 +45,11 @@ jobs:
           make docker-base-image
           make docker-test
 
+      - name: Get current util version
+        id: get_version
+        run: |
+          echo "::set-output name=version::$(grep --max-count 1 UTIL_VERSION Makefile | grep -Eo "[0-9]+[.][0-9]+[.][0-9]+")"
+
       - name: Create main docker image and run autotests in the docker container based on it
         run: |
           make docker-image DOCKER_TAG=${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu18.04:${{ steps.get_version.outputs.version }}
@@ -72,11 +77,6 @@ jobs:
         with:
           name: codeplag-ubuntu18.04
           path: /tmp
-
-      - name: Get current util version
-        id: get_version
-        run: |
-          echo "::set-output name=version::$(grep --max-count 1 UTIL_VERSION Makefile | grep -Eo "[0-9]+[.][0-9]+[.][0-9]+")"
 
       - name: Login to Docker Hub
         uses: docker/login-action@v1
