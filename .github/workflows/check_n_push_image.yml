@@ -72,11 +72,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Download created image
+      - name: Download created in the previous stage image
         uses: actions/download-artifact@v3
         with:
           name: codeplag-ubuntu18.04
           path: /tmp
+
+      - name: Load Docker created image
+        run: |
+          docker load --input /tmp/codeplag-ubuntu18.04.tar
 
       - name: Login to Docker Hub
         uses: docker/login-action@v1
