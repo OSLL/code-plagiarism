@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import sys
@@ -242,8 +243,8 @@ def print_code_and_highlight_suspect(source_code: str,
 
 class CodeplagEngine:
 
-    def __init__(self) -> None:
-        self.logger = get_logger(__name__, LOG_PATH)
+    def __init__(self, logger: logging.Logger) -> None:
+        self.logger = logger
 
         self.parser = CodeplagCLI()
         argcomplete.autocomplete(self.parser)

@@ -14,3 +14,4 @@ ADD Makefile /usr/src/@UTIL_NAME@/Makefile
 
 WORKDIR /usr/src/@UTIL_NAME@
 RUN pip3 install $(python3 setup.py --install_requires)
+RUN register-python-argcomplete @UTIL_NAME@ >> ~/.bashrc

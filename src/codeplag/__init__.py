@@ -9,10 +9,10 @@ try:
 except ModuleNotFoundError:
     pass
 else:
-    def main():
+    def main() -> None:
         pd.options.display.float_format = '{:,.2%}'.format
-        codeplag_util = CodeplagEngine()
         logger = get_logger(__name__, LOG_PATH)
+        codeplag_util = CodeplagEngine(logger)
         try:
             codeplag_util.run()
         except Exception:

@@ -9,8 +9,8 @@ from codeplag.codeplagcli import CodeplagCLI, DirPath, EnvPath, FilePath
     "path, out",
     [
         ('./src', 'src'),
-        ('./src/profile.d', 'src/profile.d'),
-        ('src/profile.d', 'src/profile.d')
+        ('./src/codeplag', 'src/codeplag'),
+        ('src/codeplag', 'src/codeplag')
     ]
 )
 def test_dir_path(path, out):

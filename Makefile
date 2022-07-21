@@ -1,4 +1,4 @@
-UTIL_VERSION			:= 0.1.9
+UTIL_VERSION			:= 0.2.0
 UTIL_NAME				:= codeplag
 
 BASE_DOCKER_TAG			:= $(shell echo $(UTIL_NAME)-base-ubuntu18.04:$(UTIL_VERSION) | tr A-Z a-z)
@@ -43,7 +43,6 @@ man:
 
 install:
 	python3 -m pip install .
-	install -D -m 0744 src/profile.d/$(UTIL_NAME) /etc/profile.d/$(UTIL_NAME).sh
 
 	touch $(CODEPLAG_LOG_PATH)
 	chmod 0666 $(CODEPLAG_LOG_PATH)
@@ -55,7 +54,6 @@ install:
 
 test:
 	python3 -m pytest -q
-
 	make clean-cache
 
 autotest:
@@ -80,7 +78,7 @@ autotest:
 	@echo "\n\n"
 
 	codeplag --extension cpp \
-			--github-project-folders https://github.com/OSLL/code-plagiarism/tree/main/test || \
+			 --github-project-folders https://github.com/OSLL/code-plagiarism/tree/main/test || \
 	exit $?
 	@echo "\n\n"
 
@@ -128,10 +126,7 @@ clean-cache:
 	find . -type d | grep -E "__pycache__" | (xargs rm -r 2> /dev/null || exit 0)
 
 uninstall:
-	rm --force /etc/profile.d/$(UTIL_NAME).sh
 	rm --force /usr/share/man/man1/$(UTIL_NAME).1
-	rm --force $(WEBPARSERS_LOG_PATH)
-	rm --force $(CODEPLAG_LOG_PATH)
 	pip3 uninstall $(UTIL_NAME) -y
 
 docker-base-image: substitute
