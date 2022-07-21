@@ -14,22 +14,23 @@ cd code-plagiarism/
 
 - OS Ubuntu Linux >= 18.04
 
-- python version >= 3.6 && < 3.8
+- 3.6 <= python version < 3.8
 
 - Run these commands:
 
   ```
   sudo apt update
-  sudo apt install python3 python3-pip python3-venv
+  sudo apt install python3 python3-pip
   sudo apt install clang libncurses5
 
   # Optional
+  sudo apt install python3-venv
   pip3 install virtualenv
   python3 -m venv venv
   source venv/bin/activate
 
   pip3 install -U pip # pip3 version >= 19.0
-  pip3 install argparse-manpage==2.1
+  pip3 install argparse-manpage==2.1 requests==2.22.0
   pip3 install --upgrade setuptools # Ensure that an up-to-date version of setuptools is installed
   make
   ```
@@ -39,7 +40,7 @@ cd code-plagiarism/
 - Create a code-plagiarism docker image
 
   ```
-  $ make docker
+  $ make docker-image
   ```
 
 - Starting tests with using created image
@@ -57,12 +58,12 @@ cd code-plagiarism/
 
 - Pull an image from Docker Hub
   ```
-  $ docker pull artanias/code-plagiarism-ubuntu18.04:latest
+  $ docker pull artanias/codeplag-ubuntu18.04:latest
   ```
 
 - Run container based on pulled image and connect volume with your data
   ```
-  $ docker run --rm --tty --interactive -v <absolute_local_path_with_data>:<absolute_containter_path_with_data> "artanias/code-plagiarism-ubuntu18.04:latest" /bin/bash
+  $ docker run --rm --tty --interactive --volume <absolute_local_path_with_data>:<absolute_containter_path_with_data> "artanias/codeplag-ubuntu18.04:latest" /bin/bash
   ```
 
 ## 2. Tests
@@ -73,7 +74,7 @@ cd code-plagiarism/
   $ make test
   ```
 
-- Testings CLI and work of the util with written autotests (required 'ACCESS_TOKEN' with empty accesses, look ahead)
+- Testing work of the util with written autotests (required installed util and 'ACCESS_TOKEN' with empty accesses, look ahead)
   ```
   $ make autotest
   ```
@@ -82,7 +83,7 @@ cd code-plagiarism/
 
   Before starting work with searching on GitHub, you may define variable ACCESS_TOKEN in file .env in the folder from which you want to run the app:
 
-  ACCESS_TOKEN - Personal access token which add more requests to repos and access to private repos if you give it.
+  > ACCESS_TOKEN - Personal access token which add more requests to repos and access to private repos if you give it.
 
   For beginning, you may to call help for getting information about available CLI options
 
@@ -90,7 +91,7 @@ cd code-plagiarism/
   $ codeplag --help
   ```
 
-  For getting more information run after `make` or in a docker container
+  For getting more information about CLI run after **make** or in a docker container
   ```
   $ man codeplag
   ```

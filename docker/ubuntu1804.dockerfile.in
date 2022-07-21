@@ -1,0 +1,6 @@
+FROM @UTIL_NAME@-base-ubuntu18.04:@UTIL_VERSION@
+
+ADD man/ /usr/src/@UTIL_NAME@/man
+RUN make install
+
+CMD ["/bin/bash"]

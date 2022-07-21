@@ -1,17 +1,15 @@
+from typing import List, Tuple
+
 import numpy as np
 
-DEFAULT_EMPTY_ARRAY = np.array([[[]]], dtype=np.int64)
 
-
-def counter_metric(counter1, counter2):
+def counter_metric(counter1: dict, counter2: dict) -> float:
     '''
         Function return how same operators or keywords or literals
         in two trees
         @param counter1 - dict object with counts of op or kw or list
         @param counter2 - dict object with counts of op or kw or list
     '''
-    # if(type(counter1) is not dict or type(counter2) is not dict):
-    #    return TypeError
 
     if len(counter1) == 0 and len(counter2) == 0:
         return 1.0
@@ -36,23 +34,21 @@ def counter_metric(counter1, counter2):
     return percent_of_same[0] / percent_of_same[1]
 
 
-def op_shift_metric(ops1, ops2):
+def op_shift_metric(ops1: List[str], ops2: List[str]) -> Tuple[int, float]:
     '''
         Returns the maximum value of the operator match and the shift under
         this condition
         @param ops1 - sequence of operators of tree1
         @param ops2 - sequence of operators of tree2
     '''
-    # if (type(ops1) is not list or type(ops2) is not list):
-    #    return TypeError
+
     count_el_f = len(ops1)
     count_el_s = len(ops2)
     if count_el_f == 0 and count_el_s == 0:
         return 0, 1.0
-    if count_el_f > count_el_s:
+    elif count_el_f > count_el_s:
         ops1, ops2 = ops2, ops1
-        count_el_f = len(ops1)
-        count_el_s = len(ops2)
+        count_el_f, count_el_s = count_el_s, count_el_f
 
     y = np.zeros(count_el_s, dtype=np.float32)
 
@@ -83,7 +79,8 @@ def op_shift_metric(ops1, ops2):
         return 0, 0.0
 
 
-def get_children_indexes(tree, count_of_nodes):
+def get_children_indexes(tree: List[Tuple[int, int]],
+                         count_of_nodes: int) -> Tuple[List[int], int]:
     """The function returns indexes of her children and their count.
 
     @param tree - a simple structure of the AST.
@@ -108,7 +105,7 @@ def get_children_indexes(tree, count_of_nodes):
     return indexes, count_of_children
 
 
-def find_max_index(array):
+def find_max_index(array: np.ndarray) -> np.ndarray:
     '''
         The function for finding index of max element in matrix
         @param array - matrix of compliance (np.ndarray object)
@@ -133,7 +130,7 @@ def find_max_index(array):
     return index
 
 
-def matrix_value(array):
+def matrix_value(array: np.ndarray) -> Tuple[list, list]:
     '''
         The function returns the value of the similarity of nodes
         from the compliance matrix.
@@ -162,7 +159,11 @@ def matrix_value(array):
     return same_struct_metric, indexes
 
 
-def add_not_counted(tree, count_of_children, key_indexes, indexes, axis):
+def add_not_counted(tree: List[Tuple[int, int]],
+                    count_of_children: int,
+                    key_indexes: List[int],
+                    indexes: List[np.ndarray],
+                    axis: int) -> int:
     """The function returns the count of nodes that didn't
     account in the previous step.
 
@@ -187,12 +188,17 @@ def add_not_counted(tree, count_of_children, key_indexes, indexes, axis):
     return count
 
 
-def struct_compare(tree1, tree2, matrix=DEFAULT_EMPTY_ARRAY):
+def struct_compare(tree1: List[Tuple[int, int]],
+                   tree2: List[Tuple[int, int]],
+                   matrix: np.ndarray = None) -> list:
     '''
         Function for compare structure of two trees
         @param tree1 - a simple structure of the first AST.
         @param tree2 - a simple structure of the second AST.
     '''
+
+    if matrix is None:
+        matrix = np.array([[[]]], dtype=np.int64)
 
     count_of_nodes1 = len(tree1)
     count_of_nodes2 = len(tree2)

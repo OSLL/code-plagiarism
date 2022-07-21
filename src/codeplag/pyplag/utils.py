@@ -1,5 +1,6 @@
 import ast
 import os
+from typing import List, Union
 
 from termcolor import colored
 
@@ -11,33 +12,34 @@ from codeplag.pyplag.astwalkers import ASTWalker
 logger = get_logger(__name__, LOG_PATH)
 
 
-def get_ast_from_content(code, path):
+def get_ast_from_content(code: str, path: str) -> Union[ast.Module, None]:
     tree = None
 
+    # TODO: Add logging and check for correct colored output
     try:
         tree = ast.parse(code)
+    except TabError as err:
+        print('-' * 40)
+        print(colored(f'Not compiled: {path}', 'red'))
+        print(colored(f'TabError: {err.args[0]}', 'red'))
+        print(colored(f'In line {str(err.args[1][1])}', 'red'))
+        print('-' * 40)
     except IndentationError as err:
         print('-' * 40)
-        print(colored('Not compiled: ' + path, 'red'))
-        print(colored('IdentationError: ' + err.args[0], 'red'))
-        print(colored('In line ' + str(err.args[1][1]), 'red'))
+        print(colored(f'Not compiled: {path}', 'red'))
+        print(colored(f'IdentationError: {err.args[0]}', 'red'))
+        print(colored(f'In line {str(err.args[1][1])}', 'red'))
         print('-' * 40)
     except SyntaxError as err:
         print('-' * 40)
-        print(colored('Not compiled: ' + path, 'red'))
-        print(colored('SyntaxError: ' + err.args[0], 'red'))
-        print(colored('In line ' + str(err.args[1][1]), 'red'))
-        print(colored('In column ' + str(err.args[1][2]), 'red'))
-        print('-' * 40)
-    except TabError as err:
-        print('-' * 40)
-        print(colored('Not compiled: ' + path, 'red'))
-        print(colored('TabError: ' + err.args[0], 'red'))
-        print(colored('In line ' + str(err.args[1][1]), 'red'))
+        print(colored(f'Not compiled: {path}', 'red'))
+        print(colored(f'SyntaxError: {err.args[0]}', 'red'))
+        print(colored(f'In line {str(err.args[1][1])}', 'red'))
+        print(colored(f'In column {str(err.args[1][2])}', 'red'))
         print('-' * 40)
     except Exception as e:
         print('-' * 40)
-        print(colored('Not compiled: ' + path, 'red'))
+        print(colored(f'Not compiled: {path}', 'red'))
         print(colored(e.__class__.__name__, 'red'))
         for el in e.args:
             print(colored(el, 'red'))
@@ -46,7 +48,7 @@ def get_ast_from_content(code, path):
     return tree
 
 
-def get_ast_from_filename(filename):
+def get_ast_from_filename(filename: str) -> Union[ast.Module, None]:
     '''
         Function return ast which has type ast.Module
         @param filename - full path to file with code which will have
@@ -75,7 +77,7 @@ def get_ast_from_filename(filename):
     return tree
 
 
-def get_features_from_ast(tree, filepath=''):
+def get_features_from_ast(tree: ast.Module, filepath: str = ''):
     features = ASTFeatures(filepath)
     walker = ASTWalker(features)
     walker.visit(tree)
@@ -83,7 +85,7 @@ def get_features_from_ast(tree, filepath=''):
     return features
 
 
-def get_works_from_filepaths(filenames):
+def get_works_from_filepaths(filenames: List[str]):
     if not filenames:
         return []
 

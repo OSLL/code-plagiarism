@@ -1,19 +1,18 @@
-import re
 import os
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy.optimize import curve_fit
-
+import re
 from datetime import datetime
 from time import perf_counter
-from codeplag.pyplag.utils import get_ast_from_content, get_features_from_ast
-from codeplag.algorithms.tokenbased import value_jakkar_coef
-from codeplag.algorithms.stringbased import gst
-from codeplag.algorithms.featurebased import counter_metric, struct_compare
 
-from webparsers.github_parser import GitHubParser
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from codeplag.algorithms.featurebased import counter_metric, struct_compare
+from codeplag.algorithms.stringbased import gst
+from codeplag.algorithms.tokenbased import value_jakkar_coef
+from codeplag.pyplag.utils import get_ast_from_content, get_features_from_ast
 from decouple import Config, RepositoryEnv
+from scipy.optimize import curve_fit
+from webparsers.github_parser import GitHubParser
 
 
 def square_func(x, a, b, c):
