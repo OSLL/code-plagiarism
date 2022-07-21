@@ -43,7 +43,6 @@ man:
 
 install:
 	python3 -m pip install .
-	install -D -m 0755 src/sbin/$(UTIL_NAME) /usr/sbin/$(UTIL_NAME)
 	install -D -m 0744 src/profile.d/$(UTIL_NAME) /etc/profile.d/$(UTIL_NAME).sh
 
 	touch $(CODEPLAG_LOG_PATH)
@@ -130,7 +129,6 @@ clean-cache:
 
 uninstall:
 	rm --force /etc/profile.d/$(UTIL_NAME).sh
-	rm --force /usr/sbin/$(UTIL_NAME)
 	rm --force /usr/share/man/man1/$(UTIL_NAME).1
 	rm --force $(WEBPARSERS_LOG_PATH)
 	rm --force $(CODEPLAG_LOG_PATH)
@@ -158,12 +156,14 @@ docker-test: docker-test-image
 		--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
 		"$(TEST_DOCKER_TAG)"
 
-docker-image: docker-test
-	docker image inspect $(DOCKER_TAG) > /dev/null 2>&1 || \
-	docker image build \
-		--tag  "$(DOCKER_TAG)" \
-		--file docker/ubuntu1804.dockerfile \
-		.
+docker-image:
+	docker image inspect $(DOCKER_TAG) > /dev/null 2>&1 || ( \
+		make docker-test && \
+		docker image build \
+			--tag  "$(DOCKER_TAG)" \
+			--file docker/ubuntu1804.dockerfile \
+			. \
+	)
 
 docker-autotest: docker-image
 	docker run --rm \

@@ -49,4 +49,9 @@ setup(
     packages=find_packages("src"),
     python_requires='>=3.6',
     install_requires=REQUIREMENTS,
+    entry_points={
+        'console_scripts': [
+            'codeplag = codeplag:main',
+        ]
+    }
 )
