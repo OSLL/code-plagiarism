@@ -14,14 +14,13 @@ from codeplag.algorithms.featurebased import counter_metric, struct_compare
 from codeplag.algorithms.tokenbased import value_jakkar_coef
 from codeplag.astfeatures import ASTFeatures
 from codeplag.codeplagcli import CodeplagCLI
-from codeplag.consts import FILE_DOWNLOAD_PATH, LOG_PATH, SUPPORTED_EXTENSIONS
+from codeplag.consts import FILE_DOWNLOAD_PATH, SUPPORTED_EXTENSIONS
 from codeplag.cplag.const import COMPILE_ARGS
 from codeplag.cplag.tree import get_features as get_features_cpp
 from codeplag.cplag.util import \
     get_cursor_from_file as get_cursor_from_file_cpp
 from codeplag.cplag.util import \
     get_works_from_filepaths as get_works_from_filepaths_cpp
-from codeplag.logger import get_logger
 from codeplag.pyplag.utils import \
     get_ast_from_content as get_ast_from_content_py
 from codeplag.pyplag.utils import \
@@ -29,6 +28,9 @@ from codeplag.pyplag.utils import \
 from codeplag.pyplag.utils import \
     get_works_from_filepaths as get_works_from_filepaths_py
 from webparsers.github_parser import GitHubParser
+
+
+GET_FRAZE = 'Getting works features from'
 
 
 class Colors:
@@ -283,7 +285,7 @@ class CodeplagEngine:
         if not files:
             return
 
-        self.logger.info("Getting works features from files")
+        self.logger.info(f'{GET_FRAZE} files')
         if self.extension == 'py':
             self.works.extend(get_works_from_filepaths_py(files))
         elif self.extension == 'cpp':
@@ -296,7 +298,7 @@ class CodeplagEngine:
 
     def get_works_from_dirs(self, dirs: List[str]) -> None:
         for dir in dirs:
-            self.logger.info(f'Getting works features from {dir}')
+            self.logger.info(f'{GET_FRAZE} {dir}')
             filepaths = get_files_path_from_directory(
                 dir,
                 extensions=SUPPORTED_EXTENSIONS[self.extension]
@@ -316,15 +318,16 @@ class CodeplagEngine:
     def get_works_from_github_files(self,
                                     github_files: List[str]) -> None:
         if github_files:
-            self.logger.info("Getting GitHub files from urls")
+            self.logger.info(f"{GET_FRAZE} GitHub urls")
         for github_file in github_files:
             file_content = self.github_parser.get_file_from_url(github_file)[0]
             self.append_work_features(file_content, github_file)
 
-    def get_works_from_github_project_folders(self,
-                                              github_projects: List[str]) -> None:
+    def get_works_from_github_project_folders(
+            self,
+            github_projects: List[str]) -> None:
         for github_project in github_projects:
-            self.logger.info(f'Getting works features from {github_project}')
+            self.logger.info(f'{GET_FRAZE} {github_project}')
             gh_prj_files = self.github_parser.get_files_generator_from_dir_url(
                 github_project
             )
@@ -342,9 +345,7 @@ class CodeplagEngine:
             reg_exp=reg_exp
         )
         for repo_url in repos.values():
-            self.logger.info(
-                f'Getting works features from {repo_url}'
-            )
+            self.logger.info(f'{GET_FRAZE} {repo_url}')
             files = self.github_parser.get_files_generator_from_repo_url(
                 repo_url
             )

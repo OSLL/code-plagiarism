@@ -1,7 +1,8 @@
 import logging
+import sys
 
 
-def get_file_handler(filename):
+def get_file_handler(filename: str) -> logging.FileHandler:
     log_format = (
         '%(asctime)s - [%(levelname)s] - %(name)s - '
         '(%(filename)s).%(funcName)s(%(lineno)d) - %(message)s'
@@ -17,20 +18,20 @@ def get_file_handler(filename):
     return file_handler
 
 
-def get_stream_handler():
+def get_stream_handler() -> logging.StreamHandler:
     log_format = ('%(asctime)s - [%(levelname)s] - %(message)s')
     log_arguments = {
                        'fmt': log_format,
                        'datefmt': '%b %-d %T'
                     }
-    stream_handler = logging.StreamHandler()
+    stream_handler = logging.StreamHandler(stream=sys.stdout)
     stream_handler.setLevel(logging.INFO)
     stream_handler.setFormatter(logging.Formatter(**log_arguments))
 
     return stream_handler
 
 
-def get_logger(name, filename):
+def get_logger(name: str, filename: str) -> logging.Logger:
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
     logger.addHandler(get_file_handler(filename))
