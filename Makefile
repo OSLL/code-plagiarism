@@ -100,6 +100,13 @@ docker-test: docker-test-image
 		--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
 		"$(TEST_DOCKER_TAG)"
 
+docker-autotest: docker-test-image
+	docker run --rm \
+		--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
+		--env-file .env \
+		"$(TEST_DOCKER_TAG)" bash -c \
+		"make autotest"
+
 docker-image:
 	docker image inspect $(DOCKER_TAG) > /dev/null 2>&1 || ( \
 		make docker-test && \
@@ -108,13 +115,6 @@ docker-image:
 			--file docker/ubuntu1804.dockerfile \
 			. \
 	)
-
-docker-autotest: docker-image
-	docker run --rm \
-		--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
-		--env-file .env \
-		"$(DOCKER_TAG)" bash -c \
-		"make autotest"
 
 docker-run: docker-image
 	docker run --rm --tty --interactive \

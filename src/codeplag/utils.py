@@ -180,7 +180,7 @@ def get_files_path_from_directory(directory: str,
         in arguments
     '''
     if not extensions:
-        extensions = [r".*\b"]
+        extensions = [r"\..*$"]
 
     allowed_files = []
     for current_dir, _folders, files in os.walk(directory):
