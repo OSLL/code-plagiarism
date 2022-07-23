@@ -15,8 +15,8 @@ CPP_DIR = 'test/unit/codeplag/cplag/data'
 PY_DIR = 'test/unit/codeplag/cplag'
 REPO_URL = 'https://github.com/OSLL/code-plagiarism'
 CPP_GITHUB_FILES = [
-    f'{REPO_URL}/blob/main/test/codeplag/cplag/data/sample3.cpp',
-    f'{REPO_URL}/blob/main/test/codeplag/cplag/data/sample4.cpp'
+    f'{REPO_URL}/blob/main/test/unit/codeplag/cplag/data/sample3.cpp',
+    f'{REPO_URL}/blob/main/test/unit/codeplag/cplag/data/sample4.cpp'
 ]
 PY_GITHUB_FILES = [
     f'{REPO_URL}/blob/main/src/codeplag/pyplag/utils.py',
