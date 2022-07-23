@@ -11,10 +11,10 @@ class TestTree(unittest.TestCase):
 
     def setUp(self):
         self.first_sample_path = os.path.abspath(
-            "test/codeplag/cplag/data/sample1.cpp"
+            "test/unit/codeplag/cplag/data/sample1.cpp"
         )
         self.second_sample_path = os.path.abspath(
-            "test/codeplag/cplag/data/sample2.cpp"
+            "test/unit/codeplag/cplag/data/sample2.cpp"
         )
         if os.path.exists(self.first_sample_path) and \
            os.path.exists(self.second_sample_path):

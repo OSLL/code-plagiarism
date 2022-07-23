@@ -40,20 +40,20 @@ jobs:
         run: |
           echo "ACCESS_TOKEN=${ACCESS_TOKEN}" > .env
 
-      - name: Create base docker image and run tests in the docker container based on it
+      - name: Create base docker image and run tests in the docker container based on it and autotests
         run: |
           make docker-base-image
           make docker-test
+          make docker-autotest
 
       - name: Get current util version
         id: get_version
         run: |
           echo "::set-output name=version::$(grep --max-count 1 UTIL_VERSION Makefile | grep -Eo "[0-9]+[.][0-9]+[.][0-9]+")"
 
-      - name: Create main docker image and run autotests in the docker container based on it
+      - name: Create main docker image and save it for next job
         run: |
           make docker-image DOCKER_TAG=${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu18.04:${{ steps.get_version.outputs.version }}
-          make docker-autotest DOCKER_TAG=${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu18.04:${{ steps.get_version.outputs.version }}
           docker image save --output /tmp/codeplag-ubuntu18.04.tar ${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu18.04:${{ steps.get_version.outputs.version }}
 
       - name: Upload created image

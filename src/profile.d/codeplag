@@ -1,2 +1,0 @@
-# codeplag autocomplete initialization script (bash)
-eval "$(register-python-argcomplete codeplag)"

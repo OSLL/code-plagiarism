@@ -115,7 +115,8 @@ class CodeplagCLI(argparse.ArgumentParser):
         parser_github.add_argument(
             "-e", "--regexp",
             type=str,
-            help="A regular expression to filter searching repositories on GitHub."
+            help="A regular expression to filter "
+                 "searching repositories on GitHub."
         )
         parser_github.add_argument(
             "-gf", "--github-files",

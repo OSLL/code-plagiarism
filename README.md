@@ -96,6 +96,11 @@ cd code-plagiarism/
   $ man codeplag
   ```
 
+  When using **bash** as your shell, **codeplag** can use [argcomplete](https://kislyuk.github.io/argcomplete/) for auto-completion. For permanent completion activation, use:
+  ```
+  $ register-python-argcomplete codeplag >> ~/.bashrc
+  ```
+
 ## 5. Demo examples (works in the project directory and with an installed codeplag package)
 
 - Python analyzer

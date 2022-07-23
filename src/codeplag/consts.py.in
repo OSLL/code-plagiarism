@@ -2,12 +2,12 @@ FILE_DOWNLOAD_PATH = "/tmp/@UTIL_NAME@_download.out"
 LOG_PATH = "@CODEPLAG_LOG_PATH@"
 SUPPORTED_EXTENSIONS = {
     'py': [
-        r'.py$'
+        r'\.py$'
     ],
     'cpp': [
-        r'.cpp$',
-        r'.c$',
-        r'.h$'
+        r'\.cpp$',
+        r'\.c$',
+        r'\.h$'
     ]
 }
 UTIL_NAME = "@UTIL_NAME@"

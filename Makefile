@@ -1,4 +1,4 @@
-UTIL_VERSION			:= 0.1.9
+UTIL_VERSION			:= 0.2.0
 UTIL_NAME				:= codeplag
 
 BASE_DOCKER_TAG			:= $(shell echo $(UTIL_NAME)-base-ubuntu18.04:$(UTIL_VERSION) | tr A-Z a-z)
@@ -43,7 +43,6 @@ man:
 
 install:
 	python3 -m pip install .
-	install -D -m 0744 src/profile.d/$(UTIL_NAME) /etc/profile.d/$(UTIL_NAME).sh
 
 	touch $(CODEPLAG_LOG_PATH)
 	chmod 0666 $(CODEPLAG_LOG_PATH)
@@ -54,64 +53,12 @@ install:
 	install -D -m 0644 man/$(UTIL_NAME).1 /usr/share/man/man1/$(UTIL_NAME).1
 
 test:
-	python3 -m pytest -q
-
+	pytest test/unit -q
 	make clean-cache
 
 autotest:
-	codeplag --version || \
-	exit $?
-	@echo "\n\n"
-
-	codeplag --extension cpp \
-			 --files test/codeplag/cplag/data/sample1.cpp test/codeplag/cplag/data/sample2.cpp || \
-	exit $?
-	@echo "\n\n"
-
-	codeplag --extension cpp \
-			 --directories test/codeplag/cplag/data || \
-	exit $?
-	@echo "\n\n"
-
-	codeplag --extension cpp \
-			 --github-files https://github.com/OSLL/code-plagiarism/blob/main/test/codeplag/cplag/data/sample3.cpp \
-			 				https://github.com/OSLL/code-plagiarism/blob/main/test/codeplag/cplag/data/sample4.cpp || \
-	exit $?
-	@echo "\n\n"
-
-	codeplag --extension cpp \
-			--github-project-folders https://github.com/OSLL/code-plagiarism/tree/main/test || \
-	exit $?
-	@echo "\n\n"
-
-	codeplag --extension cpp \
-			 --github-user OSLL \
-			 --regexp "code-plag" || \
-	exit $?
-	@echo "\n\n"
-
-	codeplag --extension py \
-			 --directories test/codeplag/cplag \
-			 --files src/codeplag/pyplag/astwalkers.py || \
-	exit $?
-	@echo "\n\n"
-
-	codeplag --extension py \
-			 --github-files https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/utils.py \
-							https://github.com/OSLL/code-plagiarism/blob/main/setup.py || \
-	exit $?
-	@echo "\n\n"
-
-	codeplag --extension py \
-			 --github-user OSLL \
-			 --regexp "code-plag" || \
-	exit $?
-	@echo "\n\n"
-
-	codeplag --extension py \
-			 --github-project-folders https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag || \
-	exit $?
-
+	pytest test/auto -q
+	make clean-cache
 
 clean: clean-cache
 	rm --force --recursive Man/
@@ -128,10 +75,7 @@ clean-cache:
 	find . -type d | grep -E "__pycache__" | (xargs rm -r 2> /dev/null || exit 0)
 
 uninstall:
-	rm --force /etc/profile.d/$(UTIL_NAME).sh
 	rm --force /usr/share/man/man1/$(UTIL_NAME).1
-	rm --force $(WEBPARSERS_LOG_PATH)
-	rm --force $(CODEPLAG_LOG_PATH)
 	pip3 uninstall $(UTIL_NAME) -y
 
 docker-base-image: substitute
@@ -156,6 +100,13 @@ docker-test: docker-test-image
 		--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
 		"$(TEST_DOCKER_TAG)"
 
+docker-autotest: docker-test-image
+	docker run --rm \
+		--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
+		--env-file .env \
+		"$(TEST_DOCKER_TAG)" bash -c \
+		"make autotest"
+
 docker-image:
 	docker image inspect $(DOCKER_TAG) > /dev/null 2>&1 || ( \
 		make docker-test && \
@@ -164,13 +115,6 @@ docker-image:
 			--file docker/ubuntu1804.dockerfile \
 			. \
 	)
-
-docker-autotest: docker-image
-	docker run --rm \
-		--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
-		--env-file .env \
-		"$(DOCKER_TAG)" bash -c \
-		"make autotest"
 
 docker-run: docker-image
 	docker run --rm --tty --interactive \

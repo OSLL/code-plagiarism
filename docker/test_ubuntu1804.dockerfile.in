@@ -1,8 +1,7 @@
 FROM @UTIL_NAME@-base-ubuntu18.04:@UTIL_VERSION@
 
+RUN python3 -m pip install .
 RUN pip3 install argparse-manpage==2.1
 RUN pip3 install pytest==7.0.1
-
-ENV PYTHONPATH=src/
 
 CMD make man && make test
