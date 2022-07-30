@@ -1,4 +1,4 @@
-FROM @UTIL_NAME@-base-ubuntu18.04:@UTIL_VERSION@
+FROM @UTIL_NAME@-base-ubuntu20.04:@UTIL_VERSION@
 
 RUN python3 -m pip install .
 RUN pip3 install argparse-manpage==2.1

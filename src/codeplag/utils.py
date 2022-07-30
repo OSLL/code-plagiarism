@@ -3,7 +3,7 @@ import os
 import re
 import sys
 from time import perf_counter
-from typing import List, Tuple
+from typing import List, Tuple, NamedTuple
 
 import argcomplete
 import numpy as np
@@ -33,6 +33,24 @@ from webparsers.github_parser import GitHubParser
 GET_FRAZE = 'Getting works features from'
 
 
+class FastMetrics(NamedTuple):
+    jakkar: float
+    operators: float
+    keywords: float
+    literals: float
+    weighted_average: float
+
+
+class StructuresInfo(NamedTuple):
+    similarity: float
+    compliance_matrix: np.array
+
+
+class CompareInfo(NamedTuple):
+    fast: FastMetrics
+    structure: StructuresInfo = None
+
+
 class Colors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -47,9 +65,10 @@ class Colors:
 
 def fast_compare(features_f: ASTFeatures,
                  features_s: ASTFeatures,
-                 weights: tuple = (1, 0.4, 0.4, 0.4)) -> dict:
-    """The function calculates the similarity of features of two programmes
-    using four algorithms and returns similarity coefficients.
+                 weights: tuple = (1, 0.4, 0.4, 0.4)) -> FastMetrics:
+    """The function calculates the similarity of features of two programs
+    using four algorithms, calculates their weighted average, and returns
+    all of this  in 'FastMetrics' structure.
 
     @features_f - the features of the first  source file
     @features_s - the features of the second  source file
@@ -61,25 +80,25 @@ def fast_compare(features_f: ASTFeatures,
     ops_res = counter_metric(features_f.operators, features_s.operators)
     kw_res = counter_metric(features_f.keywords, features_s.keywords)
     lits_res = counter_metric(features_f.literals, features_s.literals)
-
-    fast_metrics = {
-        'Jakkar': jakkar_coef,
-        'Operators': ops_res,
-        'Keywords': kw_res,
-        'Literals': lits_res
-    }
     weighted_average = np.average(
         [jakkar_coef, ops_res, kw_res, lits_res],
         weights=weights
     )
-    fast_metrics['WeightedAverage'] = weighted_average
+
+    fast_metrics = FastMetrics(
+        jakkar=jakkar_coef,
+        operators=ops_res,
+        keywords=kw_res,
+        literals=lits_res,
+        weighted_average=weighted_average
+    )
 
     return fast_metrics
 
 
 def compare_works(features1: ASTFeatures,
                   features2: ASTFeatures,
-                  threshold: int = 60) -> dict:
+                  threshold: int = 60) -> CompareInfo:
     """The function returns the result of comparing two files
 
     @features1 - the features of the first  source file
@@ -87,11 +106,9 @@ def compare_works(features1: ASTFeatures,
     @threshold - threshold of plagiarism searcher alarm
     """
 
-    metrics = {}
     fast_metrics = fast_compare(features1, features2)
-    metrics['fast'] = fast_metrics
-    if (metrics['fast']['WeightedAverage'] * 100) < threshold:
-        return metrics
+    if (fast_metrics.weighted_average * 100) < threshold:
+        return CompareInfo(fast=fast_metrics)
 
     compliance_matrix = np.zeros(
         (len(features1.head_nodes), len(features2.head_nodes), 2),
@@ -101,23 +118,26 @@ def compare_works(features1: ASTFeatures,
                                 compliance_matrix)
     struct_res = struct_res[0] / struct_res[1]
 
-    metrics['structure'] = {
-        'similarity': struct_res,
-        'matrix': compliance_matrix
-    }
+    structure_info = StructuresInfo(
+        similarity=struct_res,
+        compliance_matrix=compliance_matrix
+    )
 
-    return metrics
+    return CompareInfo(
+        fast=fast_metrics,
+        structure=structure_info
+    )
 
 
 def print_compare_result(features1: ASTFeatures,
                          features2: ASTFeatures,
-                         metrics: dict,
+                         compare_info: CompareInfo,
                          threshold: int = 60) -> None:
     """The function prints the result of comparing two files
 
     @features1 - the features of the first  source file
     @features2 - the features of the second  source file
-    @metrics - dictionary with fast and structure metrics information
+    @compare_info - structure consist compare metrics of two works
     @threshold - threshold of plagiarism searcher alarm
     """
 
@@ -130,9 +150,9 @@ def print_compare_result(features1: ASTFeatures,
         end='\n\n', sep='\n'
     )
     main_metrics_df = pd.DataFrame(
-        metrics['fast'], index=['Similarity'],
+        [compare_info.fast], index=['Similarity'],
         columns=pd.Index(
-            metrics['fast'].keys(),
+            (field.upper() for field in compare_info.fast._fields),
             name='FastMetrics:'
         )
     )
@@ -140,7 +160,7 @@ def print_compare_result(features1: ASTFeatures,
     print()
 
     additional_metrics_df = pd.DataFrame(
-        metrics['structure']['similarity'], index=['Similarity'],
+        compare_info.structure.similarity, index=['Similarity'],
         columns=pd.Index(
             ['Structure'],
             name='AdditionalMetrics:'
@@ -149,25 +169,31 @@ def print_compare_result(features1: ASTFeatures,
     print(additional_metrics_df)
     print()
 
-    if (metrics['structure']['similarity'] * 100) > threshold:
+    if (compare_info.structure.similarity * 100) > threshold:
         data = np.zeros(
             (
-                metrics['structure']['matrix'].shape[0],
-                metrics['structure']['matrix'].shape[1]
+                compare_info.structure.compliance_matrix.shape[0],
+                compare_info.structure.compliance_matrix.shape[1]
             ),
             dtype=np.float64
         )
-        for row in range(metrics['structure']['matrix'].shape[0]):
-            for col in range(metrics['structure']['matrix'].shape[1]):
+        for row in range(
+            compare_info.structure.compliance_matrix.shape[0]
+        ):
+            for col in range(
+                compare_info.structure.compliance_matrix.shape[1]
+            ):
                 data[row][col] = (
-                    metrics['structure']['matrix'][row][col][0] /
-                    metrics['structure']['matrix'][row][col][1]
+                    compare_info.structure.compliance_matrix[row][col][0] /
+                    compare_info.structure.compliance_matrix[row][col][1]
                 )
-        df = pd.DataFrame(data=data,
-                          index=features1.head_nodes,
-                          columns=features2.head_nodes)
+        compliance_matrix_df = pd.DataFrame(
+            data=data,
+            index=features1.head_nodes,
+            columns=features2.head_nodes
+        )
 
-        print(df, '\n')
+        print(compliance_matrix_df, '\n')
 
     print('+' * 40)
 
@@ -180,7 +206,7 @@ def get_files_path_from_directory(directory: str,
         in arguments
     '''
     if not extensions:
-        extensions = [r"\..*$"]
+        extensions = SUPPORTED_EXTENSIONS['default']
 
     allowed_files = []
     for current_dir, _folders, files in os.walk(directory):
@@ -412,7 +438,7 @@ class CodeplagEngine:
                         work2,
                         parsed_args.get('threshold')
                     )
-                    if len(metrics) > 1:
+                    if metrics.structure:
                         print_compare_result(
                             work1,
                             work2,

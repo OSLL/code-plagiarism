@@ -12,9 +12,9 @@ cd code-plagiarism/
 
 ### 1.1 Manual installation on local computer
 
-- OS Ubuntu Linux >= 18.04
+- OS Ubuntu Linux >= 20.04
 
-- 3.6 <= python version < 3.8
+- python version >= 3.8
 
 - Run these commands:
 
@@ -30,7 +30,7 @@ cd code-plagiarism/
   source venv/bin/activate
 
   pip3 install -U pip # pip3 version >= 19.0
-  pip3 install argparse-manpage==2.1 requests==2.22.0
+  pip3 install argparse-manpage==2.1 requests==2.28.1
   pip3 install --upgrade setuptools # Ensure that an up-to-date version of setuptools is installed
   make
   ```
@@ -58,12 +58,12 @@ cd code-plagiarism/
 
 - Pull an image from Docker Hub
   ```
-  $ docker pull artanias/codeplag-ubuntu18.04:latest
+  $ docker pull artanias/codeplag-ubuntu20.04:latest
   ```
 
 - Run container based on pulled image and connect volume with your data
   ```
-  $ docker run --rm --tty --interactive --volume <absolute_local_path_with_data>:<absolute_containter_path_with_data> "artanias/codeplag-ubuntu18.04:latest" /bin/bash
+  $ docker run --rm --tty --interactive --volume <absolute_local_path_with_data>:<absolute_containter_path_with_data> "artanias/codeplag-ubuntu20.04:latest" /bin/bash
   ```
 
 ## 2. Tests

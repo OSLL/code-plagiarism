@@ -1,14 +1,17 @@
 FILE_DOWNLOAD_PATH = "/tmp/@UTIL_NAME@_download.out"
 LOG_PATH = "@CODEPLAG_LOG_PATH@"
 SUPPORTED_EXTENSIONS = {
-    'py': [
-        r'\.py$'
-    ],
-    'cpp': [
+    'py': (
+        r'\.py$',
+    ),
+    'cpp': (
         r'\.cpp$',
         r'\.c$',
         r'\.h$'
-    ]
+    ),
+    'default': (
+        r'\..*$',
+    )
 }
 UTIL_NAME = "@UTIL_NAME@"
 UTIL_VERSION = "@UTIL_VERSION@"
