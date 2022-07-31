@@ -1,5 +1,4 @@
 import os
-import unittest
 
 import pytest
 
@@ -10,27 +9,27 @@ from codeplag.utils import (compare_works, fast_compare,
 CWD = os.path.dirname(os.path.abspath(__file__))
 
 
-class TestUtils(unittest.TestCase):
+def test_fast_compare_normal():
+    tree1 = get_ast_from_filename(os.path.join(CWD, './data/test1.py'))
+    tree2 = get_ast_from_filename(os.path.join(CWD, './data/test2.py'))
+    features1 = get_features_from_ast(tree1)
+    features2 = get_features_from_ast(tree2)
 
-    def test_fast_compare_normal(self):
-        tree1 = get_ast_from_filename(os.path.join(CWD, './data/test1.py'))
-        tree2 = get_ast_from_filename(os.path.join(CWD, './data/test2.py'))
-        features1 = get_features_from_ast(tree1)
-        features2 = get_features_from_ast(tree2)
+    metrics = fast_compare(features1, features2)
 
-        metrics = fast_compare(features1, features2)
+    assert metrics.jakkar == pytest.approx(0.737, 0.001)
+    assert metrics.operators == pytest.approx(0.667, 0.001)
+    assert metrics.keywords == 1.
+    assert metrics.literals == 0.75
+    assert metrics.weighted_average == pytest.approx(0.774, 0.001)
 
-        self.assertAlmostEqual(metrics['Jakkar'], 0.737, 3)
-        self.assertAlmostEqual(metrics['Operators'], 0.667,  3)
-        self.assertEqual(metrics['Keywords'], 1.)
-        self.assertEqual(metrics['Literals'], 0.75)
+    metrics2 = fast_compare(
+        features1,
+        features2,
+        weights=(0.5, 0.6, 0.7, 0.8)
+    )
 
-    def test_get_files_path_from_directory(self):
-        files = get_files_path_from_directory(CWD, extensions=[r".py\b"])
-
-        self.assertIn(os.path.join(CWD, 'test_utils.py'), files)
-        self.assertIn(os.path.join(CWD, 'data/test1.py'), files)
-        self.assertIn(os.path.join(CWD, 'data/test2.py'), files)
+    assert metrics2.weighted_average == pytest.approx(0.796, 0.001)
 
 
 def test_compare_works():
@@ -41,27 +40,32 @@ def test_compare_works():
     features2 = get_features_from_ast(tree2)
     features3 = get_features_from_ast(tree3)
 
-    metrics = compare_works(features1, features2)
-    fast_metrics = metrics['fast']
-    structure_metrics = metrics['structure']
+    compare_info = compare_works(features1, features2)
 
-    assert fast_metrics['Jakkar'] == pytest.approx(0.737, 0.001)
-    assert fast_metrics['Operators'] == pytest.approx(0.667, 0.001)
-    assert fast_metrics['Keywords'] == 1.
-    assert fast_metrics['Literals'] == 0.75
-    assert fast_metrics['WeightedAverage'] == pytest.approx(0.774, 0.001)
-    assert structure_metrics['similarity'] == pytest.approx(0.823, 0.001)
-    assert structure_metrics['matrix'].tolist() == [
+    assert compare_info.fast.jakkar == pytest.approx(0.737, 0.001)
+    assert compare_info.fast.operators == pytest.approx(0.667, 0.001)
+    assert compare_info.fast.keywords == 1.
+    assert compare_info.fast.literals == 0.75
+    assert compare_info.fast.weighted_average == pytest.approx(0.774, 0.001)
+    assert compare_info.structure.similarity == pytest.approx(0.823, 0.001)
+    assert compare_info.structure.compliance_matrix.tolist() == [
         [[19, 24], [7, 21]],
         [[5, 27], [8, 9]]
     ]
 
-    metrics = compare_works(features1, features3)
-    fast_metrics = metrics['fast']
+    compare_info2 = compare_works(features1, features3)
 
-    assert fast_metrics['Jakkar'] == 0.24
-    assert fast_metrics['Operators'] == 0.0
-    assert fast_metrics['Keywords'] == 0.6
-    assert fast_metrics['Literals'] == 0.0
-    assert fast_metrics['WeightedAverage'] == pytest.approx(0.218, 0.001)
-    assert 'structure' not in metrics
+    assert compare_info2.fast.jakkar == 0.24
+    assert compare_info2.fast.operators == 0.0
+    assert compare_info2.fast.keywords == 0.6
+    assert compare_info2.fast.literals == 0.0
+    assert compare_info2.fast.weighted_average == pytest.approx(0.218, 0.001)
+    assert compare_info2.structure is None
+
+
+def test_get_files_path_from_directory():
+    files = get_files_path_from_directory(CWD, extensions=(r"\.py$",))
+
+    assert os.path.join(CWD, 'test_utils.py') in files
+    assert os.path.join(CWD, 'data/test1.py') in files
+    assert os.path.join(CWD, 'data/test2.py') in files

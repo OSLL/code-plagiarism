@@ -1,9 +1,9 @@
-UTIL_VERSION			:= 0.2.0
+UTIL_VERSION			:= 0.2.1
 UTIL_NAME				:= codeplag
 
-BASE_DOCKER_TAG			:= $(shell echo $(UTIL_NAME)-base-ubuntu18.04:$(UTIL_VERSION) | tr A-Z a-z)
-TEST_DOCKER_TAG			:= $(shell echo $(UTIL_NAME)-test-ubuntu18.04:$(UTIL_VERSION) | tr A-Z a-z)
-DOCKER_TAG				?= $(shell echo $(UTIL_NAME)-ubuntu18.04:$(UTIL_VERSION) | tr A-Z a-z)
+BASE_DOCKER_TAG			:= $(shell echo $(UTIL_NAME)-base-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
+TEST_DOCKER_TAG			:= $(shell echo $(UTIL_NAME)-test-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
+DOCKER_TAG				?= $(shell echo $(UTIL_NAME)-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
 
 PWD 					:= $(shell pwd)
 LOGS_PATH				:= /var/log
@@ -11,9 +11,9 @@ CODEPLAG_LOG_PATH		:= $(LOGS_PATH)/$(UTIL_NAME).log
 WEBPARSERS_LOG_PATH		:= $(LOGS_PATH)/webparsers.log
 CONVERTED_FILES 		:= src/codeplag/consts.py \
 						   src/webparsers/consts.py \
-						   docker/base_ubuntu1804.dockerfile \
-						   docker/test_ubuntu1804.dockerfile \
-						   docker/ubuntu1804.dockerfile
+						   docker/base_ubuntu2004.dockerfile \
+						   docker/test_ubuntu2004.dockerfile \
+						   docker/ubuntu2004.dockerfile
 
 
 all: substitute man install
@@ -64,11 +64,12 @@ clean: clean-cache
 	rm --force --recursive Man/
 	rm --force --recursive build/
 	rm --force --recursive dist/
+	rm --force --recursive src/codeplag.egg-info
 	rm --force src/codeplag/consts.py
 	rm --force src/webparsers/consts.py
-	rm --force docker/base_ubuntu1804.dockerfile
-	rm --force docker/test_ubuntu1804.dockerfile
-	rm --force docker/ubuntu1804.dockerfile
+	rm --force docker/base_ubuntu2004.dockerfile
+	rm --force docker/test_ubuntu2004.dockerfile
+	rm --force docker/ubuntu2004.dockerfile
 
 clean-cache:
 	find . -maxdepth 1 -type d | grep -E "pytest_cache" | (xargs rm -r 2> /dev/null || exit 0)
@@ -83,7 +84,7 @@ docker-base-image: substitute
 		export DOCKER_BUILDKIT=1 && \
 		docker image build \
 			--tag "$(BASE_DOCKER_TAG)" \
-			--file docker/base_ubuntu1804.dockerfile \
+			--file docker/base_ubuntu2004.dockerfile \
 			. \
 	)
 
@@ -91,7 +92,7 @@ docker-test-image: docker-base-image
 	docker image inspect $(TEST_DOCKER_TAG) > /dev/null 2>&1 || \
 	docker image build \
 		--tag  "$(TEST_DOCKER_TAG)" \
-		--file docker/test_ubuntu1804.dockerfile \
+		--file docker/test_ubuntu2004.dockerfile \
 		.
 
 docker-test: docker-test-image
@@ -112,7 +113,7 @@ docker-image:
 		make docker-test && \
 		docker image build \
 			--tag  "$(DOCKER_TAG)" \
-			--file docker/ubuntu1804.dockerfile \
+			--file docker/ubuntu2004.dockerfile \
 			. \
 	)
 

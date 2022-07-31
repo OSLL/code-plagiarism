@@ -7,16 +7,16 @@ from src.codeplag.consts import UTIL_NAME, UTIL_VERSION
 
 REQUIREMENTS = [
     'argcomplete==2.0.0',
-    'numpy==1.18.5',
-    'pandas==1.0.5',
+    'numpy==1.23.1',
+    'pandas==1.4.3',
     'ccsyspath==1.1.0',
-    'clang==11.0',
-    'llvmlite==0.33.0',
-    'libclang==10.0.1.0',
-    'colorama==0.3.9',
+    'clang==14.0',
+    'llvmlite==0.39.0',
+    'libclang==14.0.1',
+    'colorama==0.4.5',
     'termcolor==1.1.0',
-    'python-decouple==3.4',
-    'requests==2.22.0',
+    'python-decouple==3.6',
+    'requests==2.28.1',
 ]
 
 
@@ -43,11 +43,12 @@ setup(
         'Intended Audience :: Education',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.8',
         'Topic :: Software Development :: Plagiarism Detection',
     ],
     package_dir={"": "src"},
     packages=find_packages("src"),
-    python_requires='>=3.6',
+    python_requires='>=3.8',
     install_requires=REQUIREMENTS,
     entry_points={
         'console_scripts': [

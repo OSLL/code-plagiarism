@@ -47,6 +47,6 @@ docs/notebooks/.ipynb_checkpoints/
 # Substituting
 src/codeplag/consts.py
 src/webparsers/consts.py
-docker/base_ubuntu1804.dockerfile
-docker/test_ubuntu1804.dockerfile
-docker/ubuntu1804.dockerfile
+docker/base_ubuntu2004.dockerfile
+docker/test_ubuntu2004.dockerfile
+docker/ubuntu2004.dockerfile

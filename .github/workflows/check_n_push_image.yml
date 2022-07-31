@@ -15,14 +15,14 @@ on:
 
 jobs:
   check-code:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     steps:
     - uses: actions/checkout@v1
-    - name: Set up Python 3.6
+    - name: Set up Python 3.8
       uses: actions/setup-python@v1
       with:
-        python-version: 3.6
+        python-version: 3.8
 
     - name: Lint with flake8
       run: |
@@ -30,7 +30,7 @@ jobs:
         flake8 src/ --statistic --max-line-length=100 --max-complexity 15 -qq
 
   docker-build-test-autotest:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
 
@@ -53,17 +53,17 @@ jobs:
 
       - name: Create main docker image and save it for next job
         run: |
-          make docker-image DOCKER_TAG=${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu18.04:${{ steps.get_version.outputs.version }}
-          docker image save --output /tmp/codeplag-ubuntu18.04.tar ${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu18.04:${{ steps.get_version.outputs.version }}
+          make docker-image DOCKER_TAG=${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu20.04:${{ steps.get_version.outputs.version }}
+          docker image save --output /tmp/codeplag-ubuntu20.04.tar ${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu20.04:${{ steps.get_version.outputs.version }}
 
       - name: Upload created image
         uses: actions/upload-artifact@v3
         with:
-          name: codeplag-ubuntu18.04
-          path: /tmp/codeplag-ubuntu18.04.tar
+          name: codeplag-ubuntu20.04
+          path: /tmp/codeplag-ubuntu20.04.tar
 
   push-image:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     needs: [check-code, docker-build-test-autotest]
     if: github.ref == 'refs/heads/main'
 
@@ -74,7 +74,7 @@ jobs:
       - name: Download created in the previous stage image
         uses: actions/download-artifact@v3
         with:
-          name: codeplag-ubuntu18.04
+          name: codeplag-ubuntu20.04
           path: /tmp
 
       - name: Get current util version
@@ -84,8 +84,8 @@ jobs:
 
       - name: Load Docker created image
         run: |
-          docker load --input /tmp/codeplag-ubuntu18.04.tar
-          docker image tag ${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu18.04:${{ steps.get_version.outputs.version }} ${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu18.04:latest
+          docker load --input /tmp/codeplag-ubuntu20.04.tar
+          docker image tag ${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu20.04:${{ steps.get_version.outputs.version }} ${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu20.04:latest
 
       - name: Login to Docker Hub
         uses: docker/login-action@v1
@@ -94,4 +94,4 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
       - name: Push docker image
-        run: docker image push --all-tags ${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu18.04
+        run: docker image push --all-tags ${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu20.04
