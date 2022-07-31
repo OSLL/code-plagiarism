@@ -14,7 +14,7 @@ cd code-plagiarism/
 
 - OS Ubuntu Linux >= 20.04
 
-- python version >= 3.8
+- Python version >= 3.8
 
 - Run these commands:
 
@@ -30,7 +30,7 @@ cd code-plagiarism/
   source venv/bin/activate
 
   pip3 install -U pip # pip3 version >= 19.0
-  pip3 install argparse-manpage==2.1 requests==2.28.1
+  pip3 install argparse-manpage==3 requests==2.28.1
   pip3 install --upgrade setuptools # Ensure that an up-to-date version of setuptools is installed
   make
   ```
@@ -70,7 +70,7 @@ cd code-plagiarism/
 
 - Testing for analyzers with pytest lib (required preinstalled pytest framework)
   ```
-  $ pip3 install pytest==7.0.1
+  $ pip3 install pytest==7.1.2
   $ make test
   ```
 
