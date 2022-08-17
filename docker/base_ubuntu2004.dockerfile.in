@@ -13,5 +13,5 @@ ADD LICENSE /usr/src/@UTIL_NAME@/LICENSE
 ADD Makefile /usr/src/@UTIL_NAME@/Makefile
 
 WORKDIR /usr/src/@UTIL_NAME@
-RUN pip3 install $(python3 setup.py --install_requires)
+RUN pip3 install $(python3 setup.py --install-requirements)
 RUN register-python-argcomplete @UTIL_NAME@ >> ~/.bashrc

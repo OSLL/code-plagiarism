@@ -1,19 +1,20 @@
-UTIL_VERSION			:= 0.2.1
-UTIL_NAME				:= codeplag
+UTIL_VERSION            := 0.2.2
+UTIL_NAME               := codeplag
 
-BASE_DOCKER_TAG			:= $(shell echo $(UTIL_NAME)-base-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
-TEST_DOCKER_TAG			:= $(shell echo $(UTIL_NAME)-test-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
-DOCKER_TAG				?= $(shell echo $(UTIL_NAME)-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
+BASE_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-base-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
+TEST_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-test-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
+DOCKER_TAG              ?= $(shell echo $(UTIL_NAME)-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
 
-PWD 					:= $(shell pwd)
-LOGS_PATH				:= /var/log
-CODEPLAG_LOG_PATH		:= $(LOGS_PATH)/$(UTIL_NAME).log
-WEBPARSERS_LOG_PATH		:= $(LOGS_PATH)/webparsers.log
-CONVERTED_FILES 		:= src/codeplag/consts.py \
-						   src/webparsers/consts.py \
-						   docker/base_ubuntu2004.dockerfile \
-						   docker/test_ubuntu2004.dockerfile \
-						   docker/ubuntu2004.dockerfile
+PWD                     := $(shell pwd)
+PYTHONPATH              = $(PWD)/src/
+LOGS_PATH               := /var/log
+CODEPLAG_LOG_PATH       := $(LOGS_PATH)/$(UTIL_NAME).log
+WEBPARSERS_LOG_PATH     := $(LOGS_PATH)/webparsers.log
+CONVERTED_FILES         := src/codeplag/consts.py \
+                           src/webparsers/consts.py \
+                           docker/base_ubuntu2004.dockerfile \
+                           docker/test_ubuntu2004.dockerfile \
+                           docker/ubuntu2004.dockerfile
 
 
 all: substitute man install
@@ -32,7 +33,6 @@ substitute: $(CONVERTED_FILES)
 
 man:
 	mkdir -p man
-	export PYTHONPATH=src/ && \
 	argparse-manpage --pyfile src/codeplag/codeplagcli.py \
 					 --function CodeplagCLI \
 					 --author "Codeplag Development Team" \
@@ -155,4 +155,6 @@ help:
 	@echo "  docker-rmi                       Delete created docker images."
 	@echo
 
+
+.EXPORT_ALL_VARIABLES:
 .PHONY: all test man
