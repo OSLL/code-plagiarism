@@ -44,6 +44,16 @@ man/*
 src/codeplag.egg-info/*
 docs/notebooks/.ipynb_checkpoints/
 
+# Deb package created files
+debian/.debhelper/*
+debian/changelog
+debian/codeplag-util.substvars
+debian/codeplag-util/
+debian/control
+debian/deb/
+debian/debhelper-build-stamp
+debian/files
+
 # Substituting
 setup.py
 src/codeplag/consts.py

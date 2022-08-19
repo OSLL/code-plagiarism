@@ -12,4 +12,7 @@ override_dh_builddeb:
 override_dh_usrlocal:
 	echo "Skipping this step"
 
+override_dh_auto_test:
+	echo "Skipping this step"
+
 .EXPORT_ALL_VARIABLES:

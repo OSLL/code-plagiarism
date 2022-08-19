@@ -79,6 +79,12 @@ clean: clean-cache
 	rm --force --recursive build/
 	rm --force --recursive dist/
 	rm --force --recursive debian/deb
+	rm --force --recursive debian/.debhelper/
+	rm --force --recursive debian/codeplag-util/
+	rm --force debian/debhelper-build-stamp
+	rm --force debian/files
+	rm --force debian/codeplag-util.debhelper.log
+	rm --force debian/codeplag-util.substvars
 	rm --force src/codeplag/consts.py
 	rm --force src/webparsers/consts.py
 	rm --force setup.py
