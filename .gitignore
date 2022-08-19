@@ -45,6 +45,7 @@ src/codeplag.egg-info/*
 docs/notebooks/.ipynb_checkpoints/
 
 # Substituting
+setup.py
 src/codeplag/consts.py
 src/webparsers/consts.py
 docker/base_ubuntu2004.dockerfile

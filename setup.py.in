@@ -3,8 +3,6 @@ from pathlib import Path
 
 from setuptools import find_packages, setup
 
-from src.codeplag.consts import UTIL_NAME, UTIL_VERSION
-
 INSTALL_REQUIREMENTS = [
     'argcomplete==2.0.0',
     'numpy==1.23.1',
@@ -26,8 +24,8 @@ if '--install-requirements' in sys.argv:
 
 
 setup(
-    name=f'{UTIL_NAME}',
-    version=f'{UTIL_VERSION}',
+    name='@UTIL_NAME@',
+    version='@UTIL_VERSION@',
     description='Code plagiarism searching package',
     author='Artyom Semidolin, Dmitry Nikolaev, Alexander Evsikov',
     author_email='inbox@moevm.info',

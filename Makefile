@@ -10,8 +10,11 @@ PYTHONPATH              = $(PWD)/src/
 LOGS_PATH               := /var/log
 CODEPLAG_LOG_PATH       := $(LOGS_PATH)/$(UTIL_NAME).log
 WEBPARSERS_LOG_PATH     := $(LOGS_PATH)/webparsers.log
-CONVERTED_FILES         := src/codeplag/consts.py \
+CONVERTED_FILES         := setup.py \
+                           src/codeplag/consts.py \
                            src/webparsers/consts.py \
+                           debian/changelog \
+                           debian/control \
                            docker/base_ubuntu2004.dockerfile \
                            docker/test_ubuntu2004.dockerfile \
                            docker/ubuntu2004.dockerfile
@@ -42,15 +45,22 @@ man:
 					 --output man/$(UTIL_NAME).1
 
 install:
-	python3 -m pip install .
+	python3 -m pip install --root=/$(DESTDIR) .
 
-	touch $(CODEPLAG_LOG_PATH)
-	chmod 0666 $(CODEPLAG_LOG_PATH)
+	mkdir -p $(DESTDIR)/$(LOGS_PATH)
+	touch $(DESTDIR)/$(CODEPLAG_LOG_PATH)
+	chmod 0666 $(DESTDIR)/$(CODEPLAG_LOG_PATH)
 
-	touch $(WEBPARSERS_LOG_PATH)
-	chmod 0666 $(WEBPARSERS_LOG_PATH)
+	touch $(DESTDIR)/$(WEBPARSERS_LOG_PATH)
+	chmod 0666 $(DESTDIR)/$(WEBPARSERS_LOG_PATH)
 
-	install -D -m 0644 man/$(UTIL_NAME).1 /usr/share/man/man1/$(UTIL_NAME).1
+	install -D -m 0644 man/$(UTIL_NAME).1 $(DESTDIR)/usr/share/man/man1/$(UTIL_NAME).1
+
+package:
+	dpkg-buildpackage -jauto -b \
+	--buildinfo-option="-u$(CURDIR)/debian/deb" \
+	--changes-option="-u$(CURDIR)/debian/deb" \
+	--no-sign
 
 test:
 	pytest test/unit -q
@@ -60,20 +70,26 @@ autotest:
 	pytest test/auto -q
 	make clean-cache
 
+clean-cache:
+	find . -maxdepth 1 -type d | grep -E "pytest_cache" | (xargs rm -r 2> /dev/null || exit 0)
+	find . -type d | grep -E "__pycache__" | (xargs rm -r 2> /dev/null || exit 0)
+
 clean: clean-cache
-	rm --force --recursive Man/
+	rm --force --recursive man/
 	rm --force --recursive build/
 	rm --force --recursive dist/
-	rm --force --recursive src/codeplag.egg-info
+	rm --force --recursive debian/deb
 	rm --force src/codeplag/consts.py
 	rm --force src/webparsers/consts.py
+	rm --force setup.py
+	rm --force --recursive src/codeplag.egg-info
 	rm --force docker/base_ubuntu2004.dockerfile
 	rm --force docker/test_ubuntu2004.dockerfile
 	rm --force docker/ubuntu2004.dockerfile
 
-clean-cache:
-	find . -maxdepth 1 -type d | grep -E "pytest_cache" | (xargs rm -r 2> /dev/null || exit 0)
-	find . -type d | grep -E "__pycache__" | (xargs rm -r 2> /dev/null || exit 0)
+clean-all: clean
+	rm --force debian/changelog
+	rm --force debian/control
 
 uninstall:
 	rm --force /usr/share/man/man1/$(UTIL_NAME).1
