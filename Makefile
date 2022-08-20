@@ -63,10 +63,12 @@ install: substitute_sources man
 	install -D -m 0644 man/$(UTIL_NAME).1 $(DESTDIR)/usr/share/man/man1/$(UTIL_NAME).1
 
 package: substitute_debian
-	dpkg-buildpackage -jauto -b \
-	--buildinfo-option="-u$(CURDIR)/debian/deb" \
-	--changes-option="-u$(CURDIR)/debian/deb" \
-	--no-sign
+	find debian/deb/$(UTIL_NAME)* > /dev/null 2>&1 || ( \
+		dpkg-buildpackage -jauto -b \
+			--buildinfo-option="-u$(CURDIR)/debian/deb" \
+			--changes-option="-u$(CURDIR)/debian/deb" \
+			--no-sign \
+	)
 
 test: substitute_sources
 	pytest test/unit -q
@@ -140,13 +142,14 @@ docker-autotest: docker-test-image
 
 docker-build-package: docker-test-image
 	docker run --rm \
-		--volume $(PWD)/debain/deb:/usr/src/$(UTIL_NAME)/debian/deb \
+		--volume $(PWD)/debian/deb:/usr/src/$(UTIL_NAME)/debian/deb \
 		"$(TEST_DOCKER_TAG)" bash -c \
 		"make package"
 
-docker-image: docker-base-image
+docker-image: docker-base-image docker-test-image
 	docker image inspect $(DOCKER_TAG) > /dev/null 2>&1 || ( \
 		make docker-test && \
+		make docker-build-package && \
 		docker image build \
 			--tag  "$(DOCKER_TAG)" \
 			--file docker/ubuntu2004.dockerfile \
