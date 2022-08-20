@@ -10,8 +10,7 @@ PYTHONPATH              = $(PWD)/src/
 LOGS_PATH               := /var/log
 CODEPLAG_LOG_PATH       := $(LOGS_PATH)/$(UTIL_NAME).log
 WEBPARSERS_LOG_PATH     := $(LOGS_PATH)/webparsers.log
-CONVERTED_FILES         := setup.py \
-                           src/codeplag/consts.py \
+CONVERTED_FILES         := src/codeplag/consts.py \
                            src/webparsers/consts.py \
                            debian/changelog \
                            debian/control \
@@ -87,7 +86,6 @@ clean: clean-cache
 	rm --force debian/codeplag-util.substvars
 	rm --force src/codeplag/consts.py
 	rm --force src/webparsers/consts.py
-	rm --force setup.py
 	rm --force --recursive src/codeplag.egg-info
 	rm --force docker/base_ubuntu2004.dockerfile
 	rm --force docker/test_ubuntu2004.dockerfile

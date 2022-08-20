@@ -55,7 +55,6 @@ debian/debhelper-build-stamp
 debian/files
 
 # Substituting
-setup.py
 src/codeplag/consts.py
 src/webparsers/consts.py
 docker/base_ubuntu2004.dockerfile

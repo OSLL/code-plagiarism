@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 
@@ -16,16 +17,21 @@ INSTALL_REQUIREMENTS = [
     'python-decouple==3.6',
     'requests==2.28.1',
 ]
+UTIL_NAME = os.getenv('UTIL_NAME')
+UTIL_VERSION = os.getenv('UTIL_VERSION')
 
 
 if '--install-requirements' in sys.argv:
     print(' '.join(INSTALL_REQUIREMENTS))
     sys.exit(0)
+elif UTIL_NAME is None or UTIL_VERSION is None:
+    print('Please provide UTIL_NAME and UTIL_VERSION environment variables.')
+    sys.exit(1)
 
 
 setup(
-    name='@UTIL_NAME@',
-    version='@UTIL_VERSION@',
+    name=f'{UTIL_NAME}',
+    version=f'{UTIL_VERSION}',
     description='Code plagiarism searching package',
     author='Artyom Semidolin, Dmitry Nikolaev, Alexander Evsikov',
     author_email='inbox@moevm.info',
