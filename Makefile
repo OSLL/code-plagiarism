@@ -14,9 +14,11 @@ CONVERTED_FILES         := src/codeplag/consts.py \
                            src/webparsers/consts.py \
                            debian/changelog \
                            debian/control \
+                           debian/preinst \
                            docker/base_ubuntu2004.dockerfile \
                            docker/test_ubuntu2004.dockerfile \
                            docker/ubuntu2004.dockerfile
+PYTHON_REQUIRED_LIBS    := $(shell python3 setup.py --install-requirements)
 
 
 all: substitute man install
@@ -28,6 +30,7 @@ all: substitute man install
 		-e "s|@UTIL_VERSION@|${UTIL_VERSION}|g" \
 		-e "s|@WEBPARSERS_LOG_PATH@|${WEBPARSERS_LOG_PATH}|g" \
 		-e "s|@CODEPLAG_LOG_PATH@|${CODEPLAG_LOG_PATH}|g" \
+		-e "s|@PYTHON_REQUIRED_LIBS@|${PYTHON_REQUIRED_LIBS}|g" \
 		$< > $@
 
 substitute: $(CONVERTED_FILES)
@@ -94,6 +97,7 @@ clean: clean-cache
 clean-all: clean
 	rm --force debian/changelog
 	rm --force debian/control
+	rm --force debian/preinst
 
 uninstall:
 	rm --force /usr/share/man/man1/$(UTIL_NAME).1

@@ -53,6 +53,7 @@ debian/control
 debian/deb/
 debian/debhelper-build-stamp
 debian/files
+debian/preinst
 
 # Substituting
 src/codeplag/consts.py
