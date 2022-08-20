@@ -1,7 +1,9 @@
 FROM @UTIL_NAME@-base-ubuntu20.04:@UTIL_VERSION@
+ENV DEBIAN_FRONTEND=noninteractive
 
-RUN make man && make install
-RUN pip3 install argparse-manpage==3
-RUN pip3 install pytest==7.1.2
+ADD debian/ /usr/src/@UTIL_NAME@/debian
+RUN apt-get install -y debhelper
+RUN pip3 install argparse-manpage==3 pytest==7.1.2
+RUN mkdir -p @LOGS_PATH@
 
 CMD make test

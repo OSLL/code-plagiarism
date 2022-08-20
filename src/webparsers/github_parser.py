@@ -1,7 +1,7 @@
 import base64
 import re
 import sys
-from typing import List
+from typing import List, Literal
 
 import requests
 
@@ -62,7 +62,7 @@ class GitHubContentUrl(GitHubUrl):
 
 class GitHubParser:
     def __init__(self, file_extensions: List[str] = None,
-                 check_policy: int = 0, access_token: str = '',
+                 check_policy: Literal[0, 1] = 0, access_token: str = '',
                  log_path: str = LOG_PATH):
         self.logger = get_logger(__name__, log_path)
         if file_extensions is None:

@@ -10,19 +10,19 @@ PYTHONPATH              = $(PWD)/src/
 LOGS_PATH               := /var/log/codeplag
 CODEPLAG_LOG_PATH       := $(LOGS_PATH)/$(UTIL_NAME).log
 WEBPARSERS_LOG_PATH     := $(LOGS_PATH)/webparsers.log
-CONVERTED_FILES         := src/codeplag/consts.py \
-                           src/webparsers/consts.py \
-                           debian/changelog \
+SOURCE_SUB_FILES        := src/codeplag/consts.py \
+                           src/webparsers/consts.py
+DEBIAN_SUB_FILES        := debian/changelog \
                            debian/control \
                            debian/preinst \
-                           debian/postinst \
-                           docker/base_ubuntu2004.dockerfile \
+                           debian/postinst
+DOCKER_SUB_FILES        := docker/base_ubuntu2004.dockerfile \
                            docker/test_ubuntu2004.dockerfile \
                            docker/ubuntu2004.dockerfile
 PYTHON_REQUIRED_LIBS    := $(shell python3 setup.py --install-requirements)
 
 
-all: substitute man install
+all: substitute_sources man install
 
 # $< - %.in file, $@ desired file %
 %: %.in
@@ -35,10 +35,16 @@ all: substitute man install
 		-e "s|@LOGS_PATH@|${LOGS_PATH}|g" \
 		$< > $@
 
-substitute: $(CONVERTED_FILES)
-	@echo "Substituting of information about the utility in files"
+substitute_sources: $(SOURCE_SUB_FILES)
+	@echo "Substituting of information about the utility in the source files"
 
-man:
+substitute_debian: $(DEBIAN_SUB_FILES)
+	@echo "Substituting of information about the utility in the debian files"
+
+substitute_docker: $(DOCKER_SUB_FILES)
+	@echo "Substituting of information about the utility in the docker files"
+
+man: substitute_sources
 	mkdir -p man
 	argparse-manpage --pyfile src/codeplag/codeplagcli.py \
 					 --function CodeplagCLI \
@@ -48,7 +54,7 @@ man:
 					 --url "https://github.com/OSLL/code-plagiarism" \
 					 --output man/$(UTIL_NAME).1
 
-install:
+install: substitute_sources man
 	python3 -m pip install --root=/$(DESTDIR) .
 
 	mkdir -p $(DESTDIR)/$(LOGS_PATH)
@@ -56,13 +62,13 @@ install:
 
 	install -D -m 0644 man/$(UTIL_NAME).1 $(DESTDIR)/usr/share/man/man1/$(UTIL_NAME).1
 
-package:
+package: substitute_debian
 	dpkg-buildpackage -jauto -b \
 	--buildinfo-option="-u$(CURDIR)/debian/deb" \
 	--changes-option="-u$(CURDIR)/debian/deb" \
 	--no-sign
 
-test:
+test: substitute_sources
 	pytest test/unit -q
 	make clean-cache
 
@@ -78,21 +84,23 @@ clean: clean-cache
 	rm --force --recursive man/
 	rm --force --recursive build/
 	rm --force --recursive dist/
-	rm --force --recursive debian/deb
+	rm --force --recursive debian/deb/*
 	rm --force --recursive debian/.debhelper/
 	rm --force --recursive debian/codeplag-util/
 	rm --force debian/debhelper-build-stamp
 	rm --force debian/files
 	rm --force debian/codeplag-util.debhelper.log
 	rm --force debian/codeplag-util.substvars
+	rm --force --recursive src/codeplag.egg-info
+
+clean-all: clean
 	rm --force src/codeplag/consts.py
 	rm --force src/webparsers/consts.py
-	rm --force --recursive src/codeplag.egg-info
+
 	rm --force docker/base_ubuntu2004.dockerfile
 	rm --force docker/test_ubuntu2004.dockerfile
 	rm --force docker/ubuntu2004.dockerfile
 
-clean-all: clean
 	rm --force debian/changelog
 	rm --force debian/control
 	rm --force debian/preinst
@@ -102,7 +110,7 @@ uninstall:
 	rm --force /usr/share/man/man1/$(UTIL_NAME).1
 	pip3 uninstall $(UTIL_NAME) -y
 
-docker-base-image: substitute
+docker-base-image: substitute_sources substitute_docker
 	docker image inspect $(BASE_DOCKER_TAG) > /dev/null 2>&1 || ( \
 		export DOCKER_BUILDKIT=1 && \
 		docker image build \
@@ -111,7 +119,7 @@ docker-base-image: substitute
 			. \
 	)
 
-docker-test-image: docker-base-image
+docker-test-image: docker-base-image substitute_debian
 	docker image inspect $(TEST_DOCKER_TAG) > /dev/null 2>&1 || \
 	docker image build \
 		--tag  "$(TEST_DOCKER_TAG)" \
@@ -120,7 +128,6 @@ docker-test-image: docker-base-image
 
 docker-test: docker-test-image
 	docker run --rm \
-		--volume $(PWD)/man:/usr/src/$(UTIL_NAME)/man \
 		--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
 		"$(TEST_DOCKER_TAG)"
 
@@ -129,9 +136,15 @@ docker-autotest: docker-test-image
 		--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
 		--env-file .env \
 		"$(TEST_DOCKER_TAG)" bash -c \
-		"make autotest"
+		"make && make autotest"
 
-docker-image:
+docker-build-package: docker-test-image
+	docker run --rm \
+		--volume $(PWD)/debain/deb:/usr/src/$(UTIL_NAME)/debian/deb \
+		"$(TEST_DOCKER_TAG)" bash -c \
+		"make package"
+
+docker-image: docker-base-image
 	docker image inspect $(DOCKER_TAG) > /dev/null 2>&1 || ( \
 		make docker-test && \
 		docker image build \
