@@ -1,48 +1,19 @@
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
-
 # Output files
-*.ast
-*.csv
 *.log
+
+# Environment variables
+.env
 
 # Developmnt environmemt
 .vscode
+docs/notebooks/.ipynb_checkpoints/
 
+# Build
 __pycache__
 dist/*
 build/*
-.env
 man/*
 src/codeplag.egg-info/*
-docs/notebooks/.ipynb_checkpoints/
 
 # Deb package created files
 debian/.debhelper/*
@@ -54,6 +25,7 @@ debian/deb/
 debian/debhelper-build-stamp
 debian/files
 debian/preinst
+debian/postinst
 
 # Substituting
 src/codeplag/consts.py

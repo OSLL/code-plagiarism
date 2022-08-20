@@ -27,7 +27,9 @@ jobs:
     - name: Lint with flake8
       run: |
         pip install flake8 flake8-bugbear flake8-comprehensions mccabe
-        flake8 src/ --statistic --max-line-length=100 --max-complexity 15 -qq
+        make substitute
+        flake8 src/ --statistic --max-line-length=80 --max-complexity 15 -qq
+        flake8 test/ --statistic --max-line-length=120 --max-complexity 15 -qq
 
   docker-build-test-autotest:
     runs-on: ubuntu-20.04

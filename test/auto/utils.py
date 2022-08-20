@@ -1,4 +1,3 @@
-from sre_constants import SUCCESS
 import subprocess
 
 from codeplag.consts import UTIL_NAME

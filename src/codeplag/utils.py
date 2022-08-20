@@ -3,7 +3,7 @@ import os
 import re
 import sys
 from time import perf_counter
-from typing import List, Tuple, NamedTuple
+from typing import List, NamedTuple, Tuple
 
 import argcomplete
 import numpy as np
@@ -28,7 +28,6 @@ from codeplag.pyplag.utils import \
 from codeplag.pyplag.utils import \
     get_works_from_filepaths as get_works_from_filepaths_py
 from webparsers.github_parser import GitHubParser
-
 
 GET_FRAZE = 'Getting works features from'
 

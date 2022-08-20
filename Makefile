@@ -7,7 +7,7 @@ DOCKER_TAG              ?= $(shell echo $(UTIL_NAME)-ubuntu20.04:$(UTIL_VERSION)
 
 PWD                     := $(shell pwd)
 PYTHONPATH              = $(PWD)/src/
-LOGS_PATH               := /var/log
+LOGS_PATH               := /var/log/codeplag
 CODEPLAG_LOG_PATH       := $(LOGS_PATH)/$(UTIL_NAME).log
 WEBPARSERS_LOG_PATH     := $(LOGS_PATH)/webparsers.log
 CONVERTED_FILES         := src/codeplag/consts.py \
@@ -15,6 +15,7 @@ CONVERTED_FILES         := src/codeplag/consts.py \
                            debian/changelog \
                            debian/control \
                            debian/preinst \
+                           debian/postinst \
                            docker/base_ubuntu2004.dockerfile \
                            docker/test_ubuntu2004.dockerfile \
                            docker/ubuntu2004.dockerfile
@@ -31,6 +32,7 @@ all: substitute man install
 		-e "s|@WEBPARSERS_LOG_PATH@|${WEBPARSERS_LOG_PATH}|g" \
 		-e "s|@CODEPLAG_LOG_PATH@|${CODEPLAG_LOG_PATH}|g" \
 		-e "s|@PYTHON_REQUIRED_LIBS@|${PYTHON_REQUIRED_LIBS}|g" \
+		-e "s|@LOGS_PATH@|${LOGS_PATH}|g" \
 		$< > $@
 
 substitute: $(CONVERTED_FILES)
@@ -50,11 +52,7 @@ install:
 	python3 -m pip install --root=/$(DESTDIR) .
 
 	mkdir -p $(DESTDIR)/$(LOGS_PATH)
-	touch $(DESTDIR)/$(CODEPLAG_LOG_PATH)
-	chmod 0666 $(DESTDIR)/$(CODEPLAG_LOG_PATH)
-
-	touch $(DESTDIR)/$(WEBPARSERS_LOG_PATH)
-	chmod 0666 $(DESTDIR)/$(WEBPARSERS_LOG_PATH)
+	chmod 0777 $(DESTDIR)/$(LOGS_PATH)
 
 	install -D -m 0644 man/$(UTIL_NAME).1 $(DESTDIR)/usr/share/man/man1/$(UTIL_NAME).1
 
@@ -98,6 +96,7 @@ clean-all: clean
 	rm --force debian/changelog
 	rm --force debian/control
 	rm --force debian/preinst
+	rm --force debian/postinst
 
 uninstall:
 	rm --force /usr/share/man/man1/$(UTIL_NAME).1

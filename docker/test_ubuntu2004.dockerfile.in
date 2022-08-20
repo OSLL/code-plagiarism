@@ -1,7 +1,7 @@
 FROM @UTIL_NAME@-base-ubuntu20.04:@UTIL_VERSION@
 
-RUN python3 -m pip install .
+RUN make man && make install
 RUN pip3 install argparse-manpage==3
 RUN pip3 install pytest==7.1.2
 
-CMD make man && make test
+CMD make test
