@@ -60,8 +60,9 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: deb-package
-          path: $(pwd)/debian/deb/codeplag-util_${{ steps.get_version.outputs.version }}-1.devel_amd64.deb
+          path: debian/deb/
           retention-days: 3
+          if-no-files-found: error
 
       - name: Upload created image
         if: ${{ github.ref == 'refs/heads/main' }}
@@ -70,6 +71,7 @@ jobs:
           name: codeplag-ubuntu20.04
           path: /tmp/codeplag-ubuntu20.04.tar
           retention-days: 1
+          if-no-files-found: error
 
   push-image:
     runs-on: ubuntu-20.04
