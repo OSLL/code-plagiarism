@@ -161,13 +161,13 @@ docker-run: docker-image
 		"$(DOCKER_TAG)"
 
 docker-rmi:
-	@docker rmi $(DOCKER_TAG) 2> /dev/null || \
+	@docker rmi $(DOCKER_TAG) --force 2> /dev/null || \
 	echo "Image $(DOCKER_TAG) is not exists"
 
-	@docker rmi $(TEST_DOCKER_TAG) 2> /dev/null || \
+	@docker rmi $(TEST_DOCKER_TAG) --force 2> /dev/null || \
 	echo "Image $(TEST_DOCKER_TAG) is not exists"
 
-	@docker rmi $(BASE_DOCKER_TAG) 2> /dev/null || \
+	@docker rmi $(BASE_DOCKER_TAG) --force 2> /dev/null || \
 	echo "Image $(BASE_DOCKER_TAG) is not exists"
 
 help:
