@@ -58,11 +58,20 @@ jobs:
           make docker-image DOCKER_TAG=${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu20.04:${{ steps.get_version.outputs.version }}
           docker image save --output /tmp/codeplag-ubuntu20.04.tar ${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu20.04:${{ steps.get_version.outputs.version }}
 
+      - name: Save created deb package
+        uses: actions/upload-artifact@v3
+        with:
+          name: deb-package
+          path: ${GITHUB_WORKSPACE}/debian/deb/codeplag-util_${{ steps.get_version.outputs.version }}-1.devel_amd64.deb
+          retention-days: 3
+
       - name: Upload created image
+        if: ${{ github.ref == 'refs/heads/main' }}
         uses: actions/upload-artifact@v3
         with:
           name: codeplag-ubuntu20.04
           path: /tmp/codeplag-ubuntu20.04.tar
+          retention-days: 1
 
   push-image:
     runs-on: ubuntu-20.04
