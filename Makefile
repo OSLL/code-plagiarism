@@ -15,7 +15,8 @@ SOURCE_SUB_FILES        := src/codeplag/consts.py \
 DEBIAN_SUB_FILES        := debian/changelog \
                            debian/control \
                            debian/preinst \
-                           debian/postinst
+                           debian/postinst \
+                           debian/copyright
 DOCKER_SUB_FILES        := docker/base_ubuntu2004.dockerfile \
                            docker/test_ubuntu2004.dockerfile \
                            docker/ubuntu2004.dockerfile
@@ -107,6 +108,7 @@ clean-all: clean
 	rm --force debian/control
 	rm --force debian/preinst
 	rm --force debian/postinst
+	rm --force debian/copyright
 
 uninstall:
 	rm --force /usr/share/man/man1/$(UTIL_NAME).1

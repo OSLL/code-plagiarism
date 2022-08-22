@@ -70,7 +70,7 @@
 - For this purpose, you need to get installing package from releases [tab](https://github.com/OSLL/code-plagiarism/releases) with extension .deb;
 - The next step is run command on the target system:
   ```
-  $ sudo apt-get install <path_to_the_package>/package_name.deb
+  $ sudo apt-get install <path_to_the_package>/<package_name>.deb
   ```
 
 ## 2. Tests

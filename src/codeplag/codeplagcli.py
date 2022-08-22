@@ -1,6 +1,7 @@
 import argparse
 import os
 
+from typing import List
 from codeplag.consts import UTIL_NAME, UTIL_VERSION
 from webparsers.github_parser import GitHubContentUrl
 
@@ -8,7 +9,13 @@ from webparsers.github_parser import GitHubContentUrl
 class CheckUniqueStore(argparse.Action):
     """Checks that the list of arguments contains no duplicates, then stores"""
 
-    def __call__(self, _parser, namespace, values, _option_string=None):
+    def __call__(
+        self,
+        _parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: List[str],
+        _option_string: str = None
+    ):
         if len(values) > len(set(values)):
             raise argparse.ArgumentError(
                 self,

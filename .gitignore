@@ -26,6 +26,7 @@ debian/debhelper-build-stamp
 debian/files
 debian/preinst
 debian/postinst
+debian/copyright
 
 # Substituting
 src/codeplag/consts.py
