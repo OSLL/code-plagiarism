@@ -2,15 +2,15 @@
 
 ## 1. Install
 
-First of all, clone the repository and moved into this.
+### 1.1 Manual installation on the local system from sources
 
-```
-sudo apt install git # if not installed
-git clone https://github.com/OSLL/code-plagiarism.git
-cd code-plagiarism/
-```
+  First of all, clone the repository and moved into this.
 
-### 1.1 Manual installation on local computer
+  ```
+  sudo apt install git # if not installed
+  git clone https://github.com/OSLL/code-plagiarism.git
+  cd code-plagiarism/
+  ```
 
 - OS Ubuntu Linux >= 20.04
 
@@ -34,7 +34,6 @@ cd code-plagiarism/
   pip3 install --upgrade setuptools # Ensure that an up-to-date version of setuptools is installed
   make
   ```
-
 ### 1.2 Build and run local Docker container
 
 - Create a code-plagiarism docker image
@@ -64,6 +63,14 @@ cd code-plagiarism/
 - Run container based on pulled image and connect volume with your data
   ```
   $ docker run --rm --tty --interactive --volume <absolute_local_path_with_data>:<absolute_containter_path_with_data> "artanias/codeplag-ubuntu20.04:latest" /bin/bash
+  ```
+
+### 1.4 Install with package manager apt-get
+
+- For this purpose, you need to get installing package from releases [tab](https://github.com/OSLL/code-plagiarism/releases) with extension .deb;
+- The next step is run command on the target system:
+  ```
+  $ sudo apt-get install <path_to_the_package>/package_name.deb
   ```
 
 ## 2. Tests
