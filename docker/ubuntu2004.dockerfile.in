@@ -1,6 +1,8 @@
 FROM @UTIL_NAME@-base-ubuntu20.04:@UTIL_VERSION@
 
-ADD man/ /usr/src/@UTIL_NAME@/man
-RUN make install
+ADD debian/deb/ /usr/src/@UTIL_NAME@/debian/deb
+RUN apt-get install -y /usr/src/@UTIL_NAME@/debian/deb/@UTIL_NAME@-util_@UTIL_VERSION@-1.devel_amd64.deb
+# TODO: Fix this hook. apt-get don't install manpage into image.
+RUN cp debian/deb/usr/share/man/man1/@UTIL_NAME@.1 /usr/share/man/man1/
 
 CMD ["/bin/bash"]

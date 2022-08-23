@@ -9,6 +9,7 @@ from codeplag.consts import LOG_PATH
 from codeplag.logger import get_logger
 from codeplag.pyplag.astwalkers import ASTWalker
 
+# TODO: Remove from globals
 logger = get_logger(__name__, LOG_PATH)
 
 
@@ -77,7 +78,7 @@ def get_ast_from_filename(filename: str) -> Union[ast.Module, None]:
     return tree
 
 
-def get_features_from_ast(tree: ast.Module, filepath: str = ''):
+def get_features_from_ast(tree: ast.Module, filepath: str = '') -> ASTFeatures:
     features = ASTFeatures(filepath)
     walker = ASTWalker(features)
     walker.visit(tree)
@@ -85,7 +86,7 @@ def get_features_from_ast(tree: ast.Module, filepath: str = ''):
     return features
 
 
-def get_works_from_filepaths(filenames: List[str]):
+def get_works_from_filepaths(filenames: List[str]) -> List[ASTFeatures]:
     if not filenames:
         return []
 

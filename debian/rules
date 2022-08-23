@@ -1,0 +1,18 @@
+#!/usr/bin/make -f
+
+DESTDIR           = $(CURDIR)/debian/deb
+
+%:
+	dh $@
+
+override_dh_builddeb:
+	mkdir -p $(DESTDIR)
+	dh_builddeb --destdir=$(DESTDIR)
+
+override_dh_usrlocal:
+	echo "Skipping this step"
+
+override_dh_auto_test:
+	echo "Skipping this step"
+
+.EXPORT_ALL_VARIABLES:

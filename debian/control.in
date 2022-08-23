@@ -1,0 +1,11 @@
+Source: @UTIL_NAME@-util
+Section: education
+Priority: optional
+Maintainer: Artyom Semidolin
+Build-Depends: debhelper (>= 10)
+
+Package: @UTIL_NAME@-util
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, python3 (>= 3.8), python3-pip (>= 19.0),
+ clang, libncurses5, man
+Description: Program for finding plagiarism in the source code written on Python3, C, C++ based on compare AST metadata.

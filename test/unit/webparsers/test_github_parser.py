@@ -19,160 +19,6 @@ class TestGitHubParser(unittest.TestCase):
     def setUpClass(cls):
         cls.maxDiff = None
 
-    def test_check_github_url(self):
-        test_cases = [
-            {
-                'arguments': {
-                    "github_url": "https://github.com/OSLL"
-                },
-                'expected_result': ["https:", "", "github.com", "OSLL"],
-            },
-            {
-                'arguments': {
-                    "github_url": "http://github.com/OSLL/code-plagiarism/"
-                },
-                'expected_result': ["http:", "", "github.com",
-                                    "OSLL", "code-plagiarism"],
-            }
-        ]
-
-        for test_case in test_cases:
-            with self.subTest(test_case=test_case):
-                result = GitHubParser.check_github_url(**test_case['arguments'])
-                self.assertEqual(test_case['expected_result'], result)
-
-    def test_check_github_url_bad(self):
-        test_cases = [
-            {
-                'arguments': {
-                    "github_url": "ttps://github.com/OSLL"
-                },
-            },
-            {
-                'arguments': {
-                    "github_url": "https:/j/github.com/OSLL"
-                },
-            },
-            {
-                'arguments': {
-                    "github_url": "https://githUb.com/OSLL"
-                },
-            },
-            {
-                'arguments': {
-                    "github_url": "https:/"
-                },
-            }
-        ]
-
-        for test_case in test_cases:
-            with self.subTest(test_case=test_case):
-                with self.assertRaises(ValueError):
-                    GitHubParser.check_github_url(**test_case['arguments'])
-
-    def test_parse_repo_url(self):
-        test_cases = [
-            {
-                'arguments': {
-                    "repo_url": "https://github.com/OSLL/code-plagiarism"
-                },
-                'expected_result': ("OSLL", "code-plagiarism"),
-            },
-            {
-                'arguments': {
-                    "repo_url": "http://github.com/OSLL/test.py"
-                },
-                'expected_result': ("OSLL", "test.py"),
-            }
-        ]
-
-        for test_case in test_cases:
-            with self.subTest(test_case=test_case):
-                result = GitHubParser.parse_repo_url(**test_case['arguments'])
-                self.assertEqual(test_case['expected_result'], result)
-
-    def test_parse_repo_url_bad(self):
-        test_cases = [
-            {
-                'arguments': {
-                    "repo_url": "ttps://github.com/index"
-                },
-            },
-            {
-                'arguments': {
-                    "repo_url": "http:/j/github.com/OSLL/test.py"
-                },
-            },
-            {
-                'arguments': {
-                    "repo_url": "http://githUb.com/OSLL/test.py"
-                },
-            },
-            {
-                'arguments': {"repo_url": "http://github.com/OSLL"},
-            }
-        ]
-
-        for test_case in test_cases:
-            with self.subTest(test_case=test_case):
-                with self.assertRaises(ValueError):
-                    GitHubParser.parse_repo_url(**test_case['arguments'])
-
-    def test_parse_content_url(self):
-        test_cases = [
-            {
-                'arguments': {
-                    "content_url": "https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/astfeatures.py"
-                },
-                'expected_result': ('OSLL', 'code-plagiarism', 'main', 'src/codeplag/astfeatures.py'),
-            },
-            {
-                'arguments': {
-                    "content_url": "https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/logger.py"
-                },
-                'expected_result': ('OSLL', 'code-plagiarism', 'main', 'src/codeplag/logger.py'),
-            }
-        ]
-
-        for test_case in test_cases:
-            with self.subTest(test_case=test_case):
-                result = GitHubParser.parse_content_url(**test_case['arguments'])
-                self.assertEqual(result, test_case['expected_result'])
-
-    def test_parse_content_url_bad(self):
-        test_cases = [
-            {
-                'arguments': {
-                    'content_url': 'ttps://github.com/index'
-                },
-            },
-            {
-                'arguments': {
-                    'content_url': 'http:/j/github.com/OSLL/test.py'
-                },
-            },
-            {
-                'arguments': {
-                    'content_url': 'http://githUb.com/OSLL/test.py'
-                },
-            },
-            {
-                'arguments': {
-                    'content_url': 'http://github.com/OSLL'
-                },
-            },
-            {
-                'arguments': {
-                    'content_url': 'http://github.com/OSLL/test/tmp'
-                },
-            }
-        ]
-
-        for test_case in test_cases:
-            with self.subTest(test_case=test_case):
-                with self.assertRaises(ValueError):
-                    GitHubParser.parse_content_url(**test_case['arguments'])
-
     def test_decode_file_content(self):
         test_cases = [
             {
@@ -193,7 +39,8 @@ class TestGitHubParser(unittest.TestCase):
             buf = io.StringIO()
             with redirect_stdout(buf):
                 with self.subTest(test_case=test_case):
-                    result = GitHubParser.decode_file_content(**test_case['arguments'])
+                    gh_parser = GitHubParser()
+                    result = gh_parser.decode_file_content(**test_case['arguments'])
                     self.assertEqual(result, test_case['expected_result'])
 
     def test_is_accepted_extension(self):
@@ -1100,7 +947,10 @@ def test_github_url(arg, expected):
         with pytest.raises(expected):
             GitHubUrl(arg)
     else:
-        assert GitHubUrl(arg).url_parts == expected
+        gh_url = GitHubUrl(arg)
+        assert gh_url.url_parts == expected
+        assert gh_url.protocol == expected[0][:-1]
+        assert gh_url.host == expected[2]
 
 
 @pytest.mark.parametrize(
@@ -1112,8 +962,8 @@ def test_github_url(arg, expected):
             ]
         ),
         (
-            "http://github.com/OSLL/test.py", [
-                "http:", "", "github.com", "OSLL", "test.py"
+            "http://github.com/OSLL/samples", [
+                "http:", "", "github.com", "OSLL", "samples"
             ]
         ),
         ("https://github.com/OSLL", ValueError),
@@ -1128,37 +978,51 @@ def test_github_repo_url(arg, expected):
         with pytest.raises(expected):
             GitHubRepoUrl(arg)
     else:
-        assert GitHubRepoUrl(arg).url_parts == expected
+        gh_repo_url = GitHubRepoUrl(arg)
+        assert gh_repo_url.url_parts == expected
+        assert gh_repo_url.protocol == expected[0][:-1]
+        assert gh_repo_url.host == expected[2]
+        assert gh_repo_url.owner == expected[3]
+        assert gh_repo_url.repo == expected[4]
 
 
 @pytest.mark.parametrize(
-    'arg, expected',
+    'arg, expected, path',
     [
         (
             "https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/astfeatures.py", [
-                "https:", "", "github.com", "OSLL", "code-plagiarism", "blob"
-            ]
+                "https:", "", "github.com", "OSLL", "code-plagiarism", "blob", "main"
+            ],
+            "src/codeplag/astfeatures.py"
         ),
         (
             "https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/logger.py", [
-                "https:", "", "github.com", "OSLL", "code-plagiarism", "blob"
-            ]
+                "https:", "", "github.com", "OSLL", "code-plagiarism", "blob", "main"
+            ],
+            "src/codeplag/logger.py"
         ),
-        ("https://github.com/OSLL", ValueError),
-        ("http://github.com/OSLL/code-plagiarism/", ValueError),
-        ("ttps://github.com/OSLL", ValueError),
-        ("https:/j/github.com/OSLL", ValueError),
-        ("https://githUb.com/OSLL", ValueError),
-        ("https:/", ValueError)
+        ("https://github.com/OSLL", ValueError, ""),
+        ("http://github.com/OSLL/code-plagiarism/", ValueError, ""),
+        ("ttps://github.com/OSLL", ValueError, ""),
+        ("https:/j/github.com/OSLL", ValueError, ""),
+        ("https://githUb.com/OSLL", ValueError, ""),
+        ("https:/", ValueError, "")
     ]
 )
-def test_github_content_url(arg, expected):
+def test_github_content_url(arg, expected, path):
     if type(expected) == type and issubclass(expected, Exception):
         with pytest.raises(expected):
             GitHubContentUrl(arg)
     else:
+        gh_content_url = GitHubContentUrl(arg)
         for value in expected:
-            assert value in GitHubContentUrl(arg).url_parts
+            assert value in gh_content_url.url_parts
+        assert gh_content_url.protocol == expected[0][:-1]
+        assert gh_content_url.host == expected[2]
+        assert gh_content_url.owner == expected[3]
+        assert gh_content_url.repo == expected[4]
+        assert gh_content_url.branch == expected[6]
+        assert gh_content_url.path == path
 
 
 if __name__ == '__main__':
