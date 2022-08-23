@@ -50,7 +50,6 @@ man: substitute_sources
 	argparse-manpage --pyfile src/codeplag/codeplagcli.py \
 					 --function CodeplagCLI \
 					 --author "Codeplag Development Team" \
-					 --author-email "inbox@moevm.info" \
 					 --project-name "$(UTIL_NAME) $(UTIL_VERSION)" \
 					 --url "https://github.com/OSLL/code-plagiarism" \
 					 --output man/$(UTIL_NAME).1

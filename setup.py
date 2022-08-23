@@ -34,7 +34,6 @@ setup(
     version=f'{UTIL_VERSION}',
     description='Code plagiarism searching package',
     author='Artyom Semidolin, Dmitry Nikolaev, Alexander Evsikov',
-    author_email='inbox@moevm.info',
     url='https://github.com/OSLL/code-plagiarism',
     long_description=Path("README.md").read_text(encoding="utf-8"),
     long_description_content_type="text/markdown",

@@ -1,7 +1,7 @@
 Source: @UTIL_NAME@-util
 Section: education
 Priority: optional
-Maintainer: Artyom Semidolin <inbox@moevm.info>
+Maintainer: Artyom Semidolin
 Build-Depends: debhelper (>= 10)
 
 Package: @UTIL_NAME@-util
