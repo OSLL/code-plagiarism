@@ -23,7 +23,7 @@ DOCKER_SUB_FILES        := docker/base_ubuntu2004.dockerfile \
 PYTHON_REQUIRED_LIBS    := $(shell python3 setup.py --install-requirements)
 
 
-all: substitute_sources man install
+all: substitute-sources man install
 
 # $< - %.in file, $@ desired file %
 %: %.in
@@ -36,16 +36,16 @@ all: substitute_sources man install
 		-e "s|@LOGS_PATH@|${LOGS_PATH}|g" \
 		$< > $@
 
-substitute_sources: $(SOURCE_SUB_FILES)
+substitute-sources: $(SOURCE_SUB_FILES)
 	@echo "Substituting of information about the utility in the source files"
 
-substitute_debian: $(DEBIAN_SUB_FILES)
+substitute-debian: $(DEBIAN_SUB_FILES)
 	@echo "Substituting of information about the utility in the debian files"
 
-substitute_docker: $(DOCKER_SUB_FILES)
+substitute-docker: $(DOCKER_SUB_FILES)
 	@echo "Substituting of information about the utility in the docker files"
 
-man: substitute_sources
+man: substitute-sources
 	mkdir -p man
 	argparse-manpage --pyfile src/codeplag/codeplagcli.py \
 					 --function CodeplagCLI \
@@ -54,7 +54,7 @@ man: substitute_sources
 					 --url "https://github.com/OSLL/code-plagiarism" \
 					 --output man/$(UTIL_NAME).1
 
-install: substitute_sources man
+install: substitute-sources man
 	python3 -m pip install --root=/$(DESTDIR) .
 
 	mkdir -p $(DESTDIR)/$(LOGS_PATH)
@@ -62,7 +62,7 @@ install: substitute_sources man
 
 	install -D -m 0644 man/$(UTIL_NAME).1 $(DESTDIR)/usr/share/man/man1/$(UTIL_NAME).1
 
-package: substitute_debian
+package: substitute-debian
 	find debian/deb/$(UTIL_NAME)* > /dev/null 2>&1 || ( \
 		dpkg-buildpackage -jauto -b \
 			--buildinfo-option="-u$(CURDIR)/debian/deb" \
@@ -70,7 +70,7 @@ package: substitute_debian
 			--no-sign \
 	)
 
-test: substitute_sources
+test: substitute-sources
 	pytest test/unit -q
 	make clean-cache
 
@@ -113,7 +113,7 @@ uninstall:
 	rm --force /usr/share/man/man1/$(UTIL_NAME).1
 	pip3 uninstall $(UTIL_NAME) -y
 
-docker-base-image: substitute_sources substitute_docker
+docker-base-image: substitute-sources substitute-docker
 	docker image inspect $(BASE_DOCKER_TAG) > /dev/null 2>&1 || ( \
 		export DOCKER_BUILDKIT=1 && \
 		docker image build \
@@ -122,7 +122,7 @@ docker-base-image: substitute_sources substitute_docker
 			. \
 	)
 
-docker-test-image: docker-base-image substitute_debian
+docker-test-image: docker-base-image
 	docker image inspect $(TEST_DOCKER_TAG) > /dev/null 2>&1 || \
 	docker image build \
 		--tag  "$(TEST_DOCKER_TAG)" \
