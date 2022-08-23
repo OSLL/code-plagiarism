@@ -1,27 +1,28 @@
 import ast
 
+from codeplag.astfeatures import ASTFeatures
 from codeplag.pyplag.const import (IGNORE_NODES, KEYWORDS, LITERALS, OPERATORS,
                                    TO_TOKEN)
 
 
 class ASTWalker(ast.NodeVisitor):
 
-    def __init__(self, features):
+    def __init__(self, features: ASTFeatures) -> None:
         self.features = features
         self.curr_depth = 0
 
-    def add_unique_node(self, node_name):
+    def add_unique_node(self, node_name: str) -> None:
         self.features.unodes[node_name] = self.features.count_unodes
         self.features.from_num[self.features.count_unodes] = node_name
         self.features.count_unodes += 1
 
-    def add_node_to_structure(self, node_name):
+    def add_node_to_structure(self, node_name: str) -> None:
         self.features.structure.append((self.curr_depth,
                                         self.features.unodes[node_name]))
         if self.curr_depth == 1:
             self.features.head_nodes.append(node_name)
 
-    def generic_visit(self, node):
+    def generic_visit(self, node: ast.AST) -> None:
         '''
             Function for traverse, counting operators, keywords, literals
             and save sequence of operators

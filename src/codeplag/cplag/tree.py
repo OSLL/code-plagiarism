@@ -1,14 +1,15 @@
-from clang.cindex import TokenKind
+from typing import List
+
+from clang.cindex import Cursor, TokenKind
 
 from codeplag.astfeatures import ASTFeatures
 from codeplag.cplag.const import IGNORE, OPERATORS
 
 
-def get_not_ignored(tree, src):
+# TODO: iterate by iterotor retruned by tree.get_children()
+def get_not_ignored(tree: Cursor, src: str) -> List[Cursor]:
     '''
         Function helps to discard unnecessary nodes such as imports
-        @param tree - clang.cindex.Cursor object
-        @param src - str path to file
     '''
 
     children = list(tree.get_children())
@@ -23,7 +24,7 @@ def get_not_ignored(tree, src):
     return parsed_nodes
 
 
-def generic_visit(node, features, curr_depth=0):
+def generic_visit(node, features: ASTFeatures, curr_depth: int = 0) -> None:
     if curr_depth == 0:
         children = get_not_ignored(node, features.filepath)
     else:
@@ -58,7 +59,7 @@ def generic_visit(node, features, curr_depth=0):
             generic_visit(child, features, curr_depth + 1)
 
 
-def get_features(tree, filepath=''):
+def get_features(tree: Cursor, filepath: str = '') -> ASTFeatures:
     features = ASTFeatures(filepath)
     for token in tree.get_tokens():
         if (token.kind == TokenKind.PUNCTUATION and
