@@ -14,13 +14,15 @@ from codeplag.algorithms.featurebased import counter_metric, struct_compare
 from codeplag.algorithms.tokenbased import value_jakkar_coef
 from codeplag.astfeatures import ASTFeatures
 from codeplag.codeplagcli import CodeplagCLI
-from codeplag.consts import FILE_DOWNLOAD_PATH, SUPPORTED_EXTENSIONS
+from codeplag.consts import (FILE_DOWNLOAD_PATH, GET_FRAZE,
+                             SUPPORTED_EXTENSIONS, LOG_PATH)
 from codeplag.cplag.const import COMPILE_ARGS
 from codeplag.cplag.tree import get_features as get_features_cpp
 from codeplag.cplag.util import \
     get_cursor_from_file as get_cursor_from_file_cpp
 from codeplag.cplag.util import \
     get_works_from_filepaths as get_works_from_filepaths_cpp
+from codeplag.logger import get_logger
 from codeplag.pyplag.utils import \
     get_ast_from_content as get_ast_from_content_py
 from codeplag.pyplag.utils import \
@@ -28,8 +30,6 @@ from codeplag.pyplag.utils import \
 from codeplag.pyplag.utils import \
     get_works_from_filepaths as get_works_from_filepaths_py
 from webparsers.github_parser import GitHubParser
-
-GET_FRAZE = 'Getting works features from'
 
 
 class FastMetrics(NamedTuple):
@@ -401,7 +401,8 @@ class CodeplagEngine:
                     self.extension
                 ],
                 check_policy=parsed_args.get('all_branches'),
-                access_token=self.access_token
+                access_token=self.access_token,
+                logger=get_logger('webparsers', LOG_PATH)
             )
 
             self.get_works_from_files(parsed_args.get('files'))

@@ -1,12 +1,10 @@
 import base64
+import logging
 import re
 import sys
-from typing import List, Literal
+from typing import List, Literal, Optional
 
 import requests
-
-from webparsers.consts import DEFAULT_FILE_EXTENSIONS, LOG_PATH
-from webparsers.logger import get_logger
 
 
 class GitHubUrl(str):
@@ -61,19 +59,19 @@ class GitHubContentUrl(GitHubUrl):
 
 
 class GitHubParser:
-    def __init__(self, file_extensions: List[str] = None,
+    def __init__(self, file_extensions: Optional[List[str]] = None,
                  check_policy: Literal[0, 1] = 0, access_token: str = '',
-                 log_path: str = LOG_PATH):
-        self.logger = get_logger(__name__, log_path)
-        if file_extensions is None:
-            self.__file_extensions = DEFAULT_FILE_EXTENSIONS
+                 logger: Optional[logging.Logger] = None):
+        if logger is None:
+            self.logger = logging.getLogger(__name__)
         else:
-            self.__file_extensions = file_extensions
+            self.logger = logger
 
+        self.__file_extensions = file_extensions
         self.__access_token = access_token
         self.__check_all_branches = check_policy
 
-    def decode_file_content(self, file_in_bytes):
+    def decode_file_content(self, file_in_bytes: bytes) -> str:
         attempt = 1
         code = None
         while code is None:
@@ -89,14 +87,19 @@ class GitHubParser:
 
         return code
 
-    def is_accepted_extension(self, path):
+    def is_accepted_extension(self, path: str) -> bool:
+        if self.__file_extensions is None:
+            return True
+
         for extension in self.__file_extensions:
             if re.search(extension, path):
                 return True
 
         return False
 
-    def send_get_request(self, api_url, params=None):
+    def send_get_request(self,
+                         api_url: str,
+                         params: dict = None) -> requests.Response:
         if params is None:
             params = {}
 

@@ -6,12 +6,10 @@ TEST_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-test-ubuntu20.04:$(UTIL_VER
 DOCKER_TAG              ?= $(shell echo $(UTIL_NAME)-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
 
 PWD                     := $(shell pwd)
-PYTHONPATH              = $(PWD)/src/
+PYTHONPATH              := $(PWD)/src/
 LOGS_PATH               := /var/log/codeplag
 CODEPLAG_LOG_PATH       := $(LOGS_PATH)/$(UTIL_NAME).log
-WEBPARSERS_LOG_PATH     := $(LOGS_PATH)/webparsers.log
-SOURCE_SUB_FILES        := src/codeplag/consts.py \
-                           src/webparsers/consts.py
+SOURCE_SUB_FILES        := src/codeplag/consts.py
 DEBIAN_SUB_FILES        := debian/changelog \
                            debian/control \
                            debian/preinst \
@@ -30,7 +28,6 @@ all: substitute-sources man install
 	sed \
 		-e "s|@UTIL_NAME@|${UTIL_NAME}|g" \
 		-e "s|@UTIL_VERSION@|${UTIL_VERSION}|g" \
-		-e "s|@WEBPARSERS_LOG_PATH@|${WEBPARSERS_LOG_PATH}|g" \
 		-e "s|@CODEPLAG_LOG_PATH@|${CODEPLAG_LOG_PATH}|g" \
 		-e "s|@PYTHON_REQUIRED_LIBS@|${PYTHON_REQUIRED_LIBS}|g" \
 		-e "s|@LOGS_PATH@|${LOGS_PATH}|g" \
@@ -97,7 +94,6 @@ clean: clean-cache
 
 clean-all: clean
 	rm --force src/codeplag/consts.py
-	rm --force src/webparsers/consts.py
 
 	rm --force docker/base_ubuntu2004.dockerfile
 	rm --force docker/test_ubuntu2004.dockerfile
