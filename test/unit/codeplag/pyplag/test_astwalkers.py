@@ -13,8 +13,9 @@ pwd = os.path.dirname(os.path.abspath(__file__))
 class TestASTWalkers(unittest.TestCase):
 
     def test_astwalker_class_normal(self):
+        path = os.path.join(pwd, './data/test1.py')
         tree = get_ast_from_filename(os.path.join(pwd, './data/test1.py'))
-        features = ASTFeatures()
+        features = ASTFeatures(path)
         walker = ASTWalker(features)
         walker.visit(tree)
         operators = {}
@@ -26,8 +27,8 @@ class TestASTWalkers(unittest.TestCase):
         keywords['If'] = np.int64(1)
         literals = {}
 
-        # ast.Constant с python >= 3.8 используется для всех констант
-        # до этого были NameConstant, Num и др.
+        # ast.Constant с python >= 3.8 use for all constants
+        # before was NameConstant, Num and etc.
         literals['Constant'] = np.int64(3)
 
         file_literals = {}

@@ -1,4 +1,4 @@
-UTIL_VERSION            := 0.2.2
+UTIL_VERSION            := 0.2.3
 UTIL_NAME               := codeplag
 
 BASE_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-base-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)

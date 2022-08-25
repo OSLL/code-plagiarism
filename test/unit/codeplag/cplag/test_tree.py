@@ -1,6 +1,7 @@
 import os
 import unittest
 
+from clang.cindex import CursorKind
 from codeplag.astfeatures import ASTFeatures
 from codeplag.cplag.const import COMPILE_ARGS
 from codeplag.cplag.tree import generic_visit, get_features, get_not_ignored
@@ -29,10 +30,38 @@ class TestTree(unittest.TestCase):
         res1 = get_not_ignored(self.first_cursor, self.first_sample_path)
         res2 = get_not_ignored(self.second_cursor, self.second_sample_path)
 
-        self.assertEqual(type(res1), list)
-        self.assertEqual(type(res2), list)
-        self.assertEqual(len(res1), 1)
-        self.assertEqual(len(res2), 1)
+        main_node = res1[0]
+        assert main_node.spelling == 'gcd'
+        assert main_node.kind == CursorKind.FUNCTION_DECL
+
+        children = main_node.get_children()
+        expected_res = [
+            ('l', CursorKind.PARM_DECL),
+            ('r', CursorKind.PARM_DECL),
+            ('', CursorKind.COMPOUND_STMT)
+        ]
+        for index, child in enumerate(children):
+            assert expected_res[index][0] == child.spelling
+            assert expected_res[index][1] == child.kind
+
+        main_node = res2[0]
+        assert main_node.spelling == 'gcd'
+        assert main_node.kind == CursorKind.FUNCTION_DECL
+
+        children = main_node.get_children()
+        expected_res = [
+            ('a', CursorKind.PARM_DECL),
+            ('b', CursorKind.PARM_DECL),
+            ('', CursorKind.COMPOUND_STMT)
+        ]
+        for index, child in enumerate(children):
+            assert expected_res[index][0] == child.spelling
+            assert expected_res[index][1] == child.kind
+
+        assert type(res1) == list
+        assert type(res2) == list
+        assert len(res1) == 1
+        assert len(res2) == 1
 
     def test_generic_visit(self):
         features = ASTFeatures(self.first_sample_path)
