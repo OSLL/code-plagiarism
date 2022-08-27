@@ -1,6 +1,6 @@
 import ast
 import os
-from typing import List, Union
+from typing import List, Optional
 
 from termcolor import colored
 
@@ -13,7 +13,7 @@ from codeplag.pyplag.astwalkers import ASTWalker
 logger = get_logger(__name__, LOG_PATH)
 
 
-def get_ast_from_content(code: str, path: str) -> Union[ast.Module, None]:
+def get_ast_from_content(code: str, path: str) -> Optional[ast.Module]:
     tree = None
 
     # TODO: Add logging and check for correct colored output
@@ -49,7 +49,7 @@ def get_ast_from_content(code: str, path: str) -> Union[ast.Module, None]:
     return tree
 
 
-def get_ast_from_filename(filename: str) -> Union[ast.Module, None]:
+def get_ast_from_filename(filename: str) -> Optional[ast.Module]:
     '''
         Function return ast which has type ast.Module
         @param filename - full path to file with code which will have

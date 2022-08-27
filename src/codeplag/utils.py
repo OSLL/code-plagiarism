@@ -232,7 +232,7 @@ def print_suspect_parts(source_code: str,
     }
 
     row = 1
-    column = 1
+    column = 1  # noqa
 
     for symbol in source_code:
         if symbol == '\n':
@@ -253,7 +253,7 @@ def print_code_and_highlight_suspect(source_code: str,
             [tokens_pos[index] for index in marked_tokens]}
 
     row = 1
-    column = 1
+    column = 1  # noqa
 
     for symbol in source_code:
         if symbol == '\n':

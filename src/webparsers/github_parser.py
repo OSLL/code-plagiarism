@@ -12,13 +12,12 @@ class GitHubUrl(str):
     def __new__(cls, url: str):
         url_parts = url.rstrip('/').split('/')
         error_msg = f"'{url}' is incorrect link to GitHub"
-        if len(url_parts) < 3:
-            raise ValueError(error_msg)
-        if url_parts[0] != 'https:' and url_parts[0] != 'http:':
-            raise ValueError(error_msg)
-        elif url_parts[1] != '':
-            raise ValueError(error_msg)
-        elif url_parts[2] != 'github.com':
+        if (
+            len(url_parts) < 3 or
+            (url_parts[0] != 'https:' and url_parts[0] != 'http:') or
+            url_parts[1] != '' or
+            url_parts[2] != 'github.com'
+        ):
             raise ValueError(error_msg)
 
         obj = str.__new__(cls, url)
@@ -91,11 +90,9 @@ class GitHubParser:
         if self.__file_extensions is None:
             return True
 
-        for extension in self.__file_extensions:
-            if re.search(extension, path):
-                return True
-
-        return False
+        return any(
+            re.search(extension, path) for extension in self.__file_extensions
+        )
 
     def send_get_request(self,
                          api_url: str,
@@ -167,9 +164,10 @@ class GitHubParser:
                 break
 
             for repo in response_json:
-                if reg_exp is None:
-                    repos[repo['name']] = repo['html_url']
-                elif re.search(reg_exp, repo['name']) is not None:
+                if (
+                    (reg_exp is None) or
+                    re.search(reg_exp, repo['name']) is not None
+                ):
                     repos[repo['name']] = repo['html_url']
 
             page += 1

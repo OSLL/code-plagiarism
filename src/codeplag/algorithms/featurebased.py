@@ -95,12 +95,10 @@ def get_children_indexes(tree: List[Tuple[int, int]],
     if count_of_nodes != 0:
         current_level = tree[0][0]
 
-    current_index = 0
-    for node in tree:
+    for current_index, node in enumerate(tree):
         if current_level == node[0]:
             indexes.append(current_index)
             count_of_children += 1
-        current_index += 1
 
     return indexes, count_of_children
 

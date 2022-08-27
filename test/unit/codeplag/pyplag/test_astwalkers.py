@@ -18,21 +18,23 @@ class TestASTWalkers(unittest.TestCase):
         features = ASTFeatures(path)
         walker = ASTWalker(features)
         walker.visit(tree)
-        operators = {}
-        operators['AugAssign'] = np.int64(1)
-        operators['Add'] = np.int64(1)
-        keywords = {}
-        keywords['FunctionDef'] = np.int64(1)
-        keywords['Return'] = np.int64(1)
-        keywords['If'] = np.int64(1)
-        literals = {}
-
-        # ast.Constant с python >= 3.8 use for all constants
-        # before was NameConstant, Num and etc.
-        literals['Constant'] = np.int64(3)
-
-        file_literals = {}
-        file_literals['Constant'] = 0
+        operators = {
+            'AugAssign': np.int64(1),
+            'Add': np.int64(1)
+        }
+        keywords = {
+            'FunctionDef': np.int64(1),
+            'Return': np.int64(1),
+            'If': np.int64(1)
+        }
+        literals = {
+            # ast.Constant с python >= 3.8 use for all constants
+            # before was NameConstant, Num and etc.
+            'Constant': np.int64(3)
+        }
+        file_literals = {
+            'Constant': 0,
+        }
         if 'Constant' in features.literals:
             file_literals['Constant'] = features.literals['Constant']
             unodes = 13
