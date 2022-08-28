@@ -1,7 +1,10 @@
+import json
 import logging
 import os
 import re
 import sys
+import uuid
+from datetime import datetime
 from time import perf_counter
 from typing import List
 
@@ -274,6 +277,16 @@ class CodeplagEngine:
         if not self.access_token:
             self.logger.warning('GitHub access token is not defined.')
 
+    def set_github_parser(self, branch_policy: bool) -> None:
+        self.github_parser = GitHubParser(
+            file_extensions=SUPPORTED_EXTENSIONS[
+                self.extension
+            ],
+            check_policy=branch_policy,
+            access_token=self.access_token,
+            logger=get_logger('webparsers', LOG_PATH)
+        )
+
     def append_work_features(self,
                              file_content: str,
                              url_to_file: str) -> None:
@@ -361,6 +374,36 @@ class CodeplagEngine:
             for file_content, url_file in files:
                 self.append_work_features(file_content, url_file)
 
+    def save_result(self,
+                    first_work: ASTFeatures,
+                    second_work: ASTFeatures,
+                    metrics: CompareInfo,
+                    reports_dir: str) -> None:
+        # TODO: use TypedDict
+        dict_metrics = {
+            'date': datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            'first_path': first_work.filepath,
+            'second_path': second_work.filepath,
+            'first_heads': first_work.head_nodes,
+            'second_heads': second_work.head_nodes,
+            'fast': metrics.fast._asdict(),
+            'structure': metrics.structure._asdict()
+        }
+        dict_metrics['structure']['compliance_matrix'] = (
+            dict_metrics['structure']['compliance_matrix'].tolist()
+        )
+        try:
+            with open(f'{reports_dir}/{uuid.uuid4().hex}.json', 'w') as f:
+                f.write(json.dumps(dict_metrics))
+        except PermissionError:
+            self.logger.warning(
+                "Not enough rights to write reports to the folder."
+            )
+        except FileNotFoundError:
+            self.logger.warning(
+                "Provided folder for reports now is not exists."
+            )
+
     def run(self, args: List[str] = None) -> None:
         self.logger.debug("Starting codeplag util")
 
@@ -370,6 +413,14 @@ class CodeplagEngine:
         parsed_args = vars(self.parser.parse_args(args))
         self.set_access_token(parsed_args.get('environment'))
         self.extension: str = parsed_args.get('extension')
+        if any(
+            [
+                parsed_args.get('github_files'),
+                parsed_args.get('github_project_folders'),
+                parsed_args.get('github_user')
+            ]
+        ):
+            self.set_github_parser(parsed_args.get('all_branches'))
 
         self.logger.debug(
             f"Mode: {parsed_args['mode']}; "
@@ -380,14 +431,6 @@ class CodeplagEngine:
 
         if parsed_args.get('mode') == 'many_to_many':
             self.works: List[ASTFeatures] = []
-            self.github_parser = GitHubParser(
-                file_extensions=SUPPORTED_EXTENSIONS[
-                    self.extension
-                ],
-                check_policy=parsed_args.get('all_branches'),
-                access_token=self.access_token,
-                logger=get_logger('webparsers', LOG_PATH)
-            )
 
             self.get_works_from_files(parsed_args.get('files'))
             self.get_works_from_dirs(parsed_args.get('directories'))
@@ -405,13 +448,14 @@ class CodeplagEngine:
             self.logger.info("Starting searching for plagiarism")
             count_works = len(self.works)
             iterations = int((count_works * (count_works - 1)) / 2)
-            iteration = 1
+            iteration = 0
             for i, work1 in enumerate(self.works):
                 for j, work2 in enumerate(self.works):
                     if i <= j:
                         continue
 
                     if parsed_args.get('show_progress'):
+                        iteration += 1
                         print(
                             f"Check progress: {iteration / iterations:.2%}.",
                             end='\r'
@@ -422,15 +466,22 @@ class CodeplagEngine:
                         work2,
                         parsed_args.get('threshold')
                     )
-                    if metrics.structure:
-                        print_compare_result(
+                    if not metrics.structure:
+                        continue
+
+                    print_compare_result(
+                        work1,
+                        work2,
+                        metrics,
+                        parsed_args.get('threshold')
+                    )
+                    if parsed_args.get('reports_directory'):
+                        self.save_result(
                             work1,
                             work2,
                             metrics,
-                            parsed_args.get('threshold')
+                            parsed_args.get('reports_directory')
                         )
-
-                    iteration += 1
 
         self.logger.debug(f'Time for all {perf_counter() - begin_time:.2f} s')
         self.logger.info("Ending searching for plagiarism.")

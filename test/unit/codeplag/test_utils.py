@@ -1,9 +1,12 @@
+import logging
 import os
+import re
+from unittest.mock import call
 
 import pytest
 
 from codeplag.pyplag.utils import get_ast_from_filename, get_features_from_ast
-from codeplag.utils import (compare_works, fast_compare,
+from codeplag.utils import (CodeplagEngine, compare_works, fast_compare,
                             get_files_path_from_directory)
 
 CWD = os.path.dirname(os.path.abspath(__file__))
@@ -69,3 +72,49 @@ def test_get_files_path_from_directory():
     assert os.path.join(CWD, 'test_utils.py') in files
     assert os.path.join(CWD, 'data/test1.py') in files
     assert os.path.join(CWD, 'data/test2.py') in files
+
+
+def test_save_result(mocker):
+    mocker.patch('logging.Logger')
+    code_engine = CodeplagEngine(logging.Logger)
+    tree1 = get_ast_from_filename(os.path.join(CWD, './data/test1.py'))
+    tree2 = get_ast_from_filename(os.path.join(CWD, './data/test2.py'))
+    features1 = get_features_from_ast(tree1)
+    features2 = get_features_from_ast(tree2)
+    compare_info = compare_works(features1, features2)
+
+    mocker.patch('builtins.open', side_effect=FileNotFoundError)
+    code_engine.save_result(
+        features1,
+        features2,
+        compare_info,
+        '/bad_dir'
+    )
+    open.assert_called_once()
+    assert logging.Logger.warning.call_args == call(
+        'Provided folder for reports now is not exists.'
+    )
+
+    mocker.patch('builtins.open', side_effect=PermissionError)
+    code_engine.save_result(
+        features1,
+        features2,
+        compare_info,
+        '/etc'
+    )
+    open.assert_called_once()
+    assert logging.Logger.warning.call_args == call(
+        'Not enough rights to write reports to the folder.'
+    )
+
+    mocker.patch('builtins.open')
+    code_engine.save_result(
+        features1,
+        features2,
+        compare_info,
+        './src'
+    )
+
+    open.assert_called_once()
+    assert re.search('./src/.*[.]json$', open.call_args[0][0])
+    assert re.search('w', open.call_args[0][1])

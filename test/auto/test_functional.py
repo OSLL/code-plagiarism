@@ -1,3 +1,7 @@
+import os
+import re
+from contextlib import suppress
+
 import pytest
 from utils import SUCCESS_CODE, run_util
 
@@ -92,3 +96,16 @@ def test_compare_py_files(cmd, out):
 
     assert result.returncode == SUCCESS_CODE
     assert out in result.stdout
+
+
+def test_save_reports():
+    reports_folder = './reports'
+    with suppress(Exception):
+        os.mkdir(reports_folder)
+    assert os.path.exists(reports_folder)
+
+    run_util(['--directories', './test', '--reports_directory', reports_folder])
+    reports_files = os.listdir(reports_folder)
+    assert len(reports_files) > 0
+    for file in reports_files:
+        assert re.search('.*[.]json$', file)
