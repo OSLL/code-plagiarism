@@ -75,6 +75,9 @@ autotest:
 	pytest test/auto -q
 	make clean-cache
 
+pre-commit:
+	pre-commit run --all-files
+
 clean-cache:
 	find . -maxdepth 1 -type d | grep -E "pytest_cache" | (xargs rm -r 2> /dev/null || exit 0)
 	find . -type d | grep -E "__pycache__" | (xargs rm -r 2> /dev/null || exit 0)

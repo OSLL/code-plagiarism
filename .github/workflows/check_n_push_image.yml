@@ -24,12 +24,10 @@ jobs:
       with:
         python-version: 3.8
 
-    - name: Lint with flake8
+    - name: Lint with flake8 and isort
       run: |
-        pip install flake8 flake8-bugbear flake8-comprehensions flake8-simplify mccabe
-        make substitute-sources
-        flake8 src/ --statistic --max-line-length=80 --max-complexity 15 -qq
-        flake8 test/ --statistic --max-line-length=120 --max-complexity 15 -qq
+        pip install pre-commit====2.20.0
+        make substitute-sources pre-commit
 
   docker-build-test-autotest:
     runs-on: ubuntu-20.04

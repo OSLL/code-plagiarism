@@ -1,6 +1,6 @@
 import re
 
-from utils import SUCCESS_CODE, run_util, run_cmd
+from utils import SUCCESS_CODE, run_cmd, run_util
 
 
 def test_log_once():

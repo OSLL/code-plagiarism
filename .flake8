@@ -1,0 +1,8 @@
+[flake8]
+max-complexity = 15
+
+ignore =
+    # Line break after binary operator
+    W503, W504
+    # Line too long
+    E501,

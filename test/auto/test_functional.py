@@ -1,7 +1,7 @@
 import pytest
+from utils import SUCCESS_CODE, run_util
 
 from codeplag.consts import UTIL_NAME, UTIL_VERSION
-from utils import SUCCESS_CODE, run_util
 
 CPP_FILES = [
     'test/unit/codeplag/cplag/data/sample1.cpp',

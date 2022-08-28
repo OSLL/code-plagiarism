@@ -3,7 +3,7 @@ import os
 import re
 import sys
 from time import perf_counter
-from typing import List, NamedTuple
+from typing import List
 
 import argcomplete
 import numpy as np
@@ -167,8 +167,8 @@ def print_compare_result(features1: ASTFeatures,
                 compare_info.structure.compliance_matrix.shape[1]
             ):
                 data[row][col] = (
-                    compare_info.structure.compliance_matrix[row][col][0] /
-                    compare_info.structure.compliance_matrix[row][col][1]
+                    compare_info.structure.compliance_matrix[row][col][0]
+                    / compare_info.structure.compliance_matrix[row][col][1]
                 )
         compliance_matrix_df = pd.DataFrame(
             data=data,

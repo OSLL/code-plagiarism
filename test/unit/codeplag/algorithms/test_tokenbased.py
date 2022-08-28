@@ -37,21 +37,21 @@ class TestTokenbased(unittest.TestCase):
         for_bigrams = [1, 2, 3, 4, 5]
         res1 = generate_ngrams(for_bigrams, 2, hashit=True)
         wait1 = [
-            hash(tuple(for_bigrams[i:i+2]))
+            hash(tuple(for_bigrams[i:i + 2]))
             for i in range(len(for_bigrams) - 1)
         ]
 
         for_trigrams = [3, 4, 7, 8, 15, 3]
         res2 = generate_ngrams(for_trigrams, 3, hashit=True)
         wait2 = [
-            hash(tuple(for_trigrams[i:i+3]))
+            hash(tuple(for_trigrams[i:i + 3]))
             for i in range(len(for_trigrams) - 2)
         ]
 
         for_fourgrams = [1, 3, 5, 7, 9, 7, 5]
         res3 = generate_ngrams(for_fourgrams, 4, hashit=True)
         wait3 = [
-            hash(tuple(for_fourgrams[i:i+4]))
+            hash(tuple(for_fourgrams[i:i + 4]))
             for i in range(len(for_fourgrams) - 3)
         ]
 
@@ -63,7 +63,7 @@ class TestTokenbased(unittest.TestCase):
         for_bigrams = [1, 2, 2, 2, 5]
         res1 = generate_ngrams(for_bigrams, 2, unique=True, hashit=True)
         wait1 = {
-            hash(tuple(for_bigrams[i:i+2]))
+            hash(tuple(for_bigrams[i:i + 2]))
             for i in range(len(for_bigrams) - 1)
         }
 
@@ -72,7 +72,7 @@ class TestTokenbased(unittest.TestCase):
             for_trigrams, 3, unique=True, hashit=True
         )
         wait2 = {
-            hash(tuple(for_trigrams[i:i+3]))
+            hash(tuple(for_trigrams[i:i + 3]))
             for i in range(len(for_trigrams) - 2)
         }
 
@@ -81,7 +81,7 @@ class TestTokenbased(unittest.TestCase):
             for_fourgrams, 4, unique=True, hashit=True
         )
         wait3 = {
-            hash(tuple(for_fourgrams[i:i+4]))
+            hash(tuple(for_fourgrams[i:i + 4]))
             for i in range(len(for_fourgrams) - 3)
         }
 

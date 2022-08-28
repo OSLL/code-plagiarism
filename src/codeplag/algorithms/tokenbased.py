@@ -8,16 +8,16 @@ of two token sequences.
 
 
 import math
-from typing import Sequence, List, Set, Union, Tuple
+from typing import List, Sequence, Set, Tuple, Union
 
 
-def generate_ngrams(tokens: Sequence[int], n: int = 3, hashit: bool = False,
-                    unique: bool = False) -> Union[
-                        Set[int],
-                        List[int],
-                        Set[Tuple[int, ...]],
-                        List[Tuple[int, ...]]
-                    ]:
+def generate_ngrams(tokens: Sequence[int],
+                    n: int = 3,
+                    hashit: bool = False,
+                    unique: bool = False) -> Union[Set[int],
+                                                   List[int],
+                                                   Set[Tuple[int, ...]],
+                                                   List[Tuple[int, ...]]]:
     """The function returns a list or set of N-grams or list or set of hashes
     of ngrams and may use to generate shingles.
 
@@ -108,10 +108,10 @@ def lcs(X: Sequence[int], Y: Sequence[int]) -> int:
         for j in range(n + 1):
             if i == 0 or j == 0:
                 L[i][j] = 0
-            elif X[i-1] == Y[j-1]:
-                L[i][j] = L[i-1][j-1] + 1
+            elif X[i - 1] == Y[j - 1]:
+                L[i][j] = L[i - 1][j - 1] + 1
             else:
-                L[i][j] = max(L[i-1][j], L[i][j-1])
+                L[i][j] = max(L[i - 1][j], L[i][j - 1])
 
     return L[m][n]
 

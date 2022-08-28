@@ -2,6 +2,7 @@ import os
 import unittest
 
 from clang.cindex import CursorKind
+
 from codeplag.astfeatures import ASTFeatures
 from codeplag.cplag.const import COMPILE_ARGS
 from codeplag.cplag.tree import generic_visit, get_features, get_not_ignored
