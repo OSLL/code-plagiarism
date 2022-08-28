@@ -26,7 +26,7 @@ jobs:
 
     - name: Lint with flake8 and isort
       run: |
-        pip install pre-commit====2.20.0
+        pip install pre-commit==2.20.0
         make substitute-sources pre-commit
 
   docker-build-test-autotest:
