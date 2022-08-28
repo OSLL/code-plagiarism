@@ -8,11 +8,16 @@ of two token sequences.
 
 
 import math
-from typing import Iterable, List, Set, Union
+from typing import Sequence, List, Set, Union, Tuple
 
 
-def generate_ngrams(tokens: Iterable[int], n: int = 3, hashit: bool = False,
-                    unique: bool = False) -> Union[List[int], Set[int]]:
+def generate_ngrams(tokens: Sequence[int], n: int = 3, hashit: bool = False,
+                    unique: bool = False) -> Union[
+                        Set[int],
+                        List[int],
+                        Set[Tuple[int, ...]],
+                        List[Tuple[int, ...]]
+                    ]:
     """The function returns a list or set of N-grams or list or set of hashes
     of ngrams and may use to generate shingles.
 
@@ -42,7 +47,7 @@ def generate_ngrams(tokens: Iterable[int], n: int = 3, hashit: bool = False,
     return [tuple(tokens[i:i + n]) for i in range(count_tokens - n + 1)]
 
 
-def get_imprints_from_hashes(hashes: Iterable[int]) -> List[int]:
+def get_imprints_from_hashes(hashes: Sequence[int]) -> List[int]:
     """The function return imprints of the given hashes
 
     @param hashes - list of hashes
@@ -57,16 +62,20 @@ def get_imprints_from_hashes(hashes: Iterable[int]) -> List[int]:
     return [hashes[index] for index in range(0, count_hashes, k)]
 
 
-def value_jakkar_coef(tokens_first: Iterable[int],
-                      tokens_second: Iterable[int],
+def value_jakkar_coef(tokens_first: Sequence[int],
+                      tokens_second: Sequence[int],
                       ngrams_length: int = 3) -> float:
     '''
         The function returns the value of the Jakkar coefficient
         @param tokens_first - list of tokens of the first program
         @param tokens_second - list of tokens of the second program
     '''
-    ngrams_first = generate_ngrams(tokens_first, ngrams_length, unique=True)
-    ngrams_second = generate_ngrams(tokens_second, ngrams_length, unique=True)
+    ngrams_first: Set[Tuple[int, ...]] = generate_ngrams(
+        tokens_first, ngrams_length, unique=True
+    )
+    ngrams_second: Set[Tuple[int, ...]] = generate_ngrams(
+        tokens_second, ngrams_length, unique=True
+    )
 
     intersection = len(ngrams_first.intersection(ngrams_second))
     union = len(ngrams_first | ngrams_second)
@@ -78,7 +87,7 @@ def value_jakkar_coef(tokens_first: Iterable[int],
 
 
 # equal to the Levenshtein length
-def lcs(X: Iterable[int], Y: Iterable[int]) -> int:
+def lcs(X: Sequence[int], Y: Sequence[int]) -> int:
     '''
         The function returns the length of the longest common subsequence
         of two sequences X and Y.
@@ -107,7 +116,7 @@ def lcs(X: Iterable[int], Y: Iterable[int]) -> int:
     return L[m][n]
 
 
-def lcs_based_coeff(subseq1: Iterable[int], subseq2: Iterable[int]) -> float:
+def lcs_based_coeff(subseq1: Sequence[int], subseq2: Sequence[int]) -> float:
     """The function returns coefficient based on the length
     of the longest common subsequence.
     This coefficient describes how same two sequences.

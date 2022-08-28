@@ -3,6 +3,7 @@ import ast
 from codeplag.astfeatures import ASTFeatures
 from codeplag.pyplag.const import (IGNORE_NODES, KEYWORDS, LITERALS, OPERATORS,
                                    TO_TOKEN)
+from codeplag.types import NodeCodePlace, NodeStructurePlace
 
 
 class ASTWalker(ast.NodeVisitor):
@@ -18,7 +19,10 @@ class ASTWalker(ast.NodeVisitor):
 
     def add_node_to_structure(self, node_name: str) -> None:
         self.features.structure.append(
-            (self.curr_depth, self.features.unodes[node_name])
+            NodeStructurePlace(
+                depth=self.curr_depth,
+                uid=self.features.unodes[node_name]
+            )
         )
         if self.curr_depth == 1:
             self.features.head_nodes.append(node_name)
@@ -34,7 +38,10 @@ class ASTWalker(ast.NodeVisitor):
             self.features.tokens.append(TO_TOKEN[type_name])
             if 'lineno' in dir(node) and 'col_offset' in dir(node):
                 self.features.tokens_pos.append(
-                    (node.lineno, node.col_offset)
+                    NodeCodePlace(
+                        lineno=node.lineno,
+                        col_offset=node.col_offset
+                    )
                 )
             else:
                 self.features.tokens_pos.append(self.features.tokens_pos[-1])

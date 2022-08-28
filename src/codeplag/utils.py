@@ -3,7 +3,7 @@ import os
 import re
 import sys
 from time import perf_counter
-from typing import List, NamedTuple, Tuple
+from typing import List, NamedTuple
 
 import argcomplete
 import numpy as np
@@ -14,8 +14,8 @@ from codeplag.algorithms.featurebased import counter_metric, struct_compare
 from codeplag.algorithms.tokenbased import value_jakkar_coef
 from codeplag.astfeatures import ASTFeatures
 from codeplag.codeplagcli import CodeplagCLI
-from codeplag.consts import (FILE_DOWNLOAD_PATH, GET_FRAZE,
-                             SUPPORTED_EXTENSIONS, LOG_PATH)
+from codeplag.consts import (FILE_DOWNLOAD_PATH, GET_FRAZE, LOG_PATH,
+                             SUPPORTED_EXTENSIONS)
 from codeplag.cplag.const import COMPILE_ARGS
 from codeplag.cplag.tree import get_features as get_features_cpp
 from codeplag.cplag.util import \
@@ -29,25 +29,9 @@ from codeplag.pyplag.utils import \
     get_features_from_ast as get_features_from_ast_py
 from codeplag.pyplag.utils import \
     get_works_from_filepaths as get_works_from_filepaths_py
+from codeplag.types import (CompareInfo, FastMetrics, NodeCodePlace,
+                            StructuresInfo)
 from webparsers.github_parser import GitHubParser
-
-
-class FastMetrics(NamedTuple):
-    jakkar: float
-    operators: float
-    keywords: float
-    literals: float
-    weighted_average: float
-
-
-class StructuresInfo(NamedTuple):
-    similarity: float
-    compliance_matrix: np.array
-
-
-class CompareInfo(NamedTuple):
-    fast: FastMetrics
-    structure: StructuresInfo = None
 
 
 class Colors:
@@ -224,7 +208,7 @@ def get_files_path_from_directory(directory: str,
 
 def print_suspect_parts(source_code: str,
                         marked_tokens: List[int],
-                        tokens_pos: List[Tuple[int, int]],
+                        tokens_pos: List[NodeCodePlace],
                         color: str = Colors.FAIL) -> None:
     ROWS = {
         row for (row, _column) in
@@ -247,7 +231,7 @@ def print_suspect_parts(source_code: str,
 
 def print_code_and_highlight_suspect(source_code: str,
                                      marked_tokens: List[int],
-                                     tokens_pos: List[Tuple[int, int]],
+                                     tokens_pos: List[NodeCodePlace],
                                      color=Colors.FAIL) -> None:
     ROWS = {row for (row, column) in
             [tokens_pos[index] for index in marked_tokens]}
@@ -271,9 +255,9 @@ def print_code_and_highlight_suspect(source_code: str,
 class CodeplagEngine:
 
     def __init__(self, logger: logging.Logger) -> None:
-        self.logger = logger
+        self.logger: logging.Logger = logger
 
-        self.parser = CodeplagCLI()
+        self.parser: CodeplagCLI = CodeplagCLI()
         argcomplete.autocomplete(self.parser)
 
     def set_access_token(self, env_path: str) -> None:
@@ -282,10 +266,10 @@ class CodeplagEngine:
                 "Env file not found or not a file. "
                 "Trying to get token from environment."
             )
-            self.access_token = os.environ.get('ACCESS_TOKEN', '')
+            self.access_token: str = os.environ.get('ACCESS_TOKEN', '')
         else:
             env_config = Config(RepositoryEnv(env_path))
-            self.access_token = env_config.get('ACCESS_TOKEN', default='')
+            self.access_token: str = env_config.get('ACCESS_TOKEN', default='')
 
         if not self.access_token:
             self.logger.warning('GitHub access token is not defined.')
@@ -385,7 +369,7 @@ class CodeplagEngine:
 
         parsed_args = vars(self.parser.parse_args(args))
         self.set_access_token(parsed_args.get('environment'))
-        self.extension = parsed_args.get('extension')
+        self.extension: str = parsed_args.get('extension')
 
         self.logger.debug(
             f"Mode: {parsed_args['mode']}; "
@@ -395,7 +379,7 @@ class CodeplagEngine:
         begin_time = perf_counter()
 
         if parsed_args.get('mode') == 'many_to_many':
-            self.works = []
+            self.works: List[ASTFeatures] = []
             self.github_parser = GitHubParser(
                 file_extensions=SUPPORTED_EXTENSIONS[
                     self.extension

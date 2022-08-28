@@ -1,5 +1,7 @@
 from collections import defaultdict
-from typing import Dict, List, Tuple
+from typing import Dict, List
+
+from codeplag.types import NodeCodePlace, NodeStructurePlace
 
 
 class ASTFeatures:
@@ -17,6 +19,6 @@ class ASTFeatures:
         self.from_num: Dict[int, str] = {}
         self.count_unodes: int = 0
 
-        self.structure: List[Tuple[int]] = []
+        self.structure: List[NodeStructurePlace] = []
         self.tokens: List[int] = []
-        self.tokens_pos: List[Tuple[int]] = []
+        self.tokens_pos: List[NodeCodePlace] = []
