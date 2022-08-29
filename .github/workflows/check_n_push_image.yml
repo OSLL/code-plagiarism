@@ -63,7 +63,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload created image
-        if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ startsWith(github.event.ref, 'refs/tags/v') }}
         uses: actions/upload-artifact@v3
         with:
           name: codeplag-ubuntu20.04
