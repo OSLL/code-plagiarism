@@ -8,38 +8,46 @@ of two token sequences.
 
 
 import math
+from typing import List, Sequence, Set, Tuple, Union
 
 
-def generate_ngrams(tokens, n=3, hashit=False, unique=False):
+def generate_ngrams(tokens: Sequence[int],
+                    n: int = 3,
+                    hashit: bool = False,
+                    unique: bool = False) -> Union[Set[int],
+                                                   List[int],
+                                                   Set[Tuple[int, ...]],
+                                                   List[Tuple[int, ...]]]:
     """The function returns a list or set of N-grams or list or set of hashes
     of ngrams and may use to generate shingles.
 
     @param tokens - list of tokens
-    @param n - count of elements in sequences
+    @param n - count of elements in ngrams
     @param hashit - If is True,
     then the function returns a list or set of hashes of N-grams
     @param unique - If is True,
     then the function returns a set of N-grams or hashes of N-grams
     """
 
+    count_tokens = len(tokens)
     if hashit:
         if unique:
             return {
                 hash(tuple(tokens[i:i + n]))
-                for i in range(len(tokens) - n + 1)
+                for i in range(count_tokens - n + 1)
             }
         return [
             hash(tuple(tokens[i:i + n]))
-            for i in range(len(tokens) - n + 1)
+            for i in range(count_tokens - n + 1)
         ]
 
     if unique:
-        return {tuple(tokens[i:i + n]) for i in range(len(tokens) - n + 1)}
+        return {tuple(tokens[i:i + n]) for i in range(count_tokens - n + 1)}
 
-    return [tuple(tokens[i:i + n]) for i in range(len(tokens) - n + 1)]
+    return [tuple(tokens[i:i + n]) for i in range(count_tokens - n + 1)]
 
 
-def get_imprints_from_hashes(hashes):
+def get_imprints_from_hashes(hashes: Sequence[int]) -> List[int]:
     """The function return imprints of the given hashes
 
     @param hashes - list of hashes
@@ -54,14 +62,20 @@ def get_imprints_from_hashes(hashes):
     return [hashes[index] for index in range(0, count_hashes, k)]
 
 
-def value_jakkar_coef(tokens_first, tokens_second, ngrams_length=3):
+def value_jakkar_coef(tokens_first: Sequence[int],
+                      tokens_second: Sequence[int],
+                      ngrams_length: int = 3) -> float:
     '''
         The function returns the value of the Jakkar coefficient
         @param tokens_first - list of tokens of the first program
         @param tokens_second - list of tokens of the second program
     '''
-    ngrams_first = generate_ngrams(tokens_first, ngrams_length, unique=True)
-    ngrams_second = generate_ngrams(tokens_second, ngrams_length, unique=True)
+    ngrams_first: Set[Tuple[int, ...]] = generate_ngrams(
+        tokens_first, ngrams_length, unique=True
+    )
+    ngrams_second: Set[Tuple[int, ...]] = generate_ngrams(
+        tokens_second, ngrams_length, unique=True
+    )
 
     intersection = len(ngrams_first.intersection(ngrams_second))
     union = len(ngrams_first | ngrams_second)
@@ -73,7 +87,7 @@ def value_jakkar_coef(tokens_first, tokens_second, ngrams_length=3):
 
 
 # equal to the Levenshtein length
-def lcs(X, Y):
+def lcs(X: Sequence[int], Y: Sequence[int]) -> int:
     '''
         The function returns the length of the longest common subsequence
         of two sequences X and Y.
@@ -94,15 +108,15 @@ def lcs(X, Y):
         for j in range(n + 1):
             if i == 0 or j == 0:
                 L[i][j] = 0
-            elif X[i-1] == Y[j-1]:
-                L[i][j] = L[i-1][j-1] + 1
+            elif X[i - 1] == Y[j - 1]:
+                L[i][j] = L[i - 1][j - 1] + 1
             else:
-                L[i][j] = max(L[i-1][j], L[i][j-1])
+                L[i][j] = max(L[i - 1][j], L[i][j - 1])
 
     return L[m][n]
 
 
-def lcs_based_coeff(subseq1, subseq2):
+def lcs_based_coeff(subseq1: Sequence[int], subseq2: Sequence[int]) -> float:
     """The function returns coefficient based on the length
     of the longest common subsequence.
     This coefficient describes how same two sequences.

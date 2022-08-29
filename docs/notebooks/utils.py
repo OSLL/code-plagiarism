@@ -6,12 +6,13 @@ from time import perf_counter
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from decouple import Config, RepositoryEnv
+from scipy.optimize import curve_fit
+
 from codeplag.algorithms.featurebased import counter_metric, struct_compare
 from codeplag.algorithms.stringbased import gst
 from codeplag.algorithms.tokenbased import value_jakkar_coef
 from codeplag.pyplag.utils import get_ast_from_content, get_features_from_ast
-from decouple import Config, RepositoryEnv
-from scipy.optimize import curve_fit
 from webparsers.github_parser import GitHubParser
 
 
@@ -74,15 +75,15 @@ def get_time_to_meta(df, iterations=10):
     to_meta_time = []
     for (index, content) in df[['content', 'link', 'count_lines_without_blank_lines']].iterrows():
         print(index, " " * 20, end='\r')
-        for i in range(iterations):
+        for _ in range(iterations):
             tree = get_ast_from_content(content[0], content[1])
             try:
                 start = perf_counter()
-                features1 = get_features_from_ast(tree)
+                get_features_from_ast(tree)
                 end = perf_counter() - start
                 to_meta_time.append(end)
                 count_lines.append(content[2])
-            except:
+            except Exception:
                 break
 
     output = pd.DataFrame(
@@ -115,19 +116,19 @@ def plot_and_save_result(df, xlabel, ylabel, title, what,
     if trend == 'linear':
         z = np.polyfit(unique_count_lines, mean_times, 1)
         p = np.poly1d(z)
-        plt.plot(unique_count_lines, p(unique_count_lines),"r--", label='Линейный тренд.')
+        plt.plot(unique_count_lines, p(unique_count_lines), "r--", label='Линейный тренд.')
     elif trend == 'n^2':
         popt_cons, _ = curve_fit(square_func, unique_count_lines, mean_times, bounds=([-np.inf, 0., 0.], [np.inf, 0.1 ** 100, 0.1 ** 100]))
         p = np.poly1d(popt_cons)
-        plt.plot(unique_count_lines, p(unique_count_lines),"r--", label='Квадратичный тренд.')
+        plt.plot(unique_count_lines, p(unique_count_lines), "r--", label='Квадратичный тренд.')
     elif trend == 'n^3':
         popt_cons, _ = curve_fit(cube_func, unique_count_lines, mean_times, bounds=([-np.inf, 0., 0., 0.], [np.inf, 0.1 ** 100, 0.1 ** 100, 0.1 ** 100]))
         p = np.poly1d(popt_cons)
-        plt.plot(unique_count_lines, p(unique_count_lines),"r--", label='Кубический тренд.')
+        plt.plot(unique_count_lines, p(unique_count_lines), "r--", label='Кубический тренд.')
     elif trend == 'n^4':
         popt_cons, _ = curve_fit(quart_func, unique_count_lines, mean_times, bounds=([-np.inf, 0., 0., 0., 0.], [np.inf, 0.1 ** 100, 0.1 ** 100, 0.1 ** 100, 0.1 ** 100]))
         p = np.poly1d(popt_cons)
-        plt.plot(unique_count_lines, p(unique_count_lines),"r--", label='n^4.')
+        plt.plot(unique_count_lines, p(unique_count_lines), "r--", label='n^4.')
 
     rolling = pd.DataFrame(
         {
@@ -151,26 +152,26 @@ def get_time_algorithms(df, work, iterations=5, metric='fast'):
     tree1 = get_ast_from_content(work.content, work.link)
     features1 = get_features_from_ast(tree1)
     for (index, content) in df[['content', 'link', 'count_lines_without_blank_lines']].iterrows():
-        for iteration in range(iterations):
+        for _ in range(iterations):
             print(index, " " * 20, end='\r')
             tree2 = get_ast_from_content(content[0], content[1])
             try:
                 features2 = get_features_from_ast(tree2)
-            except:
+            except Exception:
                 continue
 
             if metric == 'fast':
                 start = perf_counter()
-                jakkar_coef = value_jakkar_coef(features1.tokens, features2.tokens)
-                ops_res = counter_metric(features1.operators, features2.operators)
-                kw_res = counter_metric(features1.keywords, features2.keywords)
-                lits_res = counter_metric(features1.literals, features2.literals)
-                end = perf_counter() - start 
+                value_jakkar_coef(features1.tokens, features2.tokens)
+                counter_metric(features1.operators, features2.operators)
+                counter_metric(features1.keywords, features2.keywords)
+                counter_metric(features1.literals, features2.literals)
+                end = perf_counter() - start
                 times.append(end)
             elif metric == 'gst':
                 start = perf_counter()
                 gst(features1.tokens, features2.tokens, 6)
-                end = perf_counter() - start 
+                end = perf_counter() - start
                 times.append(end)
             elif metric == 'structure':
                 start = perf_counter()

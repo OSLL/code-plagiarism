@@ -13,25 +13,28 @@ pwd = os.path.dirname(os.path.abspath(__file__))
 class TestASTWalkers(unittest.TestCase):
 
     def test_astwalker_class_normal(self):
+        path = os.path.join(pwd, './data/test1.py')
         tree = get_ast_from_filename(os.path.join(pwd, './data/test1.py'))
-        features = ASTFeatures()
+        features = ASTFeatures(path)
         walker = ASTWalker(features)
         walker.visit(tree)
-        operators = {}
-        operators['AugAssign'] = np.int64(1)
-        operators['Add'] = np.int64(1)
-        keywords = {}
-        keywords['FunctionDef'] = np.int64(1)
-        keywords['Return'] = np.int64(1)
-        keywords['If'] = np.int64(1)
-        literals = {}
-
-        # ast.Constant с python >= 3.8 используется для всех констант
-        # до этого были NameConstant, Num и др.
-        literals['Constant'] = np.int64(3)
-
-        file_literals = {}
-        file_literals['Constant'] = 0
+        operators = {
+            'AugAssign': np.int64(1),
+            'Add': np.int64(1)
+        }
+        keywords = {
+            'FunctionDef': np.int64(1),
+            'Return': np.int64(1),
+            'If': np.int64(1)
+        }
+        literals = {
+            # ast.Constant с python >= 3.8 use for all constants
+            # before was NameConstant, Num and etc.
+            'Constant': np.int64(3)
+        }
+        file_literals = {
+            'Constant': 0,
+        }
         if 'Constant' in features.literals:
             file_literals['Constant'] = features.literals['Constant']
             unodes = 13

@@ -1,3 +1,5 @@
+from typing import List
+
 import numpy as np
 
 
@@ -20,7 +22,7 @@ class LevenshteinDistance:
         '''
         return 0 if symbol1 == symbol2 else 1
 
-    def calculate_distance_matrix(self):
+    def calculate_distance_matrix(self) -> np.int64:
         '''
             The function calculates the Levenshtein matrix and sets
             in the distance atribute minimal count of operations
@@ -55,7 +57,8 @@ class LevenshteinDistance:
         return 1.0 - self.distance / max(self.s1_length, self.s2_length)
 
 
-def is_marked_match(marked_string_list, begin, length):
+def is_marked_match(marked_string_list: List[int],
+                    begin: int, length: int) -> bool:
     """The function returns true if the match consists in
     the marked list, else false.
 
@@ -64,11 +67,12 @@ def is_marked_match(marked_string_list, begin, length):
     @length - length of match
     """
 
-    if begin in marked_string_list or \
-       (begin + length - 1) in marked_string_list:
-        return True
-    else:
-        return False
+    condition = (
+        begin in marked_string_list or
+        (begin + length - 1) in marked_string_list
+    )
+
+    return condition
 
 
 def gst(sequence1, sequence2, min_match_len=6):

@@ -2,6 +2,8 @@ name: Check source code and push created image based on sources
 
 on:
   push:
+    branches:
+      - main
     paths-ignore:
       - 'docs/**'
       - '**.md'
@@ -24,12 +26,10 @@ jobs:
       with:
         python-version: 3.8
 
-    - name: Lint with flake8
+    - name: Lint with flake8 and isort
       run: |
-        pip install flake8 flake8-bugbear flake8-comprehensions mccabe
-        make substitute-sources
-        flake8 src/ --statistic --max-line-length=80 --max-complexity 15 -qq
-        flake8 test/ --statistic --max-line-length=120 --max-complexity 15 -qq
+        pip install pre-commit==2.20.0
+        make substitute-sources pre-commit
 
   docker-build-test-autotest:
     runs-on: ubuntu-20.04
@@ -65,7 +65,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload created image
-        if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ startsWith(github.event.ref, 'refs/tags/v') }}
         uses: actions/upload-artifact@v3
         with:
           name: codeplag-ubuntu20.04
@@ -76,7 +76,7 @@ jobs:
   push-image:
     runs-on: ubuntu-20.04
     needs: [check-code, docker-build-test-autotest]
-    if: github.ref == 'refs/heads/main'
+    if: startsWith(github.event.ref, 'refs/tags/v')
 
     steps:
       - name: Checkout

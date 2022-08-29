@@ -3,6 +3,7 @@ import ast
 from codeplag.astfeatures import ASTFeatures
 from codeplag.pyplag.const import (IGNORE_NODES, KEYWORDS, LITERALS, OPERATORS,
                                    TO_TOKEN)
+from codeplag.types import NodeCodePlace, NodeStructurePlace
 
 
 class ASTWalker(ast.NodeVisitor):
@@ -17,8 +18,12 @@ class ASTWalker(ast.NodeVisitor):
         self.features.count_unodes += 1
 
     def add_node_to_structure(self, node_name: str) -> None:
-        self.features.structure.append((self.curr_depth,
-                                        self.features.unodes[node_name]))
+        self.features.structure.append(
+            NodeStructurePlace(
+                depth=self.curr_depth,
+                uid=self.features.unodes[node_name]
+            )
+        )
         if self.curr_depth == 1:
             self.features.head_nodes.append(node_name)
 
@@ -32,26 +37,21 @@ class ASTWalker(ast.NodeVisitor):
         if type_name in TO_TOKEN:
             self.features.tokens.append(TO_TOKEN[type_name])
             if 'lineno' in dir(node) and 'col_offset' in dir(node):
-                self.features.tokens_pos.append((node.lineno,
-                                                 node.col_offset))
+                self.features.tokens_pos.append(
+                    NodeCodePlace(
+                        lineno=node.lineno,
+                        col_offset=node.col_offset
+                    )
+                )
             else:
                 self.features.tokens_pos.append(self.features.tokens_pos[-1])
 
         if type_name in OPERATORS:
-            if type_name not in self.features.operators:
-                self.features.operators[type_name] = 1
-            else:
-                self.features.operators[type_name] += 1
+            self.features.operators[type_name] += 1
         elif type_name in KEYWORDS:
-            if type_name not in self.features.keywords:
-                self.features.keywords[type_name] = 1
-            else:
-                self.features.keywords[type_name] += 1
+            self.features.keywords[type_name] += 1
         elif type_name in LITERALS:
-            if type_name not in self.features.literals:
-                self.features.literals[type_name] = 1
-            else:
-                self.features.literals[type_name] += 1
+            self.features.literals[type_name] += 1
 
         if type_name not in IGNORE_NODES:
             if self.curr_depth != 0:

@@ -80,6 +80,12 @@ class CodeplagCLI(argparse.ArgumentParser):
             default="many_to_many"
         )
         self.add_argument(
+            '-rd', '--reports_directory',
+            help="If defined, then saves reports about suspect works "
+                 "into provided path.",
+            type=DirPath
+        )
+        self.add_argument(
             "-sp", "--show_progress",
             help="Show current progress of searching plagiarism.",
             action="store_true"

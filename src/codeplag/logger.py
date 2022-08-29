@@ -21,9 +21,9 @@ def get_file_handler(filename: str) -> logging.FileHandler:
 def get_stream_handler() -> logging.StreamHandler:
     log_format = ('%(asctime)s - [%(levelname)s] - %(message)s')
     log_arguments = {
-                       'fmt': log_format,
-                       'datefmt': '%b %-d %T'
-                    }
+        'fmt': log_format,
+        'datefmt': '%b %-d %T'
+    }
     stream_handler = logging.StreamHandler(stream=sys.stdout)
     stream_handler.setLevel(logging.INFO)
     stream_handler.setFormatter(logging.Formatter(**log_arguments))

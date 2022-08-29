@@ -1,7 +1,14 @@
+import json
+import os
+import re
+import shutil
+from contextlib import suppress
+
 import pytest
+from utils import SUCCESS_CODE, run_util
 
 from codeplag.consts import UTIL_NAME, UTIL_VERSION
-from utils import SUCCESS_CODE, run_util
+from codeplag.types import WorksReport
 
 CPP_FILES = [
     'test/unit/codeplag/cplag/data/sample1.cpp',
@@ -14,6 +21,7 @@ PY_FILES = [
 CPP_DIR = 'test/unit/codeplag/cplag/data'
 PY_DIR = 'test/unit/codeplag/cplag'
 REPO_URL = 'https://github.com/OSLL/code-plagiarism'
+REPORTS_FOLDER = os.path.abspath('./reports')
 CPP_GITHUB_FILES = [
     f'{REPO_URL}/blob/main/test/unit/codeplag/cplag/data/sample3.cpp',
     f'{REPO_URL}/blob/main/test/unit/codeplag/cplag/data/sample4.cpp'
@@ -92,3 +100,25 @@ def test_compare_py_files(cmd, out):
 
     assert result.returncode == SUCCESS_CODE
     assert out in result.stdout
+
+
+def test_save_reports():
+    with suppress(Exception):
+        os.mkdir(REPORTS_FOLDER)
+    assert os.path.exists(REPORTS_FOLDER)
+
+    run_util(
+        ['--directories', './test', '--reports_directory', REPORTS_FOLDER]
+    )
+    reports_files = os.listdir(REPORTS_FOLDER)
+
+    assert len(reports_files) > 0
+    for file in reports_files:
+        assert re.search('.*[.]json$', file)
+        filepath = f'{REPORTS_FOLDER}/{file}'
+        with open(filepath, 'r') as f:
+            report = json.loads(f.read())
+            for key in WorksReport.__annotations__.keys():
+                assert key in report
+
+    shutil.rmtree(REPORTS_FOLDER)

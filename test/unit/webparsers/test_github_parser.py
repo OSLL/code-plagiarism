@@ -37,11 +37,12 @@ class TestGitHubParser(unittest.TestCase):
 
         for test_case in test_cases:
             buf = io.StringIO()
-            with redirect_stdout(buf):
-                with self.subTest(test_case=test_case):
-                    gh_parser = GitHubParser()
-                    result = gh_parser.decode_file_content(**test_case['arguments'])
-                    self.assertEqual(result, test_case['expected_result'])
+            with redirect_stdout(buf), self.subTest(test_case=test_case):
+                gh_parser = GitHubParser()
+                result = gh_parser.decode_file_content(
+                    **test_case['arguments']
+                )
+                self.assertEqual(result, test_case['expected_result'])
 
     def test_is_accepted_extension(self):
         test_cases = [
@@ -91,7 +92,9 @@ class TestGitHubParser(unittest.TestCase):
 
         for test_case in test_cases:
             with self.subTest(test_case=test_case):
-                rv = test_case['parser'].is_accepted_extension(**test_case['arguments'])
+                rv = test_case['parser'].is_accepted_extension(
+                    **test_case['arguments']
+                )
                 self.assertEqual(rv, test_case['expected_result'])
 
     @patch('webparsers.github_parser.requests.get')
@@ -389,7 +392,10 @@ class TestGitHubParser(unittest.TestCase):
                 rv = parser.get_list_of_repos(**test_case['arguments'])
                 self.assertEqual(rv, test_case['expected_result'])
 
-                self.assertEqual(mock_send_get_request.mock_calls, test_case['send_calls'])
+                self.assertEqual(
+                    mock_send_get_request.mock_calls,
+                    test_case['send_calls']
+                )
 
     @patch('webparsers.github_parser.GitHubParser.send_get_request')
     def test_get_name_default_branch(self, mock_send_get_request):
@@ -434,7 +440,10 @@ class TestGitHubParser(unittest.TestCase):
                 rv = parser.get_name_default_branch(**test_case['arguments'])
                 self.assertEqual(rv, test_case['expected_result'])
 
-                self.assertEqual(mock_send_get_request.mock_calls, test_case['send_calls'])
+                self.assertEqual(
+                    mock_send_get_request.mock_calls,
+                    test_case['send_calls']
+                )
 
     @patch('webparsers.github_parser.GitHubParser.send_get_request')
     def test_get_sha_last_branch_commit(self, mock_send_get_request):
@@ -546,12 +555,11 @@ class TestGitHubParser(unittest.TestCase):
             mock_send_get_request.return_value = test_case['send_rv']
 
             buf = io.StringIO()
-            with redirect_stdout(buf):
-                with self.subTest(test_case=test_case):
-                    rv = parser.get_file_content_from_sha(**test_case['arguments'])
-                    self.assertEqual(rv, test_case['expected_result'])
+            with redirect_stdout(buf), self.subTest(test_case=test_case):
+                rv = parser.get_file_content_from_sha(**test_case['arguments'])
+                self.assertEqual(rv, test_case['expected_result'])
 
-                    self.assertEqual(mock_send_get_request.mock_calls, test_case['send_calls'])
+                self.assertEqual(mock_send_get_request.mock_calls, test_case['send_calls'])
 
     @patch('webparsers.github_parser.GitHubParser.get_file_content_from_sha')
     @patch('webparsers.github_parser.GitHubParser.send_get_request')
@@ -782,12 +790,11 @@ class TestGitHubParser(unittest.TestCase):
             mock_send_get_request.side_effect = test_case['send_se']
 
             buf = io.StringIO()
-            with redirect_stdout(buf):
-                with self.subTest(test_case=test_case):
-                    rv = parser.get_list_repo_branches(**test_case['arguments'])
-                    self.assertEqual(rv, test_case['expected_result'])
+            with redirect_stdout(buf), self.subTest(test_case=test_case):
+                rv = parser.get_list_repo_branches(**test_case['arguments'])
+                self.assertEqual(rv, test_case['expected_result'])
 
-                    self.assertEqual(mock_send_get_request.mock_calls, test_case['send_calls'])
+                self.assertEqual(mock_send_get_request.mock_calls, test_case['send_calls'])
 
     @patch('webparsers.github_parser.GitHubParser.get_name_default_branch')
     @patch('webparsers.github_parser.GitHubParser.get_list_repo_branches')

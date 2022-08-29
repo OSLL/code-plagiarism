@@ -1,17 +1,21 @@
-FILE_DOWNLOAD_PATH = "/tmp/@UTIL_NAME@_download.out"
-LOG_PATH = "@CODEPLAG_LOG_PATH@"
-SUPPORTED_EXTENSIONS = {
+import re
+from typing import Dict
+
+FILE_DOWNLOAD_PATH: str = "/tmp/@UTIL_NAME@_download.out"
+GET_FRAZE: str = 'Getting works features from'
+LOG_PATH: str = "@CODEPLAG_LOG_PATH@"
+SUPPORTED_EXTENSIONS: Dict[str, tuple] = {
     'py': (
-        r'\.py$',
+        re.compile(r'\.py$'),
     ),
     'cpp': (
-        r'\.cpp$',
-        r'\.c$',
-        r'\.h$'
+        re.compile(r'\.cpp$'),
+        re.compile(r'\.c$'),
+        re.compile(r'\.h$')
     ),
     'default': (
-        r'\..*$',
+        re.compile(r'\..*$'),
     )
 }
-UTIL_NAME = "@UTIL_NAME@"
-UTIL_VERSION = "@UTIL_VERSION@"
+UTIL_NAME: str = "@UTIL_NAME@"
+UTIL_VERSION: str = "@UTIL_VERSION@"

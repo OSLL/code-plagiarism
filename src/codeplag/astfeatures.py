@@ -1,19 +1,24 @@
-# TODO: Use NamedDict
+from collections import defaultdict
+from typing import Dict, List
+
+from codeplag.types import NodeCodePlace, NodeStructurePlace
+
+
 class ASTFeatures:
-    def __init__(self, filepath=''):
-        self.filepath = filepath
+    def __init__(self, filepath: str):
+        self.filepath: str = filepath
 
         self.count_of_nodes = 0
-        self.head_nodes = []
-        self.operators = {}
-        self.keywords = {}
-        self.literals = {}
+        self.head_nodes: List[str] = []
+        self.operators: Dict[str, int] = defaultdict(lambda: 0)
+        self.keywords: Dict[str, int] = defaultdict(lambda: 0)
+        self.literals: Dict[str, int] = defaultdict(lambda: 0)
 
         # unique nodes
-        self.unodes = {}
-        self.from_num = {}
-        self.count_unodes = 0
+        self.unodes: Dict[str, int] = {}
+        self.from_num: Dict[int, str] = {}
+        self.count_unodes: int = 0
 
-        self.structure = []
-        self.tokens = []
-        self.tokens_pos = []
+        self.structure: List[NodeStructurePlace] = []
+        self.tokens: List[int] = []
+        self.tokens_pos: List[NodeCodePlace] = []
