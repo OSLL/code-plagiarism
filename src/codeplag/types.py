@@ -1,4 +1,4 @@
-from typing import NamedTuple
+from typing import Dict, List, NamedTuple, TypedDict
 
 import numpy as np
 
@@ -29,3 +29,13 @@ class StructuresInfo(NamedTuple):
 class CompareInfo(NamedTuple):
     fast: FastMetrics
     structure: StructuresInfo = None
+
+
+class WorksReport(TypedDict):
+    date: str
+    first_path: str
+    second_path: str
+    first_heads: List[str]
+    second_heads: List[str]
+    fast: Dict[str, int]
+    structure: dict

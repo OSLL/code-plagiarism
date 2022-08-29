@@ -74,7 +74,7 @@ jobs:
   push-image:
     runs-on: ubuntu-20.04
     needs: [check-code, docker-build-test-autotest]
-    if: github.ref == 'refs/heads/main'
+    if: startsWith(github.event.ref, 'refs/tags/v')
 
     steps:
       - name: Checkout

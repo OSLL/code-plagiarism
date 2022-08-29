@@ -33,7 +33,7 @@ from codeplag.pyplag.utils import \
 from codeplag.pyplag.utils import \
     get_works_from_filepaths as get_works_from_filepaths_py
 from codeplag.types import (CompareInfo, FastMetrics, NodeCodePlace,
-                            StructuresInfo)
+                            StructuresInfo, WorksReport)
 from webparsers.github_parser import GitHubParser
 
 
@@ -380,21 +380,23 @@ class CodeplagEngine:
                     metrics: CompareInfo,
                     reports_dir: str) -> None:
         # TODO: use TypedDict
-        dict_metrics = {
-            'date': datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            'first_path': first_work.filepath,
-            'second_path': second_work.filepath,
-            'first_heads': first_work.head_nodes,
-            'second_heads': second_work.head_nodes,
-            'fast': metrics.fast._asdict(),
-            'structure': metrics.structure._asdict()
-        }
-        dict_metrics['structure']['compliance_matrix'] = (
-            dict_metrics['structure']['compliance_matrix'].tolist()
+        struct_info_dict = metrics.structure._asdict()
+        struct_info_dict['compliance_matrix'] = (
+            struct_info_dict['compliance_matrix'].tolist()
+        )
+        report = WorksReport(
+            date=datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            first_path=first_work.filepath,
+            second_path=second_work.filepath,
+            first_heads=first_work.head_nodes,
+            second_heads=second_work.head_nodes,
+            fast=metrics.fast._asdict(),
+            structure=struct_info_dict
         )
         try:
-            with open(f'{reports_dir}/{uuid.uuid4().hex}.json', 'w') as f:
-                f.write(json.dumps(dict_metrics))
+            report_file = f'{reports_dir}/{uuid.uuid4().hex}.json'
+            with open(report_file, 'w') as f:
+                f.write(json.dumps(report))
         except PermissionError:
             self.logger.warning(
                 "Not enough rights to write reports to the folder."
