@@ -2,6 +2,8 @@ name: Check source code and push created image based on sources
 
 on:
   push:
+    branches:
+      - master
     paths-ignore:
       - 'docs/**'
       - '**.md'
