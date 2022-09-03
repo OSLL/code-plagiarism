@@ -2,59 +2,12 @@ import base64
 import logging
 import re
 import sys
-from typing import List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional, Tuple
 
 import requests
 
-
-class GitHubUrl(str):
-
-    def __new__(cls, url: str):
-        url_parts = url.rstrip('/').split('/')
-        error_msg = f"'{url}' is incorrect link to GitHub"
-        if (
-            len(url_parts) < 3 or
-            (url_parts[0] != 'https:' and url_parts[0] != 'http:') or
-            url_parts[1] != '' or
-            url_parts[2] != 'github.com'
-        ):
-            raise ValueError(error_msg)
-
-        obj = str.__new__(cls, url)
-        obj.protocol = url_parts[0][:-1]
-        obj.host = url_parts[2]
-        obj.url_parts = url_parts
-        return obj
-
-
-class GitHubRepoUrl(GitHubUrl):
-
-    def __new__(cls, url: str):
-        obj = GitHubUrl.__new__(cls, url)
-        if len(obj.url_parts) != 5:
-            error_msg = f"'{url}' is incorrect link to GitHub repository"
-            raise ValueError(error_msg)
-
-        obj.owner = obj.url_parts[3]
-        obj.repo = obj.url_parts[4]
-        return obj
-
-
-class GitHubContentUrl(GitHubUrl):
-
-    def __new__(cls, url: str):
-        obj = GitHubUrl.__new__(cls, url)
-        if len(obj.url_parts) <= 7:
-            error_msg = (
-                f"'{url}' is incorrect link to content of GitHub repository"
-            )
-            raise ValueError(error_msg)
-
-        obj.owner = obj.url_parts[3]
-        obj.repo = obj.url_parts[4]
-        obj.branch = obj.url_parts[6]
-        obj.path = '/'.join(obj.url_parts[7:])
-        return obj
+from webparsers.types import (Branch, GitHubContentUrl, GitHubRepoUrl,
+                              PullRequest, Repository)
 
 
 class GitHubParser:
@@ -96,12 +49,12 @@ class GitHubParser:
 
     def send_get_request(self,
                          api_url: str,
-                         params: dict = None) -> requests.Response:
+                         params: dict = None,
+                         address: str = 'https://api.github.com') -> requests.Response:
         if params is None:
             params = {}
 
-        address = 'https://api.github.com'
-        if api_url[0] != "/":
+        if address and len(api_url) and api_url[0] != "/":
             address += "/"
 
         headers = {
@@ -142,17 +95,19 @@ class GitHubParser:
 
         return response
 
-    def get_list_of_repos(self, owner, per_page=100, reg_exp=None):
+    def get_list_of_repos(self,
+                          owner: str,
+                          reg_exp: str = None) -> List[Repository]:
         '''
             Function returns dict in which keys characterize repository names
             and values characterize repositories links
         '''
-        repos = {}
-        page = 1
+        repos: List[Repository] = []
+        page: int = 1
+        api_url: str = f'/users/{owner}/repos'
         while True:
-            api_url = f'/users/{owner}/repos'
-            params = {
-                'per_page': per_page,
+            params: Dict[str, int] = {
+                'per_page': 100,
                 'page': page
             }
             response_json = self.send_get_request(
@@ -168,38 +123,96 @@ class GitHubParser:
                     (reg_exp is None) or
                     re.search(reg_exp, repo['name']) is not None
                 ):
-                    repos[repo['name']] = repo['html_url']
+                    repos.append(
+                        Repository(
+                            name=repo['name'],
+                            html_url=repo['html_url']
+                        )
+                    )
 
             page += 1
 
         return repos
 
-    def get_name_default_branch(self, owner, repo):
-        api_url = f'/repos/{owner}/{repo}'
-        response_json = self.send_get_request(api_url).json()
+    def get_pulls_info(self,
+                       owner: str,
+                       repo: str) -> List[PullRequest]:
+        pulls: List[PullRequest] = []
+        page: int = 1
+        api_url: str = f'/repos/{owner}/{repo}/pulls'
+        while True:
+            params: Dict[str, int] = {
+                'per_page': 100,
+                'page': page
+            }
+            response_json = self.send_get_request(
+                api_url,
+                params=params
+            ).json()
 
-        return response_json['default_branch']
+            if len(response_json) == 0:
+                break
 
-    def get_sha_last_branch_commit(self, owner, repo, branch='main'):
-        api_url = f'/repos/{owner}/{repo}/branches/{branch}'
-        response_json = self.send_get_request(api_url).json()
+            for pull in response_json:
+                commits = self.send_get_request(
+                    pull['commits_url'],
+                    address=''
+                ).json()
+                pull_owner, owner_branch = pull['head']['label'].split(':')
+                pulls.append(
+                    PullRequest(
+                        number=pull['number'],
+                        last_commit_sha=commits[0]['sha'],
+                        owner=pull_owner,
+                        branch=owner_branch,
+                        state=pull['state'],
+                        draft=pull['draft']
+                    )
+                )
 
-        return response_json['commit']['sha']
+            page += 1
 
-    def get_file_content_from_sha(self, owner, repo, sha, file_path):
-        api_url = f'/repos/{owner}/{repo}/git/blobs/{sha}'
-        response_json = self.send_get_request(api_url).json()
+        return pulls
 
-        file_in_bytes = bytearray(base64.b64decode(response_json['content']))
-        code = self.decode_file_content(file_in_bytes)
+    def get_name_default_branch(self, owner: str, repo: str) -> str:
+        api_url: str = f'/repos/{owner}/{repo}'
+        response: Dict[str, Any] = self.send_get_request(api_url).json()
+
+        return response['default_branch']
+
+    def get_sha_last_branch_commit(self,
+                                   owner: str,
+                                   repo: str,
+                                   branch: str = 'main') -> str:
+        api_url: str = f'/repos/{owner}/{repo}/branches/{branch}'
+        response: Dict[str, Any] = self.send_get_request(api_url).json()
+
+        return response['commit']['sha']
+
+    def get_file_content_from_sha(self,
+                                  owner: str,
+                                  repo: str,
+                                  sha: str,
+                                  file_path: str) -> Tuple[str, str]:
+        api_url: str = f'/repos/{owner}/{repo}/git/blobs/{sha}'
+        response: Dict[str, Any] = self.send_get_request(api_url).json()
+
+        file_in_bytes: bytearray = bytearray(
+            base64.b64decode(response['content'])
+        )
+        code: str = self.decode_file_content(file_in_bytes)
 
         return code, file_path
 
-    def get_files_generator_from_sha_commit(self, owner, repo, branch,
-                                            sha, path=''):
-        api_url = f'/repos/{owner}/{repo}/git/trees/{sha}'
-        response_json = self.send_get_request(api_url).json()
-        tree = response_json['tree']
+    def get_files_generator_from_sha_commit(self,
+                                            owner: str,
+                                            repo: str,
+                                            branch: str,
+                                            sha: str,
+                                            path: str = ''):
+        api_url: str = f'/repos/{owner}/{repo}/git/trees/{sha}'
+        response: Dict[str, Any] = self.send_get_request(api_url).json()
+        tree = response['tree']
         for node in tree:
             current_path = f"{path}/{node['path']}"
             if node["type"] == "tree":
@@ -222,29 +235,38 @@ class GitHubParser:
                                                      node["sha"],
                                                      file_link)
 
-    def get_list_repo_branches(self, owner, repo, per_page=100):
-        branches = {}
-        page = 1
+    def get_list_repo_branches(self,
+                               owner: str,
+                               repo: str) -> List[Branch]:
+        branches: List[Branch] = []
+        page: int = 1
+        api_url: str = f'/repos/{owner}/{repo}/branches'
         while True:
-            api_url = f'/repos/{owner}/{repo}/branches'
-            params = {
-                "per_page": per_page,
+            params: Dict[str, int] = {
+                "per_page": 100,
                 "page": page
             }
-            response_json = self.send_get_request(api_url,
-                                                  params=params).json()
+            response_json = self.send_get_request(
+                api_url,
+                params=params
+            ).json()
 
             if len(response_json) == 0:
                 break
 
             for node in response_json:
-                branches[node["name"]] = node['commit']['sha']
+                branches.append(
+                    Branch(
+                        name=node["name"],
+                        last_commit_sha=node['commit']['sha']
+                    )
+                )
 
             page += 1
 
         return branches
 
-    def get_files_generator_from_repo_url(self, repo_url):
+    def get_files_generator_from_repo_url(self, repo_url: str):
         try:
             repo_url = GitHubRepoUrl(repo_url)
         except ValueError as error:
@@ -261,23 +283,26 @@ class GitHubParser:
                 repo_url.owner, repo_url.repo
             )
         else:
-            branches = {
-                default_branch: self.get_sha_last_branch_commit(
-                    repo_url.owner,
-                    repo_url.repo,
-                    default_branch
+            branches = [
+                Branch(
+                    name=default_branch,
+                    last_commit_sha=self.get_sha_last_branch_commit(
+                        repo_url.owner,
+                        repo_url.repo,
+                        default_branch
+                    )
                 )
-            }
+            ]
 
-        for branch in branches.items():
+        for branch in branches:
             yield from self.get_files_generator_from_sha_commit(
                 repo_url.owner,
                 repo_url.repo,
-                branch[0],
-                branch[1]
+                branch.name,
+                branch.last_commit_sha
             )
 
-    def get_file_from_url(self, file_url):
+    def get_file_from_url(self, file_url: str):
         try:
             file_url = GitHubContentUrl(file_url)
         except ValueError as error:
@@ -301,7 +326,7 @@ class GitHubParser:
             file_url
         )
 
-    def get_files_generator_from_dir_url(self, dir_url):
+    def get_files_generator_from_dir_url(self, dir_url: str):
         try:
             dir_url = GitHubContentUrl(dir_url)
         except ValueError as error:

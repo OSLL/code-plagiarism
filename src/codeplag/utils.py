@@ -366,10 +366,10 @@ class CodeplagEngine:
             owner=github_user,
             reg_exp=reg_exp
         )
-        for repo_url in repos.values():
-            self.logger.info(f'{GET_FRAZE} {repo_url}')
+        for repo in repos:
+            self.logger.info(f'{GET_FRAZE} {repo.html_url}')
             files = self.github_parser.get_files_generator_from_repo_url(
-                repo_url
+                repo.html_url
             )
             for file_content, url_file in files:
                 self.append_work_features(file_content, url_file)

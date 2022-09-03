@@ -3,7 +3,7 @@ import os
 from typing import List
 
 from codeplag.consts import UTIL_NAME, UTIL_VERSION
-from webparsers.github_parser import GitHubContentUrl
+from webparsers.types import GitHubContentUrl
 
 
 class CheckUniqueStore(argparse.Action):

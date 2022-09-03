@@ -1,16 +1,30 @@
 import base64
 import io
-import logging
 import unittest
 from contextlib import redirect_stdout
+from typing import Optional, Union
 from unittest.mock import call, patch
 
-import pytest
+from webparsers.github_parser import GitHubParser
+from webparsers.types import Branch, PullRequest, Repository
 
-from webparsers.github_parser import (GitHubContentUrl, GitHubParser,
-                                      GitHubRepoUrl, GitHubUrl)
 
-logging.disable(logging.CRITICAL)
+class Response:
+    def __init__(self, response_json: Optional[Union[list, dict]] = None,
+                 status_code: int = 200, message: str = None):
+        self.status_code = status_code
+        self.message = message
+        self.response_json = response_json if response_json else {}
+        if self.message and isinstance(self.response_json, dict):
+            self.response_json.update(
+                {'message': self.message}
+            )
+
+    def json(self):
+        return self.response_json
+
+    def raise_for_status(self):
+        return None
 
 
 class TestGitHubParser(unittest.TestCase):
@@ -99,13 +113,6 @@ class TestGitHubParser(unittest.TestCase):
 
     @patch('webparsers.github_parser.requests.get')
     def test_send_get_request(self, mock_get):
-        class Response:
-            def __init__(self, status_code, message=None):
-                self.status_code = status_code
-
-            def raise_for_status(self):
-                return None
-
         test_cases = [
             {
                 'arguments': {
@@ -120,7 +127,7 @@ class TestGitHubParser(unittest.TestCase):
                     'headers': {'accept': 'application/vnd.github.v3+json'},
                     'params': {}
                 },
-                'response': Response(200)
+                'response': Response(status_code=200)
             }
         ]
 
@@ -138,14 +145,6 @@ class TestGitHubParser(unittest.TestCase):
 
     @patch('webparsers.github_parser.requests.get')
     def test_send_get_request_bad(self, mock_get):
-        class Response:
-            def __init__(self, status_code, message=None):
-                self.status_code = status_code
-                self.message = message
-
-            def json(self):
-                return {'message': self.message} if self.message else {}
-
         test_cases = [
             {
                 'arguments': {
@@ -160,7 +159,7 @@ class TestGitHubParser(unittest.TestCase):
                     'headers': {'accept': 'application/vnd.github.v3+json'},
                     'params': {}
                 },
-                'response': Response(403, "Not Found"),
+                'response': Response(status_code=403, message="Not Found"),
                 'raised': SystemExit
             },
             {
@@ -173,7 +172,7 @@ class TestGitHubParser(unittest.TestCase):
                     'headers': {'accept': 'application/vnd.github.v3+json'},
                     'params': {}
                 },
-                'response': Response(403),
+                'response': Response(status_code=403),
                 'raised': KeyError
             },
             {
@@ -192,7 +191,7 @@ class TestGitHubParser(unittest.TestCase):
                         'page': 5
                     }
                 },
-                'response': Response(403),
+                'response': Response(status_code=403),
                 'raised': KeyError
             },
             {
@@ -209,7 +208,7 @@ class TestGitHubParser(unittest.TestCase):
                     },
                     'params': {}
                 },
-                'response': Response(403),
+                'response': Response(status_code=403),
                 'raised': KeyError
             },
         ]
@@ -231,57 +230,48 @@ class TestGitHubParser(unittest.TestCase):
 
     @patch('webparsers.github_parser.GitHubParser.send_get_request')
     def test_get_list_of_repos(self, mock_send_get_request):
-        class Response:
-            def __init__(self, response):
-                self.response_json = response
-
-            def json(self):
-                return self.response_json
-
         test_cases = [
             {
                 'arguments': {
                     'owner': 'OSLL',
-                    'per_page': 50,
                     'reg_exp': None
                 },
                 'send_calls': [
                     call(
                         '/users/OSLL/repos',
                         params={
-                            'per_page': 50,
+                            'per_page': 100,
                             'page': 1
                         }
                     )
                 ],
-                'send_rvs': [Response([])],
-                'expected_result': {}
+                'send_rvs': [Response(response_json=[])],
+                'expected_result': []
             },
             {
                 'arguments': {
                     'owner': 'OSLL',
-                    'per_page': 20,
                     'reg_exp': None
                 },
                 'send_calls': [
                     call(
                         '/users/OSLL/repos',
                         params={
-                            'per_page': 20,
+                            'per_page': 100,
                             'page': 1
                         }
                     ),
                     call(
                         '/users/OSLL/repos',
                         params={
-                            'per_page': 20,
+                            'per_page': 100,
                             'page': 2
                         }
                     ),
                     call(
                         '/users/OSLL/repos',
                         params={
-                            'per_page': 20,
+                            'per_page': 100,
                             'page': 3
                         }
                     )
@@ -313,38 +303,49 @@ class TestGitHubParser(unittest.TestCase):
                     ),
                     Response([])
                 ],
-                'expected_result': {
-                    'aido-auto-feedback': 'https://github.com/OSLL/aido-auto-feedback',
-                    'asm_web_debug': 'https://github.com/OSLL/asm_web_debug',
-                    'MD-Code_generator': 'https://github.com/OSLL/MD-Code_generator',
-                    'code-plagiarism': 'https://github.com/OSLL/code-plagiarism'
-                }
+                'expected_result': [
+                    Repository(
+                        'asm_web_debug',
+                        'https://github.com/OSLL/asm_web_debug'
+                    ),
+                    Repository(
+                        'aido-auto-feedback',
+                        'https://github.com/OSLL/aido-auto-feedback'
+                    ),
+                    Repository(
+                        'MD-Code_generator',
+                        'https://github.com/OSLL/MD-Code_generator'
+                    ),
+                    Repository(
+                        'code-plagiarism',
+                        'https://github.com/OSLL/code-plagiarism'
+                    )
+                ]
             },
             {
                 'arguments': {
                     'owner': 'OSLL',
-                    'per_page': 20,
                     'reg_exp': r'\ba'
                 },
                 'send_calls': [
                     call(
                         '/users/OSLL/repos',
                         params={
-                            'per_page': 20,
+                            'per_page': 100,
                             'page': 1
                         }
                     ),
                     call(
                         '/users/OSLL/repos',
                         params={
-                            'per_page': 20,
+                            'per_page': 100,
                             'page': 2
                         }
                     ),
                     call(
                         '/users/OSLL/repos',
                         params={
-                            'per_page': 20,
+                            'per_page': 100,
                             'page': 3
                         }
                     )
@@ -376,10 +377,16 @@ class TestGitHubParser(unittest.TestCase):
                     ),
                     Response([])
                 ],
-                'expected_result': {
-                    'aido-auto-feedback': 'https://github.com/OSLL/aido-auto-feedback',
-                    'asm_web_debug': 'https://github.com/OSLL/asm_web_debug',
-                }
+                'expected_result': [
+                    Repository(
+                        'asm_web_debug',
+                        'https://github.com/OSLL/asm_web_debug'
+                    ),
+                    Repository(
+                        'aido-auto-feedback',
+                        'https://github.com/OSLL/aido-auto-feedback'
+                    ),
+                ]
             }
         ]
 
@@ -398,14 +405,156 @@ class TestGitHubParser(unittest.TestCase):
                 )
 
     @patch('webparsers.github_parser.GitHubParser.send_get_request')
+    def test_get_pulls_info(self, mock_send_get_request):
+        test_cases = [
+            {
+                'arguments': {
+                    'owner': 'OSLL',
+                    'repo': 'code-plagiarism'
+                },
+                'send_calls': [
+                    call(
+                        '/repos/OSLL/code-plagiarism/pulls',
+                        params={
+                            'per_page': 100,
+                            'page': 1
+                        }
+                    )
+                ],
+                'send_rvs': [Response([])],
+                'expected_result': []
+            },
+            {
+                'arguments': {
+                    'owner': 'OSLL',
+                    'repo': 'code-plagiarism'
+                },
+                'send_calls': [
+                    call(
+                        '/repos/OSLL/code-plagiarism/pulls',
+                        params={
+                            'per_page': 100,
+                            'page': 1
+                        }
+                    ),
+                    call(
+                        'https://api.github.com/repos/OSLL/code-plagiarism/pulls/1/commits',
+                        address=''
+                    ),
+                    call(
+                        'https://api.github.com/repos/OSLL/code-plagiarism/pulls/2/commits',
+                        address=''
+                    ),
+                    call(
+                        '/repos/OSLL/code-plagiarism/pulls',
+                        params={
+                            'per_page': 100,
+                            'page': 2
+                        }
+                    ),
+                    call(
+                        'https://api.github.com/repos/OSLL/code-plagiarism/pulls/3/commits',
+                        address=''
+                    ),
+                    call(
+                        'https://api.github.com/repos/OSLL/code-plagiarism/pulls/4/commits',
+                        address=''
+                    ),
+                    call(
+                        '/repos/OSLL/code-plagiarism/pulls',
+                        params={
+                            'per_page': 100,
+                            'page': 3
+                        }
+                    ),
+                ],
+                'send_rvs': [
+                    Response(
+                        [
+                            {
+                                'commits_url': 'https://api.github.com/repos/OSLL/code-plagiarism/pulls/1/commits',
+                                'number': 1,
+                                'head': {
+                                    'label': 'code-plagiarism:cp_130'
+                                },
+                                'state': 'Open',
+                                'draft': False
+                            },
+                            {
+                                'commits_url': 'https://api.github.com/repos/OSLL/code-plagiarism/pulls/2/commits',
+                                'number': 2,
+                                'head': {
+                                    'label': 'code-plagiarism:cp_110'
+                                },
+                                'state': 'Open',
+                                'draft': True
+                            }
+                        ]
+                    ),
+                    Response([{'sha': 'jskfjsjskjfl'}]),
+                    Response([{'sha': 'jzxvjipwerknmzxvj'}]),
+                    Response(
+                        [
+                            {
+                                'commits_url': 'https://api.github.com/repos/OSLL/code-plagiarism/pulls/3/commits',
+                                'number': 3,
+                                'head': {
+                                    'label': 'code-plagiarism:bag_fix'
+                                },
+                                'state': 'Open',
+                                'draft': False
+                            },
+                            {
+                                'commits_url': 'https://api.github.com/repos/OSLL/code-plagiarism/pulls/4/commits',
+                                'number': 4,
+                                'head': {
+                                    'label': 'code-plagiarism:lite'
+                                },
+                                'state': 'Open',
+                                'draft': True
+                            }
+                        ]
+                    ),
+                    Response([{'sha': 'jskfjsjskjfl'}]),
+                    Response([{'sha': 'jzxvjipwerknmzxvj'}]),
+                    Response([])
+                ],
+                'expected_result': [
+                    PullRequest(
+                        number=1, last_commit_sha='jskfjsjskjfl', owner='code-plagiarism', branch='cp_130', state='Open', draft=False
+                    ),
+                    PullRequest(
+                        number=2, last_commit_sha='jzxvjipwerknmzxvj', owner='code-plagiarism', branch='cp_110', state='Open', draft=True
+                    ),
+                    PullRequest(
+                        number=3, last_commit_sha='jskfjsjskjfl', owner='code-plagiarism', branch='bag_fix', state='Open', draft=False
+                    ),
+                    PullRequest(
+                        number=4, last_commit_sha='jzxvjipwerknmzxvj', owner='code-plagiarism', branch='lite', state='Open', draft=True
+                    )
+                ]
+            }
+        ]
+
+        parser = GitHubParser()
+        for test_case in test_cases:
+            mock_send_get_request.reset_mock()
+            mock_send_get_request.side_effect = test_case['send_rvs']
+            with self.subTest(test_case=test_case):
+                rv = parser.get_pulls_info(**test_case['arguments'])
+                self.assertEqual(rv, test_case['expected_result'])
+
+                assert len(
+                    mock_send_get_request.mock_calls
+                ) == len(test_case['send_calls'])
+                for actual_call, expected_call in zip(
+                    mock_send_get_request.mock_calls,
+                    test_case['send_calls']
+                ):
+                    assert actual_call == expected_call
+
+    @patch('webparsers.github_parser.GitHubParser.send_get_request')
     def test_get_name_default_branch(self, mock_send_get_request):
-        class Response:
-            def __init__(self, response):
-                self.response_json = response
-
-            def json(self):
-                return self.response_json
-
         test_cases = [
             {
                 'arguments': {
@@ -447,13 +596,6 @@ class TestGitHubParser(unittest.TestCase):
 
     @patch('webparsers.github_parser.GitHubParser.send_get_request')
     def test_get_sha_last_branch_commit(self, mock_send_get_request):
-        class Response:
-            def __init__(self, response):
-                self.response_json = response
-
-            def json(self):
-                return self.response_json
-
         test_cases = [
             {
                 'arguments': {
@@ -505,13 +647,6 @@ class TestGitHubParser(unittest.TestCase):
 
     @patch('webparsers.github_parser.GitHubParser.send_get_request')
     def test_get_file_content_from_sha(self, mock_send_get_request):
-        class Response:
-            def __init__(self, response):
-                self.response_json = response
-
-            def json(self):
-                return self.response_json
-
         test_cases = [
             {
                 'arguments': {
@@ -565,13 +700,6 @@ class TestGitHubParser(unittest.TestCase):
     @patch('webparsers.github_parser.GitHubParser.send_get_request')
     def test_get_files_generator_from_sha_commit(self, mock_send_get_request,
                                                  mock_get_file_content_from_sha):
-        class Response:
-            def __init__(self, response):
-                self.response_json = response
-
-            def json(self):
-                return self.response_json
-
         test_cases = [
             {
                 'arguments': {
@@ -671,32 +799,24 @@ class TestGitHubParser(unittest.TestCase):
 
     @patch('webparsers.github_parser.GitHubParser.send_get_request')
     def test_get_list_repo_branches(self, mock_send_get_request):
-        class Response:
-            def __init__(self, response):
-                self.response_json = response
-
-            def json(self):
-                return self.response_json
-
         test_cases = [
             {
                 'arguments': {
                     'owner': 'OSLL',
-                    'repo': 'aido-auto-feedback',
-                    'per_page': 50
+                    'repo': 'aido-auto-feedback'
                 },
                 'send_calls': [
                     call(
                         '/repos/OSLL/aido-auto-feedback/branches',
                         params={
-                            'per_page': 50,
+                            'per_page': 100,
                             'page': 1
                         }
                     ),
                     call(
                         '/repos/OSLL/aido-auto-feedback/branches',
                         params={
-                            'per_page': 50,
+                            'per_page': 100,
                             'page': 2
                         }
                     ),
@@ -720,36 +840,35 @@ class TestGitHubParser(unittest.TestCase):
                     ),
                     Response([])
                 ],
-                'expected_result': {
-                    'main': '0928jlskdfj',
-                    'iss76': 'kjsadfwi'
-                }
+                'expected_result': [
+                    Branch('main', '0928jlskdfj'),
+                    Branch('iss76', 'kjsadfwi')
+                ]
             },
             {
                 'arguments': {
                     'owner': 'moevm',
                     'repo': 'asm_web_debug',
-                    'per_page': 1
                 },
                 'send_calls': [
                     call(
                         '/repos/moevm/asm_web_debug/branches',
                         params={
-                            'per_page': 1,
+                            'per_page': 100,
                             'page': 1
                         }
                     ),
                     call(
                         '/repos/moevm/asm_web_debug/branches',
                         params={
-                            'per_page': 1,
+                            'per_page': 100,
                             'page': 2
                         }
                     ),
                     call(
                         '/repos/moevm/asm_web_debug/branches',
                         params={
-                            'per_page': 1,
+                            'per_page': 100,
                             'page': 3
                         }
                     ),
@@ -777,10 +896,10 @@ class TestGitHubParser(unittest.TestCase):
                     ),
                     Response([])
                 ],
-                'expected_result': {
-                    'main': '0928jlskdfj',
-                    'iss76': 'kjsadfwi'
-                }
+                'expected_result': [
+                    Branch('main', '0928jlskdfj'),
+                    Branch('iss76', 'kjsadfwi')
+                ]
             },
         ]
 
@@ -812,7 +931,7 @@ class TestGitHubParser(unittest.TestCase):
                 },
                 'name_default_branch': 'iss76',
                 'branch_sha': 'uixbwupreiljlsdf',
-                'branches_dict': None,
+                'branches': None,
                 'files': [('Some code 1', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py')],
                 'expected_result': [
                     ('Some code 1', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py'),
@@ -825,10 +944,10 @@ class TestGitHubParser(unittest.TestCase):
                 },
                 'name_default_branch': None,
                 'branch_sha': None,
-                'branches_dict': {
-                    'master': 'iobiqirsad',
-                    'iss76': 'iobxzewqrsf'
-                },
+                'branches': [
+                    Branch('master', 'iobiqirsad'),
+                    Branch('iss76', 'iobxzewqrsf')
+                ],
                 'files': [('Some code 1', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py')],
                 'expected_result': [
                     ('Some code 1', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py'),
@@ -847,7 +966,7 @@ class TestGitHubParser(unittest.TestCase):
             mock_get_name_default_branch.return_value = test_case['name_default_branch']
             mock_get_sha_last_branch_commit.return_value = test_case['branch_sha']
             mock_get_files_generator_from_sha_commit.return_value = test_case['files']
-            mock_get_list_repo_branches.return_value = test_case['branches_dict']
+            mock_get_list_repo_branches.return_value = test_case['branches']
 
             with self.subTest(test_case=test_case):
                 rv = list(parser.get_files_generator_from_repo_url(**test_case['arguments']))
@@ -857,13 +976,6 @@ class TestGitHubParser(unittest.TestCase):
     @patch('webparsers.github_parser.GitHubParser.send_get_request')
     def test_get_file_from_url(self, mock_send_get_request,
                                mock_get_file_content_from_sha):
-        class Response:
-            def __init__(self, response):
-                self.response_json = response
-
-            def json(self):
-                return self.response_json
-
         test_cases = [
             {
                 'arguments': {
@@ -890,13 +1002,6 @@ class TestGitHubParser(unittest.TestCase):
     def test_get_files_generator_from_dir_url(self, mock_send_get_request,
                                               mock_get_files_generator_from_sha_commit,
                                               mock_get_file_content_from_sha):
-        class Response:
-            def __init__(self, response):
-                self.response_json = response
-
-            def json(self):
-                return self.response_json
-
         test_cases = [
             {
                 'arguments': {
@@ -932,104 +1037,6 @@ class TestGitHubParser(unittest.TestCase):
             with self.subTest(test_case=test_case):
                 rv = list(parser.get_files_generator_from_dir_url(**test_case['arguments']))
                 self.assertEqual(rv, test_case['expected_result'])
-
-
-@pytest.mark.parametrize(
-    'arg, expected',
-    [
-        ("https://github.com/OSLL", ["https:", "", "github.com", "OSLL"]),
-        (
-            "http://github.com/OSLL/code-plagiarism/", [
-                "http:", "", "github.com", "OSLL", "code-plagiarism"
-            ]
-        ),
-        ("ttps://github.com/OSLL", ValueError),
-        ("https:/j/github.com/OSLL", ValueError),
-        ("https://githUb.com/OSLL", ValueError),
-        ("https:/", ValueError)
-    ]
-)
-def test_github_url(arg, expected):
-    if type(expected) == type and issubclass(expected, Exception):
-        with pytest.raises(expected):
-            GitHubUrl(arg)
-    else:
-        gh_url = GitHubUrl(arg)
-        assert gh_url.url_parts == expected
-        assert gh_url.protocol == expected[0][:-1]
-        assert gh_url.host == expected[2]
-
-
-@pytest.mark.parametrize(
-    'arg, expected',
-    [
-        (
-            "http://github.com/OSLL/code-plagiarism/", [
-                "http:", "", "github.com", "OSLL", "code-plagiarism"
-            ]
-        ),
-        (
-            "http://github.com/OSLL/samples", [
-                "http:", "", "github.com", "OSLL", "samples"
-            ]
-        ),
-        ("https://github.com/OSLL", ValueError),
-        ("ttps://github.com/OSLL", ValueError),
-        ("https:/j/github.com/OSLL", ValueError),
-        ("https://githUb.com/OSLL", ValueError),
-        ("https:/", ValueError)
-    ]
-)
-def test_github_repo_url(arg, expected):
-    if type(expected) == type and issubclass(expected, Exception):
-        with pytest.raises(expected):
-            GitHubRepoUrl(arg)
-    else:
-        gh_repo_url = GitHubRepoUrl(arg)
-        assert gh_repo_url.url_parts == expected
-        assert gh_repo_url.protocol == expected[0][:-1]
-        assert gh_repo_url.host == expected[2]
-        assert gh_repo_url.owner == expected[3]
-        assert gh_repo_url.repo == expected[4]
-
-
-@pytest.mark.parametrize(
-    'arg, expected, path',
-    [
-        (
-            "https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/astfeatures.py", [
-                "https:", "", "github.com", "OSLL", "code-plagiarism", "blob", "main"
-            ],
-            "src/codeplag/astfeatures.py"
-        ),
-        (
-            "https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/logger.py", [
-                "https:", "", "github.com", "OSLL", "code-plagiarism", "blob", "main"
-            ],
-            "src/codeplag/logger.py"
-        ),
-        ("https://github.com/OSLL", ValueError, ""),
-        ("http://github.com/OSLL/code-plagiarism/", ValueError, ""),
-        ("ttps://github.com/OSLL", ValueError, ""),
-        ("https:/j/github.com/OSLL", ValueError, ""),
-        ("https://githUb.com/OSLL", ValueError, ""),
-        ("https:/", ValueError, "")
-    ]
-)
-def test_github_content_url(arg, expected, path):
-    if type(expected) == type and issubclass(expected, Exception):
-        with pytest.raises(expected):
-            GitHubContentUrl(arg)
-    else:
-        gh_content_url = GitHubContentUrl(arg)
-        for value in expected:
-            assert value in gh_content_url.url_parts
-        assert gh_content_url.protocol == expected[0][:-1]
-        assert gh_content_url.host == expected[2]
-        assert gh_content_url.owner == expected[3]
-        assert gh_content_url.repo == expected[4]
-        assert gh_content_url.branch == expected[6]
-        assert gh_content_url.path == path
 
 
 if __name__ == '__main__':
