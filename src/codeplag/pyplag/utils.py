@@ -2,10 +2,9 @@ import ast
 import os
 from typing import List, Optional
 
-from termcolor import colored
-
 from codeplag.astfeatures import ASTFeatures
 from codeplag.consts import LOG_PATH
+from codeplag.display import red_bold
 from codeplag.logger import get_logger
 from codeplag.pyplag.astwalkers import ASTWalker
 
@@ -21,29 +20,29 @@ def get_ast_from_content(code: str, path: str) -> Optional[ast.Module]:
         tree = ast.parse(code)
     except TabError as err:
         print('-' * 40)
-        print(colored(f'Not compiled: {path}', 'red'))
-        print(colored(f'TabError: {err.args[0]}', 'red'))
-        print(colored(f'In line {str(err.args[1][1])}', 'red'))
+        print(red_bold(f'Not compiled: {path}'))
+        print(red_bold(f'TabError: {err.args[0]}'))
+        print(red_bold(f'In line {str(err.args[1][1])}'))
         print('-' * 40)
     except IndentationError as err:
         print('-' * 40)
-        print(colored(f'Not compiled: {path}', 'red'))
-        print(colored(f'IdentationError: {err.args[0]}', 'red'))
-        print(colored(f'In line {str(err.args[1][1])}', 'red'))
+        print(red_bold(f'Not compiled: {path}'))
+        print(red_bold(f'IdentationError: {err.args[0]}'))
+        print(red_bold(f'In line {str(err.args[1][1])}'))
         print('-' * 40)
     except SyntaxError as err:
         print('-' * 40)
-        print(colored(f'Not compiled: {path}', 'red'))
-        print(colored(f'SyntaxError: {err.args[0]}', 'red'))
-        print(colored(f'In line {str(err.args[1][1])}', 'red'))
-        print(colored(f'In column {str(err.args[1][2])}', 'red'))
+        print(red_bold(f'Not compiled: {path}', 'red'))
+        print(red_bold(f'SyntaxError: {err.args[0]}'))
+        print(red_bold(f'In line {str(err.args[1][1])}'))
+        print(red_bold(f'In column {str(err.args[1][2])}'))
         print('-' * 40)
     except Exception as e:
         print('-' * 40)
-        print(colored(f'Not compiled: {path}', 'red'))
-        print(colored(e.__class__.__name__, 'red'))
+        print(red_bold(f'Not compiled: {path}'))
+        print(red_bold(e.__class__.__name__))
         for el in e.args:
-            print(colored(el, 'red'))
+            print(red_bold(el))
         print('-' * 40)
 
     return tree

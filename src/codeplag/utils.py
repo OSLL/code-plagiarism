@@ -32,21 +32,9 @@ from codeplag.pyplag.utils import \
     get_features_from_ast as get_features_from_ast_py
 from codeplag.pyplag.utils import \
     get_works_from_filepaths as get_works_from_filepaths_py
-from codeplag.types import (CompareInfo, FastMetrics, NodeCodePlace,
-                            StructuresInfo, WorksReport)
+from codeplag.types import (CompareInfo, FastMetrics, StructuresInfo,
+                            WorksReport)
 from webparsers.github_parser import GitHubParser
-
-
-class Colors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
 
 
 def fast_compare(features_f: ASTFeatures,
@@ -207,52 +195,6 @@ def get_files_path_from_directory(directory: str,
                 allowed_files.append(os.path.join(current_dir, file))
 
     return allowed_files
-
-
-def print_suspect_parts(source_code: str,
-                        marked_tokens: List[int],
-                        tokens_pos: List[NodeCodePlace],
-                        color: str = Colors.FAIL) -> None:
-    ROWS = {
-        row for (row, _column) in
-        [tokens_pos[index] for index in marked_tokens]
-    }
-
-    row = 1
-    column = 1  # noqa
-
-    for symbol in source_code:
-        if symbol == '\n':
-            row += 1
-            column = 1
-
-        if row in ROWS:
-            print(color + symbol, end=Colors.ENDC)
-
-        column += 1
-
-
-def print_code_and_highlight_suspect(source_code: str,
-                                     marked_tokens: List[int],
-                                     tokens_pos: List[NodeCodePlace],
-                                     color=Colors.FAIL) -> None:
-    ROWS = {row for (row, column) in
-            [tokens_pos[index] for index in marked_tokens]}
-
-    row = 1
-    column = 1  # noqa
-
-    for symbol in source_code:
-        if symbol == '\n':
-            row += 1
-            column = 1
-
-        if row in ROWS:
-            print(color + symbol, end=Colors.ENDC)
-        else:
-            print(symbol, end="")
-
-        column += 1
 
 
 class CodeplagEngine:

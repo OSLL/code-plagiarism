@@ -1,6 +1,7 @@
 import re
 from typing import Dict
 
+
 FILE_DOWNLOAD_PATH: str = "/tmp/@UTIL_NAME@_download.out"
 GET_FRAZE: str = 'Getting works features from'
 LOG_PATH: str = "@CODEPLAG_LOG_PATH@"
