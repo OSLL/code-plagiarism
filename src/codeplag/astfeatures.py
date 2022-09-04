@@ -1,12 +1,13 @@
 from collections import defaultdict
+from pathlib import Path
 from typing import Dict, List
 
 from codeplag.types import NodeCodePlace, NodeStructurePlace
 
 
 class ASTFeatures:
-    def __init__(self, filepath: str):
-        self.filepath: str = filepath
+    def __init__(self, filepath: Path):
+        self.filepath = filepath
 
         self.count_of_nodes = 0
         self.head_nodes: List[str] = []
@@ -17,7 +18,7 @@ class ASTFeatures:
         # unique nodes
         self.unodes: Dict[str, int] = {}
         self.from_num: Dict[int, str] = {}
-        self.count_unodes: int = 0
+        self.count_unodes = 0
 
         self.structure: List[NodeStructurePlace] = []
         self.tokens: List[int] = []

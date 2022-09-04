@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 from typing import List, Optional
 
 from clang.cindex import Cursor, Index, TranslationUnit
@@ -7,7 +7,7 @@ from codeplag.astfeatures import ASTFeatures
 from codeplag.cplag.tree import get_features
 
 
-def get_cursor_from_file(filename: str,
+def get_cursor_from_file(filepath: Path,
                          args: Optional[List[str]] = None) -> Optional[Cursor]:
     '''
         Returns clang.cindex.Cursor object or None if file is undefined
@@ -18,29 +18,29 @@ def get_cursor_from_file(filename: str,
     if args is None:
         args = []
 
-    if not os.path.isfile(filename):
-        print(filename, "Is not a file / doesn't exist")
+    if not filepath.is_file():
+        print(filepath, "Is not a file / doesn't exist")
         return
 
     index = Index.create()
     options = TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD
 
-    file_obj = index.parse(filename, args=args, options=options) or 0
+    file_obj = index.parse(filepath, args=args, options=options) or 0
 
     return file_obj.cursor
 
 
 def get_works_from_filepaths(
-    filenames: str,
+    filepaths: List[Path],
     compile_args: List[str]
 ) -> List[ASTFeatures]:
-    if not filenames:
+    if not filepaths:
         return []
 
     works = []
-    for filename in filenames:
-        cursor = get_cursor_from_file(filename, compile_args)
-        features = get_features(cursor, filename)
+    for filepath in filepaths:
+        cursor = get_cursor_from_file(filepath, compile_args)
+        features = get_features(cursor, filepath)
         works.append(features)
 
     return works

@@ -1,5 +1,9 @@
+"""
+This module consist the CLI of the codeplag util and
+necessary internal classes for it.
+"""
 import argparse
-import os
+from pathlib import Path
 from typing import List
 
 from codeplag.consts import UTIL_NAME, UTIL_VERSION
@@ -25,38 +29,51 @@ class CheckUniqueStore(argparse.Action):
         setattr(namespace, self.dest, values)
 
 
-class DirPath(str):
+class DirPath(Path):
+    """Path that raising argparse.ArgumentTypeError when parsing CLI
+    arguments if directory is not exists.
+    """
 
-    def __new__(cls, path: str):
-        if not os.path.isdir(path):
+    def __new__(cls, *args, **kwargs):
+        path = Path(*args, **kwargs)
+        if not path.is_dir():
             raise argparse.ArgumentTypeError(
                 f"Directory '{path}' not found or not a directory."
             )
 
-        return str.__new__(cls, os.path.normpath(path))
+        return Path.__new__(Path, *args, **kwargs)
 
 
-class FilePath(str):
+class FilePath(Path):
+    """Path that raising argparse.ArgumentTypeError when parsing CLI
+    arguments if file is not exists.
+    """
 
-    def __new__(cls, path: str):
-        if not os.path.isfile(path):
+    def __new__(cls, *args, **kwargs):
+        path = Path(*args, **kwargs)
+        if not path.is_file():
             raise argparse.ArgumentTypeError(
                 f"File '{path}' not found or not a file."
             )
 
-        return str.__new__(cls, os.path.normpath(path))
+        return Path.__new__(Path, *args, **kwargs)
 
 
-class EnvPath(str):
+class EnvPath(Path):
+    """Path that returns None when parsing CLI
+    arguments if file is not exists.
+    """
 
-    def __new__(cls, path: str):
-        if not os.path.isfile(path):
-            return str.__new__(cls, "")
+    def __new__(cls, *args, **kwargs):
+        path = Path(*args, **kwargs)
+        if not path.is_file():
+            return None
 
-        return str.__new__(cls, os.path.normpath(path))
+        return Path.__new__(Path, *args, **kwargs)
 
 
 class CodeplagCLI(argparse.ArgumentParser):
+    """The argument parser of the codeplag util."""
 
     def __init__(self):
         super(CodeplagCLI, self).__init__(

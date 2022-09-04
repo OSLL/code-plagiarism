@@ -14,7 +14,7 @@ from codeplag.codeplagcli import CodeplagCLI, DirPath, EnvPath, FilePath
     ]
 )
 def test_dir_path(path, out):
-    assert DirPath(path) == out
+    assert DirPath(path).__str__() == out
 
 
 @pytest.mark.parametrize(
@@ -37,7 +37,7 @@ def test_dir_path_bad(path):
     ]
 )
 def test_file_path(path, out):
-    assert FilePath(path) == out
+    assert FilePath(path).__str__() == out
 
 
 @pytest.mark.parametrize(
@@ -58,13 +58,13 @@ def test_file_path_bad(path):
     [
         ('Makefile', 'Makefile'),
         ('./LICENSE', 'LICENSE'),
-        ('./src', ''),
-        ('./profile.d', ''),
-        ('bad_filepath', '')
+        ('./src', 'None'),
+        ('./profile.d', 'None'),
+        ('bad_filepath', 'None')
     ]
 )
 def test_env_path(filepath, out):
-    assert EnvPath(filepath) == out
+    assert EnvPath(filepath).__str__() == out
 
 
 @pytest.mark.parametrize(

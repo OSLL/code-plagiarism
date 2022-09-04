@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+from pathlib import Path
 from unittest.mock import call
 
 import pytest
@@ -9,12 +10,12 @@ from codeplag.pyplag.utils import get_ast_from_filename, get_features_from_ast
 from codeplag.utils import (CodeplagEngine, compare_works, fast_compare,
                             get_files_path_from_directory)
 
-CWD = os.path.dirname(os.path.abspath(__file__))
+CWD = Path(os.path.dirname(os.path.abspath(__file__)))
 
 
 def test_fast_compare_normal():
-    tree1 = get_ast_from_filename(os.path.join(CWD, './data/test1.py'))
-    tree2 = get_ast_from_filename(os.path.join(CWD, './data/test2.py'))
+    tree1 = get_ast_from_filename(CWD / './data/test1.py')
+    tree2 = get_ast_from_filename(CWD / './data/test2.py')
     features1 = get_features_from_ast(tree1)
     features2 = get_features_from_ast(tree2)
 
@@ -36,9 +37,9 @@ def test_fast_compare_normal():
 
 
 def test_compare_works():
-    tree1 = get_ast_from_filename(os.path.join(CWD, './data/test1.py'))
-    tree2 = get_ast_from_filename(os.path.join(CWD, './data/test2.py'))
-    tree3 = get_ast_from_filename(os.path.join(CWD, './data/test3.py'))
+    tree1 = get_ast_from_filename(CWD / './data/test1.py')
+    tree2 = get_ast_from_filename(CWD / './data/test2.py')
+    tree3 = get_ast_from_filename(CWD / './data/test3.py')
     features1 = get_features_from_ast(tree1)
     features2 = get_features_from_ast(tree2)
     features3 = get_features_from_ast(tree3)
@@ -69,38 +70,40 @@ def test_compare_works():
 def test_get_files_path_from_directory():
     files = get_files_path_from_directory(CWD, extensions=(r"\.py$",))
 
-    assert os.path.join(CWD, 'test_utils.py') in files
-    assert os.path.join(CWD, 'data/test1.py') in files
-    assert os.path.join(CWD, 'data/test2.py') in files
+    assert CWD / 'test_utils.py' in files
+    assert CWD / 'data/test1.py' in files
+    assert CWD / 'data/test2.py' in files
 
 
 def test_save_result(mocker):
     mocker.patch('logging.Logger')
-    code_engine = CodeplagEngine(logging.Logger)
-    tree1 = get_ast_from_filename(os.path.join(CWD, './data/test1.py'))
-    tree2 = get_ast_from_filename(os.path.join(CWD, './data/test2.py'))
+    code_engine = CodeplagEngine(
+        logging.Logger,
+        ['--extension', 'py']
+    )
+    tree1 = get_ast_from_filename(CWD / './data/test1.py')
+    tree2 = get_ast_from_filename(CWD / './data/test2.py')
     features1 = get_features_from_ast(tree1)
     features2 = get_features_from_ast(tree2)
     compare_info = compare_works(features1, features2)
 
     mocker.patch('builtins.open', side_effect=FileNotFoundError)
+    code_engine.reports_directory = Path('/bad_dir')
     code_engine.save_result(
         features1,
         features2,
-        compare_info,
-        '/bad_dir'
+        compare_info
     )
-    open.assert_called_once()
     assert logging.Logger.warning.call_args == call(
         'Provided folder for reports now is not exists.'
     )
 
     mocker.patch('builtins.open', side_effect=PermissionError)
+    code_engine.reports_directory = Path('/etc')
     code_engine.save_result(
         features1,
         features2,
-        compare_info,
-        '/etc'
+        compare_info
     )
     open.assert_called_once()
     assert logging.Logger.warning.call_args == call(
@@ -108,13 +111,13 @@ def test_save_result(mocker):
     )
 
     mocker.patch('builtins.open')
+    code_engine.reports_directory = Path('./src')
     code_engine.save_result(
         features1,
         features2,
-        compare_info,
-        './src'
+        compare_info
     )
 
     open.assert_called_once()
-    assert re.search('./src/.*[.]json$', open.call_args[0][0])
-    assert re.search('w', open.call_args[0][1])
+    assert re.search('src/.*[.]json$', open.call_args[0][0].__str__())
+    assert re.search('w', open.call_args[0][1].__str__())

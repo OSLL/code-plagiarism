@@ -2,7 +2,11 @@ from enum import Enum
 from functools import partial
 from typing import List
 
-from codeplag.types import NodeCodePlace
+import numpy as np
+import pandas as pd
+
+from codeplag.astfeatures import ASTFeatures
+from codeplag.types import CompareInfo, NodeCodePlace
 
 
 class Color(Enum):
@@ -18,7 +22,7 @@ class Color(Enum):
 
 
 def colorize(text: str, color: Color,
-             bold: bool = False, underline: bool = False):
+             bold: bool = False, underline: bool = False) -> str:
     if bold:
         text = f"{Color.BOLD.value}{text}"
     if underline:
@@ -72,3 +76,72 @@ def print_code_and_highlight_suspect(source_code: str,
             print(symbol, end="")
 
         column += 1
+
+
+def print_compare_result(features1: ASTFeatures,
+                         features2: ASTFeatures,
+                         compare_info: CompareInfo,
+                         threshold: int = 60) -> None:
+    """The function prints the result of comparing two files
+
+    @features1 - the features of the first  source file
+    @features2 - the features of the second  source file
+    @compare_info - structure consist compare metrics of two works
+    @threshold - threshold of plagiarism searcher alarm
+    """
+
+    print(" " * 40)
+    print('+' * 40)
+    print(
+        'May be similar:',
+        features1.filepath,
+        features2.filepath,
+        end='\n\n', sep='\n'
+    )
+    main_metrics_df = pd.DataFrame(
+        [compare_info.fast], index=['Similarity'],
+        columns=pd.Index(
+            (field.upper() for field in compare_info.fast._fields),
+            name='FastMetrics:'
+        )
+    )
+    print(main_metrics_df)
+    print()
+
+    additional_metrics_df = pd.DataFrame(
+        compare_info.structure.similarity, index=['Similarity'],
+        columns=pd.Index(
+            ['Structure'],
+            name='AdditionalMetrics:'
+        )
+    )
+    print(additional_metrics_df)
+    print()
+
+    if (compare_info.structure.similarity * 100) > threshold:
+        data = np.zeros(
+            (
+                compare_info.structure.compliance_matrix.shape[0],
+                compare_info.structure.compliance_matrix.shape[1]
+            ),
+            dtype=np.float64
+        )
+        for row in range(
+            compare_info.structure.compliance_matrix.shape[0]
+        ):
+            for col in range(
+                compare_info.structure.compliance_matrix.shape[1]
+            ):
+                data[row][col] = (
+                    compare_info.structure.compliance_matrix[row][col][0]
+                    / compare_info.structure.compliance_matrix[row][col][1]
+                )
+        compliance_matrix_df = pd.DataFrame(
+            data=data,
+            index=features1.head_nodes,
+            columns=features2.head_nodes
+        )
+
+        print(compliance_matrix_df, '\n')
+
+    print('+' * 40)

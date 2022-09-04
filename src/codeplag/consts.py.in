@@ -1,11 +1,11 @@
+from pathlib import Path
 import re
-from typing import Dict
 
 
-FILE_DOWNLOAD_PATH: str = "/tmp/@UTIL_NAME@_download.out"
-GET_FRAZE: str = 'Getting works features from'
-LOG_PATH: str = "@CODEPLAG_LOG_PATH@"
-SUPPORTED_EXTENSIONS: Dict[str, tuple] = {
+FILE_DOWNLOAD_PATH = Path("/tmp/@UTIL_NAME@_download.out")
+GET_FRAZE = 'Getting works features from'
+LOG_PATH = Path("@CODEPLAG_LOG_PATH@")
+SUPPORTED_EXTENSIONS = {
     'py': (
         re.compile(r'\.py$'),
     ),
@@ -18,5 +18,5 @@ SUPPORTED_EXTENSIONS: Dict[str, tuple] = {
         re.compile(r'\..*$'),
     )
 }
-UTIL_NAME: str = "@UTIL_NAME@"
-UTIL_VERSION: str = "@UTIL_VERSION@"
+UTIL_NAME = "@UTIL_NAME@"
+UTIL_VERSION = "@UTIL_VERSION@"

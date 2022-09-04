@@ -1,5 +1,5 @@
 import ast
-import os
+from pathlib import Path
 from typing import List, Optional
 
 from codeplag.astfeatures import ASTFeatures
@@ -32,46 +32,42 @@ def get_ast_from_content(code: str, path: str) -> Optional[ast.Module]:
         print('-' * 40)
     except SyntaxError as err:
         print('-' * 40)
-        print(red_bold(f'Not compiled: {path}', 'red'))
+        print(red_bold(f'Not compiled: {path}'))
         print(red_bold(f'SyntaxError: {err.args[0]}'))
         print(red_bold(f'In line {str(err.args[1][1])}'))
         print(red_bold(f'In column {str(err.args[1][2])}'))
         print('-' * 40)
-    except Exception as e:
+    except Exception as err:
         print('-' * 40)
         print(red_bold(f'Not compiled: {path}'))
-        print(red_bold(e.__class__.__name__))
-        for el in e.args:
+        print(red_bold(err.__class__.__name__))
+        for el in err.args:
             print(red_bold(el))
         print('-' * 40)
 
     return tree
 
 
-def get_ast_from_filename(filename: str) -> Optional[ast.Module]:
+def get_ast_from_filename(filepath: Path) -> Optional[ast.Module]:
     '''
         Function return ast which has type ast.Module
         @param filename - full path to file with code which will have
         analyzed
     '''
-    if not issubclass(type(filename), str):
-        logger.error("Filename is not a string type.")
-        raise TypeError
-
-    if not os.path.isfile(filename):
-        logger.error(f"{filename} is not a file / doesn't exist.")
+    if not filepath.is_file():
+        logger.error(f"{filepath} is not a file / doesn't exist.")
         return None
 
     tree = None
     try:
-        with open(filename) as f:
-            tree = get_ast_from_content(f.read(), filename)
+        with open(filepath, 'r', encoding='utf-8') as file:
+            tree = get_ast_from_content(file.read(), filepath)
     except UnicodeDecodeError:
         # TODO: Process this such as in the GitHubParser
-        logger.error("Can't decode file {}.".format(filename))
+        logger.error("Can't decode file {}.".format(filepath))
         return None
     except PermissionError:
-        logger.error(f"Can't access to the file {filename}.")
+        logger.error(f"Can't access to the file {filepath}.")
         return None
 
     return tree

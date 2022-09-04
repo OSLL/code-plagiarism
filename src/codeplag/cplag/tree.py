@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List
 
 from clang.cindex import Cursor, TokenKind
@@ -6,7 +7,7 @@ from codeplag.astfeatures import ASTFeatures
 from codeplag.cplag.const import IGNORE, OPERATORS
 
 
-def get_not_ignored(tree: Cursor, src: str) -> List[Cursor]:
+def get_not_ignored(tree: Cursor, src: Path) -> List[Cursor]:
     '''
         Function helps to discard unnecessary nodes such as imports
     '''
@@ -14,8 +15,10 @@ def get_not_ignored(tree: Cursor, src: str) -> List[Cursor]:
     parsed_nodes = []
     for child in tree.get_children():
         loc = child.location.file
+        last_loc_part = str(loc).rsplit('/', maxsplit=1)[-1]
+        last_src_part = str(src).rsplit('/', maxsplit=1)[-1]
         if (
-            str(loc).split('/')[-1] == src.split('/')[-1] and
+            last_loc_part == last_src_part and
             child.kind not in IGNORE
         ):
             parsed_nodes.append(child)
