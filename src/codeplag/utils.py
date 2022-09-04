@@ -322,14 +322,14 @@ class CodeplagEngine:
 
         begin_time = perf_counter()
 
-        if self.mode == 'many_to_many':
-            self.get_works_from_files()
-            self.get_works_from_dirs()
-            self.get_works_from_github_files()
-            self.get_works_from_github_project_folders()
-            self.get_works_from_users_repos()
+        self.get_works_from_files()
+        self.get_works_from_dirs()
+        self.get_works_from_github_files()
+        self.get_works_from_github_project_folders()
+        self.get_works_from_users_repos()
 
-            self.logger.info("Starting searching for plagiarism")
+        self.logger.info("Starting searching for plagiarism")
+        if self.mode == 'many_to_many':
             count_works = len(self.works)
             iterations = int((count_works * (count_works - 1)) / 2)
             iteration = 0
@@ -365,6 +365,9 @@ class CodeplagEngine:
                             work2,
                             metrics
                         )
+        elif self.mode == 'one_to_one':
+            # TODO
+            pass
 
         self.logger.debug(f'Time for all {perf_counter() - begin_time:.2f} s')
         self.logger.info("Ending searching for plagiarism.")

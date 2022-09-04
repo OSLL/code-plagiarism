@@ -75,8 +75,8 @@ def op_shift_metric(ops1: List[str], ops2: List[str]) -> Tuple[int, float]:
 
     if len(y) > 0:
         return max_shift, y[max_shift]
-    else:
-        return 0, 0.0
+
+    return 0, 0.0
 
 
 def get_children_indexes(tree: List[Tuple[int, int]],
@@ -109,12 +109,12 @@ def find_max_index(array: np.ndarray) -> np.ndarray:
         @param array - matrix of compliance (np.ndarray object)
 
         rows = array.shape[0]
-        columns = array.shpe[1]
+        columns = array.shape[1]
         O(rows * columns)
     '''
 
     maximum = 0
-    index = np.int64([0, 0])
+    index: np.ndarray = np.int64([0, 0])
     for i in np.arange(0, array.shape[0], 1):
         for j in np.arange(0, array.shape[1], 1):
             if array[i][j][1] == 0:
@@ -141,18 +141,18 @@ def matrix_value(array: np.ndarray) -> Tuple[list, list]:
     same_struct_metric = [1, 1]
     minimal = min(array.shape[0], array.shape[1])
     indexes = []
-    for i in np.arange(0, minimal, 1):
+    for _ in np.arange(0, minimal, 1):
         ind = find_max_index(array)
         indexes.append(ind)
         same_struct_metric[0] += array[ind[0]][ind[1]][0]
         same_struct_metric[1] += array[ind[0]][ind[1]][1]
 
         # Zeroing row
-        for i in np.arange(0, array.shape[1], 1):
-            array[ind[0]][i] = [0, 0]
+        for row in np.arange(0, array.shape[1], 1):
+            array[ind[0]][row] = [0, 0]
         # Zeroing column
-        for j in np.arange(0, array.shape[0], 1):
-            array[j][ind[1]] = [0, 0]
+        for col in np.arange(0, array.shape[0], 1):
+            array[col][ind[1]] = [0, 0]
 
     return same_struct_metric, indexes
 
@@ -201,11 +201,11 @@ def struct_compare(tree1: List[Tuple[int, int]],
     count_of_nodes1 = len(tree1)
     count_of_nodes2 = len(tree2)
 
-    if (count_of_nodes1 == 0 and count_of_nodes2 == 0):
+    if count_of_nodes1 == 0 and count_of_nodes2 == 0:
         return [1, 1]
-    elif (count_of_nodes1 == 0):
+    if count_of_nodes1 == 0:
         return [1, (count_of_nodes2 + 1)]
-    elif (count_of_nodes2 == 0):
+    if count_of_nodes2 == 0:
         return [1, (count_of_nodes1 + 1)]
 
     # Add counting of nodes

@@ -93,7 +93,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             help="Choose one of the following modes of searching plagiarism. "
                  "The 'many_to_many' mode may require more free memory.",
             type=str,
-            choices=["many_to_many"],
+            choices=["many_to_many", "one_to_one"],
             default="many_to_many"
         )
         self.add_argument(

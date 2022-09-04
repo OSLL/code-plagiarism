@@ -11,13 +11,16 @@ from codeplag.utils import (CodeplagEngine, compare_works, fast_compare,
                             get_files_path_from_directory)
 
 CWD = Path(os.path.dirname(os.path.abspath(__file__)))
+FILEPATH1 = CWD / './data/test1.py'
+FILEPATH2 = CWD / './data/test2.py'
+FILEPATH3 = CWD / './data/test3.py'
 
 
 def test_fast_compare_normal():
-    tree1 = get_ast_from_filename(CWD / './data/test1.py')
-    tree2 = get_ast_from_filename(CWD / './data/test2.py')
-    features1 = get_features_from_ast(tree1)
-    features2 = get_features_from_ast(tree2)
+    tree1 = get_ast_from_filename(FILEPATH1)
+    tree2 = get_ast_from_filename(FILEPATH2)
+    features1 = get_features_from_ast(tree1, FILEPATH1)
+    features2 = get_features_from_ast(tree2, FILEPATH2)
 
     metrics = fast_compare(features1, features2)
 
@@ -37,12 +40,12 @@ def test_fast_compare_normal():
 
 
 def test_compare_works():
-    tree1 = get_ast_from_filename(CWD / './data/test1.py')
-    tree2 = get_ast_from_filename(CWD / './data/test2.py')
-    tree3 = get_ast_from_filename(CWD / './data/test3.py')
-    features1 = get_features_from_ast(tree1)
-    features2 = get_features_from_ast(tree2)
-    features3 = get_features_from_ast(tree3)
+    tree1 = get_ast_from_filename(FILEPATH1)
+    tree2 = get_ast_from_filename(FILEPATH2)
+    tree3 = get_ast_from_filename(FILEPATH3)
+    features1 = get_features_from_ast(tree1, FILEPATH1)
+    features2 = get_features_from_ast(tree2, FILEPATH2)
+    features3 = get_features_from_ast(tree3, FILEPATH3)
 
     compare_info = compare_works(features1, features2)
 
@@ -81,10 +84,10 @@ def test_save_result(mocker):
         logging.Logger,
         ['--extension', 'py']
     )
-    tree1 = get_ast_from_filename(CWD / './data/test1.py')
-    tree2 = get_ast_from_filename(CWD / './data/test2.py')
-    features1 = get_features_from_ast(tree1)
-    features2 = get_features_from_ast(tree2)
+    tree1 = get_ast_from_filename(FILEPATH1)
+    tree2 = get_ast_from_filename(FILEPATH2)
+    features1 = get_features_from_ast(tree1, FILEPATH1)
+    features2 = get_features_from_ast(tree2, FILEPATH2)
     compare_info = compare_works(features1, features2)
 
     mocker.patch('builtins.open', side_effect=FileNotFoundError)
