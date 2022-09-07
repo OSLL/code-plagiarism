@@ -15,26 +15,18 @@ from decouple import Config, RepositoryEnv
 
 from codeplag.algorithms.featurebased import counter_metric, struct_compare
 from codeplag.algorithms.tokenbased import value_jakkar_coef
-from codeplag.astfeatures import ASTFeatures
 from codeplag.codeplagcli import CodeplagCLI
-from codeplag.consts import (FILE_DOWNLOAD_PATH, GET_FRAZE, LOG_PATH,
-                             SUPPORTED_EXTENSIONS)
+from codeplag.consts import GET_FRAZE, LOG_PATH, SUPPORTED_EXTENSIONS
 from codeplag.cplag.const import COMPILE_ARGS
-from codeplag.cplag.tree import get_features as get_features_cpp
-from codeplag.cplag.util import \
-    get_cursor_from_file as get_cursor_from_file_cpp
 from codeplag.cplag.util import \
     get_works_from_filepaths as get_works_from_filepaths_cpp
 from codeplag.display import print_compare_result
+from codeplag.getfeatures import get_work_features
 from codeplag.logger import get_logger
 from codeplag.pyplag.utils import \
-    get_ast_from_content as get_ast_from_content_py
-from codeplag.pyplag.utils import \
-    get_features_from_ast as get_features_from_ast_py
-from codeplag.pyplag.utils import \
     get_works_from_filepaths as get_works_from_filepaths_py
-from codeplag.types import (CompareInfo, FastMetrics, StructuresInfo,
-                            WorksReport)
+from codeplag.types import (ASTFeatures, CompareInfo, FastMetrics,
+                            StructuresInfo, WorksReport)
 from webparsers.github_parser import GitHubParser
 
 
@@ -197,35 +189,17 @@ class CodeplagEngine:
                 logger=get_logger('webparsers', LOG_PATH)
             )
 
-    def append_work_features(self,
-                             file_content: str,
-                             url_to_file: str) -> None:
-        if self.extension == 'py':
-            tree = get_ast_from_content_py(file_content, url_to_file)
-            features = get_features_from_ast_py(tree, url_to_file)
-            self.works.append(features)
-        elif self.extension == 'cpp':
-            with open(FILE_DOWNLOAD_PATH, 'w', encoding='utf-8') as out_file:
-                out_file.write(file_content)
-            cursor = get_cursor_from_file_cpp(FILE_DOWNLOAD_PATH, COMPILE_ARGS)
-            features = get_features_cpp(cursor, FILE_DOWNLOAD_PATH)
-            os.remove(FILE_DOWNLOAD_PATH)
-            features.filepath = url_to_file
-            self.works.append(features)
-
-    def get_works_from_files(self) -> None:
+    def get_features_from_files(self) -> List[ASTFeatures]:
         if not self.files:
-            return
+            return []
 
         self.logger.info(f'{GET_FRAZE} files')
         if self.extension == 'py':
-            self.works.extend(get_works_from_filepaths_py(self.files))
-        elif self.extension == 'cpp':
-            self.works.extend(
-                get_works_from_filepaths_cpp(
-                    self.files,
-                    COMPILE_ARGS
-                )
+            return get_works_from_filepaths_py(self.files)
+        if self.extension == 'cpp':
+            return get_works_from_filepaths_cpp(
+                self.files,
+                COMPILE_ARGS
             )
 
     def get_works_from_dirs(self) -> None:
@@ -252,7 +226,9 @@ class CodeplagEngine:
             self.logger.info(f"{GET_FRAZE} GitHub urls")
         for github_file in self.github_files:
             file_content = self.github_parser.get_file_from_url(github_file)[0]
-            self.append_work_features(file_content, github_file)
+            self.works.append(
+                get_work_features(file_content, github_file, self.extension)
+            )
 
     def get_works_from_github_project_folders(self) -> None:
         for github_project in self.github_project_folders:
@@ -261,7 +237,9 @@ class CodeplagEngine:
                 github_project
             )
             for file_content, url_file in gh_prj_files:
-                self.append_work_features(file_content, url_file)
+                self.works.append(
+                    get_work_features(file_content, url_file, self.extension)
+                )
 
     def get_works_from_users_repos(self) -> None:
         if not self.github_user:
@@ -277,7 +255,9 @@ class CodeplagEngine:
                 repo.html_url
             )
             for file_content, url_file in files:
-                self.append_work_features(file_content, url_file)
+                self.works.append(
+                    get_work_features(file_content, url_file, self.extension)
+                )
 
     def save_result(self,
                     first_work: ASTFeatures,
@@ -322,7 +302,7 @@ class CodeplagEngine:
 
         begin_time = perf_counter()
 
-        self.get_works_from_files()
+        features_from_files = self.get_features_from_files()
         self.get_works_from_dirs()
         self.get_works_from_github_files()
         self.get_works_from_github_project_folders()
@@ -330,6 +310,8 @@ class CodeplagEngine:
 
         self.logger.info("Starting searching for plagiarism")
         if self.mode == 'many_to_many':
+            self.works.extend(features_from_files)
+
             count_works = len(self.works)
             iterations = int((count_works * (count_works - 1)) / 2)
             iteration = 0

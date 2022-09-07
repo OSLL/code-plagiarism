@@ -6,7 +6,7 @@ import argparse
 from pathlib import Path
 from typing import List
 
-from codeplag.consts import UTIL_NAME, UTIL_VERSION
+from codeplag.consts import MODE_CHOICE, UTIL_NAME, UTIL_VERSION
 from webparsers.types import GitHubContentUrl
 
 
@@ -93,7 +93,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             help="Choose one of the following modes of searching plagiarism. "
                  "The 'many_to_many' mode may require more free memory.",
             type=str,
-            choices=["many_to_many", "one_to_one"],
+            choices=MODE_CHOICE,
             default="many_to_many"
         )
         self.add_argument(

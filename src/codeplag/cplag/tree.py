@@ -3,8 +3,8 @@ from typing import List
 
 from clang.cindex import Cursor, TokenKind
 
-from codeplag.astfeatures import ASTFeatures
 from codeplag.cplag.const import IGNORE, OPERATORS
+from codeplag.types import ASTFeatures
 
 
 def get_not_ignored(tree: Cursor, src: Path) -> List[Cursor]:

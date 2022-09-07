@@ -2,11 +2,11 @@ import ast
 from pathlib import Path
 from typing import List, Optional
 
-from codeplag.astfeatures import ASTFeatures
 from codeplag.consts import LOG_PATH
 from codeplag.display import red_bold
 from codeplag.logger import get_logger
 from codeplag.pyplag.astwalkers import ASTWalker
+from codeplag.types import ASTFeatures
 
 # TODO: Remove from globals
 logger = get_logger(__name__, LOG_PATH)

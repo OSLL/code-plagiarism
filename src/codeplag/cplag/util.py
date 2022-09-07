@@ -3,8 +3,8 @@ from typing import List, Optional
 
 from clang.cindex import Cursor, Index, TranslationUnit
 
-from codeplag.astfeatures import ASTFeatures
 from codeplag.cplag.tree import get_features
+from codeplag.types import ASTFeatures
 
 
 def get_cursor_from_file(filepath: Path,

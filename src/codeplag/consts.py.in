@@ -1,10 +1,13 @@
-from pathlib import Path
 import re
+from pathlib import Path
+from typing import List
 
+from codeplag.types import Mode
 
 FILE_DOWNLOAD_PATH = Path("/tmp/@UTIL_NAME@_download.out")
 GET_FRAZE = 'Getting works features from'
 LOG_PATH = Path("@CODEPLAG_LOG_PATH@")
+MODE_CHOICE: List[Mode] = ["many_to_many", "one_to_one"]
 SUPPORTED_EXTENSIONS = {
     'py': (
         re.compile(r'\.py$'),

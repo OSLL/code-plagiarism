@@ -4,9 +4,9 @@ from pathlib import Path
 
 import numpy as np
 
-from codeplag.astfeatures import ASTFeatures
 from codeplag.pyplag.astwalkers import ASTWalker
 from codeplag.pyplag.utils import get_ast_from_filename
+from codeplag.types import ASTFeatures
 
 pwd = Path(os.path.dirname(os.path.abspath(__file__)))
 

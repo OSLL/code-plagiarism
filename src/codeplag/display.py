@@ -5,8 +5,7 @@ from typing import List
 import numpy as np
 import pandas as pd
 
-from codeplag.astfeatures import ASTFeatures
-from codeplag.types import CompareInfo, NodeCodePlace
+from codeplag.types import ASTFeatures, CompareInfo, NodeCodePlace
 
 
 class Color(Enum):
