@@ -1,27 +1,24 @@
 import json
 import logging
-import os
+import math
 import sys
 import uuid
 from datetime import datetime
+from itertools import combinations
 from pathlib import Path
 from time import perf_counter
 from typing import List, Optional
 
 import argcomplete
 import numpy as np
-from decouple import Config, RepositoryEnv
 
 from codeplag.algorithms.featurebased import counter_metric, struct_compare
 from codeplag.algorithms.tokenbased import value_jakkar_coef
 from codeplag.codeplagcli import CodeplagCLI
-from codeplag.consts import GET_FRAZE, LOG_PATH, SUPPORTED_EXTENSIONS
 from codeplag.display import print_compare_result
 from codeplag.getfeatures import FeaturesGetter
-from codeplag.logger import get_logger
 from codeplag.types import (ASTFeatures, CompareInfo, FastMetrics,
                             StructuresInfo, WorksReport)
-from webparsers.github_parser import GitHubParser
 
 
 def fast_compare(features_f: ASTFeatures,
@@ -90,6 +87,28 @@ def compare_works(features1: ASTFeatures,
     )
 
 
+def calc_iterations(count, mode: str = 'many_to_many') -> int:
+    if mode == 'many_to_many':
+        iterations = (count * (count - 1)) // 2
+    if mode == 'one_to_one':
+        iterations = math.factorial(count) / 2 * math.factorial(count - 2)
+
+    return iterations
+
+
+def calc_progress(
+    iteration: int,
+    iterations: int,
+    internal_iteration: int = 0,
+    internal_iterations: int = 0
+) -> float:
+    progress = iteration / iterations
+    if internal_iteration * internal_iterations:
+        progress += internal_iteration / (internal_iterations * iterations)
+
+    return progress
+
+
 class CodeplagEngine(FeaturesGetter):
 
     def __init__(self, logger: logging.Logger, args: List[str] = None) -> None:
@@ -101,7 +120,10 @@ class CodeplagEngine(FeaturesGetter):
 
         parsed_args = vars(self.parser.parse_args(args))
         super(CodeplagEngine, self).__init__(
-            extension=parsed_args.pop('extension'), logger=logger
+            extension=parsed_args.pop('extension'),
+            environment=parsed_args.pop('environment', None),
+            all_branches=parsed_args.pop('all_branches', False),
+            logger=logger
         )
 
         self.mode: str = parsed_args.pop('mode', 'many_to_many')
@@ -116,89 +138,10 @@ class CodeplagEngine(FeaturesGetter):
             'github_project_folders', []
         )
         self.github_user: str = parsed_args.pop('github_user', '')
-        self._set_access_token(parsed_args.pop('environment', None))
-        self._set_github_parser(parsed_args.pop('all_branches', False))
         self.regexp: str = parsed_args.pop('regexp', '')
 
         self.files: List[Path] = parsed_args.pop('files', [])
         self.directories: List[Path] = parsed_args.pop('directories', [])
-
-        self.works: List[ASTFeatures] = []
-
-    def _set_access_token(self, env_path: Optional[Path]) -> None:
-        if not env_path:
-            self.logger.warning(
-                "Env file not found or not a file. "
-                "Trying to get token from environment."
-            )
-            self._access_token: str = os.environ.get('ACCESS_TOKEN', '')
-        else:
-            env_config = Config(RepositoryEnv(env_path))
-            self._access_token: str = env_config.get('ACCESS_TOKEN', default='')
-
-        if not self._access_token:
-            self.logger.warning('GitHub access token is not defined.')
-
-    def _set_github_parser(self, branch_policy: bool) -> None:
-        if any(
-            [
-                self.github_files,
-                self.github_project_folders,
-                self.github_user
-            ]
-        ):
-            self.github_parser = GitHubParser(
-                file_extensions=SUPPORTED_EXTENSIONS[
-                    self.extension
-                ],
-                check_policy=branch_policy,
-                access_token=self._access_token,
-                logger=get_logger('webparsers', LOG_PATH)
-            )
-
-    def get_works_from_github_files(self) -> None:
-        if self.github_files:
-            self.logger.info(f"{GET_FRAZE} GitHub urls")
-        for github_file in self.github_files:
-            file_content = self.github_parser.get_file_from_url(github_file)[0]
-            self.works.append(
-                self.get_features_from_content(
-                    file_content, github_file
-                )
-            )
-
-    def get_works_from_github_project_folders(self) -> None:
-        for github_project in self.github_project_folders:
-            self.logger.info(f'{GET_FRAZE} {github_project}')
-            gh_prj_files = self.github_parser.get_files_generator_from_dir_url(
-                github_project
-            )
-            for file_content, url_file in gh_prj_files:
-                self.works.append(
-                    self.get_features_from_content(
-                        file_content, url_file
-                    )
-                )
-
-    def get_works_from_users_repos(self) -> None:
-        if not self.github_user:
-            return
-
-        repos = self.github_parser.get_list_of_repos(
-            owner=self.github_user,
-            reg_exp=self.regexp
-        )
-        for repo in repos:
-            self.logger.info(f'{GET_FRAZE} {repo.html_url}')
-            files = self.github_parser.get_files_generator_from_repo_url(
-                repo.html_url
-            )
-            for file_content, url_file in files:
-                self.works.append(
-                    self.get_features_from_content(
-                        file_content, url_file
-                    )
-                )
 
     def save_result(self,
                     first_work: ASTFeatures,
@@ -243,31 +186,45 @@ class CodeplagEngine(FeaturesGetter):
 
         begin_time = perf_counter()
 
+        independent = (self.mode == "one_to_one")
         features_from_files = self.get_features_from_files(self.files)
-        features_from_dirs = self.get_works_from_dirs(self.directories)
-        self.get_works_from_github_files()
-        self.get_works_from_github_project_folders()
-        self.get_works_from_users_repos()
+        features_from_dirs = self.get_works_from_dirs(
+            self.directories, independent
+        )
+        features_from_gh_files = self.get_works_from_github_files(
+            self.github_files
+        )
+        features_from_gh_pr_fol = self.get_works_from_github_project_folders(
+            self.github_project_folders, independent
+        )
+        features_form_gh_users = self.get_works_from_users_repos(
+            self.github_user, self.regexp, independent
+        )
 
         self.logger.info("Starting searching for plagiarism")
         if self.mode == 'many_to_many':
-            self.works.extend(features_from_files)
-            self.works.extend(features_from_dirs)
+            works: List[ASTFeatures] = []
+            works.extend(features_from_files)
+            works.extend(features_from_dirs)
+            works.extend(features_from_gh_files)
+            works.extend(features_from_gh_pr_fol)
+            works.extend(features_form_gh_users)
 
-            count_works = len(self.works)
-            iterations = int((count_works * (count_works - 1)) / 2)
+            count_works = len(works)
+            iterations = calc_iterations(count_works)
             iteration = 0
-            for i, work1 in enumerate(self.works):
-                for j, work2 in enumerate(self.works):
+            for i, work1 in enumerate(works):
+                for j, work2 in enumerate(works):
                     if i <= j:
                         continue
 
                     if self.show_progress:
-                        iteration += 1
+                        progress = calc_progress(iteration, iterations)
                         print(
-                            f"Check progress: {iteration / iterations:.2%}.",
+                            f"Check progress: {progress:.2%}.",
                             end='\r'
                         )
+                        iteration += 1
 
                     metrics = compare_works(
                         work1,
@@ -290,8 +247,69 @@ class CodeplagEngine(FeaturesGetter):
                             metrics
                         )
         elif self.mode == 'one_to_one':
-            # TODO
-            pass
+            combined_elements = filter(
+                bool,
+                (
+                    features_from_files,
+                    *features_from_dirs,
+                    features_from_gh_files,
+                    *features_from_gh_pr_fol,
+                    *features_form_gh_users
+                )
+            )
+            if self.show_progress:
+                combined_elements = list(combined_elements)
+                count_sequences = len(combined_elements)
+                iterations = calc_iterations(count_sequences, self.mode)
+                iteration = 0
+
+            cases = combinations(
+                combined_elements,
+                r=2
+            )
+            for case in cases:
+                first_sequence, second_sequence = case
+                internal_iterations = (
+                    len(first_sequence) * len(second_sequence)
+                )
+                internal_iteration = 0
+                for work1 in first_sequence:
+                    for work2 in second_sequence:
+                        if self.show_progress:
+                            progress = calc_progress(
+                                iteration,
+                                iterations,
+                                internal_iteration,
+                                internal_iterations
+                            )
+                            print(
+                                f"Check progress: {progress:.2%}.",
+                                end='\r'
+                            )
+                            internal_iteration += 1
+
+                        metrics = compare_works(
+                            work1,
+                            work2,
+                            self.threshold
+                        )
+                        if not metrics.structure:
+                            continue
+
+                        print_compare_result(
+                            work1,
+                            work2,
+                            metrics,
+                            self.threshold
+                        )
+                        if self.reports_directory:
+                            self.save_result(
+                                work1,
+                                work2,
+                                metrics
+                            )
+                if self.show_progress:
+                    iteration += 1
 
         self.logger.debug(f'Time for all {perf_counter() - begin_time:.2f} s')
         self.logger.info("Ending searching for plagiarism.")
