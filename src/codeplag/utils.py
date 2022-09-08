@@ -1,13 +1,12 @@
 import json
 import logging
 import os
-import re
 import sys
 import uuid
 from datetime import datetime
 from pathlib import Path
 from time import perf_counter
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 import argcomplete
 import numpy as np
@@ -17,14 +16,9 @@ from codeplag.algorithms.featurebased import counter_metric, struct_compare
 from codeplag.algorithms.tokenbased import value_jakkar_coef
 from codeplag.codeplagcli import CodeplagCLI
 from codeplag.consts import GET_FRAZE, LOG_PATH, SUPPORTED_EXTENSIONS
-from codeplag.cplag.const import COMPILE_ARGS
-from codeplag.cplag.util import \
-    get_works_from_filepaths as get_works_from_filepaths_cpp
 from codeplag.display import print_compare_result
-from codeplag.getfeatures import get_work_features
+from codeplag.getfeatures import FeaturesGetter
 from codeplag.logger import get_logger
-from codeplag.pyplag.utils import \
-    get_works_from_filepaths as get_works_from_filepaths_py
 from codeplag.types import (ASTFeatures, CompareInfo, FastMetrics,
                             StructuresInfo, WorksReport)
 from webparsers.github_parser import GitHubParser
@@ -96,46 +90,19 @@ def compare_works(features1: ASTFeatures,
     )
 
 
-def get_files_path_from_directory(
-    directory: Path,
-    extensions: Tuple[re.Pattern, ...] = None
-) -> List[Path]:
-    '''
-        The function returns paths to all files in the directory
-        and its subdirectories which have the extension transmitted
-        in arguments
-    '''
-    if not extensions:
-        extensions = SUPPORTED_EXTENSIONS['default']
-
-    allowed_files = []
-    for current_dir, _folders, files in os.walk(directory):
-        for file in files:
-            allowed = False
-            for extension in extensions:
-                if re.search(extension, file):
-                    allowed = True
-
-                    break
-            if allowed:
-                allowed_files.append(Path(current_dir, file))
-
-    return allowed_files
-
-
-class CodeplagEngine:
+class CodeplagEngine(FeaturesGetter):
 
     def __init__(self, logger: logging.Logger, args: List[str] = None) -> None:
-        self.logger: logging.Logger = logger
-
-        self.parser: CodeplagCLI = CodeplagCLI()
+        self.parser = CodeplagCLI()
         argcomplete.autocomplete(self.parser)
 
         if args is None:
             args = sys.argv[1:]
 
         parsed_args = vars(self.parser.parse_args(args))
-        self.extension: str = parsed_args.pop('extension')
+        super(CodeplagEngine, self).__init__(
+            extension=parsed_args.pop('extension'), logger=logger
+        )
 
         self.mode: str = parsed_args.pop('mode', 'many_to_many')
         self.show_progress: bool = parsed_args.pop('show_progress', False)
@@ -189,45 +156,15 @@ class CodeplagEngine:
                 logger=get_logger('webparsers', LOG_PATH)
             )
 
-    def get_features_from_files(self) -> List[ASTFeatures]:
-        if not self.files:
-            return []
-
-        self.logger.info(f'{GET_FRAZE} files')
-        if self.extension == 'py':
-            return get_works_from_filepaths_py(self.files)
-        if self.extension == 'cpp':
-            return get_works_from_filepaths_cpp(
-                self.files,
-                COMPILE_ARGS
-            )
-
-    def get_works_from_dirs(self) -> None:
-        for directory in self.directories:
-            self.logger.info(f'{GET_FRAZE} {directory}')
-            filepaths = get_files_path_from_directory(
-                directory,
-                extensions=SUPPORTED_EXTENSIONS[self.extension]
-            )
-            if self.extension == 'py':
-                self.works.extend(
-                    get_works_from_filepaths_py(filepaths)
-                )
-            elif self.extension == 'cpp':
-                self.works.extend(
-                    get_works_from_filepaths_cpp(
-                        filepaths,
-                        COMPILE_ARGS
-                    )
-                )
-
     def get_works_from_github_files(self) -> None:
         if self.github_files:
             self.logger.info(f"{GET_FRAZE} GitHub urls")
         for github_file in self.github_files:
             file_content = self.github_parser.get_file_from_url(github_file)[0]
             self.works.append(
-                get_work_features(file_content, github_file, self.extension)
+                self.get_features_from_content(
+                    file_content, github_file
+                )
             )
 
     def get_works_from_github_project_folders(self) -> None:
@@ -238,7 +175,9 @@ class CodeplagEngine:
             )
             for file_content, url_file in gh_prj_files:
                 self.works.append(
-                    get_work_features(file_content, url_file, self.extension)
+                    self.get_features_from_content(
+                        file_content, url_file
+                    )
                 )
 
     def get_works_from_users_repos(self) -> None:
@@ -256,7 +195,9 @@ class CodeplagEngine:
             )
             for file_content, url_file in files:
                 self.works.append(
-                    get_work_features(file_content, url_file, self.extension)
+                    self.get_features_from_content(
+                        file_content, url_file
+                    )
                 )
 
     def save_result(self,
@@ -302,8 +243,8 @@ class CodeplagEngine:
 
         begin_time = perf_counter()
 
-        features_from_files = self.get_features_from_files()
-        self.get_works_from_dirs()
+        features_from_files = self.get_features_from_files(self.files)
+        features_from_dirs = self.get_works_from_dirs(self.directories)
         self.get_works_from_github_files()
         self.get_works_from_github_project_folders()
         self.get_works_from_users_repos()
@@ -311,6 +252,7 @@ class CodeplagEngine:
         self.logger.info("Starting searching for plagiarism")
         if self.mode == 'many_to_many':
             self.works.extend(features_from_files)
+            self.works.extend(features_from_dirs)
 
             count_works = len(self.works)
             iterations = int((count_works * (count_works - 1)) / 2)

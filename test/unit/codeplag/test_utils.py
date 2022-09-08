@@ -7,8 +7,7 @@ from unittest.mock import call
 import pytest
 
 from codeplag.pyplag.utils import get_ast_from_filename, get_features_from_ast
-from codeplag.utils import (CodeplagEngine, compare_works, fast_compare,
-                            get_files_path_from_directory)
+from codeplag.utils import CodeplagEngine, compare_works, fast_compare
 
 CWD = Path(os.path.dirname(os.path.abspath(__file__)))
 FILEPATH1 = CWD / './data/test1.py'
@@ -68,14 +67,6 @@ def test_compare_works():
     assert compare_info2.fast.literals == 0.0
     assert compare_info2.fast.weighted_average == pytest.approx(0.218, 0.001)
     assert compare_info2.structure is None
-
-
-def test_get_files_path_from_directory():
-    files = get_files_path_from_directory(CWD, extensions=(r"\.py$",))
-
-    assert CWD / 'test_utils.py' in files
-    assert CWD / 'data/test1.py' in files
-    assert CWD / 'data/test2.py' in files
 
 
 def test_save_result(mocker):
