@@ -7,7 +7,8 @@ from unittest.mock import call
 import pytest
 
 from codeplag.pyplag.utils import get_ast_from_filename, get_features_from_ast
-from codeplag.utils import CodeplagEngine, compare_works, fast_compare
+from codeplag.utils import (CodeplagEngine, calc_iterations, calc_progress,
+                            compare_works, fast_compare)
 
 CWD = Path(os.path.dirname(os.path.abspath(__file__)))
 FILEPATH1 = CWD / './data/test1.py'
@@ -115,3 +116,16 @@ def test_save_result(mocker):
     open.assert_called_once()
     assert re.search('src/.*[.]json$', open.call_args[0][0].__str__())
     assert re.search('w', open.call_args[0][1].__str__())
+
+
+def test_calc_progress():
+    assert calc_progress(4, 10) == 0.4
+    assert calc_progress(10, 0) == 0.0
+    assert calc_progress(5, 10, 15, 0) == 0.5
+    assert calc_progress(5, 6, 1, 4) == 0.875
+
+
+def test_calc_iterations():
+    assert calc_iterations(10) == 45
+    assert calc_iterations(3, 'one_to_one') == 3
+    assert calc_iterations(10, '') == 0

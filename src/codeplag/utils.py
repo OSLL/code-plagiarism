@@ -89,11 +89,11 @@ def compare_works(features1: ASTFeatures,
 
 def calc_iterations(count, mode: str = 'many_to_many') -> int:
     if mode == 'many_to_many':
-        iterations = (count * (count - 1)) // 2
+        return (count * (count - 1)) // 2
     if mode == 'one_to_one':
-        iterations = math.factorial(count) / 2 * math.factorial(count - 2)
+        return math.factorial(count) / 2 * math.factorial(count - 2)
 
-    return iterations
+    return 0
 
 
 def calc_progress(
@@ -102,7 +102,13 @@ def calc_progress(
     internal_iteration: int = 0,
     internal_iterations: int = 0
 ) -> float:
+    if iterations == 0:
+        return 0.0
+
     progress = iteration / iterations
+    if internal_iterations == 0:
+        return progress
+
     if internal_iteration * internal_iterations:
         progress += internal_iteration / (internal_iterations * iterations)
 
@@ -176,6 +182,32 @@ class CodeplagEngine(FeaturesGetter):
                 "Not enough rights to write reports to the folder."
             )
 
+    def do_step(self, work1: ASTFeatures, work2: ASTFeatures) -> None:
+        metrics = compare_works(work1, work2, self.threshold)
+        if not metrics.structure:
+            return
+
+        print_compare_result(
+            work1,
+            work2,
+            metrics,
+            self.threshold
+        )
+        if self.reports_directory:
+            self.save_result(work1, work2, metrics)
+
+    def calc_and_print_progress(
+        self,
+        iteration: int,
+        iterations: int,
+        internal_iteration: int = 0,
+        internal_iterations: int = 0
+    ) -> None:
+        progress = calc_progress(
+            iteration, iterations, internal_iteration, internal_iterations
+        )
+        print(f"Check progress: {progress:.2%}.", end='\r')
+
     def run(self) -> None:
         self.logger.debug("Starting codeplag util")
 
@@ -219,33 +251,12 @@ class CodeplagEngine(FeaturesGetter):
                         continue
 
                     if self.show_progress:
-                        progress = calc_progress(iteration, iterations)
-                        print(
-                            f"Check progress: {progress:.2%}.",
-                            end='\r'
+                        self.calc_and_print_progress(
+                            iteration, iterations
                         )
                         iteration += 1
 
-                    metrics = compare_works(
-                        work1,
-                        work2,
-                        self.threshold
-                    )
-                    if not metrics.structure:
-                        continue
-
-                    print_compare_result(
-                        work1,
-                        work2,
-                        metrics,
-                        self.threshold
-                    )
-                    if self.reports_directory:
-                        self.save_result(
-                            work1,
-                            work2,
-                            metrics
-                        )
+                    self.do_step(work1, work2)
         elif self.mode == 'one_to_one':
             combined_elements = filter(
                 bool,
@@ -276,38 +287,15 @@ class CodeplagEngine(FeaturesGetter):
                 for work1 in first_sequence:
                     for work2 in second_sequence:
                         if self.show_progress:
-                            progress = calc_progress(
+                            self.calc_and_print_progress(
                                 iteration,
                                 iterations,
                                 internal_iteration,
                                 internal_iterations
                             )
-                            print(
-                                f"Check progress: {progress:.2%}.",
-                                end='\r'
-                            )
                             internal_iteration += 1
 
-                        metrics = compare_works(
-                            work1,
-                            work2,
-                            self.threshold
-                        )
-                        if not metrics.structure:
-                            continue
-
-                        print_compare_result(
-                            work1,
-                            work2,
-                            metrics,
-                            self.threshold
-                        )
-                        if self.reports_directory:
-                            self.save_result(
-                                work1,
-                                work2,
-                                metrics
-                            )
+                        self.do_step(work1, work2)
                 if self.show_progress:
                     iteration += 1
 
