@@ -1,22 +1,26 @@
 import logging
 import os
 import re
+from pathlib import Path
 from unittest.mock import call
 
 import pytest
 
 from codeplag.pyplag.utils import get_ast_from_filename, get_features_from_ast
-from codeplag.utils import (CodeplagEngine, compare_works, fast_compare,
-                            get_files_path_from_directory)
+from codeplag.utils import (CodeplagEngine, calc_iterations, calc_progress,
+                            compare_works, fast_compare)
 
-CWD = os.path.dirname(os.path.abspath(__file__))
+CWD = Path(os.path.dirname(os.path.abspath(__file__)))
+FILEPATH1 = CWD / './data/test1.py'
+FILEPATH2 = CWD / './data/test2.py'
+FILEPATH3 = CWD / './data/test3.py'
 
 
 def test_fast_compare_normal():
-    tree1 = get_ast_from_filename(os.path.join(CWD, './data/test1.py'))
-    tree2 = get_ast_from_filename(os.path.join(CWD, './data/test2.py'))
-    features1 = get_features_from_ast(tree1)
-    features2 = get_features_from_ast(tree2)
+    tree1 = get_ast_from_filename(FILEPATH1)
+    tree2 = get_ast_from_filename(FILEPATH2)
+    features1 = get_features_from_ast(tree1, FILEPATH1)
+    features2 = get_features_from_ast(tree2, FILEPATH2)
 
     metrics = fast_compare(features1, features2)
 
@@ -36,12 +40,12 @@ def test_fast_compare_normal():
 
 
 def test_compare_works():
-    tree1 = get_ast_from_filename(os.path.join(CWD, './data/test1.py'))
-    tree2 = get_ast_from_filename(os.path.join(CWD, './data/test2.py'))
-    tree3 = get_ast_from_filename(os.path.join(CWD, './data/test3.py'))
-    features1 = get_features_from_ast(tree1)
-    features2 = get_features_from_ast(tree2)
-    features3 = get_features_from_ast(tree3)
+    tree1 = get_ast_from_filename(FILEPATH1)
+    tree2 = get_ast_from_filename(FILEPATH2)
+    tree3 = get_ast_from_filename(FILEPATH3)
+    features1 = get_features_from_ast(tree1, FILEPATH1)
+    features2 = get_features_from_ast(tree2, FILEPATH2)
+    features3 = get_features_from_ast(tree3, FILEPATH3)
 
     compare_info = compare_works(features1, features2)
 
@@ -66,41 +70,35 @@ def test_compare_works():
     assert compare_info2.structure is None
 
 
-def test_get_files_path_from_directory():
-    files = get_files_path_from_directory(CWD, extensions=(r"\.py$",))
-
-    assert os.path.join(CWD, 'test_utils.py') in files
-    assert os.path.join(CWD, 'data/test1.py') in files
-    assert os.path.join(CWD, 'data/test2.py') in files
-
-
 def test_save_result(mocker):
     mocker.patch('logging.Logger')
-    code_engine = CodeplagEngine(logging.Logger)
-    tree1 = get_ast_from_filename(os.path.join(CWD, './data/test1.py'))
-    tree2 = get_ast_from_filename(os.path.join(CWD, './data/test2.py'))
-    features1 = get_features_from_ast(tree1)
-    features2 = get_features_from_ast(tree2)
+    code_engine = CodeplagEngine(
+        logging.Logger,
+        ['--extension', 'py']
+    )
+    tree1 = get_ast_from_filename(FILEPATH1)
+    tree2 = get_ast_from_filename(FILEPATH2)
+    features1 = get_features_from_ast(tree1, FILEPATH1)
+    features2 = get_features_from_ast(tree2, FILEPATH2)
     compare_info = compare_works(features1, features2)
 
     mocker.patch('builtins.open', side_effect=FileNotFoundError)
+    code_engine.reports_directory = Path('/bad_dir')
     code_engine.save_result(
         features1,
         features2,
-        compare_info,
-        '/bad_dir'
+        compare_info
     )
-    open.assert_called_once()
     assert logging.Logger.warning.call_args == call(
         'Provided folder for reports now is not exists.'
     )
 
     mocker.patch('builtins.open', side_effect=PermissionError)
+    code_engine.reports_directory = Path('/etc')
     code_engine.save_result(
         features1,
         features2,
-        compare_info,
-        '/etc'
+        compare_info
     )
     open.assert_called_once()
     assert logging.Logger.warning.call_args == call(
@@ -108,13 +106,26 @@ def test_save_result(mocker):
     )
 
     mocker.patch('builtins.open')
+    code_engine.reports_directory = Path('./src')
     code_engine.save_result(
         features1,
         features2,
-        compare_info,
-        './src'
+        compare_info
     )
 
     open.assert_called_once()
-    assert re.search('./src/.*[.]json$', open.call_args[0][0])
-    assert re.search('w', open.call_args[0][1])
+    assert re.search('src/.*[.]json$', open.call_args[0][0].__str__())
+    assert re.search('w', open.call_args[0][1].__str__())
+
+
+def test_calc_progress():
+    assert calc_progress(4, 10) == 0.4
+    assert calc_progress(10, 0) == 0.0
+    assert calc_progress(5, 10, 15, 0) == 0.5
+    assert calc_progress(5, 6, 1, 4) == 0.875
+
+
+def test_calc_iterations():
+    assert calc_iterations(10) == 45
+    assert calc_iterations(3, 'one_to_one') == 3
+    assert calc_iterations(10, '') == 0

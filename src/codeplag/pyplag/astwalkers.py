@@ -1,9 +1,8 @@
 import ast
 
-from codeplag.astfeatures import ASTFeatures
 from codeplag.pyplag.const import (IGNORE_NODES, KEYWORDS, LITERALS, OPERATORS,
                                    TO_TOKEN)
-from codeplag.types import NodeCodePlace, NodeStructurePlace
+from codeplag.types import ASTFeatures, NodeCodePlace, NodeStructurePlace
 
 
 class ASTWalker(ast.NodeVisitor):

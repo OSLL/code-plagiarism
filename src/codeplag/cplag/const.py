@@ -1,8 +1,10 @@
+from typing import List
+
 import ccsyspath
 from clang.cindex import CursorKind
 
 
-def get_compile_args():
+def get_compile_args() -> List[str]:
     syspath = ccsyspath.system_include_paths('clang++')
     incargs = [b'-I' + inc for inc in syspath]
 

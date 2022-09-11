@@ -1,22 +1,27 @@
 import os
 import unittest
+from pathlib import Path
 
 from clang.cindex import CursorKind
 
-from codeplag.astfeatures import ASTFeatures
 from codeplag.cplag.const import COMPILE_ARGS
 from codeplag.cplag.tree import generic_visit, get_features, get_not_ignored
 from codeplag.cplag.util import get_cursor_from_file
+from codeplag.types import ASTFeatures
 
 
 class TestTree(unittest.TestCase):
 
     def setUp(self):
-        self.first_sample_path = os.path.abspath(
-            "test/unit/codeplag/cplag/data/sample1.cpp"
+        self.first_sample_path = Path(
+            os.path.abspath(
+                "test/unit/codeplag/cplag/data/sample1.cpp"
+            )
         )
-        self.second_sample_path = os.path.abspath(
-            "test/unit/codeplag/cplag/data/sample2.cpp"
+        self.second_sample_path = Path(
+            os.path.abspath(
+                "test/unit/codeplag/cplag/data/sample2.cpp"
+            )
         )
         if os.path.exists(self.first_sample_path) and \
            os.path.exists(self.second_sample_path):

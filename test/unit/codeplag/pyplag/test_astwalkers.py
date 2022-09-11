@@ -1,20 +1,21 @@
 import os
 import unittest
+from pathlib import Path
 
 import numpy as np
 
-from codeplag.astfeatures import ASTFeatures
 from codeplag.pyplag.astwalkers import ASTWalker
 from codeplag.pyplag.utils import get_ast_from_filename
+from codeplag.types import ASTFeatures
 
-pwd = os.path.dirname(os.path.abspath(__file__))
+pwd = Path(os.path.dirname(os.path.abspath(__file__)))
 
 
 class TestASTWalkers(unittest.TestCase):
 
     def test_astwalker_class_normal(self):
-        path = os.path.join(pwd, './data/test1.py')
-        tree = get_ast_from_filename(os.path.join(pwd, './data/test1.py'))
+        path = pwd / './data/test1.py'
+        tree = get_ast_from_filename(path)
         features = ASTFeatures(path)
         walker = ASTWalker(features)
         walker.visit(tree)

@@ -12,8 +12,6 @@ INSTALL_REQUIREMENTS = [
     'clang~=14.0',
     'llvmlite~=0.39.0',
     'libclang~=14.0.1',
-    'colorama~=0.4.5',
-    'termcolor~=1.1.0',
     'python-decouple~=3.6',
     'requests~=2.28.1',
 ]

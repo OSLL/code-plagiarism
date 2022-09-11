@@ -16,7 +16,7 @@ def main() -> Literal[0, 1]:
     except Exception:
         logger.error(
             "An unexpected error occurred while running the utility. "
-            f"For getting more information, check file '{LOG_PATH}'."
+            "For getting more information, check file '%s'.", LOG_PATH
         )
         logger.debug("Trace:", exc_info=True)
         return 1

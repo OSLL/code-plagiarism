@@ -42,11 +42,6 @@
   $ make docker-image
   ```
 
-- Starting tests with using created image
-  ```
-  $ make docker-test
-  ```
-
 - Run created a code-plagiarism container
 
   ```
