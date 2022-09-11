@@ -19,7 +19,10 @@ PY_FILES = [
     'setup.py'
 ]
 CPP_DIR = 'test/unit/codeplag/cplag/data'
-PY_DIR = 'test/unit/codeplag/cplag'
+PY_DIRS = [
+    'test/unit/codeplag/cplag',
+    'test/unit'
+]
 REPO_URL = 'https://github.com/OSLL/code-plagiarism'
 REPORTS_FOLDER = os.path.abspath('./reports')
 CPP_GITHUB_FILES = [
@@ -76,10 +79,13 @@ def test_compare_cpp_files(cmd, out):
 @pytest.mark.parametrize(
     "cmd, out",
     [
-        (['--files', *PY_FILES], b'Getting works features from files'),
         (
-            ['--directories', PY_DIR],
-            f'Getting works features from {PY_DIR}'.encode('utf-8')
+            ['--files', *PY_FILES],
+            b'Getting works features from files'
+        ),
+        (
+            ['--directories', *PY_DIRS],
+            f'Getting works features from {PY_DIRS[0]}'.encode('utf-8')
         ),
         (
             ['--github-files', *PY_GITHUB_FILES],
@@ -92,6 +98,10 @@ def test_compare_cpp_files(cmd, out):
         (
             ['--github-user', 'OSLL', '--regexp', 'code-plag'],
             f'Getting works features from {REPO_URL}'.encode('utf-8')
+        ),
+        (
+            ['--directories', *PY_DIRS, '--mode', 'one_to_one'],
+            f'Getting works features from {PY_DIRS[0]}'.encode('utf-8'),
         )
     ]
 )
