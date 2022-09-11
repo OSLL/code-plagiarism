@@ -36,8 +36,8 @@ jobs:
   docker-build-test-autotest:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
       - name: Provide environment variable for autotests
+        uses: actions/checkout@v2
         env:
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
