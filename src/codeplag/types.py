@@ -1,6 +1,8 @@
 from collections import defaultdict
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Literal, NamedTuple, TypedDict
+from typing import (Dict, List, Literal, NamedTuple, Optional, Pattern, Tuple,
+                    TypedDict, Union)
 
 import numpy as np
 
@@ -15,24 +17,26 @@ class NodeStructurePlace(NamedTuple):
     uid: int
 
 
+@dataclass
 class ASTFeatures:
-    def __init__(self, filepath: Path):
-        self.filepath = filepath
+    """Class contains the source code metadata."""
 
-        self.count_of_nodes = 0
-        self.head_nodes: List[str] = []
-        self.operators: Dict[str, int] = defaultdict(lambda: 0)
-        self.keywords: Dict[str, int] = defaultdict(lambda: 0)
-        self.literals: Dict[str, int] = defaultdict(lambda: 0)
+    filepath: Union[Path, str]
 
-        # unique nodes
-        self.unodes: Dict[str, int] = {}
-        self.from_num: Dict[int, str] = {}
-        self.count_unodes = 0
+    count_of_nodes: int = 0
+    head_nodes: List[str] = field(default_factory=list)
+    operators: Dict[str, int] = field(default_factory=lambda: defaultdict(lambda: 0))
+    keywords: Dict[str, int] = field(default_factory=lambda: defaultdict(lambda: 0))
+    literals: Dict[str, int] = field(default_factory=lambda: defaultdict(lambda: 0))
 
-        self.structure: List[NodeStructurePlace] = []
-        self.tokens: List[int] = []
-        self.tokens_pos: List[NodeCodePlace] = []
+    # unique nodes
+    unodes: Dict[str, int] = field(default_factory=dict)
+    from_num: Dict[int, str] = field(default_factory=dict)
+    count_unodes: int = 0
+
+    structure: List[NodeStructurePlace] = field(default_factory=list)
+    tokens: List[int] = field(default_factory=list)
+    tokens_pos: List[NodeCodePlace] = field(default_factory=list)
 
 
 class FastMetrics(NamedTuple):
@@ -50,7 +54,7 @@ class StructuresInfo(NamedTuple):
 
 class CompareInfo(NamedTuple):
     fast: FastMetrics
-    structure: StructuresInfo = None
+    structure: Optional[StructuresInfo] = None
 
 
 class WorksReport(TypedDict):
@@ -63,4 +67,5 @@ class WorksReport(TypedDict):
     structure: dict
 
 
+Extensions = Tuple[Pattern, ...]
 Mode = Literal["many_to_many", "one_to_one"]

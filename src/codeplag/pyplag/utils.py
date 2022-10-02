@@ -1,9 +1,10 @@
 import ast
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Union
 
-from codeplag.consts import LOG_PATH
+from codeplag.consts import GET_FRAZE, LOG_PATH, SUPPORTED_EXTENSIONS
 from codeplag.display import red_bold
+from codeplag.getfeatures import AbstractGetter, get_files_path_from_directory
 from codeplag.logger import get_logger
 from codeplag.pyplag.astwalkers import ASTWalker
 from codeplag.types import ASTFeatures
@@ -12,7 +13,7 @@ from codeplag.types import ASTFeatures
 logger = get_logger(__name__, LOG_PATH)
 
 
-def get_ast_from_content(code: str, path: str) -> Optional[ast.Module]:
+def get_ast_from_content(code: str, path: Union[Path, str]) -> Optional[ast.Module]:
     tree = None
 
     # TODO: Add logging and check for correct colored output
@@ -73,7 +74,7 @@ def get_ast_from_filename(filepath: Path) -> Optional[ast.Module]:
     return tree
 
 
-def get_features_from_ast(tree: ast.Module, filepath: Path) -> ASTFeatures:
+def get_features_from_ast(tree: ast.Module, filepath: Union[Path, str]) -> ASTFeatures:
     features = ASTFeatures(filepath)
     walker = ASTWalker(features)
     walker.visit(tree)
@@ -95,3 +96,40 @@ def get_works_from_filepaths(filenames: List[Path]) -> List[ASTFeatures]:
         works.append(features)
 
     return works
+
+
+class PyFeaturesGetter(AbstractGetter):
+
+    def get_from_content(self, file_content: str, url_to_file: str) -> Optional[ASTFeatures]:
+        tree = get_ast_from_content(file_content, url_to_file)
+        if tree is not None:
+            return get_features_from_ast(tree, url_to_file)
+
+        self.logger.warning(
+            "Unsuccessfully attempt to get AST from the file %s.", url_to_file
+        )
+        return
+
+    def get_from_files(self, files: List[Path]) -> List[ASTFeatures]:
+        if not files:
+            return []
+
+        self.logger.info(f'{GET_FRAZE} files')
+        return get_works_from_filepaths(files)
+
+    def get_from_dirs(
+        self, directories: List[Path], independent: bool = False
+    ) -> Union[List[ASTFeatures], List[List[ASTFeatures]]]:
+        works = []
+        for directory in directories:
+            self.logger.info(f'{GET_FRAZE} {directory}')
+            filepaths = get_files_path_from_directory(
+                directory,
+                extensions=SUPPORTED_EXTENSIONS[self.extension]
+            )
+            if independent:
+                works.append(get_works_from_filepaths(filepaths))
+            else:
+                works.extend(get_works_from_filepaths(filepaths))
+
+        return works

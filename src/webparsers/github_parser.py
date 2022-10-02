@@ -2,17 +2,17 @@ import base64
 import logging
 import re
 import sys
-from typing import Any, Dict, List, Literal, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 
-from webparsers.types import (Branch, GitHubContentUrl, GitHubRepoUrl,
-                              PullRequest, Repository)
+from webparsers.types import (Branch, Extensions, GitHubContentUrl,
+                              GitHubRepoUrl, PullRequest, Repository)
 
 
 class GitHubParser:
-    def __init__(self, file_extensions: Optional[List[str]] = None,
-                 check_policy: Literal[0, 1] = 0, access_token: str = '',
+    def __init__(self, file_extensions: Optional[Extensions] = None,
+                 check_all: bool = False, access_token: str = '',
                  logger: Optional[logging.Logger] = None):
         if logger is None:
             self.logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ class GitHubParser:
 
         self.__file_extensions = file_extensions
         self.__access_token = access_token
-        self.__check_all_branches = check_policy
+        self.__check_all_branches = check_all
 
     def decode_file_content(self, file_in_bytes: bytes) -> str:
         attempt = 1

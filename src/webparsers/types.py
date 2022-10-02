@@ -1,4 +1,4 @@
-from typing import NamedTuple
+from typing import NamedTuple, Pattern, Tuple
 
 
 class GitHubUrl(str):
@@ -68,3 +68,6 @@ class PullRequest(NamedTuple):
     branch: str
     state: str
     draft: bool
+
+
+Extensions = Tuple[Pattern, ...]

@@ -11,7 +11,7 @@ from webparsers.types import Branch, PullRequest, Repository
 
 class Response:
     def __init__(self, response_json: Optional[Union[list, dict]] = None,
-                 status_code: int = 200, message: str = None):
+                 status_code: int = 200, message: Optional[str] = None):
         self.status_code = status_code
         self.message = message
         self.response_json = response_json if response_json else {}
@@ -925,7 +925,7 @@ class TestGitHubParser(unittest.TestCase):
                                                mock_get_name_default_branch):
         test_cases = [
             {
-                'check_policy': 0,
+                'check_all': 0,
                 'arguments': {
                     'repo_url': 'https://github.com/OSLL/code-plagiarism',
                 },
@@ -938,7 +938,7 @@ class TestGitHubParser(unittest.TestCase):
                 ]
             },
             {
-                'check_policy': 1,
+                'check_all': 1,
                 'arguments': {
                     'repo_url': 'https://github.com/OSLL/code-plagiarism',
                 },
@@ -957,7 +957,7 @@ class TestGitHubParser(unittest.TestCase):
         ]
 
         for test_case in test_cases:
-            parser = GitHubParser(check_policy=test_case['check_policy'])
+            parser = GitHubParser(check_all=test_case['check_all'])
             mock_get_files_generator_from_sha_commit.reset_mock()
             mock_get_list_repo_branches.reset_mock()
             mock_get_sha_last_branch_commit.reset_mock()

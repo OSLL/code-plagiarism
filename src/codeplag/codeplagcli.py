@@ -4,7 +4,7 @@ necessary internal classes for it.
 """
 import argparse
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from codeplag.consts import MODE_CHOICE, UTIL_NAME, UTIL_VERSION
 from webparsers.types import GitHubContentUrl
@@ -18,7 +18,7 @@ class CheckUniqueStore(argparse.Action):
         _parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
         values: List[str],
-        _option_string: str = None
+        _option_string: Optional[str] = None
     ):
         if len(values) > len(set(values)):
             raise argparse.ArgumentError(

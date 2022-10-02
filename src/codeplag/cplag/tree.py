@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List
+from typing import List, Union
 
 from clang.cindex import Cursor, TokenKind
 
@@ -61,7 +61,7 @@ def generic_visit(node, features: ASTFeatures, curr_depth: int = 0) -> None:
             generic_visit(child, features, curr_depth + 1)
 
 
-def get_features(tree: Cursor, filepath: str = '') -> ASTFeatures:
+def get_features(tree: Cursor, filepath: Union[Path, str] = '') -> ASTFeatures:
     features = ASTFeatures(filepath)
     for token in tree.get_tokens():
         if (

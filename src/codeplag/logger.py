@@ -1,8 +1,9 @@
 import logging
 import sys
+from pathlib import Path
 
 
-def get_file_handler(filename: str) -> logging.FileHandler:
+def get_file_handler(filename: Path) -> logging.FileHandler:
     log_format = (
         '%(asctime)s - [%(levelname)s] - %(name)s - '
         '(%(filename)s).%(funcName)s(%(lineno)d) - %(message)s'
@@ -31,7 +32,7 @@ def get_stream_handler() -> logging.StreamHandler:
     return stream_handler
 
 
-def get_logger(name: str, filename: str) -> logging.Logger:
+def get_logger(name: str, filename: Path) -> logging.Logger:
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
     logger.addHandler(get_file_handler(filename))
