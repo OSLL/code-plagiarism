@@ -44,7 +44,7 @@ class FastMetrics(NamedTuple):
     operators: float
     keywords: float
     literals: float
-    weighted_average: float
+    weighted_average: np.float64
 
 
 class StructuresInfo(NamedTuple):

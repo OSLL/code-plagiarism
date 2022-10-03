@@ -90,10 +90,13 @@ def compare_works(features1: ASTFeatures,
 
 
 def calc_iterations(count, mode: str = 'many_to_many') -> int:
+    if count <= 1:
+        return 0
+
     if mode == 'many_to_many':
         return (count * (count - 1)) // 2
     if mode == 'one_to_one':
-        return math.factorial(count) / 2 * math.factorial(count - 2)
+        return math.factorial(count) // 2 * math.factorial(count - 2)
 
     return 0
 
