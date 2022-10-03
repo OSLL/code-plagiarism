@@ -23,7 +23,7 @@ class GitHubParser:
         self.__access_token = access_token
         self.__check_all_branches = check_all
 
-    def decode_file_content(self, file_in_bytes: bytes) -> str:
+    def decode_file_content(self, file_in_bytes: bytearray) -> str:
         attempt = 1
         code = None
         while code is None:
@@ -49,7 +49,7 @@ class GitHubParser:
 
     def send_get_request(self,
                          api_url: str,
-                         params: dict = None,
+                         params: Optional[dict] = None,
                          address: str = 'https://api.github.com') -> requests.Response:
         if params is None:
             params = {}
@@ -97,7 +97,7 @@ class GitHubParser:
 
     def get_list_of_repos(self,
                           owner: str,
-                          reg_exp: str = None) -> List[Repository]:
+                          reg_exp: Optional[str] = None) -> List[Repository]:
         '''
             Function returns dict in which keys characterize repository names
             and values characterize repositories links

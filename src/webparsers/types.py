@@ -1,9 +1,16 @@
-from typing import NamedTuple, Pattern, Tuple
+from typing import List, NamedTuple, Pattern, Tuple, Type, TypeVar
+
+from typing_extensions import Self
+
+T = TypeVar("T", bound="GitHubUrl")
 
 
 class GitHubUrl(str):
+    protocol: str
+    host: str = 'github.com'
+    url_parts: List[str]
 
-    def __new__(cls, url: str):
+    def __new__(cls: Type[T], url: str) -> T:
         url_parts = url.rstrip('/').split('/')
         error_msg = f"'{url}' is incorrect link to GitHub"
         if (
@@ -16,14 +23,15 @@ class GitHubUrl(str):
 
         obj = str.__new__(cls, url)
         obj.protocol = url_parts[0][:-1]
-        obj.host = url_parts[2]
         obj.url_parts = url_parts
         return obj
 
 
 class GitHubRepoUrl(GitHubUrl):
+    owner: str
+    repo: str
 
-    def __new__(cls, url: str):
+    def __new__(cls: Type[Self], url: str) -> Self:
         obj = GitHubUrl.__new__(cls, url)
         if len(obj.url_parts) != 5:
             error_msg = f"'{url}' is incorrect link to GitHub repository"
@@ -35,8 +43,12 @@ class GitHubRepoUrl(GitHubUrl):
 
 
 class GitHubContentUrl(GitHubUrl):
+    owner: str
+    repo: str
+    branch: str
+    path: str
 
-    def __new__(cls, url: str):
+    def __new__(cls: Type[Self], url: str) -> Self:
         obj = GitHubUrl.__new__(cls, url)
         if len(obj.url_parts) <= 7:
             error_msg = (
