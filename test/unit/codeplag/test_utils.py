@@ -93,16 +93,18 @@ def test_save_result(mocker):
     features1 = get_features_from_ast(tree1, FILEPATH1)
     features2 = get_features_from_ast(tree2, FILEPATH2)
     compare_info = compare_works(features1, features2)
+    assert compare_info.structure is not None
 
     mocker.patch('builtins.open', side_effect=FileNotFoundError)
     code_engine.reports_directory = Path('/bad_dir')
     code_engine.save_result(
         features1,
         features2,
-        compare_info
+        compare_info.fast,
+        compare_info.structure
     )
     assert mocked_logger.warning.call_args == call(
-        'Provided folder for reports now is not exists.'
+        "The folder for reports isn't provided or now isn't exists."
     )
 
     mocker.patch('builtins.open', side_effect=PermissionError)
@@ -110,7 +112,8 @@ def test_save_result(mocker):
     code_engine.save_result(
         features1,
         features2,
-        compare_info
+        compare_info.fast,
+        compare_info.structure
     )
     open.assert_called_once()
     assert mocked_logger.warning.call_args == call(
@@ -122,7 +125,8 @@ def test_save_result(mocker):
     code_engine.save_result(
         features1,
         features2,
-        compare_info
+        compare_info.fast,
+        compare_info.structure
     )
 
     open.assert_called_once()

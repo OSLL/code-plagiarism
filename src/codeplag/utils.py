@@ -167,14 +167,15 @@ class CodeplagEngine:
     def save_result(self,
                     first_work: ASTFeatures,
                     second_work: ASTFeatures,
-                    metrics: CompareInfo) -> None:
-        if not self.reports_directory.is_dir():
+                    fast_metrics: FastMetrics,
+                    structure: StructuresInfo) -> None:
+        if self.reports_directory is None or not self.reports_directory.is_dir():
             self.features_getter.logger.warning(
-                "Provided folder for reports now is not exists."
+                "The folder for reports isn't provided or now isn't exists."
             )
             return
 
-        struct_info_dict = metrics.structure._asdict()
+        struct_info_dict = structure._asdict()
         struct_info_dict['compliance_matrix'] = (
             struct_info_dict['compliance_matrix'].tolist()
         )
@@ -184,7 +185,7 @@ class CodeplagEngine:
             second_path=second_work.filepath.__str__(),
             first_heads=first_work.head_nodes,
             second_heads=second_work.head_nodes,
-            fast=metrics.fast._asdict(),
+            fast=fast_metrics._asdict(),
             structure=struct_info_dict
         )
 
@@ -209,7 +210,7 @@ class CodeplagEngine:
             self.threshold
         )
         if self.reports_directory:
-            self.save_result(work1, work2, metrics)
+            self.save_result(work1, work2, metrics.fast, metrics.structure)
 
     def calc_and_print_progress(
         self,
