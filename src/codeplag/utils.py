@@ -312,8 +312,8 @@ class CodeplagEngine:
                     for work2 in second_sequence:
                         if self.show_progress:
                             self.calc_and_print_progress(
-                                iteration,
-                                iterations,
+                                iteration,  # type: ignore
+                                iterations,  # type: ignore
                                 internal_iteration,
                                 internal_iterations
                             )
@@ -321,7 +321,7 @@ class CodeplagEngine:
 
                         self.do_step(work1, work2)
                 if self.show_progress:
-                    iteration += 1
+                    iteration += 1  # type: ignore
 
         self.features_getter.logger.debug(f'Time for all {perf_counter() - begin_time:.2f} s')
         self.features_getter.logger.info("Ending searching for plagiarism.")
