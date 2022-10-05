@@ -234,29 +234,31 @@ class CodeplagEngine:
 
         begin_time = perf_counter()
 
-        independent = (self.mode == "one_to_one")
         features_from_files = self.features_getter.get_from_files(self.files)
-        features_from_dirs = self.features_getter.get_from_dirs(
-            self.directories, independent
-        )
         features_from_gh_files = self.features_getter.get_from_github_files(
             self.github_files
-        )
-        features_from_gh_pr_fol = self.features_getter.get_from_github_project_folders(
-            self.github_project_folders, independent
-        )
-        features_form_gh_users = self.features_getter.get_from_users_repos(
-            self.github_user, self.regexp, independent
         )
 
         self.features_getter.logger.info("Starting searching for plagiarism")
         if self.mode == 'many_to_many':
             works: List[ASTFeatures] = []
             works.extend(features_from_files)
-            works.extend(features_from_dirs)
+            works.extend(
+                self.features_getter.get_from_dirs(
+                    self.directories
+                )
+            )
             works.extend(features_from_gh_files)
-            works.extend(features_from_gh_pr_fol)
-            works.extend(features_form_gh_users)
+            works.extend(
+                self.features_getter.get_from_github_project_folders(
+                    self.github_project_folders
+                )
+            )
+            works.extend(
+                self.features_getter.get_from_users_repos(
+                    self.github_user, self.regexp
+                )
+            )
 
             count_works = len(works)
             iterations = calc_iterations(count_works)
@@ -278,10 +280,16 @@ class CodeplagEngine:
                 bool,
                 (
                     features_from_files,
-                    *features_from_dirs,
+                    *self.features_getter.get_from_dirs(
+                        self.directories, independent=True
+                    ),
                     features_from_gh_files,
-                    *features_from_gh_pr_fol,
-                    *features_form_gh_users
+                    *self.features_getter.get_from_github_project_folders(
+                        self.github_project_folders, independent=True
+                    ),
+                    *self.features_getter.get_from_users_repos(
+                        self.github_user, self.regexp, independent=True
+                    )
                 )
             )
             if self.show_progress:

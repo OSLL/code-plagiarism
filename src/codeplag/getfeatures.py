@@ -3,7 +3,7 @@ import os
 import re
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Literal, Optional, Union, overload
 
 from decouple import Config, RepositoryEnv
 
@@ -87,6 +87,27 @@ class AbstractGetter(ABC):
     def get_from_files(self, files: List[Path]) -> List[ASTFeatures]:
         ...
 
+    @overload
+    @abstractmethod
+    def get_from_dirs(
+        self, directories: List[Path], independent: Literal[False] = False
+    ) -> List[ASTFeatures]:
+        ...
+
+    @overload
+    @abstractmethod
+    def get_from_dirs(
+        self, directories: List[Path], independent: Literal[True]
+    ) -> List[List[ASTFeatures]]:
+        ...
+
+    @overload
+    @abstractmethod
+    def get_from_dirs(
+        self, directories: List[Path], independent: bool = False
+    ) -> Union[List[ASTFeatures], List[List[ASTFeatures]]]:
+        ...
+
     @abstractmethod
     def get_from_dirs(
         self, directories: List[Path], independent: bool = False
@@ -106,6 +127,24 @@ class AbstractGetter(ABC):
                 works.append(features)
 
         return works
+
+    @overload
+    def get_from_github_project_folders(
+        self, github_project_folders: List[str], independent: Literal[False] = False
+    ) -> List[ASTFeatures]:
+        ...
+
+    @overload
+    def get_from_github_project_folders(
+        self, github_project_folders: List[str], independent: Literal[True]
+    ) -> List[List[ASTFeatures]]:
+        ...
+
+    @overload
+    def get_from_github_project_folders(
+        self, github_project_folders: List[str], independent: bool = False
+    ) -> Union[List[ASTFeatures], List[List[ASTFeatures]]]:
+        ...
 
     def get_from_github_project_folders(
         self, github_project_folders: List[str], independent: bool = False
@@ -131,6 +170,24 @@ class AbstractGetter(ABC):
                 works.append(nested_works)
 
         return works
+
+    @overload
+    def get_from_users_repos(
+        self, github_user: str, regexp: str, independent: Literal[False] = False
+    ) -> List[ASTFeatures]:
+        ...
+
+    @overload
+    def get_from_users_repos(
+        self, github_user: str, regexp: str, independent: Literal[True]
+    ) -> List[List[ASTFeatures]]:
+        ...
+
+    @overload
+    def get_from_users_repos(
+        self, github_user: str, regexp: str, independent: bool = False
+    ) -> Union[List[ASTFeatures], List[List[ASTFeatures]]]:
+        ...
 
     def get_from_users_repos(
         self, github_user: str, regexp: str, independent: bool = False
