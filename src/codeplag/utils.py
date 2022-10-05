@@ -15,8 +15,10 @@ import numpy as np
 from codeplag.algorithms.featurebased import counter_metric, struct_compare
 from codeplag.algorithms.tokenbased import value_jakkar_coef
 from codeplag.codeplagcli import CodeplagCLI
+from codeplag.cplag.util import CFeaturesGetter
 from codeplag.display import print_compare_result
-from codeplag.getfeatures import FeaturesGetter
+from codeplag.getfeatures import AbstractGetter
+from codeplag.pyplag.utils import PyFeaturesGetter
 from codeplag.types import (ASTFeatures, CompareInfo, FastMetrics,
                             StructuresInfo, WorksReport)
 
@@ -88,10 +90,13 @@ def compare_works(features1: ASTFeatures,
 
 
 def calc_iterations(count, mode: str = 'many_to_many') -> int:
+    if count <= 1:
+        return 0
+
     if mode == 'many_to_many':
         return (count * (count - 1)) // 2
     if mode == 'one_to_one':
-        return math.factorial(count) / 2 * math.factorial(count - 2)
+        return math.factorial(count) // 2 * math.factorial(count - 2)
 
     return 0
 
@@ -115,9 +120,9 @@ def calc_progress(
     return progress
 
 
-class CodeplagEngine(FeaturesGetter):
+class CodeplagEngine:
 
-    def __init__(self, logger: logging.Logger, args: List[str] = None) -> None:
+    def __init__(self, logger: logging.Logger, args: Optional[List[str]] = None) -> None:
         self.parser = CodeplagCLI()
         argcomplete.autocomplete(self.parser)
 
@@ -125,12 +130,22 @@ class CodeplagEngine(FeaturesGetter):
             args = sys.argv[1:]
 
         parsed_args = vars(self.parser.parse_args(args))
-        super(CodeplagEngine, self).__init__(
-            extension=parsed_args.pop('extension'),
-            environment=parsed_args.pop('environment', None),
-            all_branches=parsed_args.pop('all_branches', False),
-            logger=logger
-        )
+        self.features_getter: AbstractGetter
+        extension = parsed_args.pop('extension')
+        if extension == 'py':
+            self.features_getter = PyFeaturesGetter(
+                extension=extension,
+                environment=parsed_args.pop('environment', None),
+                all_branches=parsed_args.pop('all_branches', False),
+                logger=logger
+            )
+        elif extension == 'cpp':
+            self.features_getter = CFeaturesGetter(
+                extension=extension,
+                environment=parsed_args.pop('environment', None),
+                all_branches=parsed_args.pop('all_branches', False),
+                logger=logger
+            )
 
         self.mode: str = parsed_args.pop('mode', 'many_to_many')
         self.show_progress: bool = parsed_args.pop('show_progress', False)
@@ -152,14 +167,15 @@ class CodeplagEngine(FeaturesGetter):
     def save_result(self,
                     first_work: ASTFeatures,
                     second_work: ASTFeatures,
-                    metrics: CompareInfo) -> None:
-        if not self.reports_directory.is_dir():
-            self.logger.warning(
-                "Provided folder for reports now is not exists."
+                    fast_metrics: FastMetrics,
+                    structure: StructuresInfo) -> None:
+        if self.reports_directory is None or not self.reports_directory.is_dir():
+            self.features_getter.logger.warning(
+                "The folder for reports isn't provided or now isn't exists."
             )
             return
 
-        struct_info_dict = metrics.structure._asdict()
+        struct_info_dict = structure._asdict()
         struct_info_dict['compliance_matrix'] = (
             struct_info_dict['compliance_matrix'].tolist()
         )
@@ -169,7 +185,7 @@ class CodeplagEngine(FeaturesGetter):
             second_path=second_work.filepath.__str__(),
             first_heads=first_work.head_nodes,
             second_heads=second_work.head_nodes,
-            fast=metrics.fast._asdict(),
+            fast=fast_metrics._asdict(),
             structure=struct_info_dict
         )
 
@@ -178,7 +194,7 @@ class CodeplagEngine(FeaturesGetter):
             with open(report_file, 'w', encoding='utf-8') as file:
                 file.write(json.dumps(report))
         except PermissionError:
-            self.logger.warning(
+            self.features_getter.logger.warning(
                 "Not enough rights to write reports to the folder."
             )
 
@@ -194,7 +210,7 @@ class CodeplagEngine(FeaturesGetter):
             self.threshold
         )
         if self.reports_directory:
-            self.save_result(work1, work2, metrics)
+            self.save_result(work1, work2, metrics.fast, metrics.structure)
 
     def calc_and_print_progress(
         self,
@@ -209,38 +225,40 @@ class CodeplagEngine(FeaturesGetter):
         print(f"Check progress: {progress:.2%}.", end='\r')
 
     def run(self) -> None:
-        self.logger.debug("Starting codeplag util")
+        self.features_getter.logger.debug("Starting codeplag util")
 
-        self.logger.debug(
+        self.features_getter.logger.debug(
             f"Mode: {self.mode}; "
-            f"Extension: {self.extension}."
+            f"Extension: {self.features_getter.extension}."
         )
 
         begin_time = perf_counter()
 
-        independent = (self.mode == "one_to_one")
-        features_from_files = self.get_features_from_files(self.files)
-        features_from_dirs = self.get_works_from_dirs(
-            self.directories, independent
-        )
-        features_from_gh_files = self.get_works_from_github_files(
+        features_from_files = self.features_getter.get_from_files(self.files)
+        features_from_gh_files = self.features_getter.get_from_github_files(
             self.github_files
         )
-        features_from_gh_pr_fol = self.get_works_from_github_project_folders(
-            self.github_project_folders, independent
-        )
-        features_form_gh_users = self.get_works_from_users_repos(
-            self.github_user, self.regexp, independent
-        )
 
-        self.logger.info("Starting searching for plagiarism")
+        self.features_getter.logger.info("Starting searching for plagiarism")
         if self.mode == 'many_to_many':
             works: List[ASTFeatures] = []
             works.extend(features_from_files)
-            works.extend(features_from_dirs)
+            works.extend(
+                self.features_getter.get_from_dirs(
+                    self.directories
+                )
+            )
             works.extend(features_from_gh_files)
-            works.extend(features_from_gh_pr_fol)
-            works.extend(features_form_gh_users)
+            works.extend(
+                self.features_getter.get_from_github_project_folders(
+                    self.github_project_folders
+                )
+            )
+            works.extend(
+                self.features_getter.get_from_users_repos(
+                    self.github_user, self.regexp
+                )
+            )
 
             count_works = len(works)
             iterations = calc_iterations(count_works)
@@ -262,10 +280,16 @@ class CodeplagEngine(FeaturesGetter):
                 bool,
                 (
                     features_from_files,
-                    *features_from_dirs,
+                    *self.features_getter.get_from_dirs(
+                        self.directories, independent=True
+                    ),
                     features_from_gh_files,
-                    *features_from_gh_pr_fol,
-                    *features_form_gh_users
+                    *self.features_getter.get_from_github_project_folders(
+                        self.github_project_folders, independent=True
+                    ),
+                    *self.features_getter.get_from_users_repos(
+                        self.github_user, self.regexp, independent=True
+                    )
                 )
             )
             if self.show_progress:
@@ -288,8 +312,8 @@ class CodeplagEngine(FeaturesGetter):
                     for work2 in second_sequence:
                         if self.show_progress:
                             self.calc_and_print_progress(
-                                iteration,
-                                iterations,
+                                iteration,  # type: ignore
+                                iterations,  # type: ignore
                                 internal_iteration,
                                 internal_iterations
                             )
@@ -297,7 +321,7 @@ class CodeplagEngine(FeaturesGetter):
 
                         self.do_step(work1, work2)
                 if self.show_progress:
-                    iteration += 1
+                    iteration += 1  # type: ignore
 
-        self.logger.debug(f'Time for all {perf_counter() - begin_time:.2f} s')
-        self.logger.info("Ending searching for plagiarism.")
+        self.features_getter.logger.debug(f'Time for all {perf_counter() - begin_time:.2f} s')
+        self.features_getter.logger.info("Ending searching for plagiarism.")

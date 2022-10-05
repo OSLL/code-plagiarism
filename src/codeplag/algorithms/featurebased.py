@@ -1,6 +1,8 @@
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import numpy as np
+
+from codeplag.types import NodeStructurePlace
 
 
 def counter_metric(counter1: dict, counter2: dict) -> float:
@@ -186,9 +188,9 @@ def add_not_counted(tree: List[Tuple[int, int]],
     return count
 
 
-def struct_compare(tree1: List[Tuple[int, int]],
-                   tree2: List[Tuple[int, int]],
-                   matrix: np.ndarray = None) -> list:
+def struct_compare(tree1: List[NodeStructurePlace],
+                   tree2: List[NodeStructurePlace],
+                   matrix: Optional[np.ndarray] = None) -> list:
     '''
         Function for compare structure of two trees
         @param tree1 - a simple structure of the first AST.

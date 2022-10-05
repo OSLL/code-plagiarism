@@ -1,14 +1,14 @@
 import re
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 
-from codeplag.types import Mode
+from codeplag.types import Mode, Extensions
 
 FILE_DOWNLOAD_PATH = Path("/tmp/@UTIL_NAME@_download.out")
 GET_FRAZE = 'Getting works features from'
 LOG_PATH = Path("@CODEPLAG_LOG_PATH@")
 MODE_CHOICE: List[Mode] = ["many_to_many", "one_to_one"]
-SUPPORTED_EXTENSIONS = {
+SUPPORTED_EXTENSIONS: Dict[str, Extensions] = {
     'py': (
         re.compile(r'\.py$'),
     ),

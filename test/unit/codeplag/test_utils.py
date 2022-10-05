@@ -19,6 +19,9 @@ FILEPATH3 = CWD / './data/test3.py'
 def test_fast_compare_normal():
     tree1 = get_ast_from_filename(FILEPATH1)
     tree2 = get_ast_from_filename(FILEPATH2)
+    assert tree1 is not None
+    assert tree2 is not None
+
     features1 = get_features_from_ast(tree1, FILEPATH1)
     features2 = get_features_from_ast(tree2, FILEPATH2)
 
@@ -43,6 +46,10 @@ def test_compare_works():
     tree1 = get_ast_from_filename(FILEPATH1)
     tree2 = get_ast_from_filename(FILEPATH2)
     tree3 = get_ast_from_filename(FILEPATH3)
+    assert tree1 is not None
+    assert tree2 is not None
+    assert tree3 is not None
+
     features1 = get_features_from_ast(tree1, FILEPATH1)
     features2 = get_features_from_ast(tree2, FILEPATH2)
     features3 = get_features_from_ast(tree3, FILEPATH3)
@@ -54,6 +61,7 @@ def test_compare_works():
     assert compare_info.fast.keywords == 1.
     assert compare_info.fast.literals == 0.75
     assert compare_info.fast.weighted_average == pytest.approx(0.774, 0.001)
+    assert compare_info.structure is not None
     assert compare_info.structure.similarity == pytest.approx(0.823, 0.001)
     assert compare_info.structure.compliance_matrix.tolist() == [
         [[19, 24], [7, 21]],
@@ -71,26 +79,32 @@ def test_compare_works():
 
 
 def test_save_result(mocker):
-    mocker.patch('logging.Logger')
+    mocked_logger = mocker.Mock()
+    mocker.patch.object(logging, 'getLogger', return_value=mocked_logger)
     code_engine = CodeplagEngine(
-        logging.Logger,
+        logging.getLogger(),
         ['--extension', 'py']
     )
     tree1 = get_ast_from_filename(FILEPATH1)
     tree2 = get_ast_from_filename(FILEPATH2)
+    assert tree1 is not None
+    assert tree2 is not None
+
     features1 = get_features_from_ast(tree1, FILEPATH1)
     features2 = get_features_from_ast(tree2, FILEPATH2)
     compare_info = compare_works(features1, features2)
+    assert compare_info.structure is not None
 
     mocker.patch('builtins.open', side_effect=FileNotFoundError)
     code_engine.reports_directory = Path('/bad_dir')
     code_engine.save_result(
         features1,
         features2,
-        compare_info
+        compare_info.fast,
+        compare_info.structure
     )
-    assert logging.Logger.warning.call_args == call(
-        'Provided folder for reports now is not exists.'
+    assert mocked_logger.warning.call_args == call(
+        "The folder for reports isn't provided or now isn't exists."
     )
 
     mocker.patch('builtins.open', side_effect=PermissionError)
@@ -98,10 +112,11 @@ def test_save_result(mocker):
     code_engine.save_result(
         features1,
         features2,
-        compare_info
+        compare_info.fast,
+        compare_info.structure
     )
     open.assert_called_once()
-    assert logging.Logger.warning.call_args == call(
+    assert mocked_logger.warning.call_args == call(
         'Not enough rights to write reports to the folder.'
     )
 
@@ -110,7 +125,8 @@ def test_save_result(mocker):
     code_engine.save_result(
         features1,
         features2,
-        compare_info
+        compare_info.fast,
+        compare_info.structure
     )
 
     open.assert_called_once()
@@ -125,7 +141,16 @@ def test_calc_progress():
     assert calc_progress(5, 6, 1, 4) == 0.875
 
 
-def test_calc_iterations():
-    assert calc_iterations(10) == 45
-    assert calc_iterations(3, 'one_to_one') == 3
-    assert calc_iterations(10, '') == 0
+@pytest.mark.parametrize(
+    "count, mode, expected",
+    [
+        (10, 'many_to_many', 45),
+        (3, 'one_to_one', 3),
+        (10, 'bad_mode', 0),
+        (-100, 'many_to_many', 0),
+        (0, 'one_to_one', 0),
+        (-10, 'bad_mode', 0)
+    ]
+)
+def test_calc_iterations(count, mode, expected):
+    assert calc_iterations(count, mode) == expected

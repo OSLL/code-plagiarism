@@ -2,17 +2,17 @@ import base64
 import logging
 import re
 import sys
-from typing import Any, Dict, List, Literal, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 
-from webparsers.types import (Branch, GitHubContentUrl, GitHubRepoUrl,
-                              PullRequest, Repository)
+from webparsers.types import (Branch, Extensions, GitHubContentUrl,
+                              GitHubRepoUrl, PullRequest, Repository)
 
 
 class GitHubParser:
-    def __init__(self, file_extensions: Optional[List[str]] = None,
-                 check_policy: Literal[0, 1] = 0, access_token: str = '',
+    def __init__(self, file_extensions: Optional[Extensions] = None,
+                 check_all: bool = False, access_token: str = '',
                  logger: Optional[logging.Logger] = None):
         if logger is None:
             self.logger = logging.getLogger(__name__)
@@ -21,9 +21,9 @@ class GitHubParser:
 
         self.__file_extensions = file_extensions
         self.__access_token = access_token
-        self.__check_all_branches = check_policy
+        self.__check_all_branches = check_all
 
-    def decode_file_content(self, file_in_bytes: bytes) -> str:
+    def decode_file_content(self, file_in_bytes: bytearray) -> str:
         attempt = 1
         code = None
         while code is None:
@@ -49,7 +49,7 @@ class GitHubParser:
 
     def send_get_request(self,
                          api_url: str,
-                         params: dict = None,
+                         params: Optional[dict] = None,
                          address: str = 'https://api.github.com') -> requests.Response:
         if params is None:
             params = {}
@@ -97,7 +97,7 @@ class GitHubParser:
 
     def get_list_of_repos(self,
                           owner: str,
-                          reg_exp: str = None) -> List[Repository]:
+                          reg_exp: Optional[str] = None) -> List[Repository]:
         '''
             Function returns dict in which keys characterize repository names
             and values characterize repositories links

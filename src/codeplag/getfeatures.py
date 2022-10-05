@@ -1,33 +1,22 @@
 import logging
 import os
 import re
+from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List, Optional, Pattern, Tuple
+from typing import List, Literal, Optional, Union, overload
 
 from decouple import Config, RepositoryEnv
 
-from codeplag.consts import (FILE_DOWNLOAD_PATH, GET_FRAZE, LOG_PATH,
-                             SUPPORTED_EXTENSIONS)
-from codeplag.cplag.const import COMPILE_ARGS
-from codeplag.cplag.tree import get_features as get_features_cpp
-from codeplag.cplag.util import \
-    get_cursor_from_file as get_cursor_from_file_cpp
-from codeplag.cplag.util import \
-    get_works_from_filepaths as get_works_from_filepaths_cpp
+from codeplag.consts import (GET_FRAZE, LOG_PATH, SUPPORTED_EXTENSIONS,
+                             UTIL_NAME)
 from codeplag.logger import get_logger
-from codeplag.pyplag.utils import \
-    get_ast_from_content as get_ast_from_content_py
-from codeplag.pyplag.utils import \
-    get_features_from_ast as get_features_from_ast_py
-from codeplag.pyplag.utils import \
-    get_works_from_filepaths as get_works_from_filepaths_py
-from codeplag.types import ASTFeatures
+from codeplag.types import ASTFeatures, Extensions
 from webparsers.github_parser import GitHubParser
 
 
 def get_files_path_from_directory(
     directory: Path,
-    extensions: Tuple[Pattern, ...] = None
+    extensions: Optional[Extensions] = None
 ) -> List[Path]:
     '''
         The function returns paths to all files in the directory
@@ -38,7 +27,7 @@ def get_files_path_from_directory(
         extensions = SUPPORTED_EXTENSIONS['default']
 
     allowed_files = []
-    for current_dir, _folders, files in os.walk(directory):
+    for current_dir, _, files in os.walk(directory):
         for file in files:
             allowed = False
             for extension in extensions:
@@ -52,17 +41,16 @@ def get_files_path_from_directory(
     return allowed_files
 
 
-# TODO: Create abstract class
-class FeaturesGetter:
+class AbstractGetter(ABC):
 
     def __init__(
         self,
         extension: str,
-        environment: Optional[str] = None,
+        environment: Optional[Path] = None,
         all_branches: bool = False,
-        logger: logging.Logger = logging.Logger
+        logger: Optional[logging.Logger] = None
     ):
-        self.logger = logger
+        self.logger = logger if logger is not None else logging.getLogger(UTIL_NAME)
         self.extension = extension
         self._set_access_token(environment)
         self._set_github_parser(all_branches)
@@ -86,79 +74,47 @@ class FeaturesGetter:
             file_extensions=SUPPORTED_EXTENSIONS[
                 self.extension
             ],
-            check_policy=branch_policy,
+            check_all=branch_policy,
             access_token=self._access_token,
             logger=get_logger('webparsers', LOG_PATH)
         )
 
-    def get_features_from_content(self,
-                                  file_content: str,
-                                  url_to_file: str) -> ASTFeatures:
-        if self.extension == 'py':
-            tree = get_ast_from_content_py(file_content, url_to_file)
-            features = get_features_from_ast_py(tree, url_to_file)
+    @abstractmethod
+    def get_from_content(self, file_content: str, url_to_file: str) -> Optional[ASTFeatures]:
+        ...
 
-            return features
-        if self.extension == 'cpp':
-            with open(FILE_DOWNLOAD_PATH, 'w', encoding='utf-8') as out_file:
-                out_file.write(file_content)
-            cursor = get_cursor_from_file_cpp(FILE_DOWNLOAD_PATH, COMPILE_ARGS)
-            features = get_features_cpp(cursor, FILE_DOWNLOAD_PATH)
-            os.remove(FILE_DOWNLOAD_PATH)
-            features.filepath = url_to_file
+    @abstractmethod
+    def get_from_files(self, files: List[Path]) -> List[ASTFeatures]:
+        ...
 
-            return features
+    @overload
+    @abstractmethod
+    def get_from_dirs(
+        self, directories: List[Path], independent: Literal[False] = False
+    ) -> List[ASTFeatures]:
+        ...
 
-    def get_features_from_files(self,
-                                files: List[Path]) -> List[ASTFeatures]:
-        if not files:
-            return []
+    @overload
+    @abstractmethod
+    def get_from_dirs(
+        self, directories: List[Path], independent: Literal[True]
+    ) -> List[List[ASTFeatures]]:
+        ...
 
-        self.logger.info(f'{GET_FRAZE} files')
-        if self.extension == 'py':
-            return get_works_from_filepaths_py(files)
-        if self.extension == 'cpp':
-            return get_works_from_filepaths_cpp(
-                files,
-                COMPILE_ARGS
-            )
-
-    def get_works_from_dirs(
+    @overload
+    @abstractmethod
+    def get_from_dirs(
         self, directories: List[Path], independent: bool = False
-    ) -> List[ASTFeatures]:
-        works: List[ASTFeatures] = []
-        for directory in directories:
-            self.logger.info(f'{GET_FRAZE} {directory}')
-            filepaths = get_files_path_from_directory(
-                directory,
-                extensions=SUPPORTED_EXTENSIONS[self.extension]
-            )
-            if self.extension == 'py':
-                if independent:
-                    works.append(get_works_from_filepaths_py(filepaths))
-                else:
-                    works.extend(get_works_from_filepaths_py(filepaths))
-            if self.extension == 'cpp':
-                if independent:
-                    works.append(
-                        get_works_from_filepaths_cpp(
-                            filepaths,
-                            COMPILE_ARGS
-                        )
-                    )
-                else:
-                    works.extend(
-                        get_works_from_filepaths_cpp(
-                            filepaths,
-                            COMPILE_ARGS
-                        )
-                    )
+    ) -> Union[List[ASTFeatures], List[List[ASTFeatures]]]:
+        ...
 
-        return works
+    @abstractmethod
+    def get_from_dirs(
+        self, directories: List[Path], independent: bool = False
+    ) -> Union[List[ASTFeatures], List[List[ASTFeatures]]]:
+        ...
 
-    def get_works_from_github_files(
-        self, github_files: List[str]
-    ) -> List[ASTFeatures]:
+    def get_from_github_files(self, github_files: List[str]) -> List[ASTFeatures]:
         works: List[ASTFeatures] = []
         if not github_files:
             return works
@@ -166,47 +122,77 @@ class FeaturesGetter:
         self.logger.info(f"{GET_FRAZE} GitHub urls")
         for github_file in github_files:
             file_content = self.github_parser.get_file_from_url(github_file)[0]
-            works.append(
-                self.get_features_from_content(file_content, github_file)
-            )
+            features = self.get_from_content(file_content, github_file)
+            if features:
+                works.append(features)
 
         return works
 
-    def get_works_from_github_project_folders(
-        self, github_project_folders: List[str], independent: bool = False
+    @overload
+    def get_from_github_project_folders(
+        self, github_project_folders: List[str], independent: Literal[False] = False
     ) -> List[ASTFeatures]:
-        works: List[ASTFeatures] = []
-        for github_project in github_project_folders:
-            if independent:
-                nested_works: List[ASTFeatures] = []
+        ...
 
+    @overload
+    def get_from_github_project_folders(
+        self, github_project_folders: List[str], independent: Literal[True]
+    ) -> List[List[ASTFeatures]]:
+        ...
+
+    @overload
+    def get_from_github_project_folders(
+        self, github_project_folders: List[str], independent: bool = False
+    ) -> Union[List[ASTFeatures], List[List[ASTFeatures]]]:
+        ...
+
+    def get_from_github_project_folders(
+        self, github_project_folders: List[str], independent: bool = False
+    ) -> Union[List[ASTFeatures], List[List[ASTFeatures]]]:
+        works = []
+        for github_project in github_project_folders:
+            nested_works: List[ASTFeatures] = []
             self.logger.info(f'{GET_FRAZE} {github_project}')
             gh_prj_files = self.github_parser.get_files_generator_from_dir_url(
                 github_project
             )
             for file_content, url_file in gh_prj_files:
+                features = self.get_from_content(file_content, url_file)
+                if features is None:
+                    continue
+
                 if independent:
-                    nested_works.append(
-                        self.get_features_from_content(
-                            file_content, url_file
-                        )
-                    )
+                    nested_works.append(features)
                 else:
-                    works.append(
-                        self.get_features_from_content(
-                            file_content, url_file
-                        )
-                    )
+                    works.append(features)
 
             if independent:
                 works.append(nested_works)
 
         return works
 
-    def get_works_from_users_repos(
-        self, github_user: str, regexp: str, independent: bool = False
+    @overload
+    def get_from_users_repos(
+        self, github_user: str, regexp: str, independent: Literal[False] = False
     ) -> List[ASTFeatures]:
-        works: List[ASTFeatures] = []
+        ...
+
+    @overload
+    def get_from_users_repos(
+        self, github_user: str, regexp: str, independent: Literal[True]
+    ) -> List[List[ASTFeatures]]:
+        ...
+
+    @overload
+    def get_from_users_repos(
+        self, github_user: str, regexp: str, independent: bool = False
+    ) -> Union[List[ASTFeatures], List[List[ASTFeatures]]]:
+        ...
+
+    def get_from_users_repos(
+        self, github_user: str, regexp: str, independent: bool = False
+    ) -> Union[List[ASTFeatures], List[List[ASTFeatures]]]:
+        works = []
         if not github_user:
             return works
 
@@ -215,26 +201,21 @@ class FeaturesGetter:
             reg_exp=regexp
         )
         for repo in repos:
-            if independent:
-                nested_works: List[ASTFeatures] = []
+            nested_works: List[ASTFeatures] = []
 
             self.logger.info(f'{GET_FRAZE} {repo.html_url}')
             files = self.github_parser.get_files_generator_from_repo_url(
                 repo.html_url
             )
             for file_content, url_file in files:
+                features = self.get_from_content(file_content, url_file)
+                if features is None:
+                    continue
+
                 if independent:
-                    nested_works.append(
-                        self.get_features_from_content(
-                            file_content, url_file
-                        )
-                    )
+                    nested_works.append(features)
                 else:
-                    works.append(
-                        self.get_features_from_content(
-                            file_content, url_file
-                        )
-                    )
+                    works.append(features)
 
             if independent:
                 works.append(nested_works)

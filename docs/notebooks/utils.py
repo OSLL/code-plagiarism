@@ -48,10 +48,10 @@ def get_data_from_dir(path='./data', max_count_lines=None):
     return df
 
 
-def save_works_from_repo_url(url, check_policy=1):
+def save_works_from_repo_url(url, check_policy=True):
     current_repo_name = url.split('/')[-1]
     env_config = Config(RepositoryEnv('../../.env'))
-    gh = GitHubParser(file_extensions=[r'.py$'], check_policy=check_policy, access_token=env_config.get('ACCESS_TOKEN'))
+    gh = GitHubParser(file_extensions=[r'.py$'], check_all=check_policy, access_token=env_config.get('ACCESS_TOKEN'))
     files = list(gh.get_files_generator_from_repo_url(url))
     files = [(remove_unnecessary_blank_lines(file[0]), file[1]) for file in files]
 
