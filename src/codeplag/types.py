@@ -5,6 +5,7 @@ from typing import (Dict, List, Literal, NamedTuple, Optional, Pattern, Tuple,
                     TypedDict, Union)
 
 import numpy as np
+import numpy.typing as npt
 
 
 class NodeCodePlace(NamedTuple):
@@ -49,7 +50,7 @@ class FastMetrics(NamedTuple):
 
 class StructuresInfo(NamedTuple):
     similarity: float
-    compliance_matrix: np.array
+    compliance_matrix: npt.NDArray
 
 
 class CompareInfo(NamedTuple):

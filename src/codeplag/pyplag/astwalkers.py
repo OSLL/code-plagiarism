@@ -54,10 +54,11 @@ class ASTWalker(ast.NodeVisitor):
 
         if type_name not in IGNORE_NODES:
             if self.curr_depth != 0:
-                if 'name' in dir(node) and node.name is not None:
-                    if node.name not in self.features.unodes:
-                        self.add_unique_node(node.name)
-                    self.add_node_to_structure(node.name)
+                name = getattr(node, 'name', None)
+                if name is not None:
+                    if name not in self.features.unodes:
+                        self.add_unique_node(name)
+                    self.add_node_to_structure(name)
                 else:
                     if type_name not in self.features.unodes:
                         self.add_unique_node(type_name)

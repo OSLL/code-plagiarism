@@ -200,7 +200,7 @@ class CodeplagEngine:
 
     def do_step(self, work1: ASTFeatures, work2: ASTFeatures) -> None:
         metrics = compare_works(work1, work2, self.threshold)
-        if not metrics.structure:
+        if metrics.structure is None:
             return
 
         print_compare_result(

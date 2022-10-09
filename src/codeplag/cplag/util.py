@@ -29,7 +29,7 @@ def get_cursor_from_file(filepath: Path,
     index = Index.create()
     options = TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD
 
-    file_obj = index.parse(filepath, args=args, options=options) or 0
+    file_obj: TranslationUnit = index.parse(filepath, args=args, options=options)
 
     return file_obj.cursor
 

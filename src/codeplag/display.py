@@ -9,15 +9,15 @@ from codeplag.types import ASTFeatures, CompareInfo, NodeCodePlace
 
 
 class Color(Enum):
-    HEADER: str = '\033[95m'
-    OKBLUE: str = '\033[94m'
-    OKCYAN: str = '\033[96m'
-    OKGREEN: str = '\033[92m'
-    WARNING: str = '\033[93m'
-    FAIL: str = '\033[91m'
-    BOLD: str = '\033[1m'
-    UNDERLINE: str = '\033[4m'
-    END: str = '\033[0m'
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    END = '\033[0m'
 
 
 def colorize(text: str, color: Color,
@@ -106,6 +106,9 @@ def print_compare_result(features1: ASTFeatures,
     )
     print(main_metrics_df)
     print()
+
+    if compare_info.structure is None:
+        return
 
     additional_metrics_df = pd.DataFrame(
         compare_info.structure.similarity, index=['Similarity'],

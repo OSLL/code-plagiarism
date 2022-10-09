@@ -8,7 +8,58 @@ of two token sequences.
 
 
 import math
-from typing import List, Sequence, Set, Tuple, Union
+from typing import List, Literal, Sequence, Set, Tuple, Union, overload
+
+
+@overload
+def generate_ngrams(
+    tokens: Sequence[int],
+    n: int,
+    hashit: Literal[False],
+    unique: Literal[False]
+) -> List[Tuple[int, ...]]:
+    ...
+
+
+@overload
+def generate_ngrams(
+    tokens: Sequence[int],
+    n: int,
+    hashit: Literal[False],
+    unique: Literal[True]
+) -> Set[Tuple[int, ...]]:
+    ...
+
+
+@overload
+def generate_ngrams(
+    tokens: Sequence[int],
+    n: int,
+    hashit: Literal[True],
+    unique: Literal[False]
+) -> List[int]:
+    ...
+
+
+@overload
+def generate_ngrams(
+    tokens: Sequence[int],
+    n: int,
+    hashit: Literal[True],
+    unique: Literal[True]
+) -> Set[int]:
+    ...
+
+
+@overload
+def generate_ngrams(tokens: Sequence[int],
+                    n: int = 3,
+                    hashit: bool = False,
+                    unique: bool = False) -> Union[Set[int],
+                                                   List[int],
+                                                   Set[Tuple[int, ...]],
+                                                   List[Tuple[int, ...]]]:
+    ...
 
 
 def generate_ngrams(tokens: Sequence[int],
@@ -71,10 +122,10 @@ def value_jakkar_coef(tokens_first: Sequence[int],
         @param tokens_second - list of tokens of the second program
     '''
     ngrams_first: Set[Tuple[int, ...]] = generate_ngrams(
-        tokens_first, ngrams_length, unique=True
+        tokens_first, ngrams_length, hashit=False, unique=True
     )
     ngrams_second: Set[Tuple[int, ...]] = generate_ngrams(
-        tokens_second, ngrams_length, unique=True
+        tokens_second, ngrams_length, hashit=False, unique=True
     )
 
     intersection = len(ngrams_first.intersection(ngrams_second))
