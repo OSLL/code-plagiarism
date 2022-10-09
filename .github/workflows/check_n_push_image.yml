@@ -30,8 +30,10 @@ jobs:
 
     - name: Lint with flake8, isort and pyright
       run: |
+        make substitute-sources
+        pip install $(python3 setup.py --install-requirements)
         pip install pre-commit==2.20.0
-        make substitute-sources pre-commit
+        make pre-commit
 
   docker-build-test-autotest:
     runs-on: ubuntu-20.04
