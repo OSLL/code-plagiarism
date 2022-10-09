@@ -1,8 +1,17 @@
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import (Dict, List, Literal, NamedTuple, Optional, Pattern, Tuple,
-                    TypedDict, Union)
+from typing import (
+    Dict,
+    List,
+    Literal,
+    NamedTuple,
+    Optional,
+    Pattern,
+    Tuple,
+    TypedDict,
+    Union,
+)
 
 import numpy as np
 import numpy.typing as npt

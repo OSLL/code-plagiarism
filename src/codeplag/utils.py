@@ -19,8 +19,13 @@ from codeplag.cplag.util import CFeaturesGetter
 from codeplag.display import print_compare_result
 from codeplag.getfeatures import AbstractGetter
 from codeplag.pyplag.utils import PyFeaturesGetter
-from codeplag.types import (ASTFeatures, CompareInfo, FastMetrics,
-                            StructuresInfo, WorksReport)
+from codeplag.types import (
+    ASTFeatures,
+    CompareInfo,
+    FastMetrics,
+    StructuresInfo,
+    WorksReport,
+)
 
 
 def fast_compare(features_f: ASTFeatures,

@@ -1,0 +1,19 @@
+[tool.isort]
+profile = "black"
+
+[tool.black]
+target-version = ["py38"]
+
+[tool.pyright]
+pythonVersion = "3.8"
+
+include = [
+    "src",
+]
+
+executionEnvironments = [
+    { root = "src" },
+    { root = "docs/notebooks", extraPaths = ["src"] }
+]
+
+typeCheckingMode = "basic"

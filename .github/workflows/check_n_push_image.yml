@@ -28,7 +28,7 @@ jobs:
       with:
         python-version: 3.8
 
-    - name: Lint with flake8 and isort
+    - name: Lint with flake8, isort and pyright
       run: |
         pip install pre-commit==2.20.0
         make substitute-sources pre-commit

@@ -7,8 +7,13 @@ from unittest.mock import call
 import pytest
 
 from codeplag.pyplag.utils import get_ast_from_filename, get_features_from_ast
-from codeplag.utils import (CodeplagEngine, calc_iterations, calc_progress,
-                            compare_works, fast_compare)
+from codeplag.utils import (
+    CodeplagEngine,
+    calc_iterations,
+    calc_progress,
+    compare_works,
+    fast_compare,
+)
 
 CWD = Path(os.path.dirname(os.path.abspath(__file__)))
 FILEPATH1 = CWD / './data/test1.py'
