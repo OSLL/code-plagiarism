@@ -9,6 +9,7 @@ pythonVersion = "3.8"
 
 include = [
     "src",
+    "docs/notebooks"
 ]
 
 executionEnvironments = [
