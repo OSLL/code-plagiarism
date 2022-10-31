@@ -2,15 +2,22 @@ from typing import Literal
 
 
 def main() -> Literal[0, 1, 2]:
+    import argcomplete
     import pandas as pd
 
+    from codeplag.codeplagcli import CodeplagCLI
     from codeplag.consts import LOG_PATH
     from codeplag.logger import get_logger
     from codeplag.utils import CodeplagEngine
 
     pd.set_option("display.float_format", '{:,.2%}'.format)
     logger = get_logger(__name__, LOG_PATH)
-    codeplag_util = CodeplagEngine(logger)
+
+    cli = CodeplagCLI()
+    argcomplete.autocomplete(cli)
+    parsed_args = vars(cli.parse_args())
+
+    codeplag_util = CodeplagEngine(logger, parsed_args)
     try:
         codeplag_util.run()
     except KeyboardInterrupt:

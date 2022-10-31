@@ -5,7 +5,7 @@ import shutil
 from contextlib import suppress
 
 import pytest
-from utils import SUCCESS_CODE, run_util
+from utils import SUCCESS_CODE, modify_settings, run_check, run_util
 
 from codeplag.consts import UTIL_NAME, UTIL_VERSION
 from codeplag.types import WorksReport
@@ -67,9 +67,9 @@ def test_check_util_version():
     ]
 )
 def test_compare_cpp_files(cmd, out):
-    result = run_util(
+    result = run_check(
         cmd,
-        ext='cpp'
+        extension='cpp'
     )
 
     assert result.returncode == SUCCESS_CODE
@@ -106,7 +106,7 @@ def test_compare_cpp_files(cmd, out):
     ]
 )
 def test_compare_py_files(cmd, out):
-    result = run_util(cmd)
+    result = run_check(cmd)
 
     assert result.returncode == SUCCESS_CODE
     assert out in result.stdout
@@ -117,9 +117,16 @@ def test_save_reports():
         os.mkdir(REPORTS_FOLDER)
     assert os.path.exists(REPORTS_FOLDER)
 
-    run_util(
-        ['--directories', './test', '--reports_directory', REPORTS_FOLDER]
-    )
+    assert modify_settings(REPORTS_FOLDER).returncode == 0
+    assert run_check(
+        [
+            '--directories',
+            './test/auto',
+            '--files',
+            './test/auto/utils.py',
+            './test/auto/test_bugs.py'
+        ]
+    ).returncode == 0
     reports_files = os.listdir(REPORTS_FOLDER)
 
     assert len(reports_files) > 0
