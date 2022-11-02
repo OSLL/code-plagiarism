@@ -5,7 +5,7 @@ from typing import Literal, Optional, TypedDict, Union, overload
 
 from typing_extensions import NotRequired
 
-from codeplag.consts import CONFIG_PATH, DEFAULT_ENVIRONMENT, DEFAULT_THRESHOLD
+from codeplag.consts import CONFIG_PATH, DEFAULT_THRESHOLD
 from codeplag.types import Settings
 
 
@@ -67,6 +67,5 @@ def write_settings_conf(settings: Settings) -> None:
 
 
 DefaultSettingsConfig = Settings(
-    threshold=DEFAULT_THRESHOLD,
-    environment=DEFAULT_ENVIRONMENT
+    threshold=DEFAULT_THRESHOLD
 )

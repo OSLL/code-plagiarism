@@ -104,7 +104,7 @@ def print_compare_result(features1: ASTFeatures,
             name='FastMetrics:'
         )
     )
-    print(main_metrics_df)
+    print(main_metrics_df.to_markdown(tablefmt="psql"))
     print()
 
     if compare_info.structure is None:
@@ -117,7 +117,7 @@ def print_compare_result(features1: ASTFeatures,
             name='AdditionalMetrics:'
         )
     )
-    print(additional_metrics_df)
+    print(additional_metrics_df.to_markdown(tablefmt="psql"))
     print()
 
     if (compare_info.structure.similarity * 100) > threshold:

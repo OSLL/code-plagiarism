@@ -13,7 +13,7 @@ import pandas as pd
 from codeplag.algorithms.featurebased import counter_metric, struct_compare
 from codeplag.algorithms.tokenbased import value_jakkar_coef
 from codeplag.config import read_settings_conf, write_config, write_settings_conf
-from codeplag.consts import DEFAULT_ENVIRONMENT, DEFAULT_THRESHOLD
+from codeplag.consts import DEFAULT_THRESHOLD
 from codeplag.cplag.util import CFeaturesGetter
 from codeplag.display import print_compare_result
 from codeplag.getfeatures import AbstractGetter
@@ -72,7 +72,7 @@ def compare_works(features1: ASTFeatures,
     """
 
     fast_metrics = fast_compare(features1, features2)
-    if (fast_metrics.weighted_average * 100) < threshold:
+    if (fast_metrics.weighted_average * 100.0) < threshold:
         return CompareInfo(fast=fast_metrics)
 
     compliance_matrix = np.zeros(
@@ -138,7 +138,7 @@ class CodeplagEngine:
                 return
 
             # Check if all None, print error
-            self.environment: Path = parsed_args.pop("environment", DEFAULT_ENVIRONMENT)
+            self.environment: Path = parsed_args.pop("environment")
             self.reports: Optional[Path] = parsed_args.pop("reports")
             self.threshold: int = parsed_args.pop("threshold", DEFAULT_THRESHOLD)
         else:
@@ -148,14 +148,14 @@ class CodeplagEngine:
             if extension == 'py':
                 self.features_getter = PyFeaturesGetter(
                     extension=extension,
-                    environment=settings_conf["environment"],
+                    environment=settings_conf.get("environment"),
                     all_branches=parsed_args.pop('all_branches', False),
                     logger=logger
                 )
             elif extension == 'cpp':
                 self.features_getter = CFeaturesGetter(
                     extension=extension,
-                    environment=settings_conf["environment"],
+                    environment=settings_conf.get("environment"),
                     all_branches=parsed_args.pop('all_branches', False),
                     logger=logger
                 )
@@ -243,14 +243,18 @@ class CodeplagEngine:
             index=[k.capitalize() for k in settings_config.keys()],
             columns=["Value"]
         )
-        print(table)
+        print(table.to_markdown(tablefmt="psql"))
 
     def _settings_modify(self) -> None:
         settings_config = read_settings_conf(self.logger)
         for key in Settings.__annotations__:
             new_value = getattr(self, key, None)
             if new_value is not None:
-                settings_config[key] = new_value
+                if isinstance(new_value, Path):
+                    settings_config[key] = new_value.absolute()
+                else:
+                    settings_config[key] = new_value
+
             write_settings_conf(settings_config)
 
     def _check(self) -> None:

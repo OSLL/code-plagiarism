@@ -87,7 +87,7 @@ class WorksReport(TypedDict):
 
 
 class Settings(TypedDict):
-    environment: Path
+    environment: NotRequired[Path]
     reports: NotRequired[Path]
     threshold: "Threshold"
 

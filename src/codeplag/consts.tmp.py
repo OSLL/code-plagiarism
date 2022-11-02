@@ -12,7 +12,6 @@ LOG_PATH = Path("@CODEPLAG_LOG_PATH@")
 GET_FRAZE = 'Getting works features from'
 
 DEFAULT_THRESHOLD: Threshold = 65
-DEFAULT_ENVIRONMENT: Path = Path(".env")
 MODE_CHOICE: List[Mode] = ["many_to_many", "one_to_one"]
 SUPPORTED_EXTENSIONS: Dict[str, Extensions] = {
     'py': (

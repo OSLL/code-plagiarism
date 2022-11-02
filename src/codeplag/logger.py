@@ -20,7 +20,7 @@ def get_file_handler(filename: Path) -> logging.FileHandler:
 
 
 def get_stream_handler() -> logging.StreamHandler:
-    log_format = ('%(asctime)s - [%(levelname)s] - %(message)s')
+    log_format = ('%(levelname)s: %(message)s')
     log_arguments = {
         'fmt': log_format,
         'datefmt': '%b %-d %T'

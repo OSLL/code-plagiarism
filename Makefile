@@ -10,7 +10,7 @@ PYTHONPATH              := $(PWD)/src/
 
 LOGS_PATH               := /var/log/$(UTIL_NAME)
 CODEPLAG_LOG_PATH       := $(LOGS_PATH)/$(UTIL_NAME).log
-CONFIG_PATH             := /etc/$(UTIL_NAME)/settings.json
+CONFIG_PATH             := /etc/$(UTIL_NAME)/settings.conf
 
 SOURCE_SUB_FILES        := src/$(UTIL_NAME)/consts.py
 DEBIAN_SUB_FILES        := debian/changelog \
