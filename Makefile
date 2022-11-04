@@ -67,8 +67,11 @@ install: substitute-sources man
 	install -D -d -m 0755 $(DESTDIR)/$(LOGS_PATH)
 	install -D -m 0666 /dev/null $(DESTDIR)/$(CODEPLAG_LOG_PATH)
 
-	install -D -d -m 0755 $(DESTDIR)/etc/$(UTIL_NAME)
-	install -D -m 0666 /dev/null $(DESTDIR)/$(CONFIG_PATH)
+	if [ ! -f $(DESTDIR)/$(CONFIG_PATH) ]; then \
+		install -D -d -m 0755 $(DESTDIR)/etc/$(UTIL_NAME); \
+		install -D -m 0666 /dev/null $(DESTDIR)/$(CONFIG_PATH); \
+		echo "{}" > $(DESTDIR)/$(CONFIG_PATH); \
+	fi
 
 	install -D -m 0644 man/$(UTIL_NAME).1 $(DESTDIR)/usr/share/man/man1/$(UTIL_NAME).1
 
