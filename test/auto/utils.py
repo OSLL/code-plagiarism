@@ -7,21 +7,29 @@ from codeplag.consts import UTIL_NAME
 SUCCESS_CODE = 0
 
 
-def run_cmd(cmd: List[Union[str, Path]]) -> subprocess.CompletedProcess:
+def run_cmd(cmd: List[str]) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, stdout=subprocess.PIPE)
 
 
 def run_util(
-    cmd: List[Union[str, Path]],
+    cmd: List[str],
     root: Optional[Literal["check", "settings"]] = None
 ) -> subprocess.CompletedProcess:
     command = [] if root is None else [root]
     return run_cmd([UTIL_NAME] + command + cmd)
 
 
-def run_check(cmd: List[Union[str, Path]], extension: str = 'py') -> subprocess.CompletedProcess:
+def run_check(cmd: List[str], extension: str = 'py') -> subprocess.CompletedProcess:
     return run_util(['--extension', extension] + cmd, root="check")
 
 
-def modify_settings(reports: Union[Path, str]) -> subprocess.CompletedProcess:
-    return run_util(['modify', '--reports', reports], root='settings')
+def modify_settings(
+    reports: Optional[Union[Path, str]] = None,
+    environment: Optional[Union[Path, str]] = None,
+) -> subprocess.CompletedProcess:
+    reports_opt = ['--reports', str(reports)] if reports else []
+    environment_opt = ['--environment', str(environment)] if environment else []
+    return run_util(
+        ['modify'] + reports_opt + environment_opt,
+        root='settings'
+    )

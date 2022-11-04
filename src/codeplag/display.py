@@ -30,6 +30,9 @@ def colorize(text: str, color: Color,
     return f"{color.value}{text}{Color.END.value}"
 
 
+info = partial(colorize, color=Color.OKGREEN)
+warning = partial(colorize, color=Color.WARNING)
+error = partial(colorize, color=Color.FAIL)
 red_bold = partial(colorize, color=Color.FAIL, bold=True)
 
 

@@ -2,6 +2,30 @@ import logging
 import sys
 from pathlib import Path
 
+from codeplag.display import error, info, red_bold, warning
+
+
+class StreamFormatter(logging.Formatter):
+
+    FORMATS = {
+        logging.INFO: info,
+        logging.WARNING: warning,
+        logging.ERROR: error,
+        logging.CRITICAL: red_bold
+    }
+
+    def __init__(self):
+        self._level_fmt = '[%(levelname)s]'
+        self._log_fmt = ' %(asctime)s - %(message)s'
+        super().__init__(datefmt='%H:%M')
+
+    def format(self, record: logging.LogRecord) -> str:
+        self._style._fmt = self.FORMATS.get(
+            record.levelno, info
+        )(self._level_fmt) + self._log_fmt
+
+        return super().format(record)
+
 
 def get_file_handler(filename: Path) -> logging.FileHandler:
     log_format = (
@@ -20,14 +44,9 @@ def get_file_handler(filename: Path) -> logging.FileHandler:
 
 
 def get_stream_handler() -> logging.StreamHandler:
-    log_format = ('%(levelname)s: %(message)s')
-    log_arguments = {
-        'fmt': log_format,
-        'datefmt': '%b %-d %T'
-    }
     stream_handler = logging.StreamHandler(stream=sys.stdout)
     stream_handler.setLevel(logging.INFO)
-    stream_handler.setFormatter(logging.Formatter(**log_arguments))
+    stream_handler.setFormatter(StreamFormatter())
 
     return stream_handler
 
