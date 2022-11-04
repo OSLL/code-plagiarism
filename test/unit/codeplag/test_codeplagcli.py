@@ -2,7 +2,7 @@ import argparse
 
 import pytest
 
-from codeplag.codeplagcli import CodeplagCLI, DirPath, EnvPath, FilePath
+from codeplag.codeplagcli import CodeplagCLI, DirPath, FilePath
 
 
 @pytest.mark.parametrize(
@@ -51,20 +51,6 @@ def test_file_path(path, out):
 def test_file_path_bad(path):
     with pytest.raises(argparse.ArgumentTypeError):
         FilePath(path)
-
-
-@pytest.mark.parametrize(
-    'filepath, out',
-    [
-        ('Makefile', 'Makefile'),
-        ('./LICENSE', 'LICENSE'),
-        ('./src', 'None'),
-        ('./profile.d', 'None'),
-        ('bad_filepath', 'None')
-    ]
-)
-def test_env_path(filepath, out):
-    assert EnvPath(filepath).__str__() == out
 
 
 @pytest.mark.parametrize(

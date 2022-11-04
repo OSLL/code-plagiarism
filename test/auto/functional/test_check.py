@@ -37,6 +37,11 @@ CPP_GITHUB_DIR = f'{REPO_URL}/tree/main/test'
 PY_GITHUB_DIR = f'{REPO_URL}/blob/main/src/codeplag/pyplag'
 
 
+@pytest.fixture(scope='module', autouse=True)
+def setup_session():
+    assert modify_settings(environment=".env").returncode == 0
+
+
 def test_check_util_version():
     result = run_util(['--version'])
 

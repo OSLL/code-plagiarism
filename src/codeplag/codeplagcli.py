@@ -57,19 +57,6 @@ class FilePath(Path):
         return Path.__new__(Path, *args, **kwargs)
 
 
-class EnvPath(Path):
-    """Path that returns None when parsing CLI
-    arguments if file is not exists.
-    """
-
-    def __new__(cls, *args, **kwargs):
-        path = Path(*args, **kwargs)
-        if not path.is_file():
-            return None
-
-        return Path.__new__(Path, *args, **kwargs)
-
-
 class CodeplagCLI(argparse.ArgumentParser):
     """The argument parser of the codeplag util."""
 
@@ -114,7 +101,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             "-env",
             "--environment",
             help="Path to the environment file with GitHub access token.",
-            type=EnvPath,
+            type=FilePath,
         )
         settings_modify.add_argument(
             "-r",

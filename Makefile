@@ -6,7 +6,7 @@ BASE_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-base-ubuntu20.04:$(UTIL_VER
 TEST_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-test-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
 DOCKER_TAG              ?= $(shell echo $(UTIL_NAME)-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
 
-PYTHONPATH              := $(PWD)/src/
+PYTHONPATH              := $(PWD)/src/:$(PWD)/test/auto
 
 LOGS_PATH               := /var/log/$(UTIL_NAME)
 CODEPLAG_LOG_PATH       := $(LOGS_PATH)/$(UTIL_NAME).log

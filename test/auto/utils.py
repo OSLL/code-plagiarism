@@ -26,10 +26,16 @@ def run_check(cmd: List[str], extension: str = 'py') -> subprocess.CompletedProc
 def modify_settings(
     reports: Optional[Union[Path, str]] = None,
     environment: Optional[Union[Path, str]] = None,
+    threshold: Optional[int] = None
 ) -> subprocess.CompletedProcess:
     reports_opt = ['--reports', str(reports)] if reports else []
     environment_opt = ['--environment', str(environment)] if environment else []
+    threshold_opt = ['--threshold', str(threshold)] if threshold else []
     return run_util(
-        ['modify'] + reports_opt + environment_opt,
+        ['modify'] + reports_opt + environment_opt + threshold_opt,
         root='settings'
     )
+
+
+def show_settings() -> subprocess.CompletedProcess:
+    return run_util(['show'], root='settings')
