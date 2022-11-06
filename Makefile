@@ -16,7 +16,6 @@ SOURCE_SUB_FILES        := src/$(UTIL_NAME)/consts.py
 DEBIAN_SUB_FILES        := debian/changelog \
                            debian/control \
                            debian/preinst \
-                           debian/postinst \
                            debian/copyright
 DOCKER_SUB_FILES        := docker/base_ubuntu2004.dockerfile \
                            docker/test_ubuntu2004.dockerfile \
