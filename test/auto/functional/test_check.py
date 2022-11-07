@@ -39,7 +39,10 @@ PY_GITHUB_DIR = f'{REPO_URL}/blob/main/src/codeplag/pyplag'
 
 @pytest.fixture(scope='module', autouse=True)
 def setup_session():
-    assert modify_settings(environment=".env").returncode == 0
+    first_cond = modify_settings(environment=".env").returncode == 0
+    second_cond = os.environ.get('ACCESS_TOKEN', '') != ''
+
+    assert first_cond or second_cond
 
 
 def test_check_util_version():

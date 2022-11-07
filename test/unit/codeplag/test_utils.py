@@ -94,7 +94,7 @@ def mock_default_logger(mocker: MockerFixture):
 def test_save_result(mocker, mock_default_logger):
     parsed_args = {"extension": 'py', 'root': 'check'}
     code_engine = CodeplagEngine(
-        logging.getLogger(),
+        mock_default_logger,
         parsed_args
     )
     tree1 = get_ast_from_filename(FILEPATH1)
@@ -143,7 +143,6 @@ def test_save_result(mocker, mock_default_logger):
     )
 
     Path.open.assert_called_once()
-    print(Path.open.call_args[0])
 
 
 @pytest.mark.parametrize(

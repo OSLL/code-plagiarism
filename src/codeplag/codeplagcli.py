@@ -149,7 +149,7 @@ class CodeplagCLI(argparse.ArgumentParser):
         check_required.add_argument(
             "-ext",
             "--extension",
-            help="Extension responsible for the analyzed " "programming language.",
+            help="Extension responsible for the analyzed programming language.",
             type=str,
             choices=["py", "cpp"],
             required=True,
@@ -166,7 +166,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             "-e",
             "--regexp",
             type=str,
-            help="A regular expression to filter " "searching repositories on GitHub.",
+            help="A regular expression to filter searching repositories on GitHub.",
         )
         check_github.add_argument(
             "-gf",
@@ -197,7 +197,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             "--files",
             metavar="FILE",
             type=FilePath,
-            help="Obsulute or relation path to files on a computer.",
+            help="Absulute or relation path to files on a computer.",
             nargs="+",
             action=CheckUniqueStore,
             default=[],
