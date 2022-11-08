@@ -197,7 +197,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             "--files",
             metavar="FILE",
             type=FilePath,
-            help="Absulute or relation path to files on a computer.",
+            help="Absolute or relative path to files on a computer.",
             nargs="+",
             action=CheckUniqueStore,
             default=[],

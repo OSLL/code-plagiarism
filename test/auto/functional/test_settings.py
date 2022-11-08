@@ -14,7 +14,7 @@ def teardown():
 @pytest.mark.parametrize(
     "env, reports, threshold",
     [
-        (".env", "src", 83),
+        (f"src/{UTIL_NAME}/types.py", "src", 83),
         ("setup.py", "test", 67),
         (f"src/{UTIL_NAME}/utils.py", "debian", 93)
     ]
