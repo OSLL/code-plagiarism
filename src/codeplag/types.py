@@ -1,10 +1,24 @@
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import (Dict, List, Literal, NamedTuple, Optional, Pattern, Tuple,
-                    TypedDict, Union)
+from typing import (
+    Dict,
+    List,
+    Literal,
+    NamedTuple,
+    Optional,
+    Pattern,
+    Tuple,
+    TypedDict,
+    Union,
+)
 
 import numpy as np
+import numpy.typing as npt
+from typing_extensions import NotRequired
+
+# ----------------------------------------------------------------------------
+# AST
 
 
 class NodeCodePlace(NamedTuple):
@@ -38,6 +52,9 @@ class ASTFeatures:
     tokens: List[int] = field(default_factory=list)
     tokens_pos: List[NodeCodePlace] = field(default_factory=list)
 
+# ----------------------------------------------------------------------------
+# Compare information
+
 
 class FastMetrics(NamedTuple):
     jakkar: float
@@ -49,7 +66,7 @@ class FastMetrics(NamedTuple):
 
 class StructuresInfo(NamedTuple):
     similarity: float
-    compliance_matrix: np.array
+    compliance_matrix: npt.NDArray
 
 
 class CompareInfo(NamedTuple):
@@ -63,9 +80,24 @@ class WorksReport(TypedDict):
     second_path: str
     first_heads: List[str]
     second_heads: List[str]
-    fast: Dict[str, int]
-    structure: dict
+    fast: Dict[str, int]  # dict from FastMetrics
+    structure: dict  # dict from StructuresInfo
+
+# ----------------------------------------------------------------------------
+
+
+class Settings(TypedDict):
+    environment: NotRequired[Path]
+    reports: NotRequired[Path]
+    threshold: "Threshold"
 
 
 Extensions = Tuple[Pattern, ...]
 Mode = Literal["many_to_many", "one_to_one"]
+Threshold = Literal[
+    50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
+    60, 61, 62, 63, 64, 65, 66, 67, 68, 69,
+    70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
+    80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
+    90, 91, 92, 93, 94, 95, 96, 97, 98, 99
+]

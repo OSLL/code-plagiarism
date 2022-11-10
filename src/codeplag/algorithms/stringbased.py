@@ -22,7 +22,7 @@ class LevenshteinDistance:
         '''
         return 0 if symbol1 == symbol2 else 1
 
-    def calculate_distance_matrix(self) -> np.int64:
+    def calculate_distance_matrix(self) -> None:
         '''
             The function calculates the Levenshtein matrix and sets
             in the distance atribute minimal count of operations

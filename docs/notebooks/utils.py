@@ -51,7 +51,11 @@ def get_data_from_dir(path='./data', max_count_lines=None):
 def save_works_from_repo_url(url, check_policy=True):
     current_repo_name = url.split('/')[-1]
     env_config = Config(RepositoryEnv('../../.env'))
-    gh = GitHubParser(file_extensions=[r'.py$'], check_all=check_policy, access_token=env_config.get('ACCESS_TOKEN'))
+    gh = GitHubParser(
+        file_extensions=(re.compile(r'.py$'),),
+        check_all=check_policy,
+        access_token=env_config.get('ACCESS_TOKEN')
+    )
     files = list(gh.get_files_generator_from_repo_url(url))
     files = [(remove_unnecessary_blank_lines(file[0]), file[1]) for file in files]
 
@@ -77,9 +81,11 @@ def get_time_to_meta(df, iterations=10):
         print(index, " " * 20, end='\r')
         for _ in range(iterations):
             tree = get_ast_from_content(content[0], content[1])
+            if tree is None:
+                break
             try:
                 start = perf_counter()
-                get_features_from_ast(tree)
+                get_features_from_ast(tree, content[1])
                 end = perf_counter() - start
                 to_meta_time.append(end)
                 count_lines.append(content[2])
@@ -150,13 +156,18 @@ def get_time_algorithms(df, work, iterations=5, metric='fast'):
     count_lines = []
     times = []
     tree1 = get_ast_from_content(work.content, work.link)
-    features1 = get_features_from_ast(tree1)
+    if tree1 is None:
+        raise Exception("Unexpected error when parsing first work.")
+
+    features1 = get_features_from_ast(tree1, work.link)
     for (index, content) in df[['content', 'link', 'count_lines_without_blank_lines']].iterrows():
         for _ in range(iterations):
             print(index, " " * 20, end='\r')
             tree2 = get_ast_from_content(content[0], content[1])
+            if tree2 is None:
+                continue
             try:
-                features2 = get_features_from_ast(tree2)
+                features2 = get_features_from_ast(tree2, content[1])
             except Exception:
                 continue
 

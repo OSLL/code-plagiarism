@@ -1,13 +1,13 @@
 import re
 
-from utils import SUCCESS_CODE, run_cmd, run_util
+from utils import SUCCESS_CODE, run_check, run_cmd
 
 
 def test_log_once():
     dir = 'src/codeplag'
-    result = run_util(
+    result = run_check(
         ['--directories', dir],
-        ext='cpp'
+        extension='cpp'
     )
 
     pattern = f'Getting works features from {dir}'

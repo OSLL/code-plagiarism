@@ -1,14 +1,19 @@
 import logging
 import os
-import re
 from pathlib import Path
 from unittest.mock import call
 
 import pytest
+from pytest_mock import MockerFixture
 
 from codeplag.pyplag.utils import get_ast_from_filename, get_features_from_ast
-from codeplag.utils import (CodeplagEngine, calc_iterations, calc_progress,
-                            compare_works, fast_compare)
+from codeplag.utils import (
+    CodeplagEngine,
+    calc_iterations,
+    calc_progress,
+    compare_works,
+    fast_compare,
+)
 
 CWD = Path(os.path.dirname(os.path.abspath(__file__)))
 FILEPATH1 = CWD / './data/test1.py'
@@ -78,12 +83,19 @@ def test_compare_works():
     assert compare_info2.structure is None
 
 
-def test_save_result(mocker):
+@pytest.fixture
+def mock_default_logger(mocker: MockerFixture):
     mocked_logger = mocker.Mock()
     mocker.patch.object(logging, 'getLogger', return_value=mocked_logger)
+
+    return mocked_logger
+
+
+def test_save_result(mocker, mock_default_logger):
+    parsed_args = {"extension": 'py', 'root': 'check'}
     code_engine = CodeplagEngine(
-        logging.getLogger(),
-        ['--extension', 'py']
+        mock_default_logger,
+        parsed_args
     )
     tree1 = get_ast_from_filename(FILEPATH1)
     tree2 = get_ast_from_filename(FILEPATH2)
@@ -95,33 +107,34 @@ def test_save_result(mocker):
     compare_info = compare_works(features1, features2)
     assert compare_info.structure is not None
 
-    mocker.patch('builtins.open', side_effect=FileNotFoundError)
-    code_engine.reports_directory = Path('/bad_dir')
+    mocker.patch.object(Path, 'open', side_effect=FileNotFoundError)
+    code_engine.reports = Path('/bad_dir')
     code_engine.save_result(
         features1,
         features2,
         compare_info.fast,
         compare_info.structure
     )
-    assert mocked_logger.warning.call_args == call(
+    assert not Path.open.called
+    assert mock_default_logger.warning.call_args == call(
         "The folder for reports isn't provided or now isn't exists."
     )
 
-    mocker.patch('builtins.open', side_effect=PermissionError)
-    code_engine.reports_directory = Path('/etc')
+    mocker.patch.object(Path, "open", side_effect=PermissionError)
+    code_engine.reports = Path('/etc')
     code_engine.save_result(
         features1,
         features2,
         compare_info.fast,
         compare_info.structure
     )
-    open.assert_called_once()
-    assert mocked_logger.warning.call_args == call(
+    Path.open.assert_called_once()
+    assert mock_default_logger.warning.call_args == call(
         'Not enough rights to write reports to the folder.'
     )
 
-    mocker.patch('builtins.open')
-    code_engine.reports_directory = Path('./src')
+    mocker.patch.object(Path, "open")
+    code_engine.reports = Path('./src')
     code_engine.save_result(
         features1,
         features2,
@@ -129,16 +142,20 @@ def test_save_result(mocker):
         compare_info.structure
     )
 
-    open.assert_called_once()
-    assert re.search('src/.*[.]json$', open.call_args[0][0].__str__())
-    assert re.search('w', open.call_args[0][1].__str__())
+    Path.open.assert_called_once()
 
 
-def test_calc_progress():
-    assert calc_progress(4, 10) == 0.4
-    assert calc_progress(10, 0) == 0.0
-    assert calc_progress(5, 10, 15, 0) == 0.5
-    assert calc_progress(5, 6, 1, 4) == 0.875
+@pytest.mark.parametrize(
+    "args, result",
+    [
+        ([4, 10], 0.4),
+        ([10, 0], 0.0),
+        ([5, 10, 15, 0], 0.5),
+        ([5, 6, 1, 4], 0.875)
+    ]
+)
+def test_calc_progress(args, result):
+    assert calc_progress(*args) == result
 
 
 @pytest.mark.parametrize(

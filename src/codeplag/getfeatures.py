@@ -7,8 +7,7 @@ from typing import List, Literal, Optional, Union, overload
 
 from decouple import Config, RepositoryEnv
 
-from codeplag.consts import (GET_FRAZE, LOG_PATH, SUPPORTED_EXTENSIONS,
-                             UTIL_NAME)
+from codeplag.consts import GET_FRAZE, LOG_PATH, SUPPORTED_EXTENSIONS, UTIL_NAME
 from codeplag.logger import get_logger
 from codeplag.types import ASTFeatures, Extensions
 from webparsers.github_parser import GitHubParser
@@ -23,7 +22,8 @@ def get_files_path_from_directory(
         and its subdirectories which have the extension transmitted
         in arguments
     '''
-    if not extensions:
+
+    if extensions is None:
         extensions = SUPPORTED_EXTENSIONS['default']
 
     allowed_files = []

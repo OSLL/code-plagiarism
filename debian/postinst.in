@@ -1,5 +1,0 @@
-#!/bin/sh
-
-echo "Post installation ($@) ..."
-
-chmod 0777 @LOGS_PATH@

@@ -81,7 +81,7 @@ def op_shift_metric(ops1: List[str], ops2: List[str]) -> Tuple[int, float]:
     return 0, 0.0
 
 
-def get_children_indexes(tree: List[Tuple[int, int]],
+def get_children_indexes(tree: List[NodeStructurePlace],
                          count_of_nodes: int) -> Tuple[List[int], int]:
     """The function returns indexes of her children and their count.
 
@@ -93,10 +93,10 @@ def get_children_indexes(tree: List[Tuple[int, int]],
 
     indexes = []
     count_of_children = 0
+    if count_of_nodes == 0:
+        return indexes, count_of_children
 
-    if count_of_nodes != 0:
-        current_level = tree[0][0]
-
+    current_level = tree[0][0]
     for current_index, node in enumerate(tree):
         if current_level == node[0]:
             indexes.append(current_index)
@@ -116,7 +116,7 @@ def find_max_index(array: np.ndarray) -> np.ndarray:
     '''
 
     maximum = 0
-    index: np.ndarray = np.int64([0, 0])
+    index = np.array([0, 0], dtype=np.int64)
     for i in np.arange(0, array.shape[0], 1):
         for j in np.arange(0, array.shape[1], 1):
             if array[i][j][1] == 0:
@@ -159,7 +159,7 @@ def matrix_value(array: np.ndarray) -> Tuple[list, list]:
     return same_struct_metric, indexes
 
 
-def add_not_counted(tree: List[Tuple[int, int]],
+def add_not_counted(tree: List[NodeStructurePlace],
                     count_of_children: int,
                     key_indexes: List[int],
                     indexes: List[np.ndarray],

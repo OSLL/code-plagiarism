@@ -1,37 +1,46 @@
-UTIL_VERSION            := 0.2.5
+UTIL_VERSION            := 0.2.6
 UTIL_NAME               := codeplag
+PWD                     := $(shell pwd)
 
 BASE_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-base-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
 TEST_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-test-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
 DOCKER_TAG              ?= $(shell echo $(UTIL_NAME)-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
 
-PWD                     := $(shell pwd)
-PYTHONPATH              := $(PWD)/src/
-LOGS_PATH               := /var/log/codeplag
+PYTHONPATH              := $(PWD)/src/:$(PWD)/test/auto
+
+LOGS_PATH               := /var/log/$(UTIL_NAME)
 CODEPLAG_LOG_PATH       := $(LOGS_PATH)/$(UTIL_NAME).log
-SOURCE_SUB_FILES        := src/codeplag/consts.py
+CONFIG_PATH             := /etc/$(UTIL_NAME)/settings.conf
+
+SOURCE_SUB_FILES        := src/$(UTIL_NAME)/consts.py
 DEBIAN_SUB_FILES        := debian/changelog \
                            debian/control \
                            debian/preinst \
-                           debian/postinst \
                            debian/copyright
 DOCKER_SUB_FILES        := docker/base_ubuntu2004.dockerfile \
                            docker/test_ubuntu2004.dockerfile \
                            docker/ubuntu2004.dockerfile
+
 PYTHON_REQUIRED_LIBS    := $(shell python3 setup.py --install-requirements)
 
-
-all: substitute-sources man install
-
-# $< - %.in file, $@ desired file %
-%: %.in
-	sed \
+substitute = @sed \
 		-e "s|@UTIL_NAME@|${UTIL_NAME}|g" \
 		-e "s|@UTIL_VERSION@|${UTIL_VERSION}|g" \
 		-e "s|@CODEPLAG_LOG_PATH@|${CODEPLAG_LOG_PATH}|g" \
 		-e "s|@PYTHON_REQUIRED_LIBS@|${PYTHON_REQUIRED_LIBS}|g" \
 		-e "s|@LOGS_PATH@|${LOGS_PATH}|g" \
-		$< > $@
+		-e "s|@CONFIG_PATH@|${CONFIG_PATH}|g" \
+		$(1) > $(2) \
+		&& echo "Substituting from '$(1)' to '$(2)' ..."
+
+all: substitute-sources man install
+
+# $< - %.in file, $@ desired file %
+%: %.in
+	$(call substitute,$<,$@)
+
+%.py: %.tmp.py
+	$(call substitute,$<,$@)
 
 substitute-sources: $(SOURCE_SUB_FILES)
 	@echo "Substituting of information about the utility in the source files"
@@ -44,7 +53,7 @@ substitute-docker: $(DOCKER_SUB_FILES)
 
 man: substitute-sources
 	mkdir -p man
-	argparse-manpage --pyfile src/codeplag/codeplagcli.py \
+	argparse-manpage --pyfile src/$(UTIL_NAME)/$(UTIL_NAME)cli.py \
 					 --function CodeplagCLI \
 					 --author "Codeplag Development Team" \
 					 --project-name "$(UTIL_NAME) $(UTIL_VERSION)" \
@@ -54,8 +63,14 @@ man: substitute-sources
 install: substitute-sources man
 	python3 -m pip install --root=/$(DESTDIR) .
 
-	mkdir -p $(DESTDIR)/$(LOGS_PATH)
-	chmod 0777 $(DESTDIR)/$(LOGS_PATH)
+	install -D -d -m 0755 $(DESTDIR)/$(LOGS_PATH)
+	install -D -m 0666 /dev/null $(DESTDIR)/$(CODEPLAG_LOG_PATH)
+
+	if [ ! -f $(DESTDIR)/$(CONFIG_PATH) ]; then \
+		install -D -d -m 0755 $(DESTDIR)/etc/$(UTIL_NAME); \
+		install -D -m 0666 /dev/null $(DESTDIR)/$(CONFIG_PATH); \
+		echo "{}" > $(DESTDIR)/$(CONFIG_PATH); \
+	fi
 
 	install -D -m 0644 man/$(UTIL_NAME).1 $(DESTDIR)/usr/share/man/man1/$(UTIL_NAME).1
 
@@ -88,15 +103,15 @@ clean: clean-cache
 	rm --force --recursive dist/
 	rm --force --recursive debian/deb/*
 	rm --force --recursive debian/.debhelper/
-	rm --force --recursive debian/codeplag-util/
+	rm --force --recursive debian/$(UTIL_NAME)-util/
 	rm --force debian/debhelper-build-stamp
 	rm --force debian/files
-	rm --force debian/codeplag-util.debhelper.log
-	rm --force debian/codeplag-util.substvars
-	rm --force --recursive src/codeplag.egg-info
+	rm --force debian/$(UTIL_NAME)-util.debhelper.log
+	rm --force debian/$(UTIL_NAME)-util.substvars
+	rm --force --recursive src/$(UTIL_NAME).egg-info
 
 clean-all: clean
-	rm --force src/codeplag/consts.py
+	rm --force src/$(UTIL_NAME)/consts.py
 
 	rm --force docker/base_ubuntu2004.dockerfile
 	rm --force docker/test_ubuntu2004.dockerfile
@@ -111,6 +126,8 @@ clean-all: clean
 uninstall:
 	rm --force /usr/share/man/man1/$(UTIL_NAME).1
 	pip3 uninstall $(UTIL_NAME) -y
+
+reinstall: uninstall install
 
 docker-base-image: substitute-sources substitute-docker
 	docker image inspect $(BASE_DOCKER_TAG) > /dev/null 2>&1 || ( \
@@ -181,7 +198,7 @@ help:
 	@echo "                         Require argparse-manpage python library;"
 	@echo "  test                   Runs unit tests with pytest framework;"
 	@echo "  autotest               Runs auto tests."
-	@echo "                         Required installed codeplag util and provided ACCESS_TOKEN;"
+	@echo "                         Required installed '$(UTIL_NAME)' util and provided ACCESS_TOKEN;"
 	@echo "  package                Build the debian package;"
 	@echo "  clean-cache            Delete __pycache__ folders created by pytest framework;"
 	@echo "  clean                  Remove generated while installing and testing files in the source directory (contains clean-cache);"

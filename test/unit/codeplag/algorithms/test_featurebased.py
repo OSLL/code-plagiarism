@@ -2,11 +2,15 @@ import unittest
 
 import numpy as np
 
-from codeplag.algorithms.featurebased import (add_not_counted, counter_metric,
-                                              find_max_index,
-                                              get_children_indexes,
-                                              matrix_value, op_shift_metric,
-                                              struct_compare)
+from codeplag.algorithms.featurebased import (
+    add_not_counted,
+    counter_metric,
+    find_max_index,
+    get_children_indexes,
+    matrix_value,
+    op_shift_metric,
+    struct_compare,
+)
 
 
 class TestFeaturebased(unittest.TestCase):

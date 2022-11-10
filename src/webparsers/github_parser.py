@@ -6,8 +6,14 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 
-from webparsers.types import (Branch, Extensions, GitHubContentUrl,
-                              GitHubRepoUrl, PullRequest, Repository)
+from webparsers.types import (
+    Branch,
+    Extensions,
+    GitHubContentUrl,
+    GitHubRepoUrl,
+    PullRequest,
+    Repository,
+)
 
 
 class GitHubParser:

@@ -14,3 +14,12 @@ repos:
           - flake8-comprehensions==3.10.0
           - flake8-simplify==0.19.3
           - mccabe==0.7.0
+  - repo: local
+    hooks:
+      - id: pyright
+        name: pyright
+        entry: pyright
+        language: node
+        pass_filenames: false
+        types: [ python ]
+        additional_dependencies: [ 'pyright@1.1.274' ]

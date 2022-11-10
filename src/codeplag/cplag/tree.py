@@ -4,10 +4,10 @@ from typing import List, Union
 from clang.cindex import Cursor, TokenKind
 
 from codeplag.cplag.const import IGNORE, OPERATORS
-from codeplag.types import ASTFeatures
+from codeplag.types import ASTFeatures, NodeStructurePlace
 
 
-def get_not_ignored(tree: Cursor, src: Path) -> List[Cursor]:
+def get_not_ignored(tree: Cursor, src: Union[Path, str]) -> List[Cursor]:
     '''
         Function helps to discard unnecessary nodes such as imports
     '''
@@ -35,8 +35,12 @@ def generic_visit(node, features: ASTFeatures, curr_depth: int = 0) -> None:
             features.unodes[node_name] = features.count_unodes
             features.from_num[features.count_unodes] = node_name
             features.count_unodes += 1
-        features.structure.append((curr_depth,
-                                   features.unodes[node_name]))
+        features.structure.append(
+            NodeStructurePlace(
+                curr_depth,
+                features.unodes[node_name]
+            )
+        )
         children = list(node.get_children())
 
         if curr_depth == 1:
@@ -49,8 +53,12 @@ def generic_visit(node, features: ASTFeatures, curr_depth: int = 0) -> None:
                 features.unodes[token_name] = features.count_unodes
                 features.from_num[features.count_unodes] = token_name
                 features.count_unodes += 1
-            features.structure.append((curr_depth,
-                                       features.unodes[token_name]))
+            features.structure.append(
+                NodeStructurePlace(
+                    curr_depth,
+                    features.unodes[token_name]
+                )
+            )
 
             if curr_depth == 1:
                 features.head_nodes.append(token_name)
