@@ -59,7 +59,12 @@ def read_settings_conf(logger: logging.Logger) -> Settings:
         if key_type == Path or key_type == NotRequired[Path]:  # type: ignore
             loaded_settings_config[key] = Path(loaded_settings_config[key])
 
-    return Settings(**loaded_settings_config)
+    return Settings(
+        **{
+            key: loaded_settings_config[key] for key in Settings.__annotations__.keys()
+            if key in loaded_settings_config
+        }
+    )
 
 
 def write_settings_conf(settings: Settings) -> None:
