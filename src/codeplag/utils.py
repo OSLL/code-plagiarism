@@ -13,7 +13,6 @@ import pandas as pd
 from codeplag.algorithms.featurebased import counter_metric, struct_compare
 from codeplag.algorithms.tokenbased import value_jakkar_coef
 from codeplag.config import read_settings_conf, write_config, write_settings_conf
-from codeplag.consts import DEFAULT_THRESHOLD
 from codeplag.cplag.util import CFeaturesGetter
 from codeplag.display import print_compare_result
 from codeplag.getfeatures import AbstractGetter
@@ -22,6 +21,7 @@ from codeplag.types import (
     ASTFeatures,
     CompareInfo,
     FastMetrics,
+    Flag,
     Settings,
     StructuresInfo,
     WorksReport,
@@ -138,9 +138,10 @@ class CodeplagEngine:
                 return
 
             # Check if all None, print error
-            self.environment: Path = parsed_args.pop("environment")
+            self.environment: Optional[Path] = parsed_args.pop("environment")
             self.reports: Optional[Path] = parsed_args.pop("reports")
-            self.threshold: int = parsed_args.pop("threshold", DEFAULT_THRESHOLD)
+            self.threshold: int = parsed_args.pop("threshold")
+            self.show_progress: Flag = parsed_args.pop("show_progress")
         else:
             settings_conf = read_settings_conf(logger)
             self.features_getter: AbstractGetter
@@ -161,7 +162,7 @@ class CodeplagEngine:
                 )
 
             self.mode: str = parsed_args.pop('mode', 'many_to_many')
-            self.show_progress: bool = parsed_args.pop('show_progress', False)
+            self.show_progress: Flag = settings_conf.get('show_progress')
             self.threshold: int = settings_conf["threshold"]
             self.reports: Optional[Path] = settings_conf.pop(
                 'reports', None
@@ -241,9 +242,12 @@ class CodeplagEngine:
         table = pd.DataFrame(
             list(settings_config.values()),
             index=[k.capitalize() for k in settings_config.keys()],
-            columns=["Value"]
+            columns=pd.Index(
+                ["Value"],
+                name="Key"
+            )
         )
-        print(table.to_markdown(tablefmt="psql"))
+        print(table)
 
     def _settings_modify(self) -> None:
         settings_config = read_settings_conf(self.logger)
@@ -366,6 +370,7 @@ class CodeplagEngine:
                 return
             elif self.command == "modify":
                 self._settings_modify()
+                self._settings_show()
                 return
         else:
             self._check()

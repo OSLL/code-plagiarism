@@ -112,6 +112,13 @@ class CodeplagCLI(argparse.ArgumentParser):
             type=DirPath,
         )
         settings_modify.add_argument(
+            "-sp",
+            "--show_progress",
+            help="Show progress of searching plagiarism.",
+            type=int,
+            choices=[0, 1],
+        )
+        settings_modify.add_argument(
             "-t",
             "--threshold",
             help="Threshold of analyzer which classifies two work as same. "
@@ -137,12 +144,6 @@ class CodeplagCLI(argparse.ArgumentParser):
             type=str,
             choices=MODE_CHOICE,
             default="many_to_many",
-        )
-        check.add_argument(
-            "-sp",
-            "--show_progress",
-            help="Show current progress of searching plagiarism.",
-            action="store_true",
         )
 
         check_required = check.add_argument_group("required options")

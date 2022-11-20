@@ -8,7 +8,6 @@ INSTALL_REQUIREMENTS = [
     'argcomplete~=2.0.0',
     'numpy~=1.23.1',
     'pandas~=1.4.3',
-    'tabulate~=0.9.0',
     'ccsyspath~=1.1.0',
     'clang~=14.0',
     'llvmlite~=0.39.0',
