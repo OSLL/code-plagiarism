@@ -33,31 +33,6 @@ class TestGitHubParser(unittest.TestCase):
     def setUpClass(cls):
         cls.maxDiff = None
 
-    def test_decode_file_content(self):
-        test_cases = [
-            {
-                'arguments': {
-                    'file_in_bytes': 'Good message'.encode('utf-8')
-                },
-                'expected_result': 'Good message',
-            },
-            {
-                'arguments': {
-                    'file_in_bytes': bytearray(b'Bad\xee\xeemessage')
-                },
-                'expected_result': 'Bad  message',
-            }
-        ]
-
-        for test_case in test_cases:
-            buf = io.StringIO()
-            with redirect_stdout(buf), self.subTest(test_case=test_case):
-                gh_parser = GitHubParser()
-                result = gh_parser.decode_file_content(
-                    **test_case['arguments']
-                )
-                self.assertEqual(result, test_case['expected_result'])
-
     def test_is_accepted_extension(self):
         test_cases = [
             {
@@ -680,7 +655,7 @@ class TestGitHubParser(unittest.TestCase):
                         'content': base64.b64encode(b'Bad\xee\xeemessage')
                     }
                 ),
-                'expected_result': ('Bad  message', 'http://api.github.com/test')
+                'expected_result': ('Badmessage', 'http://api.github.com/test')
             },
         ]
 

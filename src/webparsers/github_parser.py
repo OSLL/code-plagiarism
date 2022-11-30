@@ -29,22 +29,6 @@ class GitHubParser:
         self.__access_token = access_token
         self.__check_all_branches = check_all
 
-    def decode_file_content(self, file_in_bytes: bytearray) -> str:
-        attempt = 1
-        code = None
-        while code is None:
-            try:
-                code = file_in_bytes.decode('utf-8')
-            except UnicodeDecodeError as error:
-                attempt += 1
-                if attempt % 25 == 0:
-                    self.logger.debug(
-                        f"Trying to decode content, attempt - {attempt}"
-                    )
-                file_in_bytes[error.args[2]] = 32
-
-        return code
-
     def is_accepted_extension(self, path: str) -> bool:
         if self.__file_extensions is None:
             return True
@@ -206,7 +190,7 @@ class GitHubParser:
         file_in_bytes: bytearray = bytearray(
             base64.b64decode(response['content'])
         )
-        code: str = self.decode_file_content(file_in_bytes)
+        code = file_in_bytes.decode('utf-8', errors='ignore')
 
         return code, file_path
 
