@@ -173,7 +173,7 @@ class CodeplagEngine:
                 'github_project_folders', []
             )
             self.github_user: str = parsed_args.pop('github_user', '')
-            self.regexp: str = parsed_args.pop('regexp', '')
+            self.repo_regexp: str = parsed_args.pop('repo_regexp', '')
 
             self.files: List[Path] = parsed_args.pop('files', [])
             self.directories: List[Path] = parsed_args.pop('directories', [])
@@ -291,7 +291,7 @@ class CodeplagEngine:
             )
             works.extend(
                 self.features_getter.get_from_users_repos(
-                    self.github_user, self.regexp
+                    self.github_user, self.repo_regexp
                 )
             )
 
@@ -323,7 +323,7 @@ class CodeplagEngine:
                         self.github_project_folders, independent=True
                     ),
                     *self.features_getter.get_from_users_repos(
-                        self.github_user, self.regexp, independent=True
+                        self.github_user, self.repo_regexp, independent=True
                     )
                 )
             )

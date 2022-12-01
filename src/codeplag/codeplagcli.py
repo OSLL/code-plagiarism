@@ -164,8 +164,8 @@ class CodeplagCLI(argparse.ArgumentParser):
             action="store_true",
         )
         check_github.add_argument(
-            "-e",
-            "--regexp",
+            "-re",
+            "--repo-regexp",
             type=str,
             help="A regular expression to filter searching repositories on GitHub.",
         )
