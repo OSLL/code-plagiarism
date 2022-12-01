@@ -88,30 +88,39 @@ class AbstractGetter(ABC):
         ...
 
     @overload
-    @abstractmethod
     def get_from_dirs(
         self, directories: List[Path], independent: Literal[False] = False
     ) -> List[ASTFeatures]:
         ...
 
     @overload
-    @abstractmethod
     def get_from_dirs(
         self, directories: List[Path], independent: Literal[True]
     ) -> List[List[ASTFeatures]]:
         ...
 
     @overload
-    @abstractmethod
     def get_from_dirs(
         self, directories: List[Path], independent: bool = False
     ) -> Union[List[ASTFeatures], List[List[ASTFeatures]]]:
         ...
 
-    @abstractmethod
     def get_from_dirs(
         self, directories: List[Path], independent: bool = False
     ) -> Union[List[ASTFeatures], List[List[ASTFeatures]]]:
+        works = []
+        for directory in directories:
+            self.logger.info(f'{GET_FRAZE} {directory}')
+            new_works = self.get_works_from_dir(directory)
+            if independent:
+                works.append(new_works)
+            else:
+                works.extend(new_works)
+
+        return works
+
+    @abstractmethod
+    def get_works_from_dir(self, directory: Path) -> List[ASTFeatures]:
         ...
 
     def get_from_github_files(self, github_files: List[str]) -> List[ASTFeatures]:

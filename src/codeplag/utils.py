@@ -174,6 +174,7 @@ class CodeplagEngine:
             )
             self.github_user: str = parsed_args.pop('github_user', '')
             self.repo_regexp: str = parsed_args.pop('repo_regexp', '')
+            self.path_regexp: str = parsed_args.pop('path_regexp', '')
 
             self.files: List[Path] = parsed_args.pop('files', [])
             self.directories: List[Path] = parsed_args.pop('directories', [])

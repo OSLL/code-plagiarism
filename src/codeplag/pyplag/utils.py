@@ -117,19 +117,10 @@ class PyFeaturesGetter(AbstractGetter):
         self.logger.info(f'{GET_FRAZE} files')
         return get_works_from_filepaths(files)
 
-    def get_from_dirs(
-        self, directories: List[Path], independent: bool = False
-    ) -> Union[List[ASTFeatures], List[List[ASTFeatures]]]:
-        works = []
-        for directory in directories:
-            self.logger.info(f'{GET_FRAZE} {directory}')
-            filepaths = get_files_path_from_directory(
-                directory,
-                extensions=SUPPORTED_EXTENSIONS[self.extension]
-            )
-            if independent:
-                works.append(get_works_from_filepaths(filepaths))
-            else:
-                works.extend(get_works_from_filepaths(filepaths))
+    def get_works_from_dir(self, directory: Path) -> List[ASTFeatures]:
+        filepaths = get_files_path_from_directory(
+            directory,
+            extensions=SUPPORTED_EXTENSIONS[self.extension]
+        )
 
-        return works
+        return get_works_from_filepaths(filepaths)

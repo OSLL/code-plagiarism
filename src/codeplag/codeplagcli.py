@@ -138,12 +138,38 @@ class CodeplagCLI(argparse.ArgumentParser):
 
         check = subparsers.add_parser("check", help="Start searching similar works.")
         check.add_argument(
+            "-d",
+            "--directories",
+            metavar="DIRECTORY",
+            type=DirPath,
+            help="Absolute or relative path to a local directories with project files.",
+            nargs="+",
+            action=CheckUniqueStore,
+            default=[],
+        )
+        check.add_argument(
+            "-f",
+            "--files",
+            metavar="FILE",
+            type=FilePath,
+            help="Absolute or relative path to files on a computer.",
+            nargs="+",
+            action=CheckUniqueStore,
+            default=[],
+        )
+        check.add_argument(
             "--mode",
             help="Choose one of the following modes of searching plagiarism. "
             "The 'many_to_many' mode may require more free memory.",
             type=str,
             choices=MODE_CHOICE,
             default="many_to_many",
+        )
+        check.add_argument(
+            "-pe",
+            "--path-regexp",
+            help="A regular expression for filtering checked works by name.",
+            type=str,
         )
 
         check_required = check.add_argument_group("required options")
@@ -188,27 +214,6 @@ class CodeplagCLI(argparse.ArgumentParser):
             metavar="GITHUB_PROJECT_FOLDER",
             type=GitHubContentUrl,
             help="URL to a GitHub project folder.",
-            nargs="+",
-            action=CheckUniqueStore,
-            default=[],
-        )
-
-        check.add_argument(
-            "-f",
-            "--files",
-            metavar="FILE",
-            type=FilePath,
-            help="Absolute or relative path to files on a computer.",
-            nargs="+",
-            action=CheckUniqueStore,
-            default=[],
-        )
-        check.add_argument(
-            "-d",
-            "--directories",
-            metavar="DIRECTORY",
-            type=DirPath,
-            help="Absolute or relative path to a local directories with project files.",
             nargs="+",
             action=CheckUniqueStore,
             default=[],
