@@ -179,8 +179,8 @@ class CodeplagEngine:
             environment=settings_conf.get("environment"),
             all_branches=parsed_args.pop('all_branches', False),
             logger=logger,
-            repo_regexp=parsed_args.pop('repo_regexp', ''),
-            path_regexp=parsed_args.pop('path_regexp', '')
+            repo_regexp=parsed_args.pop('repo_regexp', None),
+            path_regexp=parsed_args.pop('path_regexp', None)
         )
 
     def save_result(self,

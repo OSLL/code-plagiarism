@@ -55,17 +55,18 @@ class AbstractGetter(ABC):
         environment: Optional[Path] = None,
         all_branches: bool = False,
         logger: Optional[logging.Logger] = None,
-        repo_regexp: str = '',
-        path_regexp: str = ''
+        repo_regexp: Optional[str] = None,
+        path_regexp: Optional[str] = None
     ):
         self.logger = logger if logger is not None else logging.getLogger(UTIL_NAME)
         self.extension: Extension = extension
-        self.repo_regexp = repo_regexp
-        self.path_regexp = path_regexp
+        self.repo_regexp = re.compile(repo_regexp) if repo_regexp is not None else repo_regexp
+        self.path_regexp = re.compile(path_regexp) if path_regexp is not None else path_regexp
         self._set_access_token(environment)
         self._set_github_parser(all_branches)
 
     def _set_access_token(self, env_path: Optional[Path]) -> None:
+        # TODO: Set only if defined GitHub options
         if not env_path:
             self.logger.warning(
                 "Env file not found or not a file. "

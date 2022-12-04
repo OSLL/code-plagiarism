@@ -85,9 +85,11 @@ class GitHubParser:
 
         return response
 
-    def get_list_of_repos(self,
-                          owner: str,
-                          reg_exp: Optional[str] = None) -> List[Repository]:
+    def get_list_of_repos(
+        self,
+        owner: str,
+        reg_exp: Optional[re.Pattern] = None
+    ) -> List[Repository]:
         '''
             Function returns dict in which keys characterize repository names
             and values characterize repositories links
