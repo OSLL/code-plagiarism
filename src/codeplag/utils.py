@@ -20,6 +20,7 @@ from codeplag.pyplag.utils import PyFeaturesGetter
 from codeplag.types import (
     ASTFeatures,
     CompareInfo,
+    Extension,
     FastMetrics,
     Flag,
     Settings,
@@ -144,22 +145,7 @@ class CodeplagEngine:
             self.show_progress: Flag = parsed_args.pop("show_progress")
         else:
             settings_conf = read_settings_conf(logger)
-            self.features_getter: AbstractGetter
-            extension = parsed_args.pop('extension')
-            if extension == 'py':
-                self.features_getter = PyFeaturesGetter(
-                    extension=extension,
-                    environment=settings_conf.get("environment"),
-                    all_branches=parsed_args.pop('all_branches', False),
-                    logger=logger
-                )
-            elif extension == 'cpp':
-                self.features_getter = CFeaturesGetter(
-                    extension=extension,
-                    environment=settings_conf.get("environment"),
-                    all_branches=parsed_args.pop('all_branches', False),
-                    logger=logger
-                )
+            self._set_features_getter(parsed_args, settings_conf, logger)
 
             self.mode: str = parsed_args.pop('mode', 'many_to_many')
             self.show_progress: Flag = settings_conf.get('show_progress')
@@ -173,11 +159,29 @@ class CodeplagEngine:
                 'github_project_folders', []
             )
             self.github_user: str = parsed_args.pop('github_user', '')
-            self.repo_regexp: str = parsed_args.pop('repo_regexp', '')
-            self.path_regexp: str = parsed_args.pop('path_regexp', '')
 
             self.files: List[Path] = parsed_args.pop('files', [])
             self.directories: List[Path] = parsed_args.pop('directories', [])
+
+    def _set_features_getter(
+        self,
+        parsed_args: Dict[str, Any],
+        settings_conf: Settings,
+        logger: logging.Logger
+    ) -> None:
+        extension: Extension = parsed_args.pop('extension')
+        if extension == 'py':
+            FeaturesGetter = PyFeaturesGetter
+        elif extension == 'cpp':
+            FeaturesGetter = CFeaturesGetter
+
+        self.features_getter: AbstractGetter = FeaturesGetter(
+            environment=settings_conf.get("environment"),
+            all_branches=parsed_args.pop('all_branches', False),
+            logger=logger,
+            repo_regexp=parsed_args.pop('repo_regexp', ''),
+            path_regexp=parsed_args.pop('path_regexp', '')
+        )
 
     def save_result(self,
                     first_work: ASTFeatures,
@@ -291,9 +295,7 @@ class CodeplagEngine:
                 )
             )
             works.extend(
-                self.features_getter.get_from_users_repos(
-                    self.github_user, self.repo_regexp
-                )
+                self.features_getter.get_from_users_repos(self.github_user)
             )
 
             count_works = len(works)
@@ -324,7 +326,7 @@ class CodeplagEngine:
                         self.github_project_folders, independent=True
                     ),
                     *self.features_getter.get_from_users_repos(
-                        self.github_user, self.repo_regexp, independent=True
+                        self.github_user, independent=True
                     )
                 )
             )

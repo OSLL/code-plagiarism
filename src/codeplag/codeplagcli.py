@@ -6,7 +6,7 @@ import argparse
 from pathlib import Path
 from typing import List, Optional
 
-from codeplag.consts import MODE_CHOICE, UTIL_NAME, UTIL_VERSION
+from codeplag.consts import EXTENSION_CHOICE, MODE_CHOICE, UTIL_NAME, UTIL_VERSION
 from webparsers.types import GitHubContentUrl
 
 
@@ -168,7 +168,9 @@ class CodeplagCLI(argparse.ArgumentParser):
         check.add_argument(
             "-pe",
             "--path-regexp",
-            help="A regular expression for filtering checked works by name.",
+            # TODO: Check that it used with listed below options
+            help="A regular expression for filtering checked works by name. "
+            "Used with options 'directories', 'github-user' and 'github-project-folders'.",
             type=str,
         )
 
@@ -178,7 +180,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             "--extension",
             help="Extension responsible for the analyzed programming language.",
             type=str,
-            choices=["py", "cpp"],
+            choices=EXTENSION_CHOICE,
             required=True,
         )
 

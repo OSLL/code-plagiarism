@@ -1,4 +1,5 @@
 import ast
+import logging
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -99,6 +100,23 @@ def get_works_from_filepaths(filenames: List[Path]) -> List[ASTFeatures]:
 
 
 class PyFeaturesGetter(AbstractGetter):
+
+    def __init__(
+        self,
+        environment: Optional[Path] = None,
+        all_branches: bool = False,
+        logger: Optional[logging.Logger] = None,
+        repo_regexp: str = '',
+        path_regexp: str = ''
+    ):
+        super().__init__(
+            extension='py',
+            environment=environment,
+            all_branches=all_branches,
+            logger=logger,
+            repo_regexp=repo_regexp,
+            path_regexp=path_regexp
+        )
 
     def get_from_content(self, file_content: str, url_to_file: str) -> Optional[ASTFeatures]:
         tree = get_ast_from_content(file_content, url_to_file)

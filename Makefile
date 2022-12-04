@@ -187,6 +187,9 @@ docker-rmi:
 	@docker rmi $(BASE_DOCKER_TAG) --force 2> /dev/null || \
 	echo "Image $(BASE_DOCKER_TAG) is not exists"
 
+todo-list:
+	@grep --color=auto -r -n 'TODO' ./* --exclude=Makefile --exclude-dir=docs
+
 help:
 	@echo "Usage:"
 	@echo "  make [command]"

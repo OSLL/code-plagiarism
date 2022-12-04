@@ -17,6 +17,7 @@ import numpy as np
 import numpy.typing as npt
 from typing_extensions import NotRequired
 
+Extension = Literal["py", "cpp"]
 Extensions = Tuple[Pattern, ...]
 Flag = Literal[0, 1]
 Mode = Literal["many_to_many", "one_to_one"]

@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 from typing import List, Optional
@@ -51,6 +52,23 @@ def get_works_from_filepaths(
 
 
 class CFeaturesGetter(AbstractGetter):
+
+    def __init__(
+        self,
+        environment: Optional[Path] = None,
+        all_branches: bool = False,
+        logger: Optional[logging.Logger] = None,
+        repo_regexp: str = '',
+        path_regexp: str = ''
+    ):
+        super().__init__(
+            extension='cpp',
+            environment=environment,
+            all_branches=all_branches,
+            logger=logger,
+            repo_regexp=repo_regexp,
+            path_regexp=path_regexp
+        )
 
     def get_from_content(self, file_content: str, url_to_file: str) -> Optional[ASTFeatures]:
         with open(FILE_DOWNLOAD_PATH, 'w', encoding='utf-8') as out_file:

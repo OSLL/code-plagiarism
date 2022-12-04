@@ -7,9 +7,15 @@ from typing import List, Literal, Optional, Union, overload
 
 from decouple import Config, RepositoryEnv
 
-from codeplag.consts import GET_FRAZE, LOG_PATH, SUPPORTED_EXTENSIONS, UTIL_NAME
+from codeplag.consts import (
+    ALL_EXTENSIONS,
+    GET_FRAZE,
+    LOG_PATH,
+    SUPPORTED_EXTENSIONS,
+    UTIL_NAME,
+)
 from codeplag.logger import get_logger
-from codeplag.types import ASTFeatures, Extensions
+from codeplag.types import ASTFeatures, Extension, Extensions
 from webparsers.github_parser import GitHubParser
 
 
@@ -24,7 +30,7 @@ def get_files_path_from_directory(
     '''
 
     if extensions is None:
-        extensions = SUPPORTED_EXTENSIONS['default']
+        extensions = ALL_EXTENSIONS
 
     allowed_files = []
     for current_dir, _, files in os.walk(directory):
@@ -45,13 +51,17 @@ class AbstractGetter(ABC):
 
     def __init__(
         self,
-        extension: str,
+        extension: Extension,
         environment: Optional[Path] = None,
         all_branches: bool = False,
-        logger: Optional[logging.Logger] = None
+        logger: Optional[logging.Logger] = None,
+        repo_regexp: str = '',
+        path_regexp: str = ''
     ):
         self.logger = logger if logger is not None else logging.getLogger(UTIL_NAME)
-        self.extension = extension
+        self.extension: Extension = extension
+        self.repo_regexp = repo_regexp
+        self.path_regexp = path_regexp
         self._set_access_token(environment)
         self._set_github_parser(all_branches)
 
@@ -71,9 +81,7 @@ class AbstractGetter(ABC):
 
     def _set_github_parser(self, branch_policy: bool) -> None:
         self.github_parser = GitHubParser(
-            file_extensions=SUPPORTED_EXTENSIONS[
-                self.extension
-            ],
+            file_extensions=SUPPORTED_EXTENSIONS[self.extension],
             check_all=branch_policy,
             access_token=self._access_token,
             logger=get_logger('webparsers', LOG_PATH)
@@ -182,24 +190,24 @@ class AbstractGetter(ABC):
 
     @overload
     def get_from_users_repos(
-        self, github_user: str, regexp: str, independent: Literal[False] = False
+        self, github_user: str, independent: Literal[False] = False
     ) -> List[ASTFeatures]:
         ...
 
     @overload
     def get_from_users_repos(
-        self, github_user: str, regexp: str, independent: Literal[True]
+        self, github_user: str, independent: Literal[True]
     ) -> List[List[ASTFeatures]]:
         ...
 
     @overload
     def get_from_users_repos(
-        self, github_user: str, regexp: str, independent: bool = False
+        self, github_user: str, independent: bool = False
     ) -> Union[List[ASTFeatures], List[List[ASTFeatures]]]:
         ...
 
     def get_from_users_repos(
-        self, github_user: str, regexp: str, independent: bool = False
+        self, github_user: str, independent: bool = False
     ) -> Union[List[ASTFeatures], List[List[ASTFeatures]]]:
         works = []
         if not github_user:
@@ -207,7 +215,7 @@ class AbstractGetter(ABC):
 
         repos = self.github_parser.get_list_of_repos(
             owner=github_user,
-            reg_exp=regexp
+            reg_exp=self.repo_regexp
         )
         for repo in repos:
             nested_works: List[ASTFeatures] = []
