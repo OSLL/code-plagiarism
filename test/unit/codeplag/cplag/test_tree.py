@@ -6,7 +6,7 @@ from clang.cindex import CursorKind
 
 from codeplag.cplag.const import COMPILE_ARGS
 from codeplag.cplag.tree import generic_visit, get_features, get_not_ignored
-from codeplag.cplag.util import get_cursor_from_file
+from codeplag.cplag.utils import get_cursor_from_file
 from codeplag.types import ASTFeatures
 
 

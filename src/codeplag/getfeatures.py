@@ -21,28 +21,37 @@ from webparsers.github_parser import GitHubParser
 
 def get_files_path_from_directory(
     directory: Path,
-    extensions: Optional[Extensions] = None
+    extensions: Optional[Extensions] = None,
+    path_regexp: Optional[re.Pattern] = None
 ) -> List[Path]:
-    '''
-        The function returns paths to all files in the directory
-        and its subdirectories which have the extension transmitted
-        in arguments
-    '''
+    """Recursive gets file paths from provided directory.
+
+    Args:
+        directory: Root directory for getting paths.
+        extensions: Available extensions for filtering.
+        path_regexp: Provided regular expression for filtering file paths.
+
+    Returns:
+        Paths to all files in the directory and its subdirectories.
+    """
 
     if extensions is None:
         extensions = ALL_EXTENSIONS
 
     allowed_files = []
-    for current_dir, _, files in os.walk(directory):
-        for file in files:
-            allowed = False
-            for extension in extensions:
-                if re.search(extension, file):
-                    allowed = True
+    for current_dir, _, filenames in os.walk(directory):
+        for filename in filenames:
+            allowed = any(ext.search(filename) for ext in extensions)
+            if not allowed:
+                continue
 
-                    break
-            if allowed:
-                allowed_files.append(Path(current_dir, file))
+            path_to_file = Path(current_dir, filename)
+            if path_regexp is None:
+                allowed_files.append(path_to_file)
+                continue
+
+            if path_regexp.search(path_to_file.__str__()):
+                allowed_files.append(path_to_file)
 
     return allowed_files
 

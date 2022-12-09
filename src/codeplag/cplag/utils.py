@@ -97,7 +97,8 @@ class CFeaturesGetter(AbstractGetter):
     def get_works_from_dir(self, directory: Path) -> List[ASTFeatures]:
         filepaths = get_files_path_from_directory(
             directory,
-            extensions=SUPPORTED_EXTENSIONS[self.extension]
+            extensions=SUPPORTED_EXTENSIONS[self.extension],
+            path_regexp=self.path_regexp
         )
 
         return get_works_from_filepaths(filepaths, COMPILE_ARGS)

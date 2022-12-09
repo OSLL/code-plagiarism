@@ -13,7 +13,7 @@ import pandas as pd
 from codeplag.algorithms.featurebased import counter_metric, struct_compare
 from codeplag.algorithms.tokenbased import value_jakkar_coef
 from codeplag.config import read_settings_conf, write_config, write_settings_conf
-from codeplag.cplag.util import CFeaturesGetter
+from codeplag.cplag.utils import CFeaturesGetter
 from codeplag.display import print_compare_result
 from codeplag.getfeatures import AbstractGetter
 from codeplag.pyplag.utils import PyFeaturesGetter
