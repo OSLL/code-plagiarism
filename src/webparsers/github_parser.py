@@ -349,7 +349,11 @@ class GitHubParser:
             file_url
         )
 
-    def get_files_generator_from_dir_url(self, dir_url: str) -> Iterator[WorkInfo]:
+    def get_files_generator_from_dir_url(
+        self,
+        dir_url: str,
+        path_regexp: Optional[re.Pattern] = None
+    ) -> Iterator[WorkInfo]:
         try:
             dir_url = GitHubContentUrl(dir_url)
         except ValueError as error:
@@ -368,24 +372,31 @@ class GitHubParser:
 
         for node in response_json:
             current_path = "/" + node["path"]
+            full_link = (
+                'https://github.com/'
+                f'{dir_url.owner}/{dir_url.repo}'
+                f'/tree/{dir_url.branch}/{current_path[2:]}'
+            )
             node_type = node["type"]
             if node_type == "dir":
                 yield from self.get_files_generator_from_sha_commit(
-                    dir_url.owner,
-                    dir_url.repo,
-                    dir_url.branch,
-                    node['sha'],
-                    current_path
+                    owner=dir_url.owner,
+                    repo=dir_url.repo,
+                    branch=dir_url.branch,
+                    sha=node['sha'],
+                    path=current_path,
+                    path_regexp=path_regexp
                 )
-            if node_type == "file" and self.is_accepted_extension(node["name"]):
-                file_link = (
-                    'https://github.com/'
-                    f'{dir_url.owner}/{dir_url.repo}'
-                    f'/tree/{dir_url.branch}/{current_path[2:]}'
-                )
-                yield self.get_file_content_from_sha(
-                    dir_url.owner,
-                    dir_url.repo,
-                    node["sha"],
-                    file_link
-                )
+            if (
+                node_type != "file"
+                or not self.is_accepted_extension(node["name"])
+                or (path_regexp is not None and path_regexp.search(full_link) is None)
+            ):
+                continue
+
+            yield self.get_file_content_from_sha(
+                owner=dir_url.owner,
+                repo=dir_url.repo,
+                sha=node["sha"],
+                file_path=full_link,
+            )

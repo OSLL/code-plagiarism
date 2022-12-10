@@ -181,7 +181,7 @@ class AbstractGetter(ABC):
             nested_works: List[ASTFeatures] = []
             self.logger.info(f'{GET_FRAZE} {github_project}')
             gh_prj_files = self.github_parser.get_files_generator_from_dir_url(
-                github_project
+                github_project, path_regexp=self.path_regexp
             )
             for file_content, url_file in gh_prj_files:
                 features = self.get_from_content(file_content, url_file)
