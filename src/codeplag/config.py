@@ -31,6 +31,7 @@ def read_config(file: Path, safe: bool = False) -> Optional[dict]:
     return config
 
 
+# TODO: Handle permission denied
 def write_config(file: Path, config: Union[dict, TypedDict]) -> None:
     config_for_dump = dict(config)
     for key in config_for_dump:
@@ -44,7 +45,7 @@ def write_config(file: Path, config: Union[dict, TypedDict]) -> None:
 def read_settings_conf(logger: logging.Logger) -> Settings:
     loaded_settings_config = read_config(CONFIG_PATH, safe=True)
     if loaded_settings_config is None:
-        logger.error(
+        logger.warning(
             "Unsuccessful attempt to read config '%s'. Returning default config.",
             CONFIG_PATH
         )
@@ -72,5 +73,6 @@ def write_settings_conf(settings: Settings) -> None:
 
 
 DefaultSettingsConfig = Settings(
-    threshold=DEFAULT_THRESHOLD
+    threshold=DEFAULT_THRESHOLD,
+    show_progress=0
 )

@@ -1,6 +1,7 @@
+import logging
 import os
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Optional
 
 from clang.cindex import Cursor, Index, TranslationUnit
 
@@ -52,6 +53,23 @@ def get_works_from_filepaths(
 
 class CFeaturesGetter(AbstractGetter):
 
+    def __init__(
+        self,
+        environment: Optional[Path] = None,
+        all_branches: bool = False,
+        logger: Optional[logging.Logger] = None,
+        repo_regexp: str = '',
+        path_regexp: str = ''
+    ):
+        super().__init__(
+            extension='cpp',
+            environment=environment,
+            all_branches=all_branches,
+            logger=logger,
+            repo_regexp=repo_regexp,
+            path_regexp=path_regexp
+        )
+
     def get_from_content(self, file_content: str, url_to_file: str) -> Optional[ASTFeatures]:
         with open(FILE_DOWNLOAD_PATH, 'w', encoding='utf-8') as out_file:
             out_file.write(file_content)
@@ -76,29 +94,11 @@ class CFeaturesGetter(AbstractGetter):
         self.logger.info(f'{GET_FRAZE} files')
         return get_works_from_filepaths(files, COMPILE_ARGS)
 
-    def get_from_dirs(
-        self, directories: List[Path], independent: bool = False
-    ) -> Union[List[ASTFeatures], List[List[ASTFeatures]]]:
-        works = []
-        for directory in directories:
-            self.logger.info(f'{GET_FRAZE} {directory}')
-            filepaths = get_files_path_from_directory(
-                directory,
-                extensions=SUPPORTED_EXTENSIONS[self.extension]
-            )
-            if independent:
-                works.append(
-                    get_works_from_filepaths(
-                        filepaths,
-                        COMPILE_ARGS
-                    )
-                )
-            else:
-                works.extend(
-                    get_works_from_filepaths(
-                        filepaths,
-                        COMPILE_ARGS
-                    )
-                )
+    def get_works_from_dir(self, directory: Path) -> List[ASTFeatures]:
+        filepaths = get_files_path_from_directory(
+            directory,
+            extensions=SUPPORTED_EXTENSIONS[self.extension],
+            path_regexp=self.path_regexp
+        )
 
-        return works
+        return get_works_from_filepaths(filepaths, COMPILE_ARGS)

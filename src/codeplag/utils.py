@@ -13,15 +13,16 @@ import pandas as pd
 from codeplag.algorithms.featurebased import counter_metric, struct_compare
 from codeplag.algorithms.tokenbased import value_jakkar_coef
 from codeplag.config import read_settings_conf, write_config, write_settings_conf
-from codeplag.consts import DEFAULT_THRESHOLD
-from codeplag.cplag.util import CFeaturesGetter
+from codeplag.cplag.utils import CFeaturesGetter
 from codeplag.display import print_compare_result
 from codeplag.getfeatures import AbstractGetter
 from codeplag.pyplag.utils import PyFeaturesGetter
 from codeplag.types import (
     ASTFeatures,
     CompareInfo,
+    Extension,
     FastMetrics,
+    Flag,
     Settings,
     StructuresInfo,
     WorksReport,
@@ -138,30 +139,16 @@ class CodeplagEngine:
                 return
 
             # Check if all None, print error
-            self.environment: Path = parsed_args.pop("environment")
+            self.environment: Optional[Path] = parsed_args.pop("environment")
             self.reports: Optional[Path] = parsed_args.pop("reports")
-            self.threshold: int = parsed_args.pop("threshold", DEFAULT_THRESHOLD)
+            self.threshold: int = parsed_args.pop("threshold")
+            self.show_progress: Flag = parsed_args.pop("show_progress")
         else:
             settings_conf = read_settings_conf(logger)
-            self.features_getter: AbstractGetter
-            extension = parsed_args.pop('extension')
-            if extension == 'py':
-                self.features_getter = PyFeaturesGetter(
-                    extension=extension,
-                    environment=settings_conf.get("environment"),
-                    all_branches=parsed_args.pop('all_branches', False),
-                    logger=logger
-                )
-            elif extension == 'cpp':
-                self.features_getter = CFeaturesGetter(
-                    extension=extension,
-                    environment=settings_conf.get("environment"),
-                    all_branches=parsed_args.pop('all_branches', False),
-                    logger=logger
-                )
+            self._set_features_getter(parsed_args, settings_conf, logger)
 
             self.mode: str = parsed_args.pop('mode', 'many_to_many')
-            self.show_progress: bool = parsed_args.pop('show_progress', False)
+            self.show_progress: Flag = settings_conf.get('show_progress')
             self.threshold: int = settings_conf["threshold"]
             self.reports: Optional[Path] = settings_conf.pop(
                 'reports', None
@@ -172,10 +159,29 @@ class CodeplagEngine:
                 'github_project_folders', []
             )
             self.github_user: str = parsed_args.pop('github_user', '')
-            self.regexp: str = parsed_args.pop('regexp', '')
 
             self.files: List[Path] = parsed_args.pop('files', [])
             self.directories: List[Path] = parsed_args.pop('directories', [])
+
+    def _set_features_getter(
+        self,
+        parsed_args: Dict[str, Any],
+        settings_conf: Settings,
+        logger: logging.Logger
+    ) -> None:
+        extension: Extension = parsed_args.pop('extension')
+        if extension == 'py':
+            FeaturesGetter = PyFeaturesGetter
+        elif extension == 'cpp':
+            FeaturesGetter = CFeaturesGetter
+
+        self.features_getter: AbstractGetter = FeaturesGetter(
+            environment=settings_conf.get("environment"),
+            all_branches=parsed_args.pop('all_branches', False),
+            logger=logger,
+            repo_regexp=parsed_args.pop('repo_regexp', None),
+            path_regexp=parsed_args.pop('path_regexp', None)
+        )
 
     def save_result(self,
                     first_work: ASTFeatures,
@@ -241,9 +247,12 @@ class CodeplagEngine:
         table = pd.DataFrame(
             list(settings_config.values()),
             index=[k.capitalize() for k in settings_config.keys()],
-            columns=["Value"]
+            columns=pd.Index(
+                ["Value"],
+                name="Key"
+            )
         )
-        print(table.to_markdown(tablefmt="psql"))
+        print(table)
 
     def _settings_modify(self) -> None:
         settings_config = read_settings_conf(self.logger)
@@ -286,9 +295,7 @@ class CodeplagEngine:
                 )
             )
             works.extend(
-                self.features_getter.get_from_users_repos(
-                    self.github_user, self.regexp
-                )
+                self.features_getter.get_from_users_repos(self.github_user)
             )
 
             count_works = len(works)
@@ -319,7 +326,7 @@ class CodeplagEngine:
                         self.github_project_folders, independent=True
                     ),
                     *self.features_getter.get_from_users_repos(
-                        self.github_user, self.regexp, independent=True
+                        self.github_user, independent=True
                     )
                 )
             )
@@ -366,6 +373,7 @@ class CodeplagEngine:
                 return
             elif self.command == "modify":
                 self._settings_modify()
+                self._settings_show()
                 return
         else:
             self._check()

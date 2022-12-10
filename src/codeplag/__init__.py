@@ -11,6 +11,7 @@ def main() -> Literal[0, 1, 2]:
     from codeplag.utils import CodeplagEngine
 
     pd.set_option("display.float_format", '{:,.2%}'.format)
+    pd.set_option('display.max_colwidth', None)
     logger = get_logger(__name__, LOG_PATH)
 
     cli = CodeplagCLI()

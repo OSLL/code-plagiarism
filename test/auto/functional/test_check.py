@@ -69,7 +69,7 @@ def test_check_util_version():
             f'Getting works features from {CPP_GITHUB_DIR}'.encode('utf-8')
         ),
         (
-            ['--github-user', 'OSLL', '--regexp', 'code-plag'],
+            ['--github-user', 'OSLL', '--repo-regexp', 'code-plag'],
             f'Getting works features from {REPO_URL}'.encode('utf-8')
         )
     ]
@@ -104,7 +104,7 @@ def test_compare_cpp_files(cmd, out):
             f'Getting works features from {PY_GITHUB_DIR}'.encode('utf-8')
         ),
         (
-            ['--github-user', 'OSLL', '--regexp', 'code-plag'],
+            ['--github-user', 'OSLL', '--repo-regexp', 'code-plag'],
             f'Getting works features from {REPO_URL}'.encode('utf-8')
         ),
         (
