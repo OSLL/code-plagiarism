@@ -7,36 +7,51 @@ from typing import List, Literal, Optional, Union, overload
 
 from decouple import Config, RepositoryEnv
 
-from codeplag.consts import GET_FRAZE, LOG_PATH, SUPPORTED_EXTENSIONS, UTIL_NAME
+from codeplag.consts import (
+    ALL_EXTENSIONS,
+    GET_FRAZE,
+    LOG_PATH,
+    SUPPORTED_EXTENSIONS,
+    UTIL_NAME,
+)
 from codeplag.logger import get_logger
-from codeplag.types import ASTFeatures, Extensions
+from codeplag.types import ASTFeatures, Extension, Extensions
 from webparsers.github_parser import GitHubParser
 
 
 def get_files_path_from_directory(
     directory: Path,
-    extensions: Optional[Extensions] = None
+    extensions: Optional[Extensions] = None,
+    path_regexp: Optional[re.Pattern] = None
 ) -> List[Path]:
-    '''
-        The function returns paths to all files in the directory
-        and its subdirectories which have the extension transmitted
-        in arguments
-    '''
+    """Recursive gets file paths from provided directory.
+
+    Args:
+        directory: Root directory for getting paths.
+        extensions: Available extensions for filtering.
+        path_regexp: Provided regular expression for filtering file paths.
+
+    Returns:
+        Paths to all files in the directory and its subdirectories.
+    """
 
     if extensions is None:
-        extensions = SUPPORTED_EXTENSIONS['default']
+        extensions = ALL_EXTENSIONS
 
     allowed_files = []
-    for current_dir, _, files in os.walk(directory):
-        for file in files:
-            allowed = False
-            for extension in extensions:
-                if re.search(extension, file):
-                    allowed = True
+    for current_dir, _, filenames in os.walk(directory):
+        for filename in filenames:
+            allowed = any(ext.search(filename) for ext in extensions)
+            if not allowed:
+                continue
 
-                    break
-            if allowed:
-                allowed_files.append(Path(current_dir, file))
+            path_to_file = Path(current_dir, filename)
+            if path_regexp is None:
+                allowed_files.append(path_to_file)
+                continue
+
+            if path_regexp.search(path_to_file.__str__()):
+                allowed_files.append(path_to_file)
 
     return allowed_files
 
@@ -45,17 +60,22 @@ class AbstractGetter(ABC):
 
     def __init__(
         self,
-        extension: str,
+        extension: Extension,
         environment: Optional[Path] = None,
         all_branches: bool = False,
-        logger: Optional[logging.Logger] = None
+        logger: Optional[logging.Logger] = None,
+        repo_regexp: Optional[str] = None,
+        path_regexp: Optional[str] = None
     ):
         self.logger = logger if logger is not None else logging.getLogger(UTIL_NAME)
-        self.extension = extension
+        self.extension: Extension = extension
+        self.repo_regexp = re.compile(repo_regexp) if repo_regexp is not None else repo_regexp
+        self.path_regexp = re.compile(path_regexp) if path_regexp is not None else path_regexp
         self._set_access_token(environment)
         self._set_github_parser(all_branches)
 
     def _set_access_token(self, env_path: Optional[Path]) -> None:
+        # TODO: Set only if defined GitHub options
         if not env_path:
             self.logger.warning(
                 "Env file not found or not a file. "
@@ -71,9 +91,7 @@ class AbstractGetter(ABC):
 
     def _set_github_parser(self, branch_policy: bool) -> None:
         self.github_parser = GitHubParser(
-            file_extensions=SUPPORTED_EXTENSIONS[
-                self.extension
-            ],
+            file_extensions=SUPPORTED_EXTENSIONS[self.extension],
             check_all=branch_policy,
             access_token=self._access_token,
             logger=get_logger('webparsers', LOG_PATH)
@@ -88,30 +106,39 @@ class AbstractGetter(ABC):
         ...
 
     @overload
-    @abstractmethod
     def get_from_dirs(
         self, directories: List[Path], independent: Literal[False] = False
     ) -> List[ASTFeatures]:
         ...
 
     @overload
-    @abstractmethod
     def get_from_dirs(
         self, directories: List[Path], independent: Literal[True]
     ) -> List[List[ASTFeatures]]:
         ...
 
     @overload
-    @abstractmethod
     def get_from_dirs(
         self, directories: List[Path], independent: bool = False
     ) -> Union[List[ASTFeatures], List[List[ASTFeatures]]]:
         ...
 
-    @abstractmethod
     def get_from_dirs(
         self, directories: List[Path], independent: bool = False
     ) -> Union[List[ASTFeatures], List[List[ASTFeatures]]]:
+        works = []
+        for directory in directories:
+            self.logger.info(f'{GET_FRAZE} {directory}')
+            new_works = self.get_works_from_dir(directory)
+            if independent:
+                works.append(new_works)
+            else:
+                works.extend(new_works)
+
+        return works
+
+    @abstractmethod
+    def get_works_from_dir(self, directory: Path) -> List[ASTFeatures]:
         ...
 
     def get_from_github_files(self, github_files: List[str]) -> List[ASTFeatures]:
@@ -154,7 +181,7 @@ class AbstractGetter(ABC):
             nested_works: List[ASTFeatures] = []
             self.logger.info(f'{GET_FRAZE} {github_project}')
             gh_prj_files = self.github_parser.get_files_generator_from_dir_url(
-                github_project
+                github_project, path_regexp=self.path_regexp
             )
             for file_content, url_file in gh_prj_files:
                 features = self.get_from_content(file_content, url_file)
@@ -173,24 +200,24 @@ class AbstractGetter(ABC):
 
     @overload
     def get_from_users_repos(
-        self, github_user: str, regexp: str, independent: Literal[False] = False
+        self, github_user: str, independent: Literal[False] = False
     ) -> List[ASTFeatures]:
         ...
 
     @overload
     def get_from_users_repos(
-        self, github_user: str, regexp: str, independent: Literal[True]
+        self, github_user: str, independent: Literal[True]
     ) -> List[List[ASTFeatures]]:
         ...
 
     @overload
     def get_from_users_repos(
-        self, github_user: str, regexp: str, independent: bool = False
+        self, github_user: str, independent: bool = False
     ) -> Union[List[ASTFeatures], List[List[ASTFeatures]]]:
         ...
 
     def get_from_users_repos(
-        self, github_user: str, regexp: str, independent: bool = False
+        self, github_user: str, independent: bool = False
     ) -> Union[List[ASTFeatures], List[List[ASTFeatures]]]:
         works = []
         if not github_user:
@@ -198,14 +225,14 @@ class AbstractGetter(ABC):
 
         repos = self.github_parser.get_list_of_repos(
             owner=github_user,
-            reg_exp=regexp
+            reg_exp=self.repo_regexp
         )
         for repo in repos:
             nested_works: List[ASTFeatures] = []
 
             self.logger.info(f'{GET_FRAZE} {repo.html_url}')
             files = self.github_parser.get_files_generator_from_repo_url(
-                repo.html_url
+                repo.html_url, path_regexp=self.path_regexp
             )
             for file_content, url_file in files:
                 features = self.get_from_content(file_content, url_file)

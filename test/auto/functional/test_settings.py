@@ -1,5 +1,5 @@
 import pytest
-from utils import modify_settings, show_settings
+from utils import modify_settings
 
 from codeplag.consts import CONFIG_PATH, UTIL_NAME
 
@@ -12,26 +12,26 @@ def teardown():
 
 
 @pytest.mark.parametrize(
-    "env, reports, threshold",
+    "env, reports, threshold, show_progress",
     [
-        (f"src/{UTIL_NAME}/types.py", "src", 83),
-        ("setup.py", "test", 67),
-        (f"src/{UTIL_NAME}/utils.py", "debian", 93)
+        (f"src/{UTIL_NAME}/types.py", "src", 83, 0),
+        ("setup.py", "test", 67, 1),
+        (f"src/{UTIL_NAME}/utils.py", "debian", 93, 0)
     ]
 )
-def test_modify_settings(env, reports, threshold):
-    assert modify_settings(
+def test_modify_settings(env, reports, threshold, show_progress):
+    result = modify_settings(
         environment=env,
         reports=reports,
-        threshold=threshold
-    ).returncode == 0
+        threshold=threshold,
+        show_progress=show_progress
+    )
+    assert result.returncode == 0
 
-    show_result = show_settings()
-    assert show_result.returncode == 0
-
-    assert bytes(env, encoding='utf-8') in show_result.stdout
-    assert bytes(reports, encoding='utf-8') in show_result.stdout
-    assert bytes(str(threshold), encoding='utf-8') in show_result.stdout
+    assert bytes(env, encoding='utf-8') in result.stdout
+    assert bytes(reports, encoding='utf-8') in result.stdout
+    assert bytes(str(threshold), encoding='utf-8') in result.stdout
+    assert bytes(str(show_progress), encoding='utf-8') in result.stdout
 
 
 @pytest.mark.parametrize(

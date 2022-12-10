@@ -119,7 +119,7 @@ def test_write_config(path, mock_json_dump, dumped_dict, expected):
 @pytest.mark.parametrize("settings_config", [None], indirect=True)
 def test_read_default_settings_conf(dummy_logger, settings_config):
     assert read_settings_conf(dummy_logger) == DefaultSettingsConfig
-    dummy_logger.error.assert_called_once()
+    dummy_logger.warning.assert_called_once()
 
 
 @pytest.mark.parametrize(
@@ -128,15 +128,32 @@ def test_read_default_settings_conf(dummy_logger, settings_config):
         [{}, DefaultSettingsConfig],
         [
             {'reports': '/home/bukabyka/reports'},
-            {'threshold': 65, 'reports': Path('/home/bukabyka/reports')}
+            {
+                'threshold': 65,
+                'reports': Path('/home/bukabyka/reports'),
+                'show_progress': 0
+            }
         ],
         [
-            {'threshold': 99, 'environment': '/home/bukabyka/.env'},
-            {'threshold': 99, 'environment': Path('/home/bukabyka/.env')}
+            {
+                'threshold': 99,
+                'environment':
+                '/home/bukabyka/.env',
+                'show_progress': 1
+            },
+            {
+                'threshold': 99,
+                'environment': Path('/home/bukabyka/.env'),
+                'show_progress': 1
+            }
         ],
         [
             {'bad_field': 'bad_field', 'reports': '/home/bukabyka/reports'},
-            {'threshold': 65, 'reports': Path('/home/bukabyka/reports')}
+            {
+                'threshold': 65,
+                'reports': Path('/home/bukabyka/reports'),
+                'show_progress': 0
+            }
         ]
     ],
     indirect=["settings_config"]

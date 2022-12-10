@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 from typing import Dict, List
 
-from codeplag.types import Extensions, Mode, Threshold
+from codeplag.types import Extension, Extensions, Mode, Threshold
 
 # Paths
 CONFIG_PATH = Path("@CONFIG_PATH@")
@@ -13,7 +13,9 @@ GET_FRAZE = 'Getting works features from'
 
 DEFAULT_THRESHOLD: Threshold = 65
 MODE_CHOICE: List[Mode] = ["many_to_many", "one_to_one"]
-SUPPORTED_EXTENSIONS: Dict[str, Extensions] = {
+EXTENSION_CHOICE: List[Extension] = ["py", "cpp"]
+ALL_EXTENSIONS = (re.compile(r'\..*$'),)
+SUPPORTED_EXTENSIONS: Dict[Extension, Extensions] = {
     'py': (
         re.compile(r'\.py$'),
     ),
@@ -22,9 +24,6 @@ SUPPORTED_EXTENSIONS: Dict[str, Extensions] = {
         re.compile(r'\.c$'),
         re.compile(r'\.h$')
     ),
-    'default': (
-        re.compile(r'\..*$'),
-    )
 }
 
 UTIL_NAME = "@UTIL_NAME@"

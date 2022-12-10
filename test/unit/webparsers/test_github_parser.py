@@ -1,5 +1,6 @@
 import base64
 import io
+import re
 import unittest
 from contextlib import redirect_stdout
 from typing import Optional, Union
@@ -32,31 +33,6 @@ class TestGitHubParser(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.maxDiff = None
-
-    def test_decode_file_content(self):
-        test_cases = [
-            {
-                'arguments': {
-                    'file_in_bytes': 'Good message'.encode('utf-8')
-                },
-                'expected_result': 'Good message',
-            },
-            {
-                'arguments': {
-                    'file_in_bytes': bytearray(b'Bad\xee\xeemessage')
-                },
-                'expected_result': 'Bad  message',
-            }
-        ]
-
-        for test_case in test_cases:
-            buf = io.StringIO()
-            with redirect_stdout(buf), self.subTest(test_case=test_case):
-                gh_parser = GitHubParser()
-                result = gh_parser.decode_file_content(
-                    **test_case['arguments']
-                )
-                self.assertEqual(result, test_case['expected_result'])
 
     def test_is_accepted_extension(self):
         test_cases = [
@@ -92,14 +68,18 @@ class TestGitHubParser(unittest.TestCase):
                 'arguments': {
                     'path': 'some/path/module.c'
                 },
-                'parser': GitHubParser(file_extensions=['py']),
+                'parser': GitHubParser(
+                    file_extensions=(re.compile('py'),)
+                ),
                 'expected_result': False
             },
             {
                 'arguments': {
                     'path': 'some/path/module.in'
                 },
-                'parser': GitHubParser(file_extensions=['cpp', 'c']),
+                'parser': GitHubParser(
+                    file_extensions=(re.compile('cpp'), re.compile('c'),)
+                ),
                 'expected_result': False
             },
         ]
@@ -680,7 +660,7 @@ class TestGitHubParser(unittest.TestCase):
                         'content': base64.b64encode(b'Bad\xee\xeemessage')
                     }
                 ),
-                'expected_result': ('Bad  message', 'http://api.github.com/test')
+                'expected_result': ('Badmessage', 'http://api.github.com/test')
             },
         ]
 
@@ -779,6 +759,79 @@ class TestGitHubParser(unittest.TestCase):
                     ('Some code 2', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/utils.py'),
                     ('Some code 3', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/tests.py'),
                     ('Some code 1', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py'),
+                ]
+            },
+            {
+                'arguments': {
+                    'owner': 'OSLL',
+                    'repo': 'aido-auto-feedback',
+                    'branch': 'iss76',
+                    'sha': 'kljsdfkiwe0341',
+                    'path_regexp': re.compile("s[.]py")
+                },
+                'send_calls': [
+                    call(
+                        '/repos/OSLL/aido-auto-feedback/git/trees/kljsdfkiwe0341'
+                    ),
+                    call(
+                        '/repos/OSLL/aido-auto-feedback/git/trees/jslkfjjeuwijsdmvd'
+                    )
+                ],
+                'send_se': [
+                    Response(
+                        {
+                            'tree': [
+                                {
+                                    'type': 'tree',
+                                    'path': 'src',
+                                    'sha': 'jslkfjjeuwijsdmvd'
+                                },
+                                {
+                                    'type': 'blob',
+                                    'path': 'main.py',
+                                    'sha': 'ixiuerjs9430',
+                                }
+                            ],
+                        }
+                    ),
+                    Response(
+                        {
+                            'tree': [
+                                {
+                                    'type': 'blob',
+                                    'path': 'utils.py',
+                                    'sha': 'uwrcbasrew94'
+                                },
+                                {
+                                    'type': 'blob',
+                                    'path': 'tests.py',
+                                    'sha': 'vbuqcvxpiwe'
+                                }
+                            ]
+                        }
+                    )
+                ],
+                'get_file_content_calls': [
+                    call(
+                        'OSLL',
+                        'aido-auto-feedback',
+                        'uwrcbasrew94',
+                        'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/utils.py'
+                    ),
+                    call(
+                        'OSLL',
+                        'aido-auto-feedback',
+                        'vbuqcvxpiwe',
+                        'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/tests.py'
+                    ),
+                ],
+                'get_file_content_se': [
+                    ('Some code 2', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/utils.py'),
+                    ('Some code 3', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/tests.py'),
+                ],
+                'expected_result': [
+                    ('Some code 2', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/utils.py'),
+                    ('Some code 3', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/tests.py'),
                 ]
             },
         ]

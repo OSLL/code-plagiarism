@@ -109,11 +109,11 @@
   ```
   $ codeplag check --extension py --files src/codeplag/pyplag/astwalkers.py --directories src/codeplag/pyplag
   $ codeplag check --extension py --directories src/codeplag/algorithms src
-  $ codeplag check --extension py --files src/codeplag/pyplag/astwalkers.py --github-user OSLL --regexp code- --all-branches
-  $ codeplag check --extension py --github-files https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/utils.py --github-user OSLL --regexp code- --all-branches
+  $ codeplag check --extension py --files src/codeplag/pyplag/astwalkers.py --github-user OSLL --repo-regexp code- --all-branches
+  $ codeplag check --extension py --github-files https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/utils.py --github-user OSLL --repo-regexp code- --all-branches
   $ codeplag check --extension py --github-files https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag/utils.py --directories src/codeplag/pyplag/
-  $ codeplag check --extension py --directories src/ --github-user OSLL --regexp code-
-  $ codeplag check --extension py --github-project-folders https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag --github-user OSLL --regexp code-
+  $ codeplag check --extension py --directories src/ --github-user OSLL --repo-regexp code-
+  $ codeplag check --extension py --github-project-folders https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag --github-user OSLL --repo-regexp code-
   $ codeplag check --extension py --github-project-folders https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag --directories src/codeplag/pyplag/
   ```
 
@@ -122,5 +122,5 @@
   $ codeplag check --extension cpp --directories src/codeplag/cplag/tests/data src/ --files test/codeplag/cplag/data/sample1.cpp test/codeplag/cplag/data/sample2.cpp
   $ codeplag check --extension cpp --github-files https://github.com/OSLL/code-plagiarism/blob/main/test/codeplag/cplag/data/sample3.cpp https://github.com/OSLL/code-plagiarism/blob/main/test/codeplag/cplag/data/sample4.cpp
   $ codeplag check --extension cpp --github-project-folders https://github.com/OSLL/code-plagiarism/tree/main/test
-  $ codeplag check --extension cpp --github-user OSLL --regexp "code-plag"
+  $ codeplag check --extension cpp --github-user OSLL --repo-regexp "code-plag"
   ```
