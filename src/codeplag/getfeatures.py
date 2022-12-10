@@ -232,7 +232,7 @@ class AbstractGetter(ABC):
 
             self.logger.info(f'{GET_FRAZE} {repo.html_url}')
             files = self.github_parser.get_files_generator_from_repo_url(
-                repo.html_url
+                repo.html_url, path_regexp=self.path_regexp
             )
             for file_content, url_file in files:
                 features = self.get_from_content(file_content, url_file)

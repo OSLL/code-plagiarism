@@ -82,4 +82,9 @@ class PullRequest(NamedTuple):
     draft: bool
 
 
+class WorkInfo(NamedTuple):
+    code: str
+    link: str  # TODO: use urlib for type or requests
+
+
 Extensions = Tuple[Pattern, ...]
