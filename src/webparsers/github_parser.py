@@ -58,6 +58,7 @@ class GitHubParser:
             # Recommended
             'accept': 'application/vnd.github.v3+json'
         }
+        url = address + api_url
         if self.__access_token != '':
             headers.update({
                 'Authorization': 'token ' + self.__access_token,
@@ -65,8 +66,7 @@ class GitHubParser:
 
         # Check Ethernet connection and requests limit
         try:
-            response = requests.get(address + api_url, headers=headers,
-                                    params=params)
+            response = requests.get(url, headers=headers, params=params)
         except requests.exceptions.ConnectionError as err:
             self.logger.error(
                 "Connection error. Please check the Internet connection."
@@ -76,7 +76,7 @@ class GitHubParser:
 
         if response.status_code in [400, 403, 404]:
             self.logger.error(
-                f"GitHub error: {response.json()['message']}."
+                f"GitHub error: '{response.json()['message']}' for url '{url}'."
             )
             sys.exit(1)
 
