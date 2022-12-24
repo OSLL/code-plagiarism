@@ -17,6 +17,8 @@ ADD README.md /usr/src/@UTIL_NAME@/README.md
 ADD LICENSE /usr/src/@UTIL_NAME@/LICENSE
 ADD Makefile /usr/src/@UTIL_NAME@/Makefile
 
-WORKDIR /usr/src/@UTIL_NAME@
 RUN pip3 install @PYTHON_REQUIRED_LIBS@
 RUN register-python-argcomplete @UTIL_NAME@ >> ~/.bashrc
+
+VOLUME /usr/src/works
+WORKDIR /usr/src/@UTIL_NAME@
