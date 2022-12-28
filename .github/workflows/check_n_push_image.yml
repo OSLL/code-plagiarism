@@ -48,7 +48,7 @@ jobs:
           echo "ACCESS_TOKEN=${ACCESS_TOKEN}" > .env
 
       - name: Provides release environment variable if created new tag.
-        #if: ${{ startsWith(github.event.ref, 'refs/tags/v') }}
+        if: ${{ startsWith(github.event.ref, 'refs/tags/v') }}
         run: |
           echo "IS_DEVELOPED=0" >> .env
 
