@@ -49,10 +49,8 @@ jobs:
 
       - name: Provides release environment variable if created new tag.
         #if: ${{ startsWith(github.event.ref, 'refs/tags/v') }}
-        env:
-          IS_DEVELOPED: 0
         run: |
-          echo "Running release scenarios ..."
+          echo "IS_DEVELOPED=0" >> .env
 
       - name: Get current util version
         id: get_version
@@ -61,6 +59,7 @@ jobs:
 
       - name: Create main docker image, run tests and save image for the next job
         run: |
+          export $(cat .env | xargs)
           make docker-image DOCKER_TAG=${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu20.04:${{ steps.get_version.outputs.version }}
           docker image save --output /tmp/codeplag-ubuntu20.04.tar ${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu20.04:${{ steps.get_version.outputs.version }}
 
