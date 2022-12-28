@@ -44,6 +44,8 @@ jobs:
       - name: Provide environment variable for autotests
         env:
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        run: |
+          echo "Providing ACCESS_TOKEN."
 
       - name: Provides release environment variable if created new tag.
         if: ${{ startsWith(github.event.ref, 'refs/tags/v') }}
