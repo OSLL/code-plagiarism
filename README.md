@@ -56,8 +56,9 @@
   ```
 
 - Run container based on pulled image and connect volume with your data
+  > The docker image has volume '/usr/src/works' which is the directory with your data.
   ```
-  $ docker run --rm --tty --interactive --volume <absolute_local_path_with_data>:<absolute_containter_path_with_data> "artanias/codeplag-ubuntu20.04:latest" /bin/bash
+  $ docker run --rm --tty --interactive --volume <absolute_local_path_with_data>:/usr/src/works "artanias/codeplag-ubuntu20.04:latest" /bin/bash
   ```
 
 ### 1.4 Install with package manager apt-get
