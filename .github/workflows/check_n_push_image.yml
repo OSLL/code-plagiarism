@@ -49,7 +49,7 @@ jobs:
         if: ${{ startsWith(github.event.ref, 'refs/tags/v') }}
         env:
           IS_DEVELOPED: 0
-        run:
+        run: |
           echo "Running release scenarios ..."
 
       - name: Get current util version
