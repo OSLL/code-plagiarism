@@ -10,9 +10,9 @@ override_dh_builddeb:
 	dh_builddeb --destdir=$(DESTDIR)
 
 override_dh_usrlocal:
-	echo "Skipping this step"
+	echo "Skipping dh_usrlocal ..."
 
 override_dh_auto_test:
-	echo "Skipping this step"
+	echo "Skipping dh_auto_test ..."
 
 .EXPORT_ALL_VARIABLES:

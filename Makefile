@@ -1,4 +1,4 @@
-UTIL_VERSION            := 0.2.9
+UTIL_VERSION            := 0.3.0
 UTIL_NAME               := codeplag
 PWD                     := $(shell pwd)
 
@@ -13,6 +13,7 @@ CODEPLAG_LOG_PATH       := $(LOGS_PATH)/$(UTIL_NAME).log
 CONFIG_PATH             := /etc/$(UTIL_NAME)/settings.conf
 
 SOURCE_SUB_FILES        := src/$(UTIL_NAME)/consts.py
+IS_DEVELOPED            ?= 1
 DEBIAN_SUB_FILES        := debian/changelog \
                            debian/control \
                            debian/preinst \
@@ -23,10 +24,17 @@ DOCKER_SUB_FILES        := docker/base_ubuntu2004.dockerfile \
 
 PYTHON_REQUIRED_LIBS    := $(shell python3 setup.py --install-requirements)
 
+
+ifeq ($(IS_DEVELOPED), 1)
+DEVEL_SUFFIX            := .devel
+endif
+
+
 substitute = @sed \
 		-e "s|@UTIL_NAME@|${UTIL_NAME}|g" \
 		-e "s|@UTIL_VERSION@|${UTIL_VERSION}|g" \
 		-e "s|@CODEPLAG_LOG_PATH@|${CODEPLAG_LOG_PATH}|g" \
+		-e "s|@DEVEL_SUFFIX@|${DEVEL_SUFFIX}|g" \
 		-e "s|@PYTHON_REQUIRED_LIBS@|${PYTHON_REQUIRED_LIBS}|g" \
 		-e "s|@LOGS_PATH@|${LOGS_PATH}|g" \
 		-e "s|@CONFIG_PATH@|${CONFIG_PATH}|g" \
@@ -160,6 +168,7 @@ docker-autotest: docker-test-image
 docker-build-package: docker-test-image
 	docker run --rm \
 		--volume $(PWD)/debian/deb:/usr/src/$(UTIL_NAME)/debian/deb \
+		--env IS_DEVELOPED=$(IS_DEVELOPED) \
 		"$(TEST_DOCKER_TAG)" bash -c \
 		"make package"
 
