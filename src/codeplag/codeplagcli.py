@@ -74,6 +74,11 @@ class CodeplagCLI(argparse.ArgumentParser):
             action="version",
             version=f"{UTIL_NAME} {UTIL_VERSION}",
         )
+        self.add_argument(
+            '--verbose',
+            help='Show debug messages.',
+            action='store_true',
+        )
 
         subparsers = self.add_subparsers(
             help="Commands help.",
@@ -220,8 +225,3 @@ class CodeplagCLI(argparse.ArgumentParser):
             action=CheckUniqueStore,
             default=[],
         )
-
-
-if __name__ == "__main__":
-    cli = CodeplagCLI()
-    args = cli.parse_args()

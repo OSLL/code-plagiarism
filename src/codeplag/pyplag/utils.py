@@ -123,7 +123,7 @@ class PyFeaturesGetter(AbstractGetter):
         if tree is not None:
             return get_features_from_ast(tree, url_to_file)
 
-        self.logger.warning(
+        self.logger.error(
             "Unsuccessfully attempt to get AST from the file %s.", url_to_file
         )
         return
@@ -132,7 +132,7 @@ class PyFeaturesGetter(AbstractGetter):
         if not files:
             return []
 
-        self.logger.info(f'{GET_FRAZE} files')
+        self.logger.debug(f'{GET_FRAZE} files')
         return get_works_from_filepaths(files)
 
     def get_works_from_dir(self, directory: Path) -> List[ASTFeatures]:

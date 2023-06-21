@@ -75,7 +75,7 @@ class CFeaturesGetter(AbstractGetter):
             out_file.write(file_content)
         cursor = get_cursor_from_file(FILE_DOWNLOAD_PATH, COMPILE_ARGS)
         if not cursor:
-            self.logger.warning(
+            self.logger.error(
                 "Unsuccessfully attempt to get AST from the file %s.", url_to_file
             )
             return
@@ -91,7 +91,7 @@ class CFeaturesGetter(AbstractGetter):
         if not files:
             return []
 
-        self.logger.info(f'{GET_FRAZE} files')
+        self.logger.debug(f'{GET_FRAZE} files')
         return get_works_from_filepaths(files, COMPILE_ARGS)
 
     def get_works_from_dir(self, directory: Path) -> List[ASTFeatures]:

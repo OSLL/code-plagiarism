@@ -189,7 +189,7 @@ class CodeplagEngine:
                     fast_metrics: FastMetrics,
                     structure: StructuresInfo) -> None:
         if self.reports is None or not self.reports.is_dir():
-            self.features_getter.logger.warning(
+            self.features_getter.logger.error(
                 "The folder for reports isn't provided or now isn't exists."
             )
             return
@@ -212,7 +212,7 @@ class CodeplagEngine:
             report_file = self.reports / f'{uuid.uuid4().hex}.json'
             write_config(report_file, report)
         except PermissionError:
-            self.features_getter.logger.warning(
+            self.features_getter.logger.error(
                 "Not enough rights to write reports to the folder."
             )
 
@@ -279,7 +279,7 @@ class CodeplagEngine:
             self.github_files
         )
 
-        self.features_getter.logger.info("Starting searching for plagiarism")
+        self.features_getter.logger.info("Starting searching for plagiarism ...")
         if self.mode == 'many_to_many':
             works: List[ASTFeatures] = []
             works.extend(features_from_files)
@@ -362,10 +362,10 @@ class CodeplagEngine:
                     iteration += 1  # type: ignore
 
         self.features_getter.logger.debug(f'Time for all {perf_counter() - begin_time:.2f} s')
-        self.features_getter.logger.info("Ending searching for plagiarism.")
+        self.features_getter.logger.info("Ending searching for plagiarism ...")
 
     def run(self) -> None:
-        self.logger.debug("Starting codeplag util")
+        self.logger.debug("Starting codeplag util ...")
 
         if self.root == "settings":
             if self.command == "show":

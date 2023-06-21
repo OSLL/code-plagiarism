@@ -1,27 +1,34 @@
 import subprocess
 from pathlib import Path
-from typing import List, Literal, Optional, Union
+from typing import Final, List, Literal, Optional, Union
 
 from codeplag.consts import UTIL_NAME
 from codeplag.types import Flag
 
-SUCCESS_CODE = 0
+SUCCESS_CODE: Final = 0
 
 
 def run_cmd(cmd: List[str]) -> subprocess.CompletedProcess:
-    return subprocess.run(cmd, stdout=subprocess.PIPE)
+    return subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
 def run_util(
     cmd: List[str],
-    root: Optional[Literal["check", "settings"]] = None
+    root: Optional[Literal["check", "settings"]] = None,
+    verbose: bool = True
 ) -> subprocess.CompletedProcess:
+    verbose_opt = ['--verbose'] if verbose else []
     command = [] if root is None else [root]
-    return run_cmd([UTIL_NAME] + command + cmd)
+
+    return run_cmd([UTIL_NAME] + verbose_opt + command + cmd)
 
 
-def run_check(cmd: List[str], extension: str = 'py') -> subprocess.CompletedProcess:
-    return run_util(['--extension', extension] + cmd, root="check")
+def run_check(
+    cmd: List[str],
+    extension: str = 'py',
+    verbose: bool = True
+) -> subprocess.CompletedProcess:
+    return run_util(['--extension', extension] + cmd, root="check", verbose=verbose)
 
 
 def modify_settings(

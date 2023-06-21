@@ -128,7 +128,7 @@ class AbstractGetter(ABC):
     ) -> Union[List[ASTFeatures], List[List[ASTFeatures]]]:
         works = []
         for directory in directories:
-            self.logger.info(f'{GET_FRAZE} {directory}')
+            self.logger.debug(f'{GET_FRAZE} {directory}')
             new_works = self.get_works_from_dir(directory)
             if independent:
                 works.append(new_works)
@@ -146,7 +146,7 @@ class AbstractGetter(ABC):
         if not github_files:
             return works
 
-        self.logger.info(f"{GET_FRAZE} GitHub urls")
+        self.logger.debug(f"{GET_FRAZE} GitHub urls")
         for github_file in github_files:
             file_content = self.github_parser.get_file_from_url(github_file)[0]
             features = self.get_from_content(file_content, github_file)
@@ -179,7 +179,7 @@ class AbstractGetter(ABC):
         works = []
         for github_project in github_project_folders:
             nested_works: List[ASTFeatures] = []
-            self.logger.info(f'{GET_FRAZE} {github_project}')
+            self.logger.debug(f'{GET_FRAZE} {github_project}')
             gh_prj_files = self.github_parser.get_files_generator_from_dir_url(
                 github_project, path_regexp=self.path_regexp
             )
@@ -230,7 +230,7 @@ class AbstractGetter(ABC):
         for repo in repos:
             nested_works: List[ASTFeatures] = []
 
-            self.logger.info(f'{GET_FRAZE} {repo.html_url}')
+            self.logger.debug(f'{GET_FRAZE} {repo.html_url}')
             files = self.github_parser.get_files_generator_from_repo_url(
                 repo.html_url, path_regexp=self.path_regexp
             )

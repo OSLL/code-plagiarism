@@ -116,7 +116,7 @@ def test_save_result(mocker, mock_default_logger):
         compare_info.structure
     )
     assert not Path.open.called
-    assert mock_default_logger.warning.call_args == call(
+    assert mock_default_logger.error.call_args == call(
         "The folder for reports isn't provided or now isn't exists."
     )
 
@@ -129,7 +129,7 @@ def test_save_result(mocker, mock_default_logger):
         compare_info.structure
     )
     Path.open.assert_called_once()
-    assert mock_default_logger.warning.call_args == call(
+    assert mock_default_logger.error.call_args == call(
         'Not enough rights to write reports to the folder.'
     )
 
