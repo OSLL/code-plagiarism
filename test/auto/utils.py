@@ -5,7 +5,7 @@ from typing import Final, List, Literal, Optional, Union
 from codeplag.consts import UTIL_NAME
 from codeplag.types import Flag
 
-SUCCESS_CODE: Final = 0
+SUCCESS_CODE: Final[int] = 0
 
 
 def run_cmd(cmd: List[str]) -> subprocess.CompletedProcess:
