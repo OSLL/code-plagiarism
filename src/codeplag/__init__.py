@@ -12,12 +12,12 @@ def main() -> Literal[0, 1, 2]:
 
     pd.set_option("display.float_format", '{:,.2%}'.format)
     pd.set_option('display.max_colwidth', None)
-    logger = get_logger(__name__, LOG_PATH)
 
     cli = CodeplagCLI()
     argcomplete.autocomplete(cli)
     parsed_args = vars(cli.parse_args())
 
+    logger = get_logger(__name__, LOG_PATH, verbose=parsed_args['verbose'])
     codeplag_util = CodeplagEngine(logger, parsed_args)
     try:
         codeplag_util.run()
