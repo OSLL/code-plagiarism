@@ -1,8 +1,9 @@
-UTIL_VERSION            := 0.3.1
+UTIL_VERSION            := 0.3.2
 UTIL_NAME               := codeplag
 PWD                     := $(shell pwd)
 
-BASE_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-base-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
+BASE_DOCKER_VERSION     := 1.0
+BASE_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-base-ubuntu20.04:$(BASE_DOCKER_VERSION) | tr A-Z a-z)
 TEST_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-test-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
 DOCKER_TAG              ?= $(shell echo $(UTIL_NAME)-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
 
@@ -38,10 +39,11 @@ substitute = @sed \
 		-e "s|@PYTHON_REQUIRED_LIBS@|${PYTHON_REQUIRED_LIBS}|g" \
 		-e "s|@LOGS_PATH@|${LOGS_PATH}|g" \
 		-e "s|@CONFIG_PATH@|${CONFIG_PATH}|g" \
+		-e "s|@BASE_DOCKER_TAG@|${BASE_DOCKER_TAG}|g" \
 		$(1) > $(2) \
-		&& echo "Substituting from '$(1)' to '$(2)' ..."
+		&& echo "Substituted from '$(1)' to '$(2)'."
 
-all: substitute-sources man install
+all: install
 
 # $< - %.in file, $@ desired file %
 %: %.in
@@ -51,13 +53,13 @@ all: substitute-sources man install
 	$(call substitute,$<,$@)
 
 substitute-sources: $(SOURCE_SUB_FILES)
-	@echo "Substituting of information about the utility in the source files"
+	@echo "Substituted information about the utility in the source files."
 
 substitute-debian: $(DEBIAN_SUB_FILES)
-	@echo "Substituting of information about the utility in the debian files"
+	@echo "Substituted information about the utility in the debian files."
 
 substitute-docker: $(DOCKER_SUB_FILES)
-	@echo "Substituting of information about the utility in the docker files"
+	@echo "Substituted information about the utility in the docker files."
 
 man: substitute-sources
 	mkdir -p man
@@ -137,66 +139,7 @@ uninstall:
 
 reinstall: uninstall install
 
-docker-base-image: substitute-sources substitute-docker
-	docker image inspect $(BASE_DOCKER_TAG) > /dev/null 2>&1 || ( \
-		export DOCKER_BUILDKIT=1 && \
-		docker image build \
-			--tag "$(BASE_DOCKER_TAG)" \
-			--file docker/base_ubuntu2004.dockerfile \
-			. \
-	)
-
-docker-test-image: docker-base-image
-	docker image inspect $(TEST_DOCKER_TAG) > /dev/null 2>&1 || \
-	docker image build \
-		--tag  "$(TEST_DOCKER_TAG)" \
-		--file docker/test_ubuntu2004.dockerfile \
-		.
-
-docker-test: docker-test-image
-	docker run --rm \
-		--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
-		"$(TEST_DOCKER_TAG)"
-
-docker-autotest: docker-test-image
-	docker run --rm \
-		--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
-		--env-file .env \
-		"$(TEST_DOCKER_TAG)" bash -c \
-		"make && make autotest"
-
-docker-build-package: docker-test-image
-	docker run --rm \
-		--volume $(PWD)/debian/deb:/usr/src/$(UTIL_NAME)/debian/deb \
-		--env IS_DEVELOPED=$(IS_DEVELOPED) \
-		"$(TEST_DOCKER_TAG)" bash -c \
-		"make package"
-
-docker-image: docker-base-image docker-test-image
-	docker image inspect $(DOCKER_TAG) > /dev/null 2>&1 || ( \
-		make docker-test && \
-		make docker-build-package && \
-		docker image build \
-			--tag  "$(DOCKER_TAG)" \
-			--file docker/ubuntu2004.dockerfile \
-			. \
-	)
-
-docker-run: docker-image
-	docker run --rm --tty --interactive \
-		"$(DOCKER_TAG)"
-
-docker-rmi:
-	@docker rmi $(DOCKER_TAG) --force 2> /dev/null || \
-	echo "Image $(DOCKER_TAG) is not exists"
-
-	@docker rmi $(TEST_DOCKER_TAG) --force 2> /dev/null || \
-	echo "Image $(TEST_DOCKER_TAG) is not exists"
-
-	@docker rmi $(BASE_DOCKER_TAG) --force 2> /dev/null || \
-	echo "Image $(BASE_DOCKER_TAG) is not exists"
-
-todo-list:
+todo-list: clean-all
 	@grep --color=auto -r -n 'TODO' ./* --exclude=Makefile --exclude-dir=docs
 
 help:
@@ -220,12 +163,16 @@ help:
 	@echo "Docker:"
 	@echo "  docker-run             Runs docker container with installed util;"
 	@echo "  docker-image           Build docker image;"
+	@echo "  docker-image-rebuild   Rebuild docker image;"
 	@echo "  docker-test            Runs unit tests with pytest framework in the docker container;"
 	@echo "  docker-autotest        Runs autotests in docker container;"
 	@echo "  docker-build-package   Build the debian package in special docker image;"
-	@echo "  docker-rmi             Delete created docker images."
+	@echo "  docker-rmi             Delete created docker images;"
+	@echo "  docker-rmi-all         Delete all created docker images."
 	@echo
 
 
 .EXPORT_ALL_VARIABLES:
 .PHONY: all test man
+
+include docker.mk
