@@ -15,6 +15,7 @@ CONFIG_PATH             := /etc/$(UTIL_NAME)/settings.conf
 
 SOURCE_SUB_FILES        := src/$(UTIL_NAME)/consts.py
 IS_DEVELOPED            ?= 1
+ALL                     ?= 0
 DEBIAN_SUB_FILES        := debian/changelog \
                            debian/control \
                            debian/preinst \
@@ -144,7 +145,7 @@ todo-list: clean-all
 
 help:
 	@echo "Usage:"
-	@echo "  make [command]"
+	@echo "  make [targets] [arguments]"
 	@echo
 	@echo "Commands:"
 	@echo "  install                Install on the local computer without using package manager;"
@@ -164,11 +165,11 @@ help:
 	@echo "  docker-run             Runs docker container with installed util;"
 	@echo "  docker-image           Build docker image;"
 	@echo "  docker-image-rebuild   Rebuild docker image;"
+	@echo "      ALL=[1|0]"
 	@echo "  docker-test            Runs unit tests with pytest framework in the docker container;"
 	@echo "  docker-autotest        Runs autotests in docker container;"
 	@echo "  docker-build-package   Build the debian package in special docker image;"
-	@echo "  docker-rmi             Delete created docker images;"
-	@echo "  docker-rmi-all         Delete all created docker images."
+	@echo "  docker-rmi ALL=[1|0]   Delete created docker images."
 	@echo
 
 

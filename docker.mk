@@ -45,19 +45,13 @@ docker-image: docker-base-image docker-test-image
 
 docker-image-rebuild: clean-all docker-rmi docker-image
 
-docker-image-rebuild-all: clean-all docker-rmi-all docker-image
-
 docker-run: docker-image
 	docker run --rm --tty --interactive \
 		"$(DOCKER_TAG)"
 
 docker-rmi:
-	@docker rmi $(DOCKER_TAG) --force 2> /dev/null || \
-	echo "Image $(DOCKER_TAG) is not exists"
-
-	@docker rmi $(TEST_DOCKER_TAG) --force 2> /dev/null || \
-	echo "Image $(TEST_DOCKER_TAG) is not exists"
-
-docker-rmi-all: docker-rmi
-	@docker rmi $(BASE_DOCKER_TAG) --force 2> /dev/null || \
-	echo "Image $(BASE_DOCKER_TAG) is not exists"
+	@docker rmi $(DOCKER_TAG) --force
+	@docker rmi $(TEST_DOCKER_TAG) --force
+	@if [ $(ALL) = 1 ]; then \
+		docker rmi $(BASE_DOCKER_TAG) --force; \
+	fi
