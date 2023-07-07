@@ -92,6 +92,8 @@ package: substitute-debian
 			--changes-option="-u$(CURDIR)/debian/deb" \
 			--no-sign \
 	)
+	cp debian/deb/usr/share/man/man1/$(UTIL_NAME).1 debian/deb/$(UTIL_NAME).1
+	rm --force --recursive debian/deb/*/
 
 test: substitute-sources
 	pytest test/unit -q

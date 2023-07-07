@@ -12,7 +12,7 @@ ADD debian/deb/ /usr/src/@UTIL_NAME@/debian/deb
 RUN register-python-argcomplete @UTIL_NAME@ >> ~/.bashrc
 RUN apt-get install -y /usr/src/@UTIL_NAME@/debian/deb/@UTIL_NAME@-util_@UTIL_VERSION@-1@DEVEL_SUFFIX@_amd64.deb
 # TODO: Fix this hook. apt-get don't install manpage into image.
-RUN install -D -m 0644 debian/deb/usr/share/man/man1/@UTIL_NAME@.1 /usr/share/man/man1/
+RUN install -D -m 0644 debian/deb/@UTIL_NAME@.1 /usr/share/man/man1/
 RUN rm --recursive /usr/src/@UTIL_NAME@/debian
 
 CMD ["/bin/bash"]
