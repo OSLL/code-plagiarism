@@ -30,7 +30,7 @@
   source venv/bin/activate
 
   pip3 install -U pip # pip3 version >= 19.0
-  pip3 install argparse-manpage==3 requests==2.28.1
+  pip3 install argparse-manpage==3 requests==2.31.0
   pip3 install --upgrade setuptools # Ensure that an up-to-date version of setuptools is installed
   make
   ```
@@ -42,10 +42,22 @@
   $ make docker-image
   ```
 
+- Rebuild created code-plagiarism docker image
+
+  ```
+  $ make docker-image-rebuild
+  ```
+
 - Run created a code-plagiarism container
 
   ```
   $ make docker-run
+  ```
+
+- Show help information about other make commands
+
+  ```
+  $ make help
   ```
 
 ### 1.3 Pull the Docker Image from Docker Hub
