@@ -100,7 +100,17 @@ class GitHubParser:
         '''
         repos: List[Repository] = []
         page: int = 1
-        api_url: str = f'/users/{owner}/repos'
+        response_json = self.send_get_request(f'/users/{owner}').json()
+        user_type = response_json['type'].lower()
+        # TODO: classify yourself /user/repos
+        if user_type == 'user':
+            api_url = f'/users/{owner}/repos'
+        elif user_type == 'organization':
+            api_url = f'/orgs/{owner}/repos'
+        else:
+            self.logger.error("Not supported user type %s.", user_type)
+            sys.exit(1)
+
         while True:
             params: Dict[str, int] = {
                 'per_page': 100,
