@@ -13,6 +13,7 @@ RUN apt-get install -y vim nano less
 RUN pip3 install --upgrade setuptools
 
 RUN pip3 install @PYTHON_REQUIRED_LIBS@
+RUN register-python-argcomplete @UTIL_NAME@ >> ~/.bashrc
 
 VOLUME /usr/src/works
 WORKDIR /usr/src/@UTIL_NAME@

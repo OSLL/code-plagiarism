@@ -45,7 +45,7 @@
 - Rebuild created code-plagiarism docker image
 
   ```
-  $ make docker-image-rebuild
+  $ make docker-image REBUILD=1
   ```
 
 - Run created a code-plagiarism container

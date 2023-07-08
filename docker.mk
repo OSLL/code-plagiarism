@@ -34,6 +34,10 @@ docker-build-package: docker-test-image
 		"make package"
 
 docker-image: docker-base-image docker-test-image
+	@if [ "$(REBUILD)" = "1" ]; then \
+		make clean-all docker-rmi ALL="$(ALL)"; \
+	fi
+
 	docker image inspect $(DOCKER_TAG) > /dev/null 2>&1 || ( \
 		make docker-test && \
 		make docker-build-package && \
@@ -43,8 +47,6 @@ docker-image: docker-base-image docker-test-image
 			. \
 	)
 
-docker-image-rebuild: clean-all docker-rmi docker-image
-
 docker-run: docker-image
 	docker run --rm --tty --interactive \
 		"$(DOCKER_TAG)"
@@ -52,6 +54,6 @@ docker-run: docker-image
 docker-rmi:
 	@docker rmi $(DOCKER_TAG) --force
 	@docker rmi $(TEST_DOCKER_TAG) --force
-	@if [ $(ALL) = 1 ]; then \
+	@if [ "$(ALL)" = "1" ]; then \
 		docker rmi $(BASE_DOCKER_TAG) --force; \
 	fi
