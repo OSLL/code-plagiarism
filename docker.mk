@@ -1,5 +1,6 @@
 docker-base-image: substitute-sources substitute-docker
-	docker image inspect $(BASE_DOCKER_TAG) > /dev/null 2>&1 || ( \
+	@docker image inspect $(BASE_DOCKER_TAG) > /dev/null 2>&1 || ( \
+		echo "Building base docker image." && \
 		export DOCKER_BUILDKIT=1 && \
 		docker image build \
 			--tag "$(BASE_DOCKER_TAG)" \
@@ -8,7 +9,7 @@ docker-base-image: substitute-sources substitute-docker
 	)
 
 docker-test-image: docker-base-image
-	docker image inspect $(TEST_DOCKER_TAG) > /dev/null 2>&1 || \
+	@docker image inspect $(TEST_DOCKER_TAG) > /dev/null 2>&1 || \
 	docker image build \
 		--tag  "$(TEST_DOCKER_TAG)" \
 		--file docker/test_ubuntu2004.dockerfile \
@@ -38,7 +39,8 @@ docker-image: docker-base-image docker-test-image
 		make clean-all docker-rmi ALL="$(ALL)"; \
 	fi
 
-	docker image inspect $(DOCKER_TAG) > /dev/null 2>&1 || ( \
+	@(docker image inspect $(DOCKER_TAG) > /dev/null 2>&1 && \
+	echo "The image already exists. For rebuilding image provide REBUILD=1 argument.") || ( \
 		make docker-test && \
 		make docker-build-package && \
 		docker image build \
