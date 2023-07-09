@@ -13,7 +13,7 @@ INSTALL_REQUIREMENTS = [
     'llvmlite~=0.39.0',
     'libclang~=14.0.1',
     'python-decouple~=3.6',
-    'requests~=2.28.1',
+    'requests~=2.31.0',
     'typing-extensions~=4.3.0',
 ]
 UTIL_NAME = os.getenv('UTIL_NAME')
