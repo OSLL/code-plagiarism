@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import List, Literal, Optional, Union, overload
@@ -69,8 +70,24 @@ class AbstractGetter(ABC):
     ):
         self.logger = logger if logger is not None else logging.getLogger(UTIL_NAME)
         self.extension: Extension = extension
-        self.repo_regexp = re.compile(repo_regexp) if repo_regexp is not None else repo_regexp
-        self.path_regexp = re.compile(path_regexp) if path_regexp is not None else path_regexp
+
+        try:
+            self.repo_regexp = re.compile(repo_regexp) if repo_regexp is not None else repo_regexp
+        except re.error as regexp_err:
+            self.logger.error(
+                "Error while compiling regular expression '%s': '%s'.",
+                repo_regexp, regexp_err
+            )
+            sys.exit(1)
+        try:
+            self.path_regexp = re.compile(path_regexp) if path_regexp is not None else path_regexp
+        except re.error as regexp_err:
+            self.logger.error(
+                "Error while compiling regular expression '%s': '%s'.",
+                path_regexp, regexp_err
+            )
+            sys.exit(1)
+
         self._set_access_token(environment)
         self._set_github_parser(all_branches)
 

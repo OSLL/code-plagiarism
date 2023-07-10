@@ -9,6 +9,10 @@ from unittest.mock import call, patch
 from webparsers.github_parser import GitHubParser
 from webparsers.types import Branch, PullRequest, Repository
 
+_REQUEST_PARAMS_1 = {'per_page': 100, 'page': 1}
+_REQUEST_PARAMS_2 = {'per_page': 100, 'page': 2}
+_REQUEST_PARAMS_3 = {'per_page': 100, 'page': 3}
+
 
 class Response:
     def __init__(self, response_json: Optional[Union[list, dict]] = None,
@@ -17,9 +21,7 @@ class Response:
         self.message = message
         self.response_json = response_json if response_json else {}
         if self.message and isinstance(self.response_json, dict):
-            self.response_json.update(
-                {'message': self.message}
-            )
+            self.response_json.update({'message': self.message})
 
     def json(self):
         return self.response_json
@@ -37,46 +39,32 @@ class TestGitHubParser(unittest.TestCase):
     def test_is_accepted_extension(self):
         test_cases = [
             {
-                'arguments': {
-                    'path': 'some/path/module.py'
-                },
+                'arguments': {'path': 'some/path/module.py'},
                 'parser': GitHubParser(),
                 'expected_result': True
             },
             {
-                'arguments': {
-                    'path': 'some/path/module.cpp'
-                },
+                'arguments': {'path': 'some/path/module.cpp'},
                 'parser': GitHubParser(),
                 'expected_result': True
             },
             {
-                'arguments': {
-                    'path': 'some/path/module.c'
-                },
+                'arguments': {'path': 'some/path/module.c'},
                 'parser': GitHubParser(),
                 'expected_result': True
             },
             {
-                'arguments': {
-                    'path': 'some/path/module.in.py'
-                },
+                'arguments': {'path': 'some/path/module.in.py'},
                 'parser': GitHubParser(),
                 'expected_result': True
             },
             {
-                'arguments': {
-                    'path': 'some/path/module.c'
-                },
-                'parser': GitHubParser(
-                    file_extensions=(re.compile('py'),)
-                ),
+                'arguments': {'path': 'some/path/module.c'},
+                'parser': GitHubParser(file_extensions=(re.compile('py'),)),
                 'expected_result': False
             },
             {
-                'arguments': {
-                    'path': 'some/path/module.in'
-                },
+                'arguments': {'path': 'some/path/module.in'},
                 'parser': GitHubParser(
                     file_extensions=(re.compile('cpp'), re.compile('c'),)
                 ),
@@ -95,13 +83,8 @@ class TestGitHubParser(unittest.TestCase):
     def test_send_get_request(self, mock_get):
         test_cases = [
             {
-                'arguments': {
-                    'api_url': 'users/moevm/repos',
-                    'params': {}
-                },
-                'get_arguments': [
-
-                ],
+                'arguments': {'api_url': 'users/moevm/repos', 'params': {}},
+                'get_arguments': [],
                 'get_posargs': ['https://api.github.com/users/moevm/repos'],
                 'get_kwargs': {
                     'headers': {'accept': 'application/vnd.github.v3+json'},
@@ -127,13 +110,8 @@ class TestGitHubParser(unittest.TestCase):
     def test_send_get_request_bad(self, mock_get):
         test_cases = [
             {
-                'arguments': {
-                    'api_url': 'Test/url',
-                    'params': {}
-                },
-                'get_arguments': [
-
-                ],
+                'arguments': {'api_url': 'Test/url', 'params': {}},
+                'get_arguments': [],
                 'get_posargs': ['https://api.github.com/Test/url'],
                 'get_kwargs': {
                     'headers': {'accept': 'application/vnd.github.v3+json'},
@@ -143,10 +121,7 @@ class TestGitHubParser(unittest.TestCase):
                 'raised': SystemExit
             },
             {
-                'arguments': {
-                    'api_url': 'bad/link',
-                    'params': {}
-                },
+                'arguments': {'api_url': 'bad/link', 'params': {}},
                 'get_posargs': ['https://api.github.com/bad/link'],
                 'get_kwargs': {
                     'headers': {'accept': 'application/vnd.github.v3+json'},
@@ -158,27 +133,18 @@ class TestGitHubParser(unittest.TestCase):
             {
                 'arguments': {
                     'api_url': 'bad/link',
-                    'params': {
-                        'per_page': 100,
-                        'page': 5
-                    }
+                    'params': _REQUEST_PARAMS_3
                 },
                 'get_posargs': ['https://api.github.com/bad/link'],
                 'get_kwargs': {
                     'headers': {'accept': 'application/vnd.github.v3+json'},
-                    'params': {
-                        'per_page': 100,
-                        'page': 5
-                    }
+                    'params': _REQUEST_PARAMS_3,
                 },
                 'response': Response(status_code=403),
                 'raised': KeyError
             },
             {
-                'arguments': {
-                    'api_url': 'bad/link',
-                    'params': {}
-                },
+                'arguments': {'api_url': 'bad/link', 'params': {}},
                 'token': 'test_token',
                 'get_posargs': ['https://api.github.com/bad/link'],
                 'get_kwargs': {
@@ -212,51 +178,24 @@ class TestGitHubParser(unittest.TestCase):
     def test_get_list_of_repos(self, mock_send_get_request):
         test_cases = [
             {
-                'arguments': {
-                    'owner': 'OSLL',
-                    'reg_exp': None
-                },
+                'arguments': {'owner': 'OSLL', 'reg_exp': None},
                 'send_calls': [
-                    call(
-                        '/users/OSLL/repos',
-                        params={
-                            'per_page': 100,
-                            'page': 1
-                        }
-                    )
+                    call('/users/OSLL'),
+                    call('/users/OSLL/repos', params=_REQUEST_PARAMS_1)
                 ],
-                'send_rvs': [Response(response_json=[])],
+                'send_rvs': [Response({'type': 'User'}), Response([])],
                 'expected_result': []
             },
             {
-                'arguments': {
-                    'owner': 'OSLL',
-                    'reg_exp': None
-                },
+                'arguments': {'owner': 'OSLL', 'reg_exp': None},
                 'send_calls': [
-                    call(
-                        '/users/OSLL/repos',
-                        params={
-                            'per_page': 100,
-                            'page': 1
-                        }
-                    ),
-                    call(
-                        '/users/OSLL/repos',
-                        params={
-                            'per_page': 100,
-                            'page': 2
-                        }
-                    ),
-                    call(
-                        '/users/OSLL/repos',
-                        params={
-                            'per_page': 100,
-                            'page': 3
-                        }
-                    )
+                    call('/users/OSLL'),
+                    call('/orgs/OSLL/repos', params=_REQUEST_PARAMS_1),
+                    call('/orgs/OSLL/repos', params=_REQUEST_PARAMS_2),
+                    call('/orgs/OSLL/repos', params=_REQUEST_PARAMS_3)
                 ],
                 'send_rvs': [
+                    Response({'type': 'Organization'}),
                     Response(
                         [
                             {
@@ -303,34 +242,21 @@ class TestGitHubParser(unittest.TestCase):
                 ]
             },
             {
-                'arguments': {
-                    'owner': 'OSLL',
-                    'reg_exp': r'\ba'
-                },
+                'arguments': {'owner': 'OSLL', 'reg_exp': r'\ba'},
                 'send_calls': [
+                    call('/users/OSLL'),
+                    call('/orgs/OSLL/repos', params=_REQUEST_PARAMS_1),
                     call(
-                        '/users/OSLL/repos',
-                        params={
-                            'per_page': 100,
-                            'page': 1
-                        }
+                        '/orgs/OSLL/repos',
+                        params=_REQUEST_PARAMS_2
                     ),
                     call(
-                        '/users/OSLL/repos',
-                        params={
-                            'per_page': 100,
-                            'page': 2
-                        }
-                    ),
-                    call(
-                        '/users/OSLL/repos',
-                        params={
-                            'per_page': 100,
-                            'page': 3
-                        }
+                        '/orgs/OSLL/repos',
+                        params=_REQUEST_PARAMS_3
                     )
                 ],
                 'send_rvs': [
+                    Response({'type': 'Organization'}),
                     Response(
                         [
                             {
@@ -385,6 +311,31 @@ class TestGitHubParser(unittest.TestCase):
                 )
 
     @patch('webparsers.github_parser.GitHubParser.send_get_request')
+    def test_get_list_of_repos_bad(self, mock_send_get_request):
+        test_cases = [
+            {
+                'arguments': {'owner': 'OSLL', 'reg_exp': None},
+                'send_calls': [call('/users/OSLL')],
+                'send_rvs': [Response({'type': 'BadType'})],
+                'raised': SystemExit
+            },
+        ]
+
+        parser = GitHubParser()
+        for test_case in test_cases:
+            mock_send_get_request.reset_mock()
+            mock_send_get_request.side_effect = test_case['send_rvs']
+
+            with self.subTest(test_case=test_case):
+                with self.assertRaises(test_case['raised']):
+                    parser.get_list_of_repos(**test_case['arguments'])
+
+                self.assertEqual(
+                    mock_send_get_request.mock_calls,
+                    test_case['send_calls']
+                )
+
+    @patch('webparsers.github_parser.GitHubParser.send_get_request')
     def test_get_pulls_info(self, mock_send_get_request):
         test_cases = [
             {
@@ -395,10 +346,7 @@ class TestGitHubParser(unittest.TestCase):
                 'send_calls': [
                     call(
                         '/repos/OSLL/code-plagiarism/pulls',
-                        params={
-                            'per_page': 100,
-                            'page': 1
-                        }
+                        params=_REQUEST_PARAMS_1
                     )
                 ],
                 'send_rvs': [Response([])],
@@ -412,10 +360,7 @@ class TestGitHubParser(unittest.TestCase):
                 'send_calls': [
                     call(
                         '/repos/OSLL/code-plagiarism/pulls',
-                        params={
-                            'per_page': 100,
-                            'page': 1
-                        }
+                        params=_REQUEST_PARAMS_1
                     ),
                     call(
                         'https://api.github.com/repos/OSLL/code-plagiarism/pulls/1/commits',
@@ -427,10 +372,7 @@ class TestGitHubParser(unittest.TestCase):
                     ),
                     call(
                         '/repos/OSLL/code-plagiarism/pulls',
-                        params={
-                            'per_page': 100,
-                            'page': 2
-                        }
+                        params=_REQUEST_PARAMS_2
                     ),
                     call(
                         'https://api.github.com/repos/OSLL/code-plagiarism/pulls/3/commits',
@@ -442,10 +384,7 @@ class TestGitHubParser(unittest.TestCase):
                     ),
                     call(
                         '/repos/OSLL/code-plagiarism/pulls',
-                        params={
-                            'per_page': 100,
-                            'page': 3
-                        }
+                        params=_REQUEST_PARAMS_3
                     ),
                 ],
                 'send_rvs': [
@@ -537,24 +476,14 @@ class TestGitHubParser(unittest.TestCase):
     def test_get_name_default_branch(self, mock_send_get_request):
         test_cases = [
             {
-                'arguments': {
-                    'owner': 'OSLL',
-                    'repo': 'aido-auto-feedback'
-                },
-                'send_calls': [
-                    call('/repos/OSLL/aido-auto-feedback')
-                ],
+                'arguments': {'owner': 'OSLL', 'repo': 'aido-auto-feedback'},
+                'send_calls': [call('/repos/OSLL/aido-auto-feedback')],
                 'send_rv': Response({'default_branch': 'main'}),
                 'expected_result': 'main'
             },
             {
-                'arguments': {
-                    'owner': 'moevm',
-                    'repo': 'asm_web_debug'
-                },
-                'send_calls': [
-                    call('/repos/moevm/asm_web_debug')
-                ],
+                'arguments': {'owner': 'moevm', 'repo': 'asm_web_debug'},
+                'send_calls': [call('/repos/moevm/asm_web_debug')],
                 'send_rv': Response({'default_branch': 'issue2'}),
                 'expected_result': 'issue2'
             },
@@ -578,20 +507,11 @@ class TestGitHubParser(unittest.TestCase):
     def test_get_sha_last_branch_commit(self, mock_send_get_request):
         test_cases = [
             {
-                'arguments': {
-                    'owner': 'OSLL',
-                    'repo': 'aido-auto-feedback',
-                },
+                'arguments': {'owner': 'OSLL', 'repo': 'aido-auto-feedback'},
                 'send_calls': [
                     call('/repos/OSLL/aido-auto-feedback/branches/main')
                 ],
-                'send_rv': Response(
-                    {
-                        'commit': {
-                            'sha': 'jal934304'
-                        }
-                    }
-                ),
+                'send_rv': Response({'commit': {'sha': 'jal934304'}}),
                 'expected_result': 'jal934304'
             },
             {
@@ -603,13 +523,7 @@ class TestGitHubParser(unittest.TestCase):
                 'send_calls': [
                     call('/repos/moevm/asm_web_debug/branches/iss76')
                 ],
-                'send_rv': Response(
-                    {
-                        'commit': {
-                            'sha': 'xyuwr934hsd'
-                        }
-                    }
-                ),
+                'send_rv': Response({'commit': {'sha': 'xyuwr934hsd'}}),
                 'expected_result': 'xyuwr934hsd'
             },
         ]
@@ -638,11 +552,7 @@ class TestGitHubParser(unittest.TestCase):
                 'send_calls': [
                     call('/repos/OSLL/aido-auto-feedback/git/blobs/kljsdfkiwe0341')
                 ],
-                'send_rv': Response(
-                    {
-                        'content': base64.b64encode(b'Good message')
-                    }
-                ),
+                'send_rv': Response({'content': base64.b64encode(b'Good message')}),
                 'expected_result': ('Good message', 'http://api.github.com/repos')
             },
             {
@@ -861,17 +771,11 @@ class TestGitHubParser(unittest.TestCase):
                 'send_calls': [
                     call(
                         '/repos/OSLL/aido-auto-feedback/branches',
-                        params={
-                            'per_page': 100,
-                            'page': 1
-                        }
+                        params=_REQUEST_PARAMS_1
                     ),
                     call(
                         '/repos/OSLL/aido-auto-feedback/branches',
-                        params={
-                            'per_page': 100,
-                            'page': 2
-                        }
+                        params=_REQUEST_PARAMS_2
                     ),
                 ],
                 'send_se': [
@@ -906,24 +810,15 @@ class TestGitHubParser(unittest.TestCase):
                 'send_calls': [
                     call(
                         '/repos/moevm/asm_web_debug/branches',
-                        params={
-                            'per_page': 100,
-                            'page': 1
-                        }
+                        params=_REQUEST_PARAMS_1
                     ),
                     call(
                         '/repos/moevm/asm_web_debug/branches',
-                        params={
-                            'per_page': 100,
-                            'page': 2
-                        }
+                        params=_REQUEST_PARAMS_2
                     ),
                     call(
                         '/repos/moevm/asm_web_debug/branches',
-                        params={
-                            'per_page': 100,
-                            'page': 3
-                        }
+                        params=_REQUEST_PARAMS_3
                     ),
                 ],
                 'send_se': [
@@ -1062,11 +957,7 @@ class TestGitHubParser(unittest.TestCase):
                 },
                 'send_rv': Response(
                     [
-                        {
-                            'path': 'src',
-                            'type': 'dir',
-                            'sha': 'xvbupqrjdf',
-                        },
+                        {'path': 'src', 'type': 'dir', 'sha': 'xvbupqrjdf'},
                         {
                             'path': 'src',
                             'name': 'main.py',

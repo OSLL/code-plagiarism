@@ -98,10 +98,11 @@ class GitHubParser:
             Function returns dict in which keys characterize repository names
             and values characterize repositories links
         '''
+
         repos: List[Repository] = []
-        page: int = 1
+        page = 1
         response_json = self.send_get_request(f'/users/{owner}').json()
-        user_type = response_json['type'].lower()
+        user_type = response_json.get('type', '').lower()
         # TODO: classify yourself /user/repos
         if user_type == 'user':
             api_url = f'/users/{owner}/repos'
