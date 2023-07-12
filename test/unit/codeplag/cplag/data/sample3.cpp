@@ -12,9 +12,10 @@ int main(){
 
     if(regcomp(&regCompiled, regStr, REG_EXTENDED)){
         printf("Something is wrong.\n");
+        printf("Данные некорректны.\n");
         return 0;
     }
-    
+
     char s[100];
     while(strcmp(s, "Fin.") != 0){
         fgets(s, 100, stdin);

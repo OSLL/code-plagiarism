@@ -21,7 +21,7 @@ def get_cursor_from_file(filepath: Path,
     '''
 
     if args is None:
-        args = []
+        args = COMPILE_ARGS
 
     if not filepath.is_file():
         print(filepath, "Is not a file / doesn't exist")
@@ -30,7 +30,13 @@ def get_cursor_from_file(filepath: Path,
     index = Index.create()
     options = TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD
 
-    file_obj: TranslationUnit = index.parse(filepath, args=args, options=options)
+    source_code = filepath.read_text(encoding='utf-8', errors='ignore')
+    file_obj = index.parse(
+        path=None,
+        unsaved_files=[(filepath.name, source_code)],
+        args=args + [filepath.name],
+        options=options
+    )
 
     return file_obj.cursor
 

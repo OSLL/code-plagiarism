@@ -1,36 +1,38 @@
-import os
 import unittest
 from pathlib import Path
+from typing import Final
 
+import pytest
 from clang.cindex import CursorKind
 
-from codeplag.cplag.const import COMPILE_ARGS
 from codeplag.cplag.tree import generic_visit, get_features, get_not_ignored
 from codeplag.cplag.utils import get_cursor_from_file
 from codeplag.types import ASTFeatures
+
+_DATA_PATH: Final[Path] = Path("test/unit/codeplag/cplag/data").absolute()
+_SAMPLE1_PATH: Final[Path] = _DATA_PATH / "sample1.cpp"
+_SAMPLE2_PATH: Final[Path] = _DATA_PATH / "sample2.cpp"
+_SAMPLE3_PATH: Final[Path] = _DATA_PATH / "sample3.cpp"
+_SAMPLE4_PATH: Final[Path] = _DATA_PATH / "sample4.cpp"
+
+
+@pytest.fixture(scope='module', autouse=True)
+def setup():
+    assert _SAMPLE1_PATH.exists() and _SAMPLE2_PATH.exists()
+    assert _SAMPLE3_PATH.exists() and _SAMPLE4_PATH.exists()
 
 
 class TestTree(unittest.TestCase):
 
     def setUp(self):
-        self.first_sample_path = Path(
-            os.path.abspath(
-                "test/unit/codeplag/cplag/data/sample1.cpp"
-            )
-        )
-        self.second_sample_path = Path(
-            os.path.abspath(
-                "test/unit/codeplag/cplag/data/sample2.cpp"
-            )
-        )
-        if os.path.exists(self.first_sample_path) and \
-           os.path.exists(self.second_sample_path):
-            self.first_cursor = get_cursor_from_file(
-                self.first_sample_path, COMPILE_ARGS
-            )
-            self.second_cursor = get_cursor_from_file(
-                self.second_sample_path, COMPILE_ARGS
-            )
+        self.first_sample_path = _SAMPLE1_PATH
+        self.second_sample_path = _SAMPLE2_PATH
+
+        self.first_cursor = get_cursor_from_file(self.first_sample_path)
+        assert self.first_cursor is not None
+
+        self.second_cursor = get_cursor_from_file(self.second_sample_path)
+        assert self.second_cursor is not None
 
     def test_get_not_ignored_normal(self):
         res1 = get_not_ignored(self.first_cursor, self.first_sample_path)
@@ -106,3 +108,25 @@ class TestTree(unittest.TestCase):
                                            101, 106, 214, 100, 101, 214,
                                            103, 100, 101, 100, 101, 114,
                                            100, 101, 100, 101])
+
+
+def test_bad_encoding_syms():
+    cursor = get_cursor_from_file(_SAMPLE3_PATH)
+    assert cursor is not None
+
+    features = get_features(cursor, _SAMPLE3_PATH)
+
+    assert features.filepath == _SAMPLE3_PATH
+    assert features.count_of_nodes == 0
+    assert features.head_nodes == ['main']
+    # TODO: why so many '<', '>' my be from include, ignore it
+    assert features.operators == {'==': 1, '<': 5, '>': 3, '!=': 1, '&': 3, '*': 1, '=': 4}
+    assert features.keywords == {'char': 2, 'for': 2, 'if': 2, 'int': 3, 'return': 2, 'while': 1}
+    # Ignored bad symbols
+    assert '" .\\n"' in features.literals.keys()  # noqa
+    assert len(features.literals.keys()) == 12
+    assert len(features.unodes) == 20
+    assert len(features.from_num) == 20
+    assert features.count_unodes == 20
+    assert len(features.structure) == 225
+    assert len(features.tokens) == 167
