@@ -70,7 +70,7 @@ def generic_visit(node, features: ASTFeatures, curr_depth: int = 0) -> None:
 
 
 def get_features(tree: Cursor, filepath: Union[Path, str] = '') -> ASTFeatures:
-    features = ASTFeatures(filepath)
+    features = ASTFeatures(filepath or tree.displayname)
     for token in tree.get_tokens():
         if (
             token.kind == TokenKind.PUNCTUATION and
