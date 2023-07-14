@@ -2,6 +2,7 @@
 #include <regex.h>
 #include <string.h>
 
+// Äàííûå íåêîððåêòíû
 int main(){
     char str[100];
     char* regexp = "(www\\.|ftp:\\/\\/|http:\\/\\/)*((\\w+\\.)+\\w+)\\/(\\w+\\/)*(\\w+\\.\\w+)";

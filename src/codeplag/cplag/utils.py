@@ -8,6 +8,7 @@ from clang.cindex import Cursor, Index, TranslationUnit
 from codeplag.consts import FILE_DOWNLOAD_PATH, GET_FRAZE, SUPPORTED_EXTENSIONS
 from codeplag.cplag.const import COMPILE_ARGS
 from codeplag.cplag.tree import get_features
+from codeplag.display import eprint
 from codeplag.getfeatures import AbstractGetter, get_files_path_from_directory
 from codeplag.types import ASTFeatures
 
@@ -21,21 +22,28 @@ def get_cursor_from_file(filepath: Path,
     '''
 
     if args is None:
-        args = []
+        args = COMPILE_ARGS
 
     if not filepath.is_file():
-        print(filepath, "Is not a file / doesn't exist")
+        # TODO: print to log
+        eprint(filepath, "Is not a file / does not exist")
         return
 
     index = Index.create()
     options = TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD
 
-    file_obj: TranslationUnit = index.parse(filepath, args=args, options=options)
+    source_code = filepath.read_text(encoding='utf-8', errors='ignore')
+    file_obj = index.parse(
+        path=None,
+        unsaved_files=[(filepath.name, source_code)],
+        args=args + [filepath.name],
+        options=options
+    )
 
     return file_obj.cursor
 
 
-def get_works_from_filepaths(
+def _get_works_from_filepaths(
     filepaths: List[Path],
     compile_args: List[str]
 ) -> List[ASTFeatures]:
@@ -45,6 +53,11 @@ def get_works_from_filepaths(
     works = []
     for filepath in filepaths:
         cursor = get_cursor_from_file(filepath, compile_args)
+        if cursor is None:
+            # TODO: print to log
+            eprint(f"{filepath} does not parsed")
+            continue
+
         features = get_features(cursor, filepath)
         works.append(features)
 
@@ -92,7 +105,7 @@ class CFeaturesGetter(AbstractGetter):
             return []
 
         self.logger.debug(f'{GET_FRAZE} files')
-        return get_works_from_filepaths(files, COMPILE_ARGS)
+        return _get_works_from_filepaths(files, COMPILE_ARGS)
 
     def get_works_from_dir(self, directory: Path) -> List[ASTFeatures]:
         filepaths = get_files_path_from_directory(
@@ -101,4 +114,4 @@ class CFeaturesGetter(AbstractGetter):
             path_regexp=self.path_regexp
         )
 
-        return get_works_from_filepaths(filepaths, COMPILE_ARGS)
+        return _get_works_from_filepaths(filepaths, COMPILE_ARGS)

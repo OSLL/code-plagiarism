@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List, Optional, Union
 
 from codeplag.consts import GET_FRAZE, LOG_PATH, SUPPORTED_EXTENSIONS
-from codeplag.display import red_bold
+from codeplag.display import eprint, red_bold
 from codeplag.getfeatures import AbstractGetter, get_files_path_from_directory
 from codeplag.logger import get_logger
 from codeplag.pyplag.astwalkers import ASTWalker
@@ -21,31 +21,43 @@ def get_ast_from_content(code: str, path: Union[Path, str]) -> Optional[ast.Modu
     try:
         tree = ast.parse(code)
     except TabError as err:
-        print('-' * 40)
-        print(red_bold(f"'{path}' not parsed."))
-        print(red_bold(f'TabError: {err.args[0]}'))
-        print(red_bold(f'In line {str(err.args[1][1])}'))
-        print('-' * 40)
+        eprint(
+            '-' * 40,
+            red_bold(f"'{path}' not parsed."),
+            red_bold(f'TabError: {err.args[0]}'),
+            red_bold(f'In line {str(err.args[1][1])}'),
+            '-' * 40,
+            sep='\n'
+        )
     except IndentationError as err:
-        print('-' * 40)
-        print(red_bold(f"'{path}' not parsed."))
-        print(red_bold(f'IdentationError: {err.args[0]}'))
-        print(red_bold(f'In line {str(err.args[1][1])}'))
-        print('-' * 40)
+        eprint(
+            '-' * 40,
+            red_bold(f"'{path}' not parsed."),
+            red_bold(f'IdentationError: {err.args[0]}'),
+            red_bold(f'In line {str(err.args[1][1])}'),
+            '-' * 40,
+            sep='\n'
+        )
     except SyntaxError as err:
-        print('-' * 40)
-        print(red_bold(f"'{path}' not parsed."))
-        print(red_bold(f'SyntaxError: {err.args[0]}'))
-        print(red_bold(f'In line {str(err.args[1][1])}'))
-        print(red_bold(f'In column {str(err.args[1][2])}'))
-        print('-' * 40)
+        eprint(
+            '-' * 40,
+            red_bold(f"'{path}' not parsed."),
+            red_bold(f'SyntaxError: {err.args[0]}'),
+            red_bold(f'In line {str(err.args[1][1])}'),
+            red_bold(f'In column {str(err.args[1][2])}'),
+            '-' * 40,
+            sep='\n'
+        )
     except Exception as err:
-        print('-' * 40)
-        print(red_bold(f"'{path}' not parsed."))
-        print(red_bold(err.__class__.__name__))
+        eprint(
+            '-' * 40,
+            red_bold(f"'{path}' not parsed."),
+            red_bold(err.__class__.__name__),
+            sep='\n'
+        )
         for element in err.args:
-            print(red_bold(element))
-        print('-' * 40)
+            eprint(red_bold(element))
+        eprint('-' * 40)
 
     return tree
 
@@ -83,7 +95,7 @@ def get_features_from_ast(tree: ast.Module, filepath: Union[Path, str]) -> ASTFe
     return features
 
 
-def get_works_from_filepaths(filenames: List[Path]) -> List[ASTFeatures]:
+def _get_works_from_filepaths(filenames: List[Path]) -> List[ASTFeatures]:
     if not filenames:
         return []
 
@@ -133,7 +145,7 @@ class PyFeaturesGetter(AbstractGetter):
             return []
 
         self.logger.debug(f'{GET_FRAZE} files')
-        return get_works_from_filepaths(files)
+        return _get_works_from_filepaths(files)
 
     def get_works_from_dir(self, directory: Path) -> List[ASTFeatures]:
         filepaths = get_files_path_from_directory(
@@ -142,4 +154,4 @@ class PyFeaturesGetter(AbstractGetter):
             path_regexp=self.path_regexp
         )
 
-        return get_works_from_filepaths(filepaths)
+        return _get_works_from_filepaths(filepaths)
