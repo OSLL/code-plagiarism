@@ -51,6 +51,7 @@ docker-image: docker-base-image docker-test-image
 
 docker-run: docker-image
 	docker run --rm --tty --interactive \
+		--env-file .env \
 		"$(DOCKER_TAG)"
 
 docker-rmi:
