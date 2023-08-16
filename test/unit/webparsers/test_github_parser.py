@@ -10,7 +10,6 @@ from webparsers.github_parser import GitHubParser
 from webparsers.types import Branch, Commit, PullRequest, Repository, WorkInfo
 
 _REQUEST_PARAMS_1 = {'per_page': 100, 'page': 1}
-_REQUEST_PARAMS_2 = {'per_page': 100, 'page': 2}
 _REQUEST_PARAMS_3 = {'per_page': 100, 'page': 3}
 
 _COMMIT1: Final[Commit] = Commit('zkueqwrkjsalu', '2022-12-20T20:13:58Z')
@@ -228,8 +227,6 @@ class TestGitHubParser(unittest.TestCase):
                 'send_calls': [
                     call('/users/OSLL'),
                     call('/orgs/OSLL/repos', params=_REQUEST_PARAMS_1),
-                    call('/orgs/OSLL/repos', params=_REQUEST_PARAMS_2),
-                    call('/orgs/OSLL/repos', params=_REQUEST_PARAMS_3)
                 ],
                 'send_rvs': [
                     Response({'type': 'Organization'}),
@@ -242,11 +239,7 @@ class TestGitHubParser(unittest.TestCase):
                             {
                                 'name': 'aido-auto-feedback',
                                 'html_url': 'https://github.com/OSLL/aido-auto-feedback'
-                            }
-                        ]
-                    ),
-                    Response(
-                        [
+                            },
                             {
                                 'name': 'MD-Code_generator',
                                 'html_url': 'https://github.com/OSLL/MD-Code_generator'
@@ -257,7 +250,6 @@ class TestGitHubParser(unittest.TestCase):
                             }
                         ]
                     ),
-                    Response([])
                 ],
                 'expected_result': [
                     Repository(
@@ -283,14 +275,6 @@ class TestGitHubParser(unittest.TestCase):
                 'send_calls': [
                     call('/users/OSLL'),
                     call('/orgs/OSLL/repos', params=_REQUEST_PARAMS_1),
-                    call(
-                        '/orgs/OSLL/repos',
-                        params=_REQUEST_PARAMS_2
-                    ),
-                    call(
-                        '/orgs/OSLL/repos',
-                        params=_REQUEST_PARAMS_3
-                    )
                 ],
                 'send_rvs': [
                     Response({'type': 'Organization'}),
@@ -303,11 +287,7 @@ class TestGitHubParser(unittest.TestCase):
                             {
                                 'name': 'aido-auto-feedback',
                                 'html_url': 'https://github.com/OSLL/aido-auto-feedback'
-                            }
-                        ]
-                    ),
-                    Response(
-                        [
+                            },
                             {
                                 'name': 'MD-Code_generator',
                                 'html_url': 'https://github.com/OSLL/MD-Code_generator'
@@ -318,7 +298,6 @@ class TestGitHubParser(unittest.TestCase):
                             }
                         ]
                     ),
-                    Response([])
                 ],
                 'expected_result': [
                     Repository(
@@ -408,20 +387,12 @@ class TestGitHubParser(unittest.TestCase):
                         address=''
                     ),
                     call(
-                        '/repos/OSLL/code-plagiarism/pulls',
-                        params=_REQUEST_PARAMS_2
-                    ),
-                    call(
                         'https://api.github.com/repos/OSLL/code-plagiarism/pulls/3/commits',
                         address=''
                     ),
                     call(
                         'https://api.github.com/repos/OSLL/code-plagiarism/pulls/4/commits',
                         address=''
-                    ),
-                    call(
-                        '/repos/OSLL/code-plagiarism/pulls',
-                        params=_REQUEST_PARAMS_3
                     ),
                 ],
                 'send_rvs': [
@@ -444,13 +415,7 @@ class TestGitHubParser(unittest.TestCase):
                                 },
                                 'state': 'Open',
                                 'draft': True
-                            }
-                        ]
-                    ),
-                    Response([{'sha': 'jskfjsjskjfl'}]),
-                    Response([{'sha': 'jzxvjipwerknmzxvj'}]),
-                    Response(
-                        [
+                            },
                             {
                                 'commits_url': 'https://api.github.com/repos/OSLL/code-plagiarism/pulls/3/commits',
                                 'number': 3,
@@ -473,7 +438,8 @@ class TestGitHubParser(unittest.TestCase):
                     ),
                     Response([{'sha': 'jskfjsjskjfl'}]),
                     Response([{'sha': 'jzxvjipwerknmzxvj'}]),
-                    Response([])
+                    Response([{'sha': 'jskfjsjskjfl'}]),
+                    Response([{'sha': 'jzxvjipwerknmzxvj'}]),
                 ],
                 'expected_result': [
                     PullRequest(
@@ -768,7 +734,7 @@ class TestGitHubParser(unittest.TestCase):
                 'get_file_content_se': _GET_FILE_CONTENT_RES,
                 'expected_result': _GET_FILE_CONTENT_RES
             },
-            {  # Check cache
+            {
                 'arguments': {
                     'owner': 'OSLL',
                     'repo': 'aido-auto-feedback',
@@ -781,8 +747,36 @@ class TestGitHubParser(unittest.TestCase):
                         '/repos/OSLL/aido-auto-feedback/git/trees/zkueqwrkjsalu'
                     ),
                     call(
+                        api_url='/repos/OSLL/aido-auto-feedback/commits',
+                        params={
+                            'path': '/src',
+                            'page': 1,
+                            'per_page': 1,
+                            'sha': _BRANCH1.name
+                        }
+                    ),
+                    call(
                         '/repos/OSLL/aido-auto-feedback/git/trees/jslkfjjeuwijsdmvd'
                     ),
+                    call(
+                        api_url='/repos/OSLL/aido-auto-feedback/commits',
+                        params={
+                            'path': '/src/utils.py',
+                            'page': 1,
+                            'per_page': 1,
+                            'sha': _BRANCH1.name
+                        }
+                    ),
+                    call(
+                        api_url='/repos/OSLL/aido-auto-feedback/commits',
+                        params={
+                            'path': '/src/tests.py',
+                            'page': 1,
+                            'per_page': 1,
+                            'sha': _BRANCH1.name
+                        }
+                    ),
+
                 ],
                 'send_se': [
                     Response(
@@ -801,6 +795,7 @@ class TestGitHubParser(unittest.TestCase):
                             ],
                         }
                     ),
+                    Response(_COMMIT1_RESP),
                     Response(
                         {
                             'tree': [
@@ -817,6 +812,9 @@ class TestGitHubParser(unittest.TestCase):
                             ]
                         }
                     ),
+                    Response(_COMMIT2_RESP),
+                    Response(_COMMIT1_RESP),
+                    Response(_COMMIT2_RESP),
                 ],
                 'get_file_content_calls': [
                     call(
@@ -886,14 +884,9 @@ class TestGitHubParser(unittest.TestCase):
                         '/repos/OSLL/aido-auto-feedback/branches',
                         params=_REQUEST_PARAMS_1
                     ),
-                    call(
-                        '/repos/OSLL/aido-auto-feedback/branches',
-                        params=_REQUEST_PARAMS_2
-                    ),
                 ],
                 'send_se': [
                     Response([_BRANCH_INFO1, _BRANCH_INFO2]),
-                    Response([])
                 ],
                 'expected_result': [
                     Branch(
@@ -914,19 +907,9 @@ class TestGitHubParser(unittest.TestCase):
                         '/repos/moevm/asm_web_debug/branches',
                         params=_REQUEST_PARAMS_1
                     ),
-                    call(
-                        '/repos/moevm/asm_web_debug/branches',
-                        params=_REQUEST_PARAMS_2
-                    ),
-                    call(
-                        '/repos/moevm/asm_web_debug/branches',
-                        params=_REQUEST_PARAMS_3
-                    ),
                 ],
                 'send_se': [
-                    Response([_BRANCH_INFO1]),
-                    Response([_BRANCH_INFO2]),
-                    Response([])
+                    Response([_BRANCH_INFO1, _BRANCH_INFO2]),
                 ],
                 'expected_result': [
                     Branch(
