@@ -27,13 +27,15 @@ class GitHubParser:
         file_extensions: Optional[Extensions] = None,
         check_all: bool = False,
         access_token: str = '',
-        logger: Optional[logging.Logger] = None
+        logger: Optional[logging.Logger] = None,
+        session: Optional[requests.Session] = None,
     ) -> None:
         if logger is None:
             self.logger = logging.getLogger(__name__)
         else:
             self.logger = logger
 
+        self.__session = session
         self.__file_extensions = file_extensions
         self.__check_all_branches = check_all
         self.__headers = {
@@ -51,7 +53,6 @@ class GitHubParser:
             re.search(extension, path) for extension in self.__file_extensions
         )
 
-    # TODO: use sessions and iohttp
     def send_get_request(
         self,
         api_url: str,
@@ -68,7 +69,14 @@ class GitHubParser:
 
         # Check Ethernet connection and requests limit
         try:
-            response = requests.get(url, headers=self.__headers, params=params)
+            if self.__session is not None:
+                response = self.__session.get(
+                    url,
+                    headers=self.__headers,
+                    params=params
+                )
+            else:
+                response = requests.get(url, headers=self.__headers, params=params)
         except requests.exceptions.ConnectionError as err:
             self.logger.error(
                 "Connection error. Please check the Internet connection."
@@ -102,7 +110,6 @@ class GitHubParser:
         '''
 
         repos: List[Repository] = []
-        page = 1
         response_json = self.send_get_request(f'/users/{owner}').json()
         user_type = response_json.get('type', '').lower()
         # TODO: classify yourself /user/repos
@@ -114,17 +121,16 @@ class GitHubParser:
             self.logger.error("Not supported user type %s.", user_type)
             sys.exit(1)
 
+        params = {'per_page': 100, 'page': 1}
         while True:
-            params = {'per_page': 100, 'page': page}
             response_json = self.send_get_request(
                 api_url,
                 params=params
             ).json()
 
-            if len(response_json) == 0:
-                break
-
+            cnt = 0  # noqa: SIM113
             for repo in response_json:
+                cnt += 1
                 if (
                     (reg_exp is None) or
                     re.search(reg_exp, repo['name']) is not None
@@ -135,8 +141,10 @@ class GitHubParser:
                             html_url=repo['html_url']
                         )
                     )
+            if cnt < params['per_page']:
+                break
 
-            page += 1
+            params['page'] += 1
 
         return repos
 
@@ -146,19 +154,17 @@ class GitHubParser:
         repo: str
     ) -> List[PullRequest]:
         pulls: List[PullRequest] = []
-        page = 1
         api_url = f'/repos/{owner}/{repo}/pulls'
+        params: Dict[str, int] = {'per_page': 100, 'page': 1}
         while True:
-            params: Dict[str, int] = {'per_page': 100, 'page': page}
             response_json = self.send_get_request(
                 api_url,
                 params=params
             ).json()
 
-            if len(response_json) == 0:
-                break
-
+            cnt = 0  # noqa: SIM113
             for pull in response_json:
+                cnt += 1
                 commits = self.send_get_request(
                     pull['commits_url'],
                     address=''
@@ -177,8 +183,10 @@ class GitHubParser:
                         draft=pull['draft']
                     )
                 )
+            if cnt < params['per_page']:
+                break
 
-            page += 1
+            params['page'] += 1
 
         return pulls
 
@@ -301,22 +309,17 @@ class GitHubParser:
         repo: str
     ) -> List[Branch]:
         branches: List[Branch] = []
-        page: int = 1
         api_url: str = f'/repos/{owner}/{repo}/branches'
+        params: Dict[str, int] = {"per_page": 100, "page": 1}
         while True:
-            params: Dict[str, int] = {
-                "per_page": 100,
-                "page": page
-            }
             response_json = self.send_get_request(
                 api_url,
                 params=params
             ).json()
 
-            if len(response_json) == 0:
-                break
-
+            cnt = 0  # noqa: SIM113
             for node in response_json:
+                cnt += 1
                 commit_info = node['commit']
                 branches.append(
                     Branch(
@@ -327,8 +330,10 @@ class GitHubParser:
                         )
                     )
                 )
+            if cnt < params['per_page']:
+                break
 
-            page += 1
+            params['page'] += 1
 
         return branches
 

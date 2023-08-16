@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import List, Literal, Optional, Union, overload
 
 from decouple import Config, RepositoryEnv
+from requests import Session
 
 from codeplag.consts import (
     ALL_EXTENSIONS,
@@ -112,7 +113,8 @@ class AbstractGetter(ABC):
             file_extensions=SUPPORTED_EXTENSIONS[self.extension],
             check_all=branch_policy,
             access_token=self._access_token,
-            logger=get_logger('webparsers', LOG_PATH)
+            logger=get_logger('webparsers', LOG_PATH),
+            session=Session()
         )
 
     @abstractmethod

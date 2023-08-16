@@ -15,6 +15,9 @@ INSTALL_REQUIREMENTS = [
     'python-decouple~=3.6',
     'requests~=2.31.0',
     'typing-extensions~=4.3.0',
+    'aiohttp~=3.8.5',
+    'cachetools==5.3.1',
+    'gidgethub~=5.3.0',
 ]
 UTIL_NAME = os.getenv('UTIL_NAME')
 UTIL_VERSION = os.getenv('UTIL_VERSION')

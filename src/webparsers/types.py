@@ -4,6 +4,8 @@ from typing_extensions import Self
 
 T = TypeVar("T", bound="GitHubUrl")
 
+# TODO: use libs for parse urls, validate meta symbols as #
+
 
 class GitHubUrl(str):
     protocol: str
