@@ -87,10 +87,13 @@ class CompareInfo(NamedTuple):
     structure: Optional[StructuresInfo] = None
 
 
+# TODO: Rework it structure
 class WorksReport(TypedDict):
     date: str
     first_path: str
     second_path: str
+    first_modify_date: NotRequired[str]
+    second_modify_date: NotRequired[str]
     first_heads: List[str]
     second_heads: List[str]
     fast: Dict[str, int]  # dict from FastMetrics

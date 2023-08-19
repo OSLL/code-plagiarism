@@ -22,22 +22,28 @@ from webparsers.types import (
 
 _GH_URL: Final[str] = 'https://github.com/'
 
-"""
-import asyncio
-async def test():
-    async with aiohttp.ClientSession() as session:
-        gh_parser = AsyncGithubParser(session, token=<token>)
-        tasks = []
-        for _ in range(3):
-            tasks.append(asyncio.create_task(gh_parser.<some_func_call>))
-        async for ... in gh_parser.<some_aysnc_gen_func_call>:
-            ...
-        return await asyncio.gather(*tasks)
-asyncio.run(test())
-"""
-
 
 class AsyncGithubParser:
+    """Asynchronous parser which works with GitHub REST API.
+
+    Example:
+        >>> import asyncio
+        >>> async def request():
+        ...     async with aiohttp.ClientSession() as session:
+        ...         gh_parser = AsyncGithubParser(session, token=<token>)
+        ...         tasks = []
+        ...         for _ in range(3):
+        ...             tasks.append(asyncio.create_task(gh_parser.<some_func_call>))
+        ...     return await asyncio.gather(*tasks)
+        ...
+        >>> asyncio.run(request())
+        >>> async def loop():
+        ...     async for ... in gh_parser.<some_aysnc_gen_func_call>:
+        ...         ...
+        ...
+        >>> asynio.run(loop())
+    """
+
     USER_INFO = '/users/{username}'
     USER_REPOS = '/users/{username}/repos{?per_page,page}'
 
