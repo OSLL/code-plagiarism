@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import List, Literal, Optional, Union, overload
 
 from decouple import Config, RepositoryEnv
+from requests import Session
 
 from codeplag.consts import (
     ALL_EXTENSIONS,
@@ -18,6 +19,7 @@ from codeplag.consts import (
 from codeplag.logger import get_logger
 from codeplag.types import ASTFeatures, Extension, Extensions
 from webparsers.github_parser import GitHubParser
+from webparsers.types import WorkInfo
 
 
 def get_files_path_from_directory(
@@ -101,7 +103,7 @@ class AbstractGetter(ABC):
             self._access_token: str = os.environ.get('ACCESS_TOKEN', '')
         else:
             env_config = Config(RepositoryEnv(env_path))
-            self._access_token: str = env_config.get('ACCESS_TOKEN', default='')
+            self._access_token: str = env_config.get('ACCESS_TOKEN', default='')  # type: ignore
 
         if not self._access_token:
             self.logger.warning('GitHub access token is not defined.')
@@ -111,11 +113,12 @@ class AbstractGetter(ABC):
             file_extensions=SUPPORTED_EXTENSIONS[self.extension],
             check_all=branch_policy,
             access_token=self._access_token,
-            logger=get_logger('webparsers', LOG_PATH)
+            logger=get_logger('webparsers', LOG_PATH),
+            session=Session()
         )
 
     @abstractmethod
-    def get_from_content(self, file_content: str, url_to_file: str) -> Optional[ASTFeatures]:
+    def get_from_content(self, work_info: WorkInfo) -> Optional[ASTFeatures]:
         ...
 
     @abstractmethod
@@ -165,8 +168,8 @@ class AbstractGetter(ABC):
 
         self.logger.debug(f"{GET_FRAZE} GitHub urls")
         for github_file in github_files:
-            file_content = self.github_parser.get_file_from_url(github_file)[0]
-            features = self.get_from_content(file_content, github_file)
+            work_info = self.github_parser.get_file_from_url(github_file)
+            features = self.get_from_content(work_info)
             if features:
                 works.append(features)
 
@@ -200,8 +203,8 @@ class AbstractGetter(ABC):
             gh_prj_files = self.github_parser.get_files_generator_from_dir_url(
                 github_project, path_regexp=self.path_regexp
             )
-            for file_content, url_file in gh_prj_files:
-                features = self.get_from_content(file_content, url_file)
+            for work_info in gh_prj_files:
+                features = self.get_from_content(work_info)
                 if features is None:
                     continue
 
@@ -251,8 +254,8 @@ class AbstractGetter(ABC):
             files = self.github_parser.get_files_generator_from_repo_url(
                 repo.html_url, path_regexp=self.path_regexp
             )
-            for file_content, url_file in files:
-                features = self.get_from_content(file_content, url_file)
+            for work_info in files:
+                features = self.get_from_content(work_info)
                 if features is None:
                     continue
 

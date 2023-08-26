@@ -2,12 +2,13 @@ import base64
 import logging
 import re
 import sys
-from typing import Any, Dict, Iterator, List, Optional
+from typing import Any, Dict, Final, Iterator, List, Optional
 
 import requests
 
 from webparsers.types import (
     Branch,
+    Commit,
     Extensions,
     GitHubContentUrl,
     GitHubRepoUrl,
@@ -16,6 +17,9 @@ from webparsers.types import (
     WorkInfo,
 )
 
+_API_URL: Final[str] = 'https://api.github.com'
+_GH_URL: Final[str] = 'https://github.com/'
+
 
 class GitHubParser:
     def __init__(
@@ -23,18 +27,25 @@ class GitHubParser:
         file_extensions: Optional[Extensions] = None,
         check_all: bool = False,
         access_token: str = '',
-        logger: Optional[logging.Logger] = None
+        logger: Optional[logging.Logger] = None,
+        session: Optional[requests.Session] = None,
     ) -> None:
         if logger is None:
             self.logger = logging.getLogger(__name__)
         else:
             self.logger = logger
 
+        self.__session = session
         self.__file_extensions = file_extensions
-        self.__access_token = access_token
         self.__check_all_branches = check_all
+        self.__headers = {
+            # Recommended
+            'accept': 'application/vnd.github.v3+json'
+        }
+        if access_token != '':
+            self.__headers.update({'Authorization': 'token ' + access_token})
 
-    def is_accepted_extension(self, path: str) -> bool:
+    def _is_accepted_extension(self, path: str) -> bool:
         if self.__file_extensions is None:
             return True
 
@@ -46,7 +57,7 @@ class GitHubParser:
         self,
         api_url: str,
         params: Optional[dict] = None,
-        address: str = 'https://api.github.com'
+        address: str = _API_URL
     ) -> requests.Response:
         if params is None:
             params = {}
@@ -54,19 +65,18 @@ class GitHubParser:
         if address and len(api_url) and api_url[0] != "/":
             address += "/"
 
-        headers = {
-            # Recommended
-            'accept': 'application/vnd.github.v3+json'
-        }
         url = address + api_url
-        if self.__access_token != '':
-            headers.update({
-                'Authorization': 'token ' + self.__access_token,
-            })
 
         # Check Ethernet connection and requests limit
         try:
-            response = requests.get(url, headers=headers, params=params)
+            if self.__session is not None:
+                response = self.__session.get(
+                    url,
+                    headers=self.__headers,
+                    params=params
+                )
+            else:
+                response = requests.get(url, headers=self.__headers, params=params)
         except requests.exceptions.ConnectionError as err:
             self.logger.error(
                 "Connection error. Please check the Internet connection."
@@ -100,7 +110,6 @@ class GitHubParser:
         '''
 
         repos: List[Repository] = []
-        page = 1
         response_json = self.send_get_request(f'/users/{owner}').json()
         user_type = response_json.get('type', '').lower()
         # TODO: classify yourself /user/repos
@@ -112,20 +121,16 @@ class GitHubParser:
             self.logger.error("Not supported user type %s.", user_type)
             sys.exit(1)
 
+        params = {'per_page': 100, 'page': 1}
         while True:
-            params: Dict[str, int] = {
-                'per_page': 100,
-                'page': page
-            }
             response_json = self.send_get_request(
                 api_url,
                 params=params
             ).json()
 
-            if len(response_json) == 0:
-                break
-
+            cnt = 0  # noqa: SIM113
             for repo in response_json:
+                cnt += 1
                 if (
                     (reg_exp is None) or
                     re.search(reg_exp, repo['name']) is not None
@@ -136,8 +141,10 @@ class GitHubParser:
                             html_url=repo['html_url']
                         )
                     )
+            if cnt < params['per_page']:
+                break
 
-            page += 1
+            params['page'] += 1
 
         return repos
 
@@ -147,27 +154,25 @@ class GitHubParser:
         repo: str
     ) -> List[PullRequest]:
         pulls: List[PullRequest] = []
-        page: int = 1
-        api_url: str = f'/repos/{owner}/{repo}/pulls'
+        api_url = f'/repos/{owner}/{repo}/pulls'
+        params: Dict[str, int] = {'per_page': 100, 'page': 1}
         while True:
-            params: Dict[str, int] = {
-                'per_page': 100,
-                'page': page
-            }
             response_json = self.send_get_request(
                 api_url,
                 params=params
             ).json()
 
-            if len(response_json) == 0:
-                break
-
+            cnt = 0  # noqa: SIM113
             for pull in response_json:
+                cnt += 1
                 commits = self.send_get_request(
                     pull['commits_url'],
                     address=''
                 ).json()
-                pull_owner, owner_branch = pull['head']['label'].split(':')
+                pull_owner, owner_branch = pull['head']['label'].split(
+                    ':',
+                    maxsplit=1
+                )
                 pulls.append(
                     PullRequest(
                         number=pull['number'],
@@ -178,36 +183,39 @@ class GitHubParser:
                         draft=pull['draft']
                     )
                 )
+            if cnt < params['per_page']:
+                break
 
-            page += 1
+            params['page'] += 1
 
         return pulls
 
     def get_name_default_branch(self, owner: str, repo: str) -> str:
-        api_url: str = f'/repos/{owner}/{repo}'
+        api_url = f'/repos/{owner}/{repo}'
         response: Dict[str, Any] = self.send_get_request(api_url).json()
 
         return response['default_branch']
 
-    def get_sha_last_branch_commit(
+    def _get_branch_last_commit_info(
         self,
         owner: str,
         repo: str,
         branch: str = 'main'
-    ) -> str:
-        api_url: str = f'/repos/{owner}/{repo}/branches/{branch}'
+    ) -> dict:
+        api_url = f'/repos/{owner}/{repo}/branches/{branch}'
         response: Dict[str, Any] = self.send_get_request(api_url).json()
 
-        return response['commit']['sha']
+        return response['commit']
 
-    def get_file_content_from_sha(
+    def get_file_content_by_sha(
         self,
         owner: str,
         repo: str,
-        sha: str,
+        blob_sha: str,
+        commit_info: Commit,
         file_path: str
     ) -> WorkInfo:
-        api_url: str = f'/repos/{owner}/{repo}/git/blobs/{sha}'
+        api_url = f'/repos/{owner}/{repo}/git/blobs/{blob_sha}'
         response: Dict[str, Any] = self.send_get_request(api_url).json()
 
         file_in_bytes: bytearray = bytearray(
@@ -215,13 +223,35 @@ class GitHubParser:
         )
         code = file_in_bytes.decode('utf-8', errors='ignore')
 
-        return WorkInfo(code, file_path)
+        return WorkInfo(code, file_path, commit_info)
+
+    def _get_commit_info(
+        self,
+        owner: str,
+        repo: str,
+        branch: str,
+        path: str
+    ) -> Commit:
+        commit_info: Dict[str, Any] = self.send_get_request(
+            api_url=f'/repos/{owner}/{repo}/commits',
+            params={
+                'path': path,
+                'page': 1,
+                'per_page': 1,
+                'sha': branch
+            }
+        ).json()[0]
+
+        return Commit(
+            commit_info['sha'],
+            commit_info['commit']['author']['date']
+        )
 
     def get_files_generator_from_sha_commit(
         self,
         owner: str,
         repo: str,
-        branch: str,
+        branch: Branch,
         sha: str,
         path: str = '',
         path_regexp: Optional[re.Pattern] = None
@@ -232,14 +262,20 @@ class GitHubParser:
         for node in tree:
             current_path = f"{path}/{node['path']}"
             full_link = (
-                f"https://github.com/{owner}/{repo}/blob/{branch}{current_path}"
+                f"{_GH_URL}{owner}/{repo}/blob/{branch.name}{current_path}"
             )
             node_type = node["type"]
             if node_type == "tree":
+                commit_info = self._get_commit_info(
+                    owner,
+                    repo,
+                    branch.name,
+                    current_path
+                )
                 yield from self.get_files_generator_from_sha_commit(
                     owner=owner,
                     repo=repo,
-                    branch=branch,
+                    branch=Branch(branch.name, commit_info),
                     sha=node['sha'],
                     path=current_path,
                     path_regexp=path_regexp
@@ -247,15 +283,23 @@ class GitHubParser:
                 continue
             elif (
                 node_type != "blob"
-                or not self.is_accepted_extension(current_path)
+                or not self._is_accepted_extension(current_path)
                 or (path_regexp is not None and path_regexp.search(full_link) is None)
             ):
                 continue
 
-            yield self.get_file_content_from_sha(
+            commit_info = self._get_commit_info(
                 owner,
                 repo,
-                node["sha"],
+                branch.name,
+                current_path
+            )
+
+            yield self.get_file_content_by_sha(
+                owner,
+                repo,
+                node['sha'],
+                commit_info,
                 full_link
             )
 
@@ -265,30 +309,31 @@ class GitHubParser:
         repo: str
     ) -> List[Branch]:
         branches: List[Branch] = []
-        page: int = 1
         api_url: str = f'/repos/{owner}/{repo}/branches'
+        params: Dict[str, int] = {"per_page": 100, "page": 1}
         while True:
-            params: Dict[str, int] = {
-                "per_page": 100,
-                "page": page
-            }
             response_json = self.send_get_request(
                 api_url,
                 params=params
             ).json()
 
-            if len(response_json) == 0:
-                break
-
+            cnt = 0  # noqa: SIM113
             for node in response_json:
+                cnt += 1
+                commit_info = node['commit']
                 branches.append(
                     Branch(
                         name=node["name"],
-                        last_commit_sha=node['commit']['sha']
+                        last_commit=Commit(
+                            commit_info['sha'],
+                            commit_info['commit']['author']['date'],
+                        )
                     )
                 )
+            if cnt < params['per_page']:
+                break
 
-            page += 1
+            params['page'] += 1
 
         return branches
 
@@ -305,21 +350,25 @@ class GitHubParser:
             )
             raise error
 
-        default_branch = self.get_name_default_branch(
-            repo_url.owner, repo_url.repo
-        )
         if self.__check_all_branches:
             branches = self.get_list_repo_branches(
                 repo_url.owner, repo_url.repo
             )
         else:
+            default_branch = self.get_name_default_branch(
+                repo_url.owner, repo_url.repo
+            )
+            commit_info = self._get_branch_last_commit_info(
+                repo_url.owner,
+                repo_url.repo,
+                default_branch
+            )
             branches = [
                 Branch(
                     name=default_branch,
-                    last_commit_sha=self.get_sha_last_branch_commit(
-                        repo_url.owner,
-                        repo_url.repo,
-                        default_branch
+                    last_commit=Commit(
+                        commit_info['sha'],
+                        commit_info['commit']['author']['date'],
                     )
                 )
             ]
@@ -328,8 +377,8 @@ class GitHubParser:
             yield from self.get_files_generator_from_sha_commit(
                 owner=repo_url.owner,
                 repo=repo_url.repo,
-                branch=branch.name,
-                sha=branch.last_commit_sha,
+                branch=branch,
+                sha=branch.last_commit.sha,
                 path_regexp=path_regexp
             )
 
@@ -350,10 +399,16 @@ class GitHubParser:
         }
         response_json = self.send_get_request(api_url, params=params).json()
 
-        return self.get_file_content_from_sha(
+        return self.get_file_content_by_sha(
             file_url.owner,
             file_url.repo,
             response_json['sha'],
+            self._get_commit_info(
+                file_url.owner,
+                file_url.repo,
+                file_url.branch,
+                file_url.path
+            ),
             file_url
         )
 
@@ -373,38 +428,49 @@ class GitHubParser:
         api_url = (
             f'/repos/{dir_url.owner}/{dir_url.repo}/contents/{dir_url.path}'
         )
-        params = {
-            'ref': dir_url.branch
-        }
+        params = {'ref': dir_url.branch}
         response_json = self.send_get_request(api_url, params=params).json()
 
         for node in response_json:
-            current_path = "/" + node["path"]
+            current_path = f'/{node["path"]}'
             full_link = (
-                'https://github.com/'
-                f'{dir_url.owner}/{dir_url.repo}'
+                f'{_GH_URL}{dir_url.owner}/{dir_url.repo}'
                 f'/tree/{dir_url.branch}/{current_path[2:]}'
             )
             node_type = node["type"]
             if node_type == "dir":
+                commit_info = self._get_commit_info(
+                    dir_url.owner,
+                    dir_url.repo,
+                    dir_url.branch,
+                    current_path
+                )
                 yield from self.get_files_generator_from_sha_commit(
                     owner=dir_url.owner,
                     repo=dir_url.repo,
-                    branch=dir_url.branch,
+                    branch=Branch(dir_url.branch, commit_info),
                     sha=node['sha'],
                     path=current_path,
                     path_regexp=path_regexp
                 )
             if (
                 node_type != "file"
-                or not self.is_accepted_extension(node["name"])
+                or not self._is_accepted_extension(node["name"])
                 or (path_regexp is not None and path_regexp.search(full_link) is None)
             ):
                 continue
 
-            yield self.get_file_content_from_sha(
+            commit_info = self._get_commit_info(
+                dir_url.owner,
+                dir_url.repo,
+                dir_url.branch,
+                current_path
+            )
+
+            yield self.get_file_content_by_sha(
                 owner=dir_url.owner,
                 repo=dir_url.repo,
-                sha=node["sha"],
+                blob_sha=node['sha'],
+                commit_info=commit_info,
                 file_path=full_link,
             )

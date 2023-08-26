@@ -48,6 +48,7 @@ class ASTFeatures:
     """Class contains the source code metadata."""
 
     filepath: Union[Path, str]
+    modify_date: Optional[str] = None
 
     count_of_nodes: int = 0
     head_nodes: List[str] = field(default_factory=list)
@@ -86,10 +87,13 @@ class CompareInfo(NamedTuple):
     structure: Optional[StructuresInfo] = None
 
 
+# TODO: Rework it structure
 class WorksReport(TypedDict):
     date: str
     first_path: str
     second_path: str
+    first_modify_date: NotRequired[str]
+    second_modify_date: NotRequired[str]
     first_heads: List[str]
     second_heads: List[str]
     fast: Dict[str, int]  # dict from FastMetrics

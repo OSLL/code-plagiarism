@@ -11,6 +11,7 @@ from codeplag.cplag.tree import get_features
 from codeplag.display import eprint
 from codeplag.getfeatures import AbstractGetter, get_files_path_from_directory
 from codeplag.types import ASTFeatures
+from webparsers.types import WorkInfo
 
 
 def get_cursor_from_file(filepath: Path,
@@ -83,20 +84,21 @@ class CFeaturesGetter(AbstractGetter):
             path_regexp=path_regexp
         )
 
-    def get_from_content(self, file_content: str, url_to_file: str) -> Optional[ASTFeatures]:
+    def get_from_content(self, work_info: WorkInfo) -> Optional[ASTFeatures]:
         with open(FILE_DOWNLOAD_PATH, 'w', encoding='utf-8') as out_file:
-            out_file.write(file_content)
+            out_file.write(work_info.code)
         cursor = get_cursor_from_file(FILE_DOWNLOAD_PATH, COMPILE_ARGS)
-        if not cursor:
+        if cursor is None:
             self.logger.error(
-                "Unsuccessfully attempt to get AST from the file %s.", url_to_file
+                "Unsuccessfully attempt to get AST from the file %s.", work_info.link
             )
             return
 
         # hook for correct filtering info while parsing source code
         features = get_features(cursor, FILE_DOWNLOAD_PATH)
         os.remove(FILE_DOWNLOAD_PATH)
-        features.filepath = url_to_file
+        features.filepath = work_info.link
+        features.modify_date = work_info.commit.date
 
         return features
 

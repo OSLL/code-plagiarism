@@ -3,15 +3,51 @@ import io
 import re
 import unittest
 from contextlib import redirect_stdout
-from typing import Optional, Union
+from typing import Final, List, Optional, Union
 from unittest.mock import call, patch
 
 from webparsers.github_parser import GitHubParser
-from webparsers.types import Branch, PullRequest, Repository
+from webparsers.types import Branch, Commit, PullRequest, Repository, WorkInfo
 
 _REQUEST_PARAMS_1 = {'per_page': 100, 'page': 1}
-_REQUEST_PARAMS_2 = {'per_page': 100, 'page': 2}
 _REQUEST_PARAMS_3 = {'per_page': 100, 'page': 3}
+
+_COMMIT1: Final[Commit] = Commit('zkueqwrkjsalu', '2022-12-20T20:13:58Z')
+_COMMIT2: Final[Commit] = Commit('xuwerlkjlsaoewerl', '2022-12-20T20:13:58Z')
+
+_COMMIT1_RESP = [{
+    'sha': _COMMIT1.sha,
+    'commit': {
+        'author': {'date': _COMMIT1.date}
+    }
+}]
+_COMMIT2_RESP = [{
+    'sha': _COMMIT2.sha,
+    'commit': {
+        'author': {'date': _COMMIT2.date}
+    }
+}]
+
+_BRANCH1: Final[Branch] = Branch('iss76', _COMMIT1)
+_BRANCH2: Final[Branch] = Branch('iss78', _COMMIT2)
+
+_GET_FILE_CONTENT_RES: Final[List[WorkInfo]] = [
+    WorkInfo(
+        'Some code 2',
+        'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/utils.py',
+        _BRANCH1.last_commit
+    ),
+    WorkInfo(
+        'Some code 3',
+        'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/tests.py',
+        _BRANCH1.last_commit
+    ),
+    WorkInfo(
+        'Some code 1',
+        'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py',
+        _BRANCH1.last_commit
+    )
+]
 
 
 class Response:
@@ -36,7 +72,7 @@ class TestGitHubParser(unittest.TestCase):
     def setUpClass(cls):
         cls.maxDiff = None
 
-    def test_is_accepted_extension(self):
+    def test__is_accepted_extension(self):
         test_cases = [
             {
                 'arguments': {'path': 'some/path/module.py'},
@@ -74,7 +110,7 @@ class TestGitHubParser(unittest.TestCase):
 
         for test_case in test_cases:
             with self.subTest(test_case=test_case):
-                rv = test_case['parser'].is_accepted_extension(
+                rv = test_case['parser']._is_accepted_extension(
                     **test_case['arguments']
                 )
                 self.assertEqual(rv, test_case['expected_result'])
@@ -191,8 +227,6 @@ class TestGitHubParser(unittest.TestCase):
                 'send_calls': [
                     call('/users/OSLL'),
                     call('/orgs/OSLL/repos', params=_REQUEST_PARAMS_1),
-                    call('/orgs/OSLL/repos', params=_REQUEST_PARAMS_2),
-                    call('/orgs/OSLL/repos', params=_REQUEST_PARAMS_3)
                 ],
                 'send_rvs': [
                     Response({'type': 'Organization'}),
@@ -205,11 +239,7 @@ class TestGitHubParser(unittest.TestCase):
                             {
                                 'name': 'aido-auto-feedback',
                                 'html_url': 'https://github.com/OSLL/aido-auto-feedback'
-                            }
-                        ]
-                    ),
-                    Response(
-                        [
+                            },
                             {
                                 'name': 'MD-Code_generator',
                                 'html_url': 'https://github.com/OSLL/MD-Code_generator'
@@ -220,7 +250,6 @@ class TestGitHubParser(unittest.TestCase):
                             }
                         ]
                     ),
-                    Response([])
                 ],
                 'expected_result': [
                     Repository(
@@ -246,14 +275,6 @@ class TestGitHubParser(unittest.TestCase):
                 'send_calls': [
                     call('/users/OSLL'),
                     call('/orgs/OSLL/repos', params=_REQUEST_PARAMS_1),
-                    call(
-                        '/orgs/OSLL/repos',
-                        params=_REQUEST_PARAMS_2
-                    ),
-                    call(
-                        '/orgs/OSLL/repos',
-                        params=_REQUEST_PARAMS_3
-                    )
                 ],
                 'send_rvs': [
                     Response({'type': 'Organization'}),
@@ -266,11 +287,7 @@ class TestGitHubParser(unittest.TestCase):
                             {
                                 'name': 'aido-auto-feedback',
                                 'html_url': 'https://github.com/OSLL/aido-auto-feedback'
-                            }
-                        ]
-                    ),
-                    Response(
-                        [
+                            },
                             {
                                 'name': 'MD-Code_generator',
                                 'html_url': 'https://github.com/OSLL/MD-Code_generator'
@@ -281,7 +298,6 @@ class TestGitHubParser(unittest.TestCase):
                             }
                         ]
                     ),
-                    Response([])
                 ],
                 'expected_result': [
                     Repository(
@@ -371,20 +387,12 @@ class TestGitHubParser(unittest.TestCase):
                         address=''
                     ),
                     call(
-                        '/repos/OSLL/code-plagiarism/pulls',
-                        params=_REQUEST_PARAMS_2
-                    ),
-                    call(
                         'https://api.github.com/repos/OSLL/code-plagiarism/pulls/3/commits',
                         address=''
                     ),
                     call(
                         'https://api.github.com/repos/OSLL/code-plagiarism/pulls/4/commits',
                         address=''
-                    ),
-                    call(
-                        '/repos/OSLL/code-plagiarism/pulls',
-                        params=_REQUEST_PARAMS_3
                     ),
                 ],
                 'send_rvs': [
@@ -407,13 +415,7 @@ class TestGitHubParser(unittest.TestCase):
                                 },
                                 'state': 'Open',
                                 'draft': True
-                            }
-                        ]
-                    ),
-                    Response([{'sha': 'jskfjsjskjfl'}]),
-                    Response([{'sha': 'jzxvjipwerknmzxvj'}]),
-                    Response(
-                        [
+                            },
                             {
                                 'commits_url': 'https://api.github.com/repos/OSLL/code-plagiarism/pulls/3/commits',
                                 'number': 3,
@@ -436,7 +438,8 @@ class TestGitHubParser(unittest.TestCase):
                     ),
                     Response([{'sha': 'jskfjsjskjfl'}]),
                     Response([{'sha': 'jzxvjipwerknmzxvj'}]),
-                    Response([])
+                    Response([{'sha': 'jskfjsjskjfl'}]),
+                    Response([{'sha': 'jzxvjipwerknmzxvj'}]),
                 ],
                 'expected_result': [
                     PullRequest(
@@ -504,15 +507,34 @@ class TestGitHubParser(unittest.TestCase):
                 )
 
     @patch('webparsers.github_parser.GitHubParser.send_get_request')
-    def test_get_sha_last_branch_commit(self, mock_send_get_request):
+    def test__get_branch_last_commit_info(self, mock_send_get_request):
+        _COMMIT1 = {
+            'sha': 'jal934304',
+            'commit': {
+                'author': {
+                    'name': 'OSLL',
+                    'date': '2022-12-29T10:10:41Z'
+                }
+            }
+        }
+        _COMMIT2 = {
+            'sha': 'xyuwr934h',
+            'commit': {
+                'author': {
+                    'name': 'OSLL',
+                    'date': '2022-11-13T10:15:41Z'
+                }
+            }
+        }
+
         test_cases = [
             {
                 'arguments': {'owner': 'OSLL', 'repo': 'aido-auto-feedback'},
                 'send_calls': [
                     call('/repos/OSLL/aido-auto-feedback/branches/main')
                 ],
-                'send_rv': Response({'commit': {'sha': 'jal934304'}}),
-                'expected_result': 'jal934304'
+                'send_rv': Response({'commit': _COMMIT1}),
+                'expected_result': _COMMIT1
             },
             {
                 'arguments': {
@@ -523,8 +545,8 @@ class TestGitHubParser(unittest.TestCase):
                 'send_calls': [
                     call('/repos/moevm/asm_web_debug/branches/iss76')
                 ],
-                'send_rv': Response({'commit': {'sha': 'xyuwr934hsd'}}),
-                'expected_result': 'xyuwr934hsd'
+                'send_rv': Response({'commit': _COMMIT2}),
+                'expected_result': _COMMIT2
             },
         ]
 
@@ -534,32 +556,36 @@ class TestGitHubParser(unittest.TestCase):
             mock_send_get_request.return_value = test_case['send_rv']
 
             with self.subTest(test_case=test_case):
-                rv = parser.get_sha_last_branch_commit(**test_case['arguments'])
+                rv = parser._get_branch_last_commit_info(**test_case['arguments'])
                 self.assertEqual(rv, test_case['expected_result'])
 
                 self.assertEqual(mock_send_get_request.mock_calls, test_case['send_calls'])
 
     @patch('webparsers.github_parser.GitHubParser.send_get_request')
-    def test_get_file_content_from_sha(self, mock_send_get_request):
+    def test_get_file_content_by_sha(self, mock_send_get_request):
         test_cases = [
             {
                 'arguments': {
                     'owner': 'OSLL',
                     'repo': 'aido-auto-feedback',
-                    'sha': 'kljsdfkiwe0341',
+                    'blob_sha': 'kljsdfkiwe0341',
+                    'commit_info': _COMMIT1,
                     'file_path': 'http://api.github.com/repos'
                 },
                 'send_calls': [
                     call('/repos/OSLL/aido-auto-feedback/git/blobs/kljsdfkiwe0341')
                 ],
                 'send_rv': Response({'content': base64.b64encode(b'Good message')}),
-                'expected_result': ('Good message', 'http://api.github.com/repos')
+                'expected_result': WorkInfo(
+                    'Good message', 'http://api.github.com/repos', _COMMIT1
+                )
             },
             {
                 'arguments': {
                     'owner': 'moevm',
                     'repo': 'asm_web_debug',
-                    'sha': 'jsadlkf3904',
+                    'blob_sha': 'jsadlkf3904',
+                    'commit_info': _COMMIT2,
                     'file_path': 'http://api.github.com/test'
                 },
                 'send_calls': [
@@ -570,7 +596,9 @@ class TestGitHubParser(unittest.TestCase):
                         'content': base64.b64encode(b'Bad\xee\xeemessage')
                     }
                 ),
-                'expected_result': ('Badmessage', 'http://api.github.com/test')
+                'expected_result': WorkInfo(
+                    'Badmessage', 'http://api.github.com/test', _COMMIT2
+                )
             },
         ]
 
@@ -581,30 +609,66 @@ class TestGitHubParser(unittest.TestCase):
 
             buf = io.StringIO()
             with redirect_stdout(buf), self.subTest(test_case=test_case):
-                rv = parser.get_file_content_from_sha(**test_case['arguments'])
+                rv = parser.get_file_content_by_sha(**test_case['arguments'])
                 self.assertEqual(rv, test_case['expected_result'])
 
                 self.assertEqual(mock_send_get_request.mock_calls, test_case['send_calls'])
 
-    @patch('webparsers.github_parser.GitHubParser.get_file_content_from_sha')
+    @patch('webparsers.github_parser.GitHubParser.get_file_content_by_sha')
     @patch('webparsers.github_parser.GitHubParser.send_get_request')
     def test_get_files_generator_from_sha_commit(self, mock_send_get_request,
-                                                 mock_get_file_content_from_sha):
+                                                 mock_get_file_content_by_sha):
         test_cases = [
             {
                 'arguments': {
                     'owner': 'OSLL',
                     'repo': 'aido-auto-feedback',
-                    'branch': 'iss76',
-                    'sha': 'kljsdfkiwe0341',
+                    'branch': _BRANCH1,
+                    'sha': _BRANCH1.last_commit.sha
                 },
                 'send_calls': [
                     call(
-                        '/repos/OSLL/aido-auto-feedback/git/trees/kljsdfkiwe0341'
+                        '/repos/OSLL/aido-auto-feedback/git/trees/zkueqwrkjsalu'
+                    ),
+                    call(
+                        api_url='/repos/OSLL/aido-auto-feedback/commits',
+                        params={
+                            'path': '/src',
+                            'page': 1,
+                            'per_page': 1,
+                            'sha': _BRANCH1.name
+                        }
                     ),
                     call(
                         '/repos/OSLL/aido-auto-feedback/git/trees/jslkfjjeuwijsdmvd'
-                    )
+                    ),
+                    call(
+                        api_url='/repos/OSLL/aido-auto-feedback/commits',
+                        params={
+                            'path': '/src/utils.py',
+                            'page': 1,
+                            'per_page': 1,
+                            'sha': _BRANCH1.name
+                        }
+                    ),
+                    call(
+                        api_url='/repos/OSLL/aido-auto-feedback/commits',
+                        params={
+                            'path': '/src/tests.py',
+                            'page': 1,
+                            'per_page': 1,
+                            'sha': _BRANCH1.name
+                        }
+                    ),
+                    call(
+                        api_url='/repos/OSLL/aido-auto-feedback/commits',
+                        params={
+                            'path': '/main.py',
+                            'page': 1,
+                            'per_page': 1,
+                            'sha': _BRANCH1.name
+                        }
+                    ),
                 ],
                 'send_se': [
                     Response(
@@ -623,6 +687,7 @@ class TestGitHubParser(unittest.TestCase):
                             ],
                         }
                     ),
+                    Response(_COMMIT1_RESP),
                     Response(
                         {
                             'tree': [
@@ -638,54 +703,80 @@ class TestGitHubParser(unittest.TestCase):
                                 }
                             ]
                         }
-                    )
+                    ),
+                    Response(_COMMIT2_RESP),
+                    Response(_COMMIT1_RESP),
+                    Response(_COMMIT2_RESP),
                 ],
                 'get_file_content_calls': [
                     call(
                         'OSLL',
                         'aido-auto-feedback',
                         'uwrcbasrew94',
+                        _COMMIT2,
                         'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/utils.py'
                     ),
                     call(
                         'OSLL',
                         'aido-auto-feedback',
                         'vbuqcvxpiwe',
+                        _COMMIT1,
                         'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/tests.py'
                     ),
                     call(
                         'OSLL',
                         'aido-auto-feedback',
                         'ixiuerjs9430',
+                        _COMMIT2,
                         'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py'
                     ),
                 ],
-                'get_file_content_se': [
-                    ('Some code 2', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/utils.py'),
-                    ('Some code 3', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/tests.py'),
-                    ('Some code 1', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py'),
-                ],
-                'expected_result': [
-                    ('Some code 2', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/utils.py'),
-                    ('Some code 3', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/tests.py'),
-                    ('Some code 1', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py'),
-                ]
+                'get_file_content_se': _GET_FILE_CONTENT_RES,
+                'expected_result': _GET_FILE_CONTENT_RES
             },
             {
                 'arguments': {
                     'owner': 'OSLL',
                     'repo': 'aido-auto-feedback',
-                    'branch': 'iss76',
-                    'sha': 'kljsdfkiwe0341',
+                    'branch': _BRANCH1,
+                    'sha': _BRANCH1.last_commit.sha,
                     'path_regexp': re.compile("s[.]py")
                 },
                 'send_calls': [
                     call(
-                        '/repos/OSLL/aido-auto-feedback/git/trees/kljsdfkiwe0341'
+                        '/repos/OSLL/aido-auto-feedback/git/trees/zkueqwrkjsalu'
+                    ),
+                    call(
+                        api_url='/repos/OSLL/aido-auto-feedback/commits',
+                        params={
+                            'path': '/src',
+                            'page': 1,
+                            'per_page': 1,
+                            'sha': _BRANCH1.name
+                        }
                     ),
                     call(
                         '/repos/OSLL/aido-auto-feedback/git/trees/jslkfjjeuwijsdmvd'
-                    )
+                    ),
+                    call(
+                        api_url='/repos/OSLL/aido-auto-feedback/commits',
+                        params={
+                            'path': '/src/utils.py',
+                            'page': 1,
+                            'per_page': 1,
+                            'sha': _BRANCH1.name
+                        }
+                    ),
+                    call(
+                        api_url='/repos/OSLL/aido-auto-feedback/commits',
+                        params={
+                            'path': '/src/tests.py',
+                            'page': 1,
+                            'per_page': 1,
+                            'sha': _BRANCH1.name
+                        }
+                    ),
+
                 ],
                 'send_se': [
                     Response(
@@ -704,6 +795,7 @@ class TestGitHubParser(unittest.TestCase):
                             ],
                         }
                     ),
+                    Response(_COMMIT1_RESP),
                     Response(
                         {
                             'tree': [
@@ -719,30 +811,29 @@ class TestGitHubParser(unittest.TestCase):
                                 }
                             ]
                         }
-                    )
+                    ),
+                    Response(_COMMIT2_RESP),
+                    Response(_COMMIT1_RESP),
+                    Response(_COMMIT2_RESP),
                 ],
                 'get_file_content_calls': [
                     call(
                         'OSLL',
                         'aido-auto-feedback',
                         'uwrcbasrew94',
+                        _COMMIT2,
                         'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/utils.py'
                     ),
                     call(
                         'OSLL',
                         'aido-auto-feedback',
                         'vbuqcvxpiwe',
+                        _COMMIT1,
                         'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/tests.py'
                     ),
                 ],
-                'get_file_content_se': [
-                    ('Some code 2', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/utils.py'),
-                    ('Some code 3', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/tests.py'),
-                ],
-                'expected_result': [
-                    ('Some code 2', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/utils.py'),
-                    ('Some code 3', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/tests.py'),
-                ]
+                'get_file_content_se': _GET_FILE_CONTENT_RES[:2],
+                'expected_result': _GET_FILE_CONTENT_RES[:2]
             },
         ]
 
@@ -750,18 +841,38 @@ class TestGitHubParser(unittest.TestCase):
         for test_case in test_cases:
             mock_send_get_request.reset_mock()
             mock_send_get_request.side_effect = test_case['send_se']
-            mock_get_file_content_from_sha.reset_mock()
-            mock_get_file_content_from_sha.side_effect = test_case['get_file_content_se']
+            mock_get_file_content_by_sha.reset_mock()
+            mock_get_file_content_by_sha.side_effect = test_case['get_file_content_se']
 
             with self.subTest(test_case=test_case):
                 rv = list(parser.get_files_generator_from_sha_commit(**test_case['arguments']))
                 self.assertEqual(rv, test_case['expected_result'])
 
-                self.assertEqual(mock_send_get_request.mock_calls, test_case['send_calls'])
-                self.assertEqual(mock_get_file_content_from_sha.mock_calls, test_case['get_file_content_calls'])
+                assert mock_send_get_request.mock_calls == test_case['send_calls']
+                assert mock_get_file_content_by_sha.mock_calls == test_case['get_file_content_calls']
 
     @patch('webparsers.github_parser.GitHubParser.send_get_request')
     def test_get_list_repo_branches(self, mock_send_get_request):
+        _COMMIT_DATE = '2022-12-29T10:10:41Z'
+        _BRANCH_INFO1 = {
+            'name': 'main',
+            'commit': {
+                'sha': '0928jlskdfj',
+                'commit': {
+                    'author': {'date': _COMMIT_DATE}
+                }
+            }
+        }
+        _BRANCH_INFO2 = {
+            'name': 'iss76',
+            'commit': {
+                'sha': 'kjsadfwi',
+                'commit': {
+                    'author': {'date': _COMMIT_DATE}
+                }
+            }
+        }
+
         test_cases = [
             {
                 'arguments': {
@@ -773,33 +884,17 @@ class TestGitHubParser(unittest.TestCase):
                         '/repos/OSLL/aido-auto-feedback/branches',
                         params=_REQUEST_PARAMS_1
                     ),
-                    call(
-                        '/repos/OSLL/aido-auto-feedback/branches',
-                        params=_REQUEST_PARAMS_2
-                    ),
                 ],
                 'send_se': [
-                    Response(
-                        [
-                            {
-                                'name': 'main',
-                                'commit': {
-                                    'sha': '0928jlskdfj'
-                                }
-                            },
-                            {
-                                'name': 'iss76',
-                                'commit': {
-                                    'sha': 'kjsadfwi'
-                                }
-                            },
-                        ]
-                    ),
-                    Response([])
+                    Response([_BRANCH_INFO1, _BRANCH_INFO2]),
                 ],
                 'expected_result': [
-                    Branch('main', '0928jlskdfj'),
-                    Branch('iss76', 'kjsadfwi')
+                    Branch(
+                        'main', Commit('0928jlskdfj', '2022-12-29T10:10:41Z')
+                    ),
+                    Branch(
+                        'iss76', Commit('kjsadfwi', '2022-12-29T10:10:41Z')
+                    )
                 ]
             },
             {
@@ -812,41 +907,17 @@ class TestGitHubParser(unittest.TestCase):
                         '/repos/moevm/asm_web_debug/branches',
                         params=_REQUEST_PARAMS_1
                     ),
-                    call(
-                        '/repos/moevm/asm_web_debug/branches',
-                        params=_REQUEST_PARAMS_2
-                    ),
-                    call(
-                        '/repos/moevm/asm_web_debug/branches',
-                        params=_REQUEST_PARAMS_3
-                    ),
                 ],
                 'send_se': [
-                    Response(
-                        [
-                            {
-                                'name': 'main',
-                                'commit': {
-                                    'sha': '0928jlskdfj'
-                                }
-                            },
-                        ]
-                    ),
-                    Response(
-                        [
-                            {
-                                'name': 'iss76',
-                                'commit': {
-                                    'sha': 'kjsadfwi'
-                                }
-                            },
-                        ]
-                    ),
-                    Response([])
+                    Response([_BRANCH_INFO1, _BRANCH_INFO2]),
                 ],
                 'expected_result': [
-                    Branch('main', '0928jlskdfj'),
-                    Branch('iss76', 'kjsadfwi')
+                    Branch(
+                        'main', Commit('0928jlskdfj', _COMMIT_DATE)
+                    ),
+                    Branch(
+                        'iss76', Commit('kjsadfwi', _COMMIT_DATE)
+                    )
                 ]
             },
         ]
@@ -865,7 +936,7 @@ class TestGitHubParser(unittest.TestCase):
 
     @patch('webparsers.github_parser.GitHubParser.get_name_default_branch')
     @patch('webparsers.github_parser.GitHubParser.get_list_repo_branches')
-    @patch('webparsers.github_parser.GitHubParser.get_sha_last_branch_commit')
+    @patch('webparsers.github_parser.GitHubParser._get_branch_last_commit_info')
     @patch('webparsers.github_parser.GitHubParser.get_files_generator_from_sha_commit')
     def test_get_files_generator_from_repo_url(self, mock_get_files_generator_from_sha_commit,
                                                mock_get_sha_last_branch_commit,
@@ -878,12 +949,10 @@ class TestGitHubParser(unittest.TestCase):
                     'repo_url': 'https://github.com/OSLL/code-plagiarism',
                 },
                 'name_default_branch': 'iss76',
-                'branch_sha': 'uixbwupreiljlsdf',
+                'last_branch_commit': _COMMIT1_RESP[0],
                 'branches': None,
-                'files': [('Some code 1', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py')],
-                'expected_result': [
-                    ('Some code 1', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py'),
-                ]
+                'files': [_GET_FILE_CONTENT_RES[2]],
+                'expected_result': [_GET_FILE_CONTENT_RES[2]]
             },
             {
                 'check_all': 1,
@@ -891,15 +960,12 @@ class TestGitHubParser(unittest.TestCase):
                     'repo_url': 'https://github.com/OSLL/code-plagiarism',
                 },
                 'name_default_branch': None,
-                'branch_sha': None,
-                'branches': [
-                    Branch('master', 'iobiqirsad'),
-                    Branch('iss76', 'iobxzewqrsf')
-                ],
-                'files': [('Some code 1', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py')],
+                'last_branch_commit': None,
+                'branches': [_BRANCH1, _BRANCH2],
+                'files': [_GET_FILE_CONTENT_RES[2]],
                 'expected_result': [
-                    ('Some code 1', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py'),
-                    ('Some code 1', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py')
+                    _GET_FILE_CONTENT_RES[2],
+                    _GET_FILE_CONTENT_RES[2],
                 ]
             },
         ]
@@ -912,7 +978,7 @@ class TestGitHubParser(unittest.TestCase):
             mock_get_name_default_branch.reset_mock()
 
             mock_get_name_default_branch.return_value = test_case['name_default_branch']
-            mock_get_sha_last_branch_commit.return_value = test_case['branch_sha']
+            mock_get_sha_last_branch_commit.return_value = test_case['last_branch_commit']
             mock_get_files_generator_from_sha_commit.return_value = test_case['files']
             mock_get_list_repo_branches.return_value = test_case['branches']
 
@@ -920,63 +986,70 @@ class TestGitHubParser(unittest.TestCase):
                 rv = list(parser.get_files_generator_from_repo_url(**test_case['arguments']))
                 self.assertEqual(rv, test_case['expected_result'])
 
-    @patch('webparsers.github_parser.GitHubParser.get_file_content_from_sha')
+    @patch('webparsers.github_parser.GitHubParser.get_file_content_by_sha')
     @patch('webparsers.github_parser.GitHubParser.send_get_request')
     def test_get_file_from_url(self, mock_send_get_request,
-                               mock_get_file_content_from_sha):
+                               mock_get_file_content_by_sha):
         test_cases = [
             {
                 'arguments': {
                     'file_url': 'https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/astfeatures.py'
                 },
-                'send_rv': Response({'sha': 'ioujxbwurqer'}),
-                'get_file_content_rv': ('Some code 1', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py'),
-                'expected_result': ('Some code 1', 'https://github.com/OSLL/aido-auto-feedback/blob/iss76/main.py'),
+                'send_se': [
+                    Response({'sha': 'ioujxbwurqer'}),
+                    Response(_COMMIT1_RESP),
+                ],
+                'get_file_content_rv': _GET_FILE_CONTENT_RES[2],
+                'expected_result': _GET_FILE_CONTENT_RES[2],
             }
         ]
 
         parser = GitHubParser()
         for test_case in test_cases:
-            mock_send_get_request.return_value = test_case['send_rv']
-            mock_get_file_content_from_sha.return_value = test_case['get_file_content_rv']
+            mock_send_get_request.side_effect = test_case['send_se']
+            mock_get_file_content_by_sha.return_value = test_case['get_file_content_rv']
 
             with self.subTest(test_case=test_case):
                 rv = parser.get_file_from_url(**test_case['arguments'])
                 self.assertEqual(rv, test_case['expected_result'])
 
-    @patch('webparsers.github_parser.GitHubParser.get_file_content_from_sha')
+    @patch('webparsers.github_parser.GitHubParser.get_file_content_by_sha')
     @patch('webparsers.github_parser.GitHubParser.get_files_generator_from_sha_commit')
     @patch('webparsers.github_parser.GitHubParser.send_get_request')
     def test_get_files_generator_from_dir_url(self, mock_send_get_request,
                                               mock_get_files_generator_from_sha_commit,
-                                              mock_get_file_content_from_sha):
+                                              mock_get_file_content_by_sha):
         test_cases = [
             {
                 'arguments': {
                     'dir_url': 'https://github.com/OSLL/code-plagiarism/tree/main/src'
                 },
-                'send_rv': Response(
-                    [
-                        {'path': 'src', 'type': 'dir', 'sha': 'xvbupqrjdf'},
-                        {
-                            'path': 'src',
-                            'name': 'main.py',
-                            'type': 'file',
-                            'sha': 'iouxpoewre',
-                        }
-                    ]
-                ),
-                'files_gen': ['dummy 1', 'dummy 2'],
-                'file_gen': 'dummy 3',
-                'expected_result': ['dummy 1', 'dummy 2', 'dummy 3']
+                'send_se': [
+                    Response(
+                        [
+                            {'path': 'src', 'type': 'dir', 'sha': 'xvbupqrjdf'},
+                            {
+                                'path': 'src',
+                                'name': 'main.py',
+                                'type': 'file',
+                                'sha': 'iouxpoewre',
+                            }
+                        ]
+                    ),
+                    Response(_COMMIT1_RESP),
+                    Response(_COMMIT2_RESP)
+                ],
+                'files_gen': _GET_FILE_CONTENT_RES[:2],
+                'file_gen': _GET_FILE_CONTENT_RES[2],
+                'expected_result': _GET_FILE_CONTENT_RES
             }
         ]
 
         parser = GitHubParser()
         for test_case in test_cases:
-            mock_send_get_request.return_value = test_case['send_rv']
+            mock_send_get_request.side_effect = test_case['send_se']
             mock_get_files_generator_from_sha_commit.return_value = test_case['files_gen']
-            mock_get_file_content_from_sha.return_value = test_case['file_gen']
+            mock_get_file_content_by_sha.return_value = test_case['file_gen']
 
             with self.subTest(test_case=test_case):
                 rv = list(parser.get_files_generator_from_dir_url(**test_case['arguments']))

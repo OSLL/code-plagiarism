@@ -9,6 +9,7 @@ from codeplag.getfeatures import AbstractGetter, get_files_path_from_directory
 from codeplag.logger import get_logger
 from codeplag.pyplag.astwalkers import ASTWalker
 from codeplag.types import ASTFeatures
+from webparsers.types import WorkInfo
 
 # TODO: Remove from globals
 logger = get_logger(__name__, LOG_PATH)
@@ -130,15 +131,16 @@ class PyFeaturesGetter(AbstractGetter):
             path_regexp=path_regexp
         )
 
-    def get_from_content(self, file_content: str, url_to_file: str) -> Optional[ASTFeatures]:
-        tree = get_ast_from_content(file_content, url_to_file)
+    def get_from_content(self, work_info: WorkInfo) -> Optional[ASTFeatures]:
+        tree = get_ast_from_content(work_info.code, work_info.link)
         if tree is not None:
-            return get_features_from_ast(tree, url_to_file)
+            features = get_features_from_ast(tree, work_info.link)
+            features.modify_date = work_info.commit.date
+            return features
 
         self.logger.error(
-            "Unsuccessfully attempt to get AST from the file %s.", url_to_file
+            "Unsuccessfully attempt to get AST from the file %s.", work_info.link
         )
-        return
 
     def get_from_files(self, files: List[Path]) -> List[ASTFeatures]:
         if not files:

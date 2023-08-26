@@ -4,6 +4,8 @@ from typing_extensions import Self
 
 T = TypeVar("T", bound="GitHubUrl")
 
+# TODO: use libs for parse urls, validate meta symbols as #
+
 
 class GitHubUrl(str):
     protocol: str
@@ -68,9 +70,14 @@ class Repository(NamedTuple):
     html_url: str
 
 
+class Commit(NamedTuple):
+    sha: str
+    date: str  # TODO: convert to datetime or another
+
+
 class Branch(NamedTuple):
     name: str
-    last_commit_sha: str
+    last_commit: Commit
 
 
 class PullRequest(NamedTuple):
@@ -85,6 +92,7 @@ class PullRequest(NamedTuple):
 class WorkInfo(NamedTuple):
     code: str
     link: str  # TODO: use urlib for type or requests
+    commit: Commit
 
 
 Extensions = Tuple[Pattern, ...]

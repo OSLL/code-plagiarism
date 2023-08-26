@@ -207,6 +207,10 @@ class CodeplagEngine:
             fast=fast_metrics._asdict(),
             structure=struct_info_dict
         )
+        if first_work.modify_date:
+            report["first_modify_date"] = first_work.modify_date
+        if second_work.modify_date:
+            report["second_modify_date"] = second_work.modify_date
 
         try:
             report_file = self.reports / f'{uuid.uuid4().hex}.json'

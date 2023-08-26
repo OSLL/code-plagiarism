@@ -21,11 +21,16 @@ docker-test: docker-test-image
 		"$(TEST_DOCKER_TAG)"
 
 docker-autotest: docker-test-image
-	docker run --rm \
-		--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
-		--env-file .env \
-		"$(TEST_DOCKER_TAG)" bash -c \
-		"make && make autotest"
+	@if [ $(shell find . -maxdepth 1 -type f -name .env | wc --lines) != 1 ]; then \
+		echo "Requires '.env' file with provided GitHub token for running autotests."; \
+		exit 200; \
+	else \
+		docker run --rm \
+			--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
+			--env-file .env \
+			"$(TEST_DOCKER_TAG)" bash -c \
+			"make && make autotest"; \
+	fi
 
 docker-build-package: docker-test-image
 	docker run --rm \
@@ -50,7 +55,9 @@ docker-image: docker-base-image docker-test-image
 	)
 
 docker-run: docker-image
+	@touch .env
 	docker run --rm --tty --interactive \
+		--env-file .env \
 		"$(DOCKER_TAG)"
 
 docker-rmi:

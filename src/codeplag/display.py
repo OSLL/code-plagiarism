@@ -99,12 +99,21 @@ def print_compare_result(features1: ASTFeatures,
 
     print(" " * 40)
     print('+' * 40)
-    print(
-        'May be similar:',
-        features1.filepath,
-        features2.filepath,
-        end='\n\n', sep='\n'
-    )
+    if features1.modify_date is not None and features2.modify_date is not None:
+        message = (
+            '-----\n'
+            f'{features1.filepath}\n{features1.modify_date}\n'
+            '-----\n'
+            f'{features2.filepath}\n{features2.modify_date}\n'
+            '-----\n'
+        )
+    else:
+        message = (
+            f'{features1.filepath}\n'
+            f'{features2.filepath}\n'
+        )
+
+    print('May be similar:', message, end='\n\n', sep='\n')
     main_metrics_df = pd.DataFrame(
         [compare_info.fast], index=['Similarity'],
         columns=pd.Index(
