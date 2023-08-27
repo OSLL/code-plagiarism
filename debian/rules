@@ -1,6 +1,6 @@
 #!/usr/bin/make -f
 
-DESTDIR           = $(CURDIR)/debian/deb
+DESTDIR           = $(CURDIR)/$(DEBIAN_PACKAGES_PATH)
 
 %:
 	dh $@

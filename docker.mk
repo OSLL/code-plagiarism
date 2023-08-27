@@ -34,8 +34,10 @@ docker-autotest: docker-test-image
 
 docker-build-package: docker-test-image
 	docker run --rm \
-		--volume $(PWD)/debian/deb:/usr/src/$(UTIL_NAME)/debian/deb \
+		--volume $(PWD)/$(DEBIAN_PACKAGES_PATH):/usr/src/$(UTIL_NAME)/$(DEBIAN_PACKAGES_PATH) \
 		--env IS_DEVELOPED=$(IS_DEVELOPED) \
+		--env USER_UID=$(USER_UID) \
+		--env USER_GID=$(USER_GID) \
 		"$(TEST_DOCKER_TAG)" bash -c \
 		"make package"
 
