@@ -6,7 +6,13 @@ import argparse
 from pathlib import Path
 from typing import List, Optional
 
-from codeplag.consts import EXTENSION_CHOICE, MODE_CHOICE, UTIL_NAME, UTIL_VERSION
+from codeplag.consts import (
+    EXTENSION_CHOICE,
+    MODE_CHOICE,
+    REPORTS_EXTENSION_CHOICE,
+    UTIL_NAME,
+    UTIL_VERSION,
+)
 from webparsers.types import GitHubContentUrl
 
 
@@ -115,6 +121,13 @@ class CodeplagCLI(argparse.ArgumentParser):
             "into provided path.",
             metavar="DIRECTORY",
             type=DirPath,
+        )
+        settings_modify.add_argument(
+            "-re",
+            "--reports_extension",
+            help="Extension of saved report files.",
+            type=str,
+            choices=REPORTS_EXTENSION_CHOICE
         )
         settings_modify.add_argument(
             "-sp",

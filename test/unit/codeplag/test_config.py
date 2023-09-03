@@ -131,7 +131,8 @@ def test_read_default_settings_conf(dummy_logger, settings_config):
             {
                 'threshold': 65,
                 'reports': Path('/home/bukabyka/reports'),
-                'show_progress': 0
+                'show_progress': 0,
+                'reports_extension': 'csv',
             }
         ],
         [
@@ -139,12 +140,14 @@ def test_read_default_settings_conf(dummy_logger, settings_config):
                 'threshold': 99,
                 'environment':
                 '/home/bukabyka/.env',
-                'show_progress': 1
+                'show_progress': 1,
+                'reports_extension': 'json',
             },
             {
                 'threshold': 99,
                 'environment': Path('/home/bukabyka/.env'),
-                'show_progress': 1
+                'show_progress': 1,
+                'reports_extension': 'json',
             }
         ],
         [
@@ -152,7 +155,8 @@ def test_read_default_settings_conf(dummy_logger, settings_config):
             {
                 'threshold': 65,
                 'reports': Path('/home/bukabyka/reports'),
-                'show_progress': 0
+                'show_progress': 0,
+                'reports_extension': 'csv',
             }
         ]
     ],

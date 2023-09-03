@@ -21,6 +21,7 @@ Extension = Literal["py", "cpp"]
 Extensions = Tuple[Pattern, ...]
 Flag = Literal[0, 1]
 Mode = Literal["many_to_many", "one_to_one"]
+ReportsExtension = Literal['json', 'csv']
 Threshold = Literal[
     50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
     60, 61, 62, 63, 64, 65, 66, 67, 68, 69,
@@ -105,5 +106,6 @@ class WorksReport(TypedDict):
 class Settings(TypedDict):
     environment: NotRequired[Path]
     reports: NotRequired[Path]
+    reports_extension: Literal['json', 'csv']
     show_progress: Flag
     threshold: Threshold

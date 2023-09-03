@@ -88,7 +88,7 @@ def mock_default_logger(mocker: MockerFixture):
     return mocked_logger
 
 
-def test_save_result(mocker, mock_default_logger):
+def test_save_result_json(mocker, mock_default_logger):
     parsed_args = {"extension": "py", "root": "check"}
     code_engine = CodeplagEngine(mock_default_logger, parsed_args)
     tree1 = get_ast_from_filename(FILEPATH1)
@@ -104,7 +104,7 @@ def test_save_result(mocker, mock_default_logger):
     mocker.patch.object(Path, "open", side_effect=FileNotFoundError)
     code_engine.reports = Path("/bad_dir")
     code_engine.save_result(
-        features1, features2, compare_info.fast, compare_info.structure
+        features1, features2, compare_info.fast, compare_info.structure, 'json'
     )
     assert not Path.open.called
     assert mock_default_logger.error.call_args == call(
@@ -114,7 +114,7 @@ def test_save_result(mocker, mock_default_logger):
     mocker.patch.object(Path, "open", side_effect=PermissionError)
     code_engine.reports = Path("/etc")
     code_engine.save_result(
-        features1, features2, compare_info.fast, compare_info.structure
+        features1, features2, compare_info.fast, compare_info.structure, 'json'
     )
     Path.open.assert_called_once()
     assert mock_default_logger.error.call_args == call(
@@ -125,7 +125,7 @@ def test_save_result(mocker, mock_default_logger):
     mock_write_config = mocker.patch("codeplag.utils.write_config")
     code_engine.reports = Path("./src")
     code_engine.save_result(
-        features1, features2, compare_info.fast, compare_info.structure
+        features1, features2, compare_info.fast, compare_info.structure, 'json'
     )
     mock_write_config.assert_called_once()
     assert set(mock_write_config.call_args[0][1].keys()) == set(
@@ -137,7 +137,7 @@ def test_save_result(mocker, mock_default_logger):
     features1.modify_date = "2023-07-14T11:22:30Z"
     features2.modify_date = "2023-07-09T14:35:07Z"
     code_engine.save_result(
-        features1, features2, compare_info.fast, compare_info.structure
+        features1, features2, compare_info.fast, compare_info.structure, 'json'
     )
     mock_write_config.assert_called_once()
     assert (
