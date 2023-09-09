@@ -1,8 +1,30 @@
-[tool.isort]
-profile = "black"
+[project]
+requires-python = ">=3.8"
 
-[tool.black]
-target-version = ["py38"]
+[tool.ruff]
+line-length = 88
+src = [
+    "src",
+    # "test",
+    "docs/notebooks",
+]
+select = [
+    "F",    # pyflakes
+    "E",    # pycodestyle Error
+    "W",    # pycodestyle Warning
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "SIM",  # flake8-simplify
+    # "ERA",  # eradicate
+    "C90",  # mccabe
+]
+ignore = [
+    "E501",  # line too long
+]
+
+[tool.ruff.mccabe]
+max-complexity = 13
 
 [tool.pyright]
 pythonVersion = "3.8"

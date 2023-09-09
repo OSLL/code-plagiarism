@@ -1,3 +1,4 @@
+import json
 import logging
 import math
 import uuid
@@ -97,6 +98,61 @@ def compare_works(features1: ASTFeatures,
     )
 
 
+def serialize_compare_result(
+    first_work: ASTFeatures,
+    second_work: ASTFeatures,
+    compare_info: CompareInfo,
+) -> pd.DataFrame:
+    assert compare_info.structure is not None
+
+    return pd.DataFrame(
+        {
+            'date': datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            'first_modify_date': first_work.modify_date,
+            'second_modify_date': second_work.modify_date,
+            'first_path': first_work.filepath.__str__(),
+            'second_path': second_work.filepath.__str__(),
+            'jakkar': compare_info.fast.jakkar,
+            'operators': compare_info.fast.operators,
+            'keywords': compare_info.fast.keywords,
+            'literals': compare_info.fast.literals,
+            'weighted_average': compare_info.fast.weighted_average,
+            'struct_similarity': compare_info.structure.similarity,
+            'first_heads': [first_work.head_nodes],
+            'second_heads': [second_work.head_nodes],
+            'compliance_matrix': [
+                compare_info.structure.compliance_matrix.tolist()
+            ],
+        },
+        dtype=object
+    )
+
+
+def deserialize_compare_result(compare_result: pd.Series) -> CompareInfo:
+    if isinstance(compare_result.compliance_matrix, str):
+        similarity_matrix = np.array(
+            json.loads(compare_result.compliance_matrix)
+        )
+    else:
+        similarity_matrix = np.array(compare_result.compliance_matrix)
+
+    compare_info = CompareInfo(
+        fast=FastMetrics(
+            jakkar=float(compare_result.jakkar),
+            operators=float(compare_result.operators),
+            keywords=float(compare_result.keywords),
+            literals=float(compare_result.literals),
+            weighted_average=np.float64(compare_result.weighted_average)
+        ),
+        structure=StructuresInfo(
+            compliance_matrix=similarity_matrix,
+            similarity=float(compare_result.struct_similarity)
+        )
+    )
+
+    return compare_info
+
+
 def calc_iterations(count, mode: str = 'many_to_many') -> int:
     if count <= 1:
         return 0
@@ -157,10 +213,21 @@ class CodeplagEngine:
             self.reports: Optional[Path] = settings_conf.get('reports')
             self.__reports_extension: ReportsExtension = settings_conf['reports_extension']
             if self.__reports_extension == 'csv' and self.reports:
-                self.__df_report = pd.DataFrame(
-                    columns=CSV_REPORT_COLUMNS,
-                    dtype=object
-                )
+                reports_path = self.reports / CSV_REPORT_FILENAME
+                if reports_path.is_file():
+                    self.__df_report = pd.read_csv(
+                        self.reports / CSV_REPORT_FILENAME,
+                        sep=';',
+                        index_col=0,
+                        dtype=object
+                    )
+                    self.__start_report_lines = self.__df_report.shape[0]
+                else:
+                    self.__df_report = pd.DataFrame(
+                        columns=CSV_REPORT_COLUMNS,
+                        dtype=object
+                    )
+                    self.__start_report_lines = 0
                 self.__csv_last_save = perf_counter()
 
             self.github_files: List[str] = parsed_args.pop('github_files', [])
@@ -196,8 +263,7 @@ class CodeplagEngine:
         self,
         first_work: ASTFeatures,
         second_work: ASTFeatures,
-        fast_metrics: FastMetrics,
-        structure: StructuresInfo,
+        compare_info: CompareInfo,
         reports_extension: ReportsExtension
     ) -> None:
         if self.reports is None or not self.reports.is_dir():
@@ -211,25 +277,24 @@ class CodeplagEngine:
             self.__save_result_to_csv(
                 first_work,
                 second_work,
-                fast_metrics,
-                structure
+                compare_info,
             )
         else:
             self.__save_result_to_json(
                 first_work,
                 second_work,
-                fast_metrics,
-                structure
+                compare_info,
             )
 
     def __save_result_to_json(
         self,
         first_work: ASTFeatures,
         second_work: ASTFeatures,
-        fast_metrics: FastMetrics,
-        structure: StructuresInfo,
+        metrics: CompareInfo,
     ) -> None:
-        struct_info_dict = structure._asdict()
+        assert metrics.structure is not None
+
+        struct_info_dict = metrics.structure._asdict()
         struct_info_dict['compliance_matrix'] = (
             struct_info_dict['compliance_matrix'].tolist()
         )
@@ -239,7 +304,7 @@ class CodeplagEngine:
             second_path=second_work.filepath.__str__(),
             first_heads=first_work.head_nodes,
             second_heads=second_work.head_nodes,
-            fast=fast_metrics._asdict(),
+            fast=metrics.fast._asdict(),
             structure=struct_info_dict
         )
         if first_work.modify_date:
@@ -259,39 +324,24 @@ class CodeplagEngine:
         if self.__reports_extension != 'csv' or not self.reports:
             return
 
-        self.__df_report.to_csv(
-            self.reports / CSV_REPORT_FILENAME, sep=';'
-        )
+        if self.__start_report_lines == self.__df_report.shape[0]:
+            self.logger.debug("Nothing new to save to the csv report.")
+            return
+
+        report_path = self.reports / CSV_REPORT_FILENAME
+        self.logger.debug(f"Saving report to the file '{report_path}'")
+        self.__df_report.to_csv(report_path, sep=';')
 
     def __save_result_to_csv(
         self,
         first_work: ASTFeatures,
         second_work: ASTFeatures,
-        fast_metrics: FastMetrics,
-        structure: StructuresInfo,
+        metrics: CompareInfo,
     ) -> None:
         self.__df_report = pd.concat(
             [
                 self.__df_report,
-                pd.DataFrame(
-                    {
-                        'date': datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-                        'first_modify_date': first_work.modify_date,
-                        'second_modify_date': second_work.modify_date,
-                        'first_path': first_work.filepath.__str__(),
-                        'second_path': second_work.filepath.__str__(),
-                        'jakkar': fast_metrics.jakkar,
-                        'operators': fast_metrics.operators,
-                        'keywords': fast_metrics.keywords,
-                        'literals': fast_metrics.literals,
-                        'weighted_average': fast_metrics.weighted_average,
-                        'struct_similarity': structure.similarity,
-                        'first_heads': [first_work.head_nodes],
-                        'second_heads': [second_work.head_nodes],
-                        'compliance_matrix': [structure.compliance_matrix.tolist()]
-                    },
-                    dtype=object
-                )
+                serialize_compare_result(first_work, second_work, metrics)
             ],
             ignore_index=True
         )
@@ -303,9 +353,32 @@ class CodeplagEngine:
     def _do_step(self, work1: ASTFeatures, work2: ASTFeatures) -> None:
         if work1.filepath == work2.filepath:
             return
-        metrics = compare_works(work1, work2, self.threshold)
-        if metrics.structure is None:
-            return
+
+        work1, work2 = sorted([work1, work2])
+        metrics = None
+        if self.reports:
+            if self.__reports_extension == 'csv':
+                cache_val = self.__df_report[
+                    (self.__df_report.first_path == str(work1.filepath)) &
+                    (self.__df_report.second_path == str(work2.filepath))
+                ]
+                if cache_val.shape[0]:
+                    metrics = deserialize_compare_result(cache_val.iloc[0])
+                    assert metrics.structure is not None
+            if metrics is None:
+                metrics = compare_works(work1, work2, self.threshold)
+                if metrics.structure is None:
+                    return
+                self.save_result(
+                    work1,
+                    work2,
+                    metrics,
+                    self.__reports_extension
+                )
+        else:
+            metrics = compare_works(work1, work2, self.threshold)
+            if metrics.structure is None:
+                return
 
         print_compare_result(
             work1,
@@ -313,14 +386,6 @@ class CodeplagEngine:
             metrics,
             self.threshold
         )
-        if self.reports:
-            self.save_result(
-                work1,
-                work2,
-                metrics.fast,
-                metrics.structure,
-                self.__reports_extension
-            )
 
     def _calc_and_print_progress(
         self,
@@ -338,7 +403,7 @@ class CodeplagEngine:
         settings_config = read_settings_conf(self.logger)
         table = pd.DataFrame(
             list(settings_config.values()),
-            index=[k.capitalize() for k in settings_config.keys()],
+            index=[k.capitalize() for k in settings_config],
             columns=pd.Index(
                 ["Value"],
                 name="Key"

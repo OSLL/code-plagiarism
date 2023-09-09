@@ -62,7 +62,7 @@ def read_settings_conf(logger: logging.Logger) -> Settings:
 
     return Settings(
         **{
-            key: loaded_settings_config[key] for key in Settings.__annotations__.keys()
+            key: loaded_settings_config[key] for key in Settings.__annotations__
             if key in loaded_settings_config
         }
     )
