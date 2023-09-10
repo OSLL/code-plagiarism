@@ -2,12 +2,7 @@
 requires-python = ">=3.8"
 
 [tool.ruff]
-line-length = 88
-src = [
-    "src",
-    # "test",
-    "docs/notebooks",
-]
+line-length = 97
 select = [
     "F",    # pyflakes
     "E",    # pycodestyle Error
@@ -18,9 +13,6 @@ select = [
     "SIM",  # flake8-simplify
     # "ERA",  # eradicate
     "C90",  # mccabe
-]
-ignore = [
-    "E501",  # line too long
 ]
 
 [tool.ruff.mccabe]

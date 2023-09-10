@@ -1,11 +1,10 @@
+import ast
 import logging
 import os
 from pathlib import Path
 from unittest.mock import call
 
 import pytest
-from pytest_mock import MockerFixture
-
 from codeplag.pyplag.utils import get_ast_from_filename, get_features_from_ast
 from codeplag.types import WorksReport
 from codeplag.utils import (
@@ -15,6 +14,7 @@ from codeplag.utils import (
     compare_works,
     fast_compare,
 )
+from pytest_mock import MockerFixture
 
 CWD = Path(os.path.dirname(os.path.abspath(__file__)))
 FILEPATH1 = CWD / "./data/test1.py"
@@ -22,15 +22,30 @@ FILEPATH2 = CWD / "./data/test2.py"
 FILEPATH3 = CWD / "./data/test3.py"
 
 
-def test_fast_compare_normal():
-    tree1 = get_ast_from_filename(FILEPATH1)
-    tree2 = get_ast_from_filename(FILEPATH2)
-    assert tree1 is not None
-    assert tree2 is not None
+@pytest.fixture
+def first_tree() -> ast.Module:
+    tree = get_ast_from_filename(FILEPATH1)
+    assert tree is not None
+    return tree
 
-    features1 = get_features_from_ast(tree1, FILEPATH1)
-    features2 = get_features_from_ast(tree2, FILEPATH2)
 
+@pytest.fixture
+def second_tree() -> ast.Module:
+    tree = get_ast_from_filename(FILEPATH2)
+    assert tree is not None
+    return tree
+
+
+@pytest.fixture
+def third_tree() -> ast.Module:
+    tree = get_ast_from_filename(FILEPATH3)
+    assert tree is not None
+    return tree
+
+
+def test_fast_compare_normal(first_tree, second_tree):
+    features1 = get_features_from_ast(first_tree, FILEPATH1)
+    features2 = get_features_from_ast(second_tree, FILEPATH2)
     metrics = fast_compare(features1, features2)
 
     assert metrics.jakkar == pytest.approx(0.737, 0.001)
@@ -44,17 +59,10 @@ def test_fast_compare_normal():
     assert metrics2.weighted_average == pytest.approx(0.796, 0.001)
 
 
-def test_compare_works():
-    tree1 = get_ast_from_filename(FILEPATH1)
-    tree2 = get_ast_from_filename(FILEPATH2)
-    tree3 = get_ast_from_filename(FILEPATH3)
-    assert tree1 is not None
-    assert tree2 is not None
-    assert tree3 is not None
-
-    features1 = get_features_from_ast(tree1, FILEPATH1)
-    features2 = get_features_from_ast(tree2, FILEPATH2)
-    features3 = get_features_from_ast(tree3, FILEPATH3)
+def test_compare_works(first_tree, second_tree, third_tree):
+    features1 = get_features_from_ast(first_tree, FILEPATH1)
+    features2 = get_features_from_ast(second_tree, FILEPATH2)
+    features3 = get_features_from_ast(third_tree, FILEPATH3)
 
     compare_info = compare_works(features1, features2)
 
@@ -88,16 +96,12 @@ def mock_default_logger(mocker: MockerFixture):
     return mocked_logger
 
 
-def test_save_result_json(mocker, mock_default_logger):
+def test_save_result_json(mocker, mock_default_logger, first_tree, second_tree):
     parsed_args = {"extension": "py", "root": "check"}
     code_engine = CodeplagEngine(mock_default_logger, parsed_args)
-    tree1 = get_ast_from_filename(FILEPATH1)
-    tree2 = get_ast_from_filename(FILEPATH2)
-    assert tree1 is not None
-    assert tree2 is not None
 
-    features1 = get_features_from_ast(tree1, FILEPATH1)
-    features2 = get_features_from_ast(tree2, FILEPATH2)
+    features1 = get_features_from_ast(first_tree, FILEPATH1)
+    features2 = get_features_from_ast(second_tree, FILEPATH2)
     compare_info = compare_works(features1, features2)
     assert compare_info.structure is not None
 

@@ -6,6 +6,8 @@ import argparse
 from pathlib import Path
 from typing import List, Optional
 
+from webparsers.types import GitHubContentUrl
+
 from codeplag.consts import (
     EXTENSION_CHOICE,
     MODE_CHOICE,
@@ -13,7 +15,6 @@ from codeplag.consts import (
     UTIL_NAME,
     UTIL_VERSION,
 )
-from webparsers.types import GitHubContentUrl
 
 
 class CheckUniqueStore(argparse.Action):

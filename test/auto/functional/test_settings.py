@@ -1,5 +1,4 @@
 import pytest
-
 from codeplag.consts import CONFIG_PATH, UTIL_NAME
 from utils import modify_settings
 

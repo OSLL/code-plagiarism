@@ -5,7 +5,6 @@ import shutil
 from contextlib import suppress
 
 import pytest
-
 from codeplag.consts import UTIL_NAME, UTIL_VERSION
 from codeplag.types import WorksReport
 from utils import SUCCESS_CODE, modify_settings, run_check, run_util

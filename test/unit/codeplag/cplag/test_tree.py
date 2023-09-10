@@ -3,7 +3,6 @@ from typing import Final
 
 import pytest
 from clang.cindex import CursorKind
-
 from codeplag.cplag.tree import generic_visit, get_features, get_not_ignored
 from codeplag.cplag.utils import get_cursor_from_file
 from codeplag.types import ASTFeatures

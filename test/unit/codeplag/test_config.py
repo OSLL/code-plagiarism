@@ -4,8 +4,6 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from pytest_mock import MockerFixture
-
 from codeplag.config import (
     DefaultSettingsConfig,
     read_config,
@@ -14,6 +12,7 @@ from codeplag.config import (
     write_settings_conf,
 )
 from codeplag.consts import CONFIG_PATH, UTIL_NAME
+from pytest_mock import MockerFixture
 
 
 @pytest.fixture

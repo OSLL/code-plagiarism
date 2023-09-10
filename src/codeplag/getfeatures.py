@@ -8,6 +8,8 @@ from typing import List, Literal, Optional, Union, overload
 
 from decouple import Config, RepositoryEnv
 from requests import Session
+from webparsers.github_parser import GitHubParser
+from webparsers.types import WorkInfo
 
 from codeplag.consts import (
     ALL_EXTENSIONS,
@@ -18,8 +20,6 @@ from codeplag.consts import (
 )
 from codeplag.logger import get_logger
 from codeplag.types import ASTFeatures, Extension, Extensions
-from webparsers.github_parser import GitHubParser
-from webparsers.types import WorkInfo
 
 
 def get_files_path_from_directory(
@@ -74,7 +74,10 @@ class AbstractGetter(ABC):
         self.extension: Extension = extension
 
         try:
-            self.repo_regexp = re.compile(repo_regexp) if repo_regexp is not None else repo_regexp
+            if repo_regexp is not None:
+                self.repo_regexp = re.compile(repo_regexp)
+            else:
+                self.repo_regexp = repo_regexp
         except re.error as regexp_err:
             self.logger.error(
                 "Error while compiling regular expression '%s': '%s'.",
@@ -82,7 +85,10 @@ class AbstractGetter(ABC):
             )
             sys.exit(1)
         try:
-            self.path_regexp = re.compile(path_regexp) if path_regexp is not None else path_regexp
+            if path_regexp is not None:
+                self.path_regexp = re.compile(path_regexp)
+            else:
+                self.path_regexp = path_regexp
         except re.error as regexp_err:
             self.logger.error(
                 "Error while compiling regular expression '%s': '%s'.",

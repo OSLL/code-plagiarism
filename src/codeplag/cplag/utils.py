@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from clang.cindex import Cursor, Index, TranslationUnit
+from webparsers.types import WorkInfo
 
 from codeplag.consts import FILE_DOWNLOAD_PATH, GET_FRAZE, SUPPORTED_EXTENSIONS
 from codeplag.cplag.const import COMPILE_ARGS
@@ -11,7 +12,6 @@ from codeplag.cplag.tree import get_features
 from codeplag.display import eprint
 from codeplag.getfeatures import AbstractGetter, get_files_path_from_directory
 from codeplag.types import ASTFeatures
-from webparsers.types import WorkInfo
 
 
 def get_cursor_from_file(filepath: Path,
