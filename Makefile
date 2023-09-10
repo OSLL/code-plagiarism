@@ -2,6 +2,9 @@ UTIL_VERSION            := 0.3.6
 UTIL_NAME               := codeplag
 PWD                     := $(shell pwd)
 
+USER_UID                ?= $(shell id --user)
+USER_GID                ?= $(shell id --group)
+
 BASE_DOCKER_VERSION     := 1.2
 BASE_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-base-ubuntu20.04:$(BASE_DOCKER_VERSION) | tr A-Z a-z)
 TEST_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-test-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
@@ -12,6 +15,7 @@ PYTHONPATH              := $(PWD)/src/:$(PWD)/test/auto
 LOGS_PATH               := /var/log/$(UTIL_NAME)
 CODEPLAG_LOG_PATH       := $(LOGS_PATH)/$(UTIL_NAME).log
 CONFIG_PATH             := /etc/$(UTIL_NAME)/settings.conf
+DEBIAN_PACKAGES_PATH    := debian/deb
 
 SOURCE_SUB_FILES        := src/$(UTIL_NAME)/consts.py
 IS_DEVELOPED            ?= 1
@@ -41,6 +45,7 @@ substitute = @sed \
 		-e "s|@LOGS_PATH@|${LOGS_PATH}|g" \
 		-e "s|@CONFIG_PATH@|${CONFIG_PATH}|g" \
 		-e "s|@BASE_DOCKER_TAG@|${BASE_DOCKER_TAG}|g" \
+		-e "s|@DEBIAN_PACKAGES_PATH@|${DEBIAN_PACKAGES_PATH}|g" \
 		$(1) > $(2) \
 		&& echo "Substituted from '$(1)' to '$(2)'."
 
@@ -86,14 +91,14 @@ install: substitute-sources man
 	install -D -m 0644 man/$(UTIL_NAME).1 $(DESTDIR)/usr/share/man/man1/$(UTIL_NAME).1
 
 package: substitute-debian
-	find debian/deb/$(UTIL_NAME)* > /dev/null 2>&1 || ( \
+	find $(DEBIAN_PACKAGES_PATH)/$(UTIL_NAME)* > /dev/null 2>&1 || ( \
 		dpkg-buildpackage -jauto -b \
-			--buildinfo-option="-u$(CURDIR)/debian/deb" \
-			--changes-option="-u$(CURDIR)/debian/deb" \
-			--no-sign \
+			--buildinfo-option="-u$(CURDIR)/$(DEBIAN_PACKAGES_PATH)" \
+			--changes-option="-u$(CURDIR)/$(DEBIAN_PACKAGES_PATH)" \
+			--no-sign && \
+		cp $(DEBIAN_PACKAGES_PATH)/usr/share/man/man1/$(UTIL_NAME).1 $(DEBIAN_PACKAGES_PATH)/$(UTIL_NAME).1 && \
+		chown --recursive ${USER_UID}:${USER_GID} $(DEBIAN_PACKAGES_PATH) \
 	)
-	cp debian/deb/usr/share/man/man1/$(UTIL_NAME).1 debian/deb/$(UTIL_NAME).1
-	rm --force --recursive debian/deb/*/
 
 test: substitute-sources
 	pytest test/unit -q
@@ -108,13 +113,13 @@ pre-commit:
 
 clean-cache:
 	find . -maxdepth 1 -type d | grep -E "pytest_cache" | (xargs rm -r 2> /dev/null || exit 0)
-	find . -type d | grep -E "__pycache__" | (xargs rm -r 2> /dev/null || exit 0)
+	rm --recursive --force $(shell find -type d -iname "__pycache__")
 
 clean: clean-cache
 	rm --force --recursive man/
 	rm --force --recursive build/
 	rm --force --recursive dist/
-	rm --force --recursive debian/deb/*
+	rm --force --recursive $(DEBIAN_PACKAGES_PATH)/*
 	rm --force --recursive debian/.debhelper/
 	rm --force --recursive debian/$(UTIL_NAME)-util/
 	rm --force debian/debhelper-build-stamp
@@ -130,6 +135,7 @@ clean-all: clean
 	rm --force docker/test_ubuntu2004.dockerfile
 	rm --force docker/ubuntu2004.dockerfile
 
+	rm --force --recursive $(DEBIAN_PACKAGES_PATH)
 	rm --force debian/changelog
 	rm --force debian/control
 	rm --force debian/preinst
