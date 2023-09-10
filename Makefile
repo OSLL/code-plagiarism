@@ -95,10 +95,10 @@ package: substitute-debian
 		dpkg-buildpackage -jauto -b \
 			--buildinfo-option="-u$(CURDIR)/$(DEBIAN_PACKAGES_PATH)" \
 			--changes-option="-u$(CURDIR)/$(DEBIAN_PACKAGES_PATH)" \
-			--no-sign \
+			--no-sign && \
+		cp $(DEBIAN_PACKAGES_PATH)/usr/share/man/man1/$(UTIL_NAME).1 $(DEBIAN_PACKAGES_PATH)/$(UTIL_NAME).1 && \
+		chown --recursive ${USER_UID}:${USER_GID} $(DEBIAN_PACKAGES_PATH) \
 	)
-	cp $(DEBIAN_PACKAGES_PATH)/usr/share/man/man1/$(UTIL_NAME).1 $(DEBIAN_PACKAGES_PATH)/$(UTIL_NAME).1
-	chown --recursive ${USER_UID}:${USER_GID} $(DEBIAN_PACKAGES_PATH)
 
 test: substitute-sources
 	pytest test/unit -q
