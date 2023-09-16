@@ -154,7 +154,7 @@ def deserialize_compare_result(compare_result: pd.Series) -> CompareInfo:
     return compare_info
 
 
-def calc_iterations(count, mode: Mode = 'many_to_many') -> int:
+def calc_iterations(count: int, mode: Mode = 'many_to_many') -> int:
     if count <= 1:
         return 0
 
@@ -332,6 +332,7 @@ class CodeplagEngine:
         report_path = self.reports / CSV_REPORT_FILENAME
         self.logger.debug(f"Saving report to the file '{report_path}'")
         self.__df_report.to_csv(report_path, sep=';')
+        self.__start_report_lines = self.__df_report.shape[0]
 
     def __save_result_to_csv(
         self,

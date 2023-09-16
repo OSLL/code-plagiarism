@@ -191,6 +191,7 @@ def test_save_result_to_csv(
         features1, features2, compare_info, 'csv'
     )
     code_engine._write_df_to_fs()
+    assert "Saving" in mock_default_logger.debug.mock_calls[-1].args[0]
     df = pd.read_csv(code_engine.reports / CSV_REPORT_FILENAME, sep=';', index_col=0)
     assert df.shape[0] == 1
     assert tuple(df.columns) == CSV_REPORT_COLUMNS
@@ -200,6 +201,9 @@ def test_save_result_to_csv(
         features1, features2, compare_info, 'csv'
     )
     code_engine._write_df_to_fs()
+    assert "Saving" in mock_default_logger.debug.mock_calls[-1].args[0]
+    code_engine._write_df_to_fs()
+    assert "Nothing" in mock_default_logger.debug.mock_calls[-1].args[0]
     df = pd.read_csv(code_engine.reports / CSV_REPORT_FILENAME, sep=';', index_col=0)
     assert df.shape[0] == 2
     assert tuple(df.columns) == CSV_REPORT_COLUMNS
