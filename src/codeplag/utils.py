@@ -25,6 +25,7 @@ from codeplag.types import (
     Extension,
     FastMetrics,
     Flag,
+    Mode,
     ReportsExtension,
     Settings,
     StructuresInfo,
@@ -153,7 +154,7 @@ def deserialize_compare_result(compare_result: pd.Series) -> CompareInfo:
     return compare_info
 
 
-def calc_iterations(count, mode: str = 'many_to_many') -> int:
+def calc_iterations(count, mode: Mode = 'many_to_many') -> int:
     if count <= 1:
         return 0
 
@@ -320,7 +321,7 @@ class CodeplagEngine:
                 "Not enough rights to write reports to the folder."
             )
 
-    def __write_df_to_fs(self) -> None:
+    def _write_df_to_fs(self) -> None:
         if self.__reports_extension != 'csv' or not self.reports:
             return
 
@@ -346,7 +347,7 @@ class CodeplagEngine:
             ignore_index=True
         )
         if perf_counter() - self.__csv_last_save > CSV_SAVE_TICK:
-            self.__write_df_to_fs()
+            self._write_df_to_fs()
             # Time to write can be long
             self.__csv_last_save = perf_counter()
 
@@ -536,4 +537,4 @@ class CodeplagEngine:
                 return
         else:
             self.__check()
-            self.__write_df_to_fs()
+            self._write_df_to_fs()
