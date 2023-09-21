@@ -1,7 +1,6 @@
 import pytest
-from utils import modify_settings
-
 from codeplag.consts import CONFIG_PATH, UTIL_NAME
+from utils import modify_settings
 
 
 @pytest.fixture(scope='module', autouse=True)

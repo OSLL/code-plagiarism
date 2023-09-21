@@ -28,12 +28,12 @@ jobs:
       with:
         python-version: 3.8
 
-    - name: Lint with flake8, isort and pyright
+    - name: Lint with ruff and pyright
       run: |
         make substitute-sources
         pip install $(python3 setup.py --install-requirements)
-        pip install -r docs/notebooks/requirements.txt
-        pip install pre-commit==2.20.0
+        pip install --requirement docs/notebooks/requirements.txt
+        pip install pre-commit==3.4.0
         make pre-commit
 
   docker-build-test-autotest:

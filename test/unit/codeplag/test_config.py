@@ -4,8 +4,6 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from pytest_mock import MockerFixture
-
 from codeplag.config import (
     DefaultSettingsConfig,
     read_config,
@@ -14,6 +12,7 @@ from codeplag.config import (
     write_settings_conf,
 )
 from codeplag.consts import CONFIG_PATH, UTIL_NAME
+from pytest_mock import MockerFixture
 
 
 @pytest.fixture
@@ -131,7 +130,8 @@ def test_read_default_settings_conf(dummy_logger, settings_config):
             {
                 'threshold': 65,
                 'reports': Path('/home/bukabyka/reports'),
-                'show_progress': 0
+                'show_progress': 0,
+                'reports_extension': 'csv',
             }
         ],
         [
@@ -139,12 +139,14 @@ def test_read_default_settings_conf(dummy_logger, settings_config):
                 'threshold': 99,
                 'environment':
                 '/home/bukabyka/.env',
-                'show_progress': 1
+                'show_progress': 1,
+                'reports_extension': 'json',
             },
             {
                 'threshold': 99,
                 'environment': Path('/home/bukabyka/.env'),
-                'show_progress': 1
+                'show_progress': 1,
+                'reports_extension': 'json',
             }
         ],
         [
@@ -152,7 +154,8 @@ def test_read_default_settings_conf(dummy_logger, settings_config):
             {
                 'threshold': 65,
                 'reports': Path('/home/bukabyka/reports'),
-                'show_progress': 0
+                'show_progress': 0,
+                'reports_extension': 'csv',
             }
         ]
     ],

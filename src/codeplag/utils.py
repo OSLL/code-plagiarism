@@ -1,10 +1,11 @@
+import json
 import logging
 import math
 import uuid
 from datetime import datetime
 from itertools import combinations
 from pathlib import Path
-from time import perf_counter
+from time import perf_counter, time
 from typing import Any, Dict, List, Optional
 
 import numpy as np
@@ -13,6 +14,7 @@ import pandas as pd
 from codeplag.algorithms.featurebased import counter_metric, struct_compare
 from codeplag.algorithms.tokenbased import value_jakkar_coef
 from codeplag.config import read_settings_conf, write_config, write_settings_conf
+from codeplag.consts import CSV_REPORT_COLUMNS, CSV_REPORT_FILENAME, CSV_SAVE_TICK
 from codeplag.cplag.utils import CFeaturesGetter
 from codeplag.display import print_compare_result
 from codeplag.getfeatures import AbstractGetter
@@ -23,6 +25,8 @@ from codeplag.types import (
     Extension,
     FastMetrics,
     Flag,
+    Mode,
+    ReportsExtension,
     Settings,
     StructuresInfo,
     WorksReport,
@@ -95,7 +99,62 @@ def compare_works(features1: ASTFeatures,
     )
 
 
-def calc_iterations(count, mode: str = 'many_to_many') -> int:
+def serialize_compare_result(
+    first_work: ASTFeatures,
+    second_work: ASTFeatures,
+    compare_info: CompareInfo,
+) -> pd.DataFrame:
+    assert compare_info.structure is not None
+
+    return pd.DataFrame(
+        {
+            'date': datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            'first_modify_date': first_work.modify_date,
+            'second_modify_date': second_work.modify_date,
+            'first_path': first_work.filepath.__str__(),
+            'second_path': second_work.filepath.__str__(),
+            'jakkar': compare_info.fast.jakkar,
+            'operators': compare_info.fast.operators,
+            'keywords': compare_info.fast.keywords,
+            'literals': compare_info.fast.literals,
+            'weighted_average': compare_info.fast.weighted_average,
+            'struct_similarity': compare_info.structure.similarity,
+            'first_heads': [first_work.head_nodes],
+            'second_heads': [second_work.head_nodes],
+            'compliance_matrix': [
+                compare_info.structure.compliance_matrix.tolist()
+            ],
+        },
+        dtype=object
+    )
+
+
+def deserialize_compare_result(compare_result: pd.Series) -> CompareInfo:
+    if isinstance(compare_result.compliance_matrix, str):
+        similarity_matrix = np.array(
+            json.loads(compare_result.compliance_matrix)
+        )
+    else:
+        similarity_matrix = np.array(compare_result.compliance_matrix)
+
+    compare_info = CompareInfo(
+        fast=FastMetrics(
+            jakkar=float(compare_result.jakkar),
+            operators=float(compare_result.operators),
+            keywords=float(compare_result.keywords),
+            literals=float(compare_result.literals),
+            weighted_average=np.float64(compare_result.weighted_average)
+        ),
+        structure=StructuresInfo(
+            compliance_matrix=similarity_matrix,
+            similarity=float(compare_result.struct_similarity)
+        )
+    )
+
+    return compare_info
+
+
+def calc_iterations(count: int, mode: Mode = 'many_to_many') -> int:
     if count <= 1:
         return 0
 
@@ -143,16 +202,34 @@ class CodeplagEngine:
             self.reports: Optional[Path] = parsed_args.pop("reports")
             self.threshold: int = parsed_args.pop("threshold")
             self.show_progress: Flag = parsed_args.pop("show_progress")
+            self.reports_extension: ReportsExtension = parsed_args.pop("reports_extension")
         else:
             settings_conf = read_settings_conf(logger)
             self._set_features_getter(parsed_args, settings_conf, logger)
 
             self.mode: str = parsed_args.pop('mode', 'many_to_many')
-            self.show_progress: Flag = settings_conf.get('show_progress')
+            self.show_progress: Flag = settings_conf['show_progress']
             self.threshold: int = settings_conf["threshold"]
-            self.reports: Optional[Path] = settings_conf.pop(
-                'reports', None
-            )
+
+            self.reports: Optional[Path] = settings_conf.get('reports')
+            self.__reports_extension: ReportsExtension = settings_conf['reports_extension']
+            if self.__reports_extension == 'csv' and self.reports:
+                reports_path = self.reports / CSV_REPORT_FILENAME
+                if reports_path.is_file():
+                    self.__df_report = pd.read_csv(
+                        self.reports / CSV_REPORT_FILENAME,
+                        sep=';',
+                        index_col=0,
+                        dtype=object
+                    )
+                    self.__start_report_lines = self.__df_report.shape[0]
+                else:
+                    self.__df_report = pd.DataFrame(
+                        columns=CSV_REPORT_COLUMNS,
+                        dtype=object
+                    )
+                    self.__start_report_lines = 0
+                self.__csv_last_save = perf_counter()
 
             self.github_files: List[str] = parsed_args.pop('github_files', [])
             self.github_project_folders: List[str] = parsed_args.pop(
@@ -183,18 +260,42 @@ class CodeplagEngine:
             path_regexp=parsed_args.pop('path_regexp', None)
         )
 
-    def save_result(self,
-                    first_work: ASTFeatures,
-                    second_work: ASTFeatures,
-                    fast_metrics: FastMetrics,
-                    structure: StructuresInfo) -> None:
+    def save_result(
+        self,
+        first_work: ASTFeatures,
+        second_work: ASTFeatures,
+        compare_info: CompareInfo,
+        reports_extension: ReportsExtension
+    ) -> None:
         if self.reports is None or not self.reports.is_dir():
-            self.features_getter.logger.error(
+            self.logger.error(
                 "The folder for reports isn't provided or now isn't exists."
             )
             return
 
-        struct_info_dict = structure._asdict()
+        # TODO: use match in the next py version
+        if reports_extension == 'csv':
+            self.__save_result_to_csv(
+                first_work,
+                second_work,
+                compare_info,
+            )
+        else:
+            self.__save_result_to_json(
+                first_work,
+                second_work,
+                compare_info,
+            )
+
+    def __save_result_to_json(
+        self,
+        first_work: ASTFeatures,
+        second_work: ASTFeatures,
+        metrics: CompareInfo,
+    ) -> None:
+        assert metrics.structure is not None
+
+        struct_info_dict = metrics.structure._asdict()
         struct_info_dict['compliance_matrix'] = (
             struct_info_dict['compliance_matrix'].tolist()
         )
@@ -204,7 +305,7 @@ class CodeplagEngine:
             second_path=second_work.filepath.__str__(),
             first_heads=first_work.head_nodes,
             second_heads=second_work.head_nodes,
-            fast=fast_metrics._asdict(),
+            fast=metrics.fast._asdict(),
             structure=struct_info_dict
         )
         if first_work.modify_date:
@@ -213,17 +314,73 @@ class CodeplagEngine:
             report["second_modify_date"] = second_work.modify_date
 
         try:
-            report_file = self.reports / f'{uuid.uuid4().hex}.json'
+            report_file = self.reports / f'{uuid.uuid4().hex}.json'  # type: ignore
             write_config(report_file, report)
         except PermissionError:
-            self.features_getter.logger.error(
+            self.logger.error(
                 "Not enough rights to write reports to the folder."
             )
 
-    def _do_step(self, work1: ASTFeatures, work2: ASTFeatures) -> None:
-        metrics = compare_works(work1, work2, self.threshold)
-        if metrics.structure is None:
+    def _write_df_to_fs(self) -> None:
+        if self.__reports_extension != 'csv' or not self.reports:
             return
+
+        if self.__start_report_lines == self.__df_report.shape[0]:
+            self.logger.debug("Nothing new to save to the csv report.")
+            return
+
+        report_path = self.reports / CSV_REPORT_FILENAME
+        self.logger.debug(f"Saving report to the file '{report_path}'")
+        self.__df_report.to_csv(report_path, sep=';')
+        self.__start_report_lines = self.__df_report.shape[0]
+
+    def __save_result_to_csv(
+        self,
+        first_work: ASTFeatures,
+        second_work: ASTFeatures,
+        metrics: CompareInfo,
+    ) -> None:
+        self.__df_report = pd.concat(
+            [
+                self.__df_report,
+                serialize_compare_result(first_work, second_work, metrics)
+            ],
+            ignore_index=True
+        )
+        if perf_counter() - self.__csv_last_save > CSV_SAVE_TICK:
+            self._write_df_to_fs()
+            # Time to write can be long
+            self.__csv_last_save = perf_counter()
+
+    def _do_step(self, work1: ASTFeatures, work2: ASTFeatures) -> None:
+        if work1.filepath == work2.filepath:
+            return
+
+        work1, work2 = sorted([work1, work2])
+        metrics = None
+        if self.reports:
+            if self.__reports_extension == 'csv':
+                cache_val = self.__df_report[
+                    (self.__df_report.first_path == str(work1.filepath)) &
+                    (self.__df_report.second_path == str(work2.filepath))
+                ]
+                if cache_val.shape[0]:
+                    metrics = deserialize_compare_result(cache_val.iloc[0])
+                    assert metrics.structure is not None
+            if metrics is None:
+                metrics = compare_works(work1, work2, self.threshold)
+                if metrics.structure is None:
+                    return
+                self.save_result(
+                    work1,
+                    work2,
+                    metrics,
+                    self.__reports_extension
+                )
+        else:
+            metrics = compare_works(work1, work2, self.threshold)
+            if metrics.structure is None:
+                return
 
         print_compare_result(
             work1,
@@ -231,8 +388,6 @@ class CodeplagEngine:
             metrics,
             self.threshold
         )
-        if self.reports:
-            self.save_result(work1, work2, metrics.fast, metrics.structure)
 
     def _calc_and_print_progress(
         self,
@@ -250,7 +405,7 @@ class CodeplagEngine:
         settings_config = read_settings_conf(self.logger)
         table = pd.DataFrame(
             list(settings_config.values()),
-            index=[k.capitalize() for k in settings_config.keys()],
+            index=[k.capitalize() for k in settings_config],
             columns=pd.Index(
                 ["Value"],
                 name="Key"
@@ -270,20 +425,20 @@ class CodeplagEngine:
 
             write_settings_conf(settings_config)
 
-    def _check(self) -> None:
-        self.features_getter.logger.debug(
+    def __check(self) -> None:
+        self.logger.debug(
             f"Mode: {self.mode}; "
             f"Extension: {self.features_getter.extension}."
         )
 
-        begin_time = perf_counter()
+        begin_time = time()
 
         features_from_files = self.features_getter.get_from_files(self.files)
         features_from_gh_files = self.features_getter.get_from_github_files(
             self.github_files
         )
 
-        self.features_getter.logger.info("Starting searching for plagiarism ...")
+        self.logger.info("Starting searching for plagiarism ...")
         if self.mode == 'many_to_many':
             works: List[ASTFeatures] = []
             works.extend(features_from_files)
@@ -365,8 +520,10 @@ class CodeplagEngine:
                 if self.show_progress:
                     iteration += 1  # type: ignore
 
-        self.features_getter.logger.debug(f'Time for all {perf_counter() - begin_time:.2f} s')
-        self.features_getter.logger.info("Ending searching for plagiarism ...")
+        self.logger.debug(
+            f'Time for all {time() - begin_time:.2f} s'
+        )
+        self.logger.info("Ending searching for plagiarism ...")
 
     def run(self) -> None:
         self.logger.debug("Starting codeplag util ...")
@@ -380,4 +537,5 @@ class CodeplagEngine:
                 self._settings_show()
                 return
         else:
-            self._check()
+            self.__check()
+            self._write_df_to_fs()

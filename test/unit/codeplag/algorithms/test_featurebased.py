@@ -1,7 +1,6 @@
 import unittest
 
 import numpy as np
-
 from codeplag.algorithms.featurebased import (
     add_not_counted,
     counter_metric,

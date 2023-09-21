@@ -5,10 +5,9 @@ import shutil
 from contextlib import suppress
 
 import pytest
-from utils import SUCCESS_CODE, modify_settings, run_check, run_util
-
 from codeplag.consts import UTIL_NAME, UTIL_VERSION
 from codeplag.types import WorksReport
+from utils import SUCCESS_CODE, modify_settings, run_check, run_util
 
 CPP_FILES = [
     "test/unit/codeplag/cplag/data/sample1.cpp",
@@ -113,15 +112,12 @@ def test_save_reports():
         os.mkdir(REPORTS_FOLDER)
     assert os.path.exists(REPORTS_FOLDER)
 
-    assert modify_settings(REPORTS_FOLDER).returncode == 0
+    assert modify_settings(REPORTS_FOLDER, reports_extension='json').returncode == 0
     assert (
         run_check(
             [
                 "--directories",
-                "./test/auto",
-                "--files",
-                "./test/auto/utils.py",
-                "./test/auto/test_bugs.py",
+                "./src",
             ]
         ).returncode
         == 0

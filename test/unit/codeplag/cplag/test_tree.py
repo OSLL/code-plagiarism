@@ -3,7 +3,6 @@ from typing import Final
 
 import pytest
 from clang.cindex import CursorKind
-
 from codeplag.cplag.tree import generic_visit, get_features, get_not_ignored
 from codeplag.cplag.utils import get_cursor_from_file
 from codeplag.types import ASTFeatures
@@ -77,8 +76,8 @@ def test_get_not_ignored_normal(first_cursor, second_cursor):
         assert expected_res[index][0] == child.spelling
         assert expected_res[index][1] == child.kind
 
-    assert type(res1) == list
-    assert type(res2) == list
+    assert isinstance(res1, list)
+    assert isinstance(res2, list)
     assert len(res1) == 1
     assert len(res2) == 1
 

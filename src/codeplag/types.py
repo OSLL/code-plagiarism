@@ -1,5 +1,6 @@
 from collections import defaultdict
 from dataclasses import dataclass, field
+from functools import total_ordering
 from pathlib import Path
 from typing import (
     Dict,
@@ -21,6 +22,7 @@ Extension = Literal["py", "cpp"]
 Extensions = Tuple[Pattern, ...]
 Flag = Literal[0, 1]
 Mode = Literal["many_to_many", "one_to_one"]
+ReportsExtension = Literal['json', 'csv']
 Threshold = Literal[
     50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
     60, 61, 62, 63, 64, 65, 66, 67, 68, 69,
@@ -43,6 +45,7 @@ class NodeStructurePlace(NamedTuple):
     uid: int
 
 
+@total_ordering
 @dataclass
 class ASTFeatures:
     """Class contains the source code metadata."""
@@ -64,6 +67,17 @@ class ASTFeatures:
     structure: List[NodeStructurePlace] = field(default_factory=list)
     tokens: List[int] = field(default_factory=list)
     tokens_pos: List[NodeCodePlace] = field(default_factory=list)
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+        return str(self.filepath) == str(other.filepath)
+
+    def __lt__(self, other):
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+        return str(self.filepath) < str(other.filepath)
+
 
 # ----------------------------------------------------------------------------
 # Compare information
@@ -105,5 +119,6 @@ class WorksReport(TypedDict):
 class Settings(TypedDict):
     environment: NotRequired[Path]
     reports: NotRequired[Path]
+    reports_extension: Literal['json', 'csv']
     show_progress: Flag
     threshold: Threshold

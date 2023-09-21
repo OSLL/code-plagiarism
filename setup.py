@@ -6,7 +6,7 @@ from setuptools import find_packages, setup
 
 INSTALL_REQUIREMENTS = [
     'argcomplete~=2.0.0',
-    'numpy~=1.23.1',
+    'numpy~=1.23.5',
     'pandas~=1.4.3',
     'ccsyspath~=1.1.0',
     'clang~=16.0.1.1',

@@ -17,7 +17,7 @@ def counter_metric(counter1: dict, counter2: dict) -> float:
         return 1.0
 
     percent_of_same = [0, 0]
-    for key in counter1.keys():
+    for key in counter1:
         if key not in counter2:
             percent_of_same[1] += counter1[key]
             continue
@@ -25,7 +25,7 @@ def counter_metric(counter1: dict, counter2: dict) -> float:
                                   counter2[key])
         percent_of_same[1] += max(counter1[key],
                                   counter2[key])
-    for key in counter2.keys():
+    for key in counter2:
         if key not in counter1:
             percent_of_same[1] += counter2[key]
             continue

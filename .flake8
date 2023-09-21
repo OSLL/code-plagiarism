@@ -1,9 +1,0 @@
-[flake8]
-max-line-length = 88
-max-complexity = 15
-
-ignore =
-    # Line break after binary operator
-    W503, W504
-    # Line too long
-    E501,

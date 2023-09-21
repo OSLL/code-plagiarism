@@ -3,13 +3,14 @@ import logging
 from pathlib import Path
 from typing import List, Optional, Union
 
+from webparsers.types import WorkInfo
+
 from codeplag.consts import GET_FRAZE, LOG_PATH, SUPPORTED_EXTENSIONS
 from codeplag.display import eprint, red_bold
 from codeplag.getfeatures import AbstractGetter, get_files_path_from_directory
 from codeplag.logger import get_logger
 from codeplag.pyplag.astwalkers import ASTWalker
 from codeplag.types import ASTFeatures
-from webparsers.types import WorkInfo
 
 # TODO: Remove from globals
 logger = get_logger(__name__, LOG_PATH)

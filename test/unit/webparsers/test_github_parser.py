@@ -443,16 +443,36 @@ class TestGitHubParser(unittest.TestCase):
                 ],
                 'expected_result': [
                     PullRequest(
-                        number=1, last_commit_sha='jskfjsjskjfl', owner='code-plagiarism', branch='cp_130', state='Open', draft=False
+                        number=1,
+                        last_commit_sha='jskfjsjskjfl',
+                        owner='code-plagiarism',
+                        branch='cp_130',
+                        state='Open',
+                        draft=False
                     ),
                     PullRequest(
-                        number=2, last_commit_sha='jzxvjipwerknmzxvj', owner='code-plagiarism', branch='cp_110', state='Open', draft=True
+                        number=2,
+                        last_commit_sha='jzxvjipwerknmzxvj',
+                        owner='code-plagiarism',
+                        branch='cp_110',
+                        state='Open',
+                        draft=True
                     ),
                     PullRequest(
-                        number=3, last_commit_sha='jskfjsjskjfl', owner='code-plagiarism', branch='bag_fix', state='Open', draft=False
+                        number=3,
+                        last_commit_sha='jskfjsjskjfl',
+                        owner='code-plagiarism',
+                        branch='bag_fix',
+                        state='Open',
+                        draft=False
                     ),
                     PullRequest(
-                        number=4, last_commit_sha='jzxvjipwerknmzxvj', owner='code-plagiarism', branch='lite', state='Open', draft=True
+                        number=4,
+                        last_commit_sha='jzxvjipwerknmzxvj',
+                        owner='code-plagiarism',
+                        branch='lite',
+                        state='Open',
+                        draft=True
                     )
                 ]
             }
@@ -849,7 +869,9 @@ class TestGitHubParser(unittest.TestCase):
                 self.assertEqual(rv, test_case['expected_result'])
 
                 assert mock_send_get_request.mock_calls == test_case['send_calls']
-                assert mock_get_file_content_by_sha.mock_calls == test_case['get_file_content_calls']
+                assert mock_get_file_content_by_sha.mock_calls == test_case[
+                    'get_file_content_calls'
+                ]
 
     @patch('webparsers.github_parser.GitHubParser.send_get_request')
     def test_get_list_repo_branches(self, mock_send_get_request):

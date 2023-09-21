@@ -1,7 +1,6 @@
 import argparse
 
 import pytest
-
 from codeplag.codeplagcli import CodeplagCLI, DirPath, FilePath
 
 
