@@ -1,3 +1,7 @@
+INT_CONST: int = 10
+INT_CONST += 15
+
+
 def my_func(length, future):
     future += length
     print(future)

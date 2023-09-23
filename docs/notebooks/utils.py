@@ -34,15 +34,14 @@ def remove_unnecessary_blank_lines(source_code: str) -> str:
 
 
 def get_data_from_dir(
-    path: str = './data',
-    max_count_lines: Optional[int] = None
+    path: str = "./data", max_count_lines: Optional[int] = None
 ) -> pd.DataFrame:
     df = pd.DataFrame()
     for filename in os.listdir(path):
-        if not re.search(r'.csv$', filename):
+        if not re.search(r".csv$", filename):
             continue
 
-        tmp_df = pd.read_csv(os.path.join(path, filename), sep=';', index_col=0)
+        tmp_df = pd.read_csv(os.path.join(path, filename), sep=";", index_col=0)
         df = df.append(tmp_df, ignore_index=True)
 
     if max_count_lines:
@@ -52,43 +51,43 @@ def get_data_from_dir(
 
 
 def save_works_from_repo_url(url: str, check_policy: bool = True) -> None:
-    current_repo_name = url.split('/')[-1]
-    env_config = Config(RepositoryEnv('../../.env'))
+    current_repo_name = url.split("/")[-1]
+    env_config = Config(RepositoryEnv("../../.env"))
     gh = GitHubParser(
-        file_extensions=(re.compile(r'.py$'),),
+        file_extensions=(re.compile(r".py$"),),
         check_all=check_policy,
-        access_token=env_config.get('ACCESS_TOKEN')
+        access_token=env_config.get("ACCESS_TOKEN"),
     )
     files = list(gh.get_files_generator_from_repo_url(url))
     files = [(remove_unnecessary_blank_lines(file.code), file.link) for file in files]
 
     df = pd.DataFrame(
         {
-            'content': [file_[0] for file_ in files[:-1]],
-            'link': [file_[1] for file_ in files[:-1]],
-            'extension': ['py'] * (len(files) - 1),
-            'repo_name': [current_repo_name] * (len(files) - 1),
-            'content_len': [len(file_[0]) for file_ in files[:-1]],
-            'content_len_without_blank': [
-                len(file_[0].replace(' ', '').replace('\n', '').replace('\t', ''))
+            "content": [file_[0] for file_ in files[:-1]],
+            "link": [file_[1] for file_ in files[:-1]],
+            "extension": ["py"] * (len(files) - 1),
+            "repo_name": [current_repo_name] * (len(files) - 1),
+            "content_len": [len(file_[0]) for file_ in files[:-1]],
+            "content_len_without_blank": [
+                len(file_[0].replace(" ", "").replace("\n", "").replace("\t", ""))
                 for file_ in files[:-1]
             ],
-            'count_lines_without_blank_lines': [
+            "count_lines_without_blank_lines": [
                 len(file_[0].splitlines()) for file_ in files[:-1]
-            ]
+            ],
         }
     )
-    df = df[df['count_lines_without_blank_lines'] > 5]
-    df.to_csv(os.path.join('./data/', current_repo_name + '.csv'), sep=';')
+    df = df[df["count_lines_without_blank_lines"] > 5]
+    df.to_csv(os.path.join("./data/", current_repo_name + ".csv"), sep=";")
 
 
 def get_time_to_meta(df: pd.DataFrame, iterations: int = 10) -> pd.DataFrame:
     count_lines = []
     to_meta_time = []
-    for (index, content) in df[
-        ['content', 'link', 'count_lines_without_blank_lines']
+    for index, content in df[
+        ["content", "link", "count_lines_without_blank_lines"]
     ].iterrows():
-        print(index, " " * 20, end='\r')
+        print(index, " " * 20, end="\r")
         for _ in range(iterations):
             tree = get_ast_from_content(content[0], content[1])
             if tree is None:
@@ -102,12 +101,7 @@ def get_time_to_meta(df: pd.DataFrame, iterations: int = 10) -> pd.DataFrame:
             except Exception:
                 break
 
-    output = pd.DataFrame(
-        {
-            'count_lines': count_lines,
-            'times': to_meta_time
-        }
-    )
+    output = pd.DataFrame({"count_lines": count_lines, "times": to_meta_time})
 
     return output
 
@@ -118,7 +112,7 @@ def plot_and_save_result(
     ylabel: str,
     title: str,
     what: str,
-    trend: Literal['linear', 'n^2', 'n^3', 'n^4'] = 'linear'
+    trend: Literal["linear", "n^2", "n^3", "n^4"] = "linear",
 ) -> None:
     # Simple Moving average
     unique_count_lines = np.unique(df.count_lines)
@@ -135,75 +129,72 @@ def plot_and_save_result(
     plt.figure(figsize=(12, 12), dpi=80)
     # plt.plot(unique_count_lines, mean_times, label='Среднее')
 
-    if trend == 'linear':
+    if trend == "linear":
         z = np.polyfit(unique_count_lines, mean_times, 1)
         p = np.poly1d(z)
         plt.plot(
-            unique_count_lines, p(unique_count_lines), "r--", label='Линейный тренд.'
+            unique_count_lines, p(unique_count_lines), "r--", label="Линейный тренд."
         )
-    elif trend == 'n^2':
+    elif trend == "n^2":
         popt_cons, _ = curve_fit(
             square_func,
             unique_count_lines,
             mean_times,
-            bounds=([-np.inf, 0., 0.], [np.inf, 0.1 ** 100, 0.1 ** 100])
-        )
-        p = np.poly1d(popt_cons)
-        plt.plot(
-            unique_count_lines,
-            p(unique_count_lines),
-            "r--", label='Квадратичный тренд.'
-        )
-    elif trend == 'n^3':
-        popt_cons, _ = curve_fit(
-            cube_func,
-            unique_count_lines,
-            mean_times,
-            bounds=([-np.inf, 0., 0., 0.], [np.inf, 0.1 ** 100, 0.1 ** 100, 0.1 ** 100])
+            bounds=([-np.inf, 0.0, 0.0], [np.inf, 0.1**100, 0.1**100]),
         )
         p = np.poly1d(popt_cons)
         plt.plot(
             unique_count_lines,
             p(unique_count_lines),
             "r--",
-            label='Кубический тренд.'
+            label="Квадратичный тренд.",
         )
-    elif trend == 'n^4':
+    elif trend == "n^3":
+        popt_cons, _ = curve_fit(
+            cube_func,
+            unique_count_lines,
+            mean_times,
+            bounds=(
+                [-np.inf, 0.0, 0.0, 0.0],
+                [np.inf, 0.1**100, 0.1**100, 0.1**100],
+            ),
+        )
+        p = np.poly1d(popt_cons)
+        plt.plot(
+            unique_count_lines, p(unique_count_lines), "r--", label="Кубический тренд."
+        )
+    elif trend == "n^4":
         popt_cons, _ = curve_fit(
             quart_func,
             unique_count_lines,
             mean_times,
             bounds=(
-                [-np.inf, 0., 0., 0., 0.],
-                [np.inf, 0.1 ** 100, 0.1 ** 100, 0.1 ** 100, 0.1 ** 100]
-            )
+                [-np.inf, 0.0, 0.0, 0.0, 0.0],
+                [np.inf, 0.1**100, 0.1**100, 0.1**100, 0.1**100],
+            ),
         )
         p = np.poly1d(popt_cons)
-        plt.plot(unique_count_lines, p(unique_count_lines), "r--", label='n^4.')
+        plt.plot(unique_count_lines, p(unique_count_lines), "r--", label="n^4.")
     else:
         raise Exception(f"Incorrect tred '{trend}'.")
 
     rolling = pd.DataFrame(
-        {
-            'unique_count_lines': unique_count_lines,
-            'mean_times': mean_times
-        }
+        {"unique_count_lines": unique_count_lines, "mean_times": mean_times}
     )
     num_window = 20
     plt.plot(
         rolling.unique_count_lines,
         rolling.mean_times.rolling(window=num_window).mean(),
-        label=f'Скользящее среднее по {num_window}ти замерам.'
+        label=f"Скользящее среднее по {num_window}ти замерам.",
     )
 
     plt.ylabel(ylabel, fontsize=15)
     plt.xlabel(xlabel, fontsize=15)
     plt.title(title, fontsize=17)
-    plt.legend(loc='upper left')
+    plt.legend(loc="upper left")
     plt.savefig(
-        './graphics/need_time_{}_{}.png'.format(
-            what,
-            datetime.now().strftime("%d%m%Y_%H%M%S")
+        "./graphics/need_time_{}_{}.png".format(
+            what, datetime.now().strftime("%d%m%Y_%H%M%S")
         )
     )
 
@@ -212,7 +203,7 @@ def get_time_algorithms(
     df: pd.DataFrame,
     work,
     iterations: int = 5,
-    metric: Literal['fast', 'gst', 'structure'] = 'fast'
+    metric: Literal["fast", "gst", "structure"] = "fast",
 ) -> pd.DataFrame:
     count_lines = []
     times = []
@@ -221,11 +212,11 @@ def get_time_algorithms(
         raise Exception("Unexpected error when parsing first work.")
 
     features1 = get_features_from_ast(tree1, work.link)
-    for (index, content) in df[
-        ['content', 'link', 'count_lines_without_blank_lines']
+    for index, content in df[
+        ["content", "link", "count_lines_without_blank_lines"]
     ].iterrows():
         for _ in range(iterations):
-            print(index, " " * 20, end='\r')
+            print(index, " " * 20, end="\r")
             tree2 = get_ast_from_content(content[0], content[1])
             if tree2 is None:
                 continue
@@ -234,7 +225,7 @@ def get_time_algorithms(
             except Exception:
                 continue
 
-            if metric == 'fast':
+            if metric == "fast":
                 start = perf_counter()
                 value_jakkar_coef(features1.tokens, features2.tokens)
                 counter_metric(features1.operators, features2.operators)
@@ -242,26 +233,21 @@ def get_time_algorithms(
                 counter_metric(features1.literals, features2.literals)
                 end = perf_counter() - start
                 times.append(end)
-            elif metric == 'gst':
+            elif metric == "gst":
                 start = perf_counter()
                 gst(features1.tokens, features2.tokens, 6)
                 end = perf_counter() - start
                 times.append(end)
-            elif metric == 'structure':
+            elif metric == "structure":
                 start = perf_counter()
                 struct_compare(features1.structure, features2.structure)
                 end = perf_counter() - start
                 times.append(end)
             else:
-                raise Exception('Incorrect metric!')
+                raise Exception("Incorrect metric!")
 
             count_lines.append(content[2])
 
-    output = pd.DataFrame(
-        {
-            'count_lines': count_lines,
-            'times': times
-        }
-    )
+    output = pd.DataFrame({"count_lines": count_lines, "times": times})
 
     return output

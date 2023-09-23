@@ -9,17 +9,17 @@ T = TypeVar("T", bound="GitHubUrl")
 
 class GitHubUrl(str):
     protocol: str
-    host: str = 'github.com'
+    host: str = "github.com"
     url_parts: List[str]
 
     def __new__(cls: Type[T], url: str) -> T:
-        url_parts = url.rstrip('/').split('/')
+        url_parts = url.rstrip("/").split("/")
         error_msg = f"'{url}' is incorrect link to GitHub"
         if (
-            len(url_parts) < 3 or
-            (url_parts[0] != 'https:' and url_parts[0] != 'http:') or
-            url_parts[1] != '' or
-            url_parts[2] != 'github.com'
+            len(url_parts) < 3
+            or (url_parts[0] != "https:" and url_parts[0] != "http:")
+            or url_parts[1] != ""
+            or url_parts[2] != "github.com"
         ):
             raise ValueError(error_msg)
 
@@ -53,15 +53,13 @@ class GitHubContentUrl(GitHubUrl):
     def __new__(cls: Type[Self], url: str) -> Self:
         obj = GitHubUrl.__new__(cls, url)
         if len(obj.url_parts) <= 7:
-            error_msg = (
-                f"'{url}' is incorrect link to content of GitHub repository"
-            )
+            error_msg = f"'{url}' is incorrect link to content of GitHub repository"
             raise ValueError(error_msg)
 
         obj.owner = obj.url_parts[3]
         obj.repo = obj.url_parts[4]
         obj.branch = obj.url_parts[6]
-        obj.path = '/'.join(obj.url_parts[7:])
+        obj.path = "/".join(obj.url_parts[7:])
         return obj
 
 

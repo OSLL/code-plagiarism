@@ -1,3 +1,4 @@
+# fmt: off
 import unittest
 
 from codeplag.algorithms.stringbased import LevenshteinDistance, gst, is_marked_match
@@ -14,7 +15,7 @@ class TestStringbased(unittest.TestCase):
         self.assertEqual(result1, 0.0)
 
         self.assertEqual(LevenshteinDistance.m('a', 'b'), 1)
-        self.assertEqual(LevenshteinDistance.m(1, 1), 0)
+        self.assertEqual(LevenshteinDistance.m('a', 'a'), 0)
 
         dist_object = LevenshteinDistance([1, 2, 3, 4, 5], [1, 1, 3, 3, 5])
         result2 = dist_object.get_similarity_value()

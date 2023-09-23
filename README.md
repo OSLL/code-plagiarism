@@ -116,7 +116,7 @@
   $ register-python-argcomplete codeplag >> ~/.bashrc
   ```
 
-## 5. Demo examples (works in the project directory and with an installed codeplag package)
+## 4. Demo examples (works in the project directory and with an installed codeplag package)
 
 - Python analyzer
   ```

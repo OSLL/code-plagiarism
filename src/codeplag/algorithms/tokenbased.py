@@ -13,98 +13,72 @@ from typing import List, Literal, Sequence, Set, Tuple, Union, overload
 
 @overload
 def generate_ngrams(
-    tokens: Sequence[int],
-    n: int,
-    hashit: Literal[False],
-    unique: Literal[False]
+    tokens: Sequence[int], n: int, hashit: Literal[False], unique: Literal[False]
 ) -> List[Tuple[int, ...]]:
     ...
 
 
 @overload
 def generate_ngrams(
-    tokens: Sequence[int],
-    n: int,
-    hashit: Literal[False],
-    unique: Literal[True]
+    tokens: Sequence[int], n: int, hashit: Literal[False], unique: Literal[True]
 ) -> Set[Tuple[int, ...]]:
     ...
 
 
 @overload
 def generate_ngrams(
-    tokens: Sequence[int],
-    n: int,
-    hashit: Literal[True],
-    unique: Literal[False]
+    tokens: Sequence[int], n: int, hashit: Literal[True], unique: Literal[False]
 ) -> List[int]:
     ...
 
 
 @overload
 def generate_ngrams(
-    tokens: Sequence[int],
-    n: int,
-    hashit: Literal[True],
-    unique: Literal[True]
+    tokens: Sequence[int], n: int, hashit: Literal[True], unique: Literal[True]
 ) -> Set[int]:
     ...
 
 
 @overload
-def generate_ngrams(tokens: Sequence[int],
-                    n: int = 3,
-                    hashit: bool = False,
-                    unique: bool = False) -> Union[Set[int],
-                                                   List[int],
-                                                   Set[Tuple[int, ...]],
-                                                   List[Tuple[int, ...]]]:
+def generate_ngrams(
+    tokens: Sequence[int], n: int = 3, hashit: bool = False, unique: bool = False
+) -> Union[Set[int], List[int], Set[Tuple[int, ...]], List[Tuple[int, ...]]]:
     ...
 
 
-def generate_ngrams(tokens: Sequence[int],
-                    n: int = 3,
-                    hashit: bool = False,
-                    unique: bool = False) -> Union[Set[int],
-                                                   List[int],
-                                                   Set[Tuple[int, ...]],
-                                                   List[Tuple[int, ...]]]:
+def generate_ngrams(
+    tokens: Sequence[int], n: int = 3, hashit: bool = False, unique: bool = False
+) -> Union[Set[int], List[int], Set[Tuple[int, ...]], List[Tuple[int, ...]]]:
     """The function returns a list or set of N-grams or list or set of hashes
     of ngrams and may use to generate shingles.
 
-    @param tokens - list of tokens
-    @param n - count of elements in ngrams
-    @param hashit - If is True,
-    then the function returns a list or set of hashes of N-grams
-    @param unique - If is True,
-    then the function returns a set of N-grams or hashes of N-grams
+    Args:
+        tokens - list of tokens
+        n - count of elements in ngrams
+        hashit - If is True, then the function returns a list or set of hashes of N-grams
+        unique - If is True, then the function returns a set of N-grams or hashes of N-grams
     """
 
     count_tokens = len(tokens)
     if hashit:
         if unique:
-            return {
-                hash(tuple(tokens[i:i + n]))
-                for i in range(count_tokens - n + 1)
-            }
-        return [
-            hash(tuple(tokens[i:i + n]))
-            for i in range(count_tokens - n + 1)
-        ]
+            return {hash(tuple(tokens[i : i + n])) for i in range(count_tokens - n + 1)}
+        return [hash(tuple(tokens[i : i + n])) for i in range(count_tokens - n + 1)]
 
     if unique:
-        return {tuple(tokens[i:i + n]) for i in range(count_tokens - n + 1)}
+        return {tuple(tokens[i : i + n]) for i in range(count_tokens - n + 1)}
 
-    return [tuple(tokens[i:i + n]) for i in range(count_tokens - n + 1)]
+    return [tuple(tokens[i : i + n]) for i in range(count_tokens - n + 1)]
 
 
 def get_imprints_from_hashes(hashes: Sequence[int]) -> List[int]:
-    """The function return imprints of the given hashes
+    """The function return imprints of the given hashes.
 
-    @param hashes - list of hashes
+    Args:
+        hashes - list of hashes
 
-    @return - list of each k element in hashes,
-    where k equal log(len(hashes))
+    Return:
+        List of each k element in hashes, where k equal log(len(hashes))
     """
 
     count_hashes = len(hashes)
@@ -113,14 +87,15 @@ def get_imprints_from_hashes(hashes: Sequence[int]) -> List[int]:
     return [hashes[index] for index in range(0, count_hashes, k)]
 
 
-def value_jakkar_coef(tokens_first: Sequence[int],
-                      tokens_second: Sequence[int],
-                      ngrams_length: int = 3) -> float:
-    '''
-        The function returns the value of the Jakkar coefficient
-        @param tokens_first - list of tokens of the first program
-        @param tokens_second - list of tokens of the second program
-    '''
+def value_jakkar_coef(
+    tokens_first: Sequence[int], tokens_second: Sequence[int], ngrams_length: int = 3
+) -> float:
+    """The function returns the value of the Jakkar coefficient.
+
+    Args:
+        tokens_first - list of tokens of the first program
+        tokens_second - list of tokens of the second program
+    """
     ngrams_first: Set[Tuple[int, ...]] = generate_ngrams(
         tokens_first, ngrams_length, hashit=False, unique=True
     )
@@ -139,12 +114,13 @@ def value_jakkar_coef(tokens_first: Sequence[int],
 
 # equal to the Levenshtein length
 def lcs(X: Sequence[int], Y: Sequence[int]) -> int:
-    '''
-        The function returns the length of the longest common subsequence
-        of two sequences X and Y.
-        @param X - list of tokens of the first program
-        @param Y - list of tokens of the second program
-    '''
+    """The function returns the length of the longest common subsequence
+    of two sequences X and Y.
+
+    Args:
+        X - list of tokens of the first program
+        Y - list of tokens of the second program
+    """
     m = len(X)
     n = len(Y)
 
@@ -168,12 +144,12 @@ def lcs(X: Sequence[int], Y: Sequence[int]) -> int:
 
 
 def lcs_based_coeff(subseq1: Sequence[int], subseq2: Sequence[int]) -> float:
-    """The function returns coefficient based on the length
-    of the longest common subsequence.
-    This coefficient describes how same two sequences.
+    """The function returns coefficient based on the length of the longest
+    common subsequence. This coefficient describes how same two sequences.
 
-    @param subseq1 - the first sequence
-    @param subseq2 - the second sequnce
+    Args:
+        subseq1 - the first sequence
+        subseq2 - the second sequnce
     """
 
     count_elem1 = len(subseq1)
@@ -182,4 +158,4 @@ def lcs_based_coeff(subseq1: Sequence[int], subseq2: Sequence[int]) -> float:
     if (count_elem1 * count_elem2) == 0:
         return 0.0
 
-    return ((2 * lcs(subseq1, subseq2)) / (count_elem1 + count_elem2))
+    return (2 * lcs(subseq1, subseq2)) / (count_elem1 + count_elem2)

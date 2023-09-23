@@ -72,9 +72,7 @@ def test_fast_compare_normal(first_tree: ast.Module, second_tree: ast.Module):
 
 
 def test_compare_works(
-    first_tree: ast.Module,
-    second_tree: ast.Module,
-    third_tree: ast.Module
+    first_tree: ast.Module, second_tree: ast.Module, third_tree: ast.Module
 ):
     features1 = get_features_from_ast(first_tree, FILEPATH1)
     features2 = get_features_from_ast(second_tree, FILEPATH2)
@@ -108,7 +106,7 @@ def test_save_result_to_json(
     mocker: MockerFixture,
     mock_default_logger: MagicMock,
     first_tree: ast.Module,
-    second_tree: ast.Module
+    second_tree: ast.Module,
 ):
     parsed_args = {"extension": "py", "root": "check"}
     code_engine = CodeplagEngine(mock_default_logger, parsed_args)
@@ -120,9 +118,7 @@ def test_save_result_to_json(
 
     mocker.patch.object(Path, "open", side_effect=FileNotFoundError)
     code_engine.reports = Path("/bad_dir")
-    code_engine.save_result(
-        features1, features2, compare_info, 'json'
-    )
+    code_engine.save_result(features1, features2, compare_info, "json")
     assert not Path.open.called
     assert mock_default_logger.error.call_args == call(
         "The folder for reports isn't provided or now isn't exists."
@@ -130,9 +126,7 @@ def test_save_result_to_json(
 
     mocker.patch.object(Path, "open", side_effect=PermissionError)
     code_engine.reports = Path("/etc")
-    code_engine.save_result(
-        features1, features2, compare_info, 'json'
-    )
+    code_engine.save_result(features1, features2, compare_info, "json")
     Path.open.assert_called_once()
     assert mock_default_logger.error.call_args == call(
         "Not enough rights to write reports to the folder."
@@ -141,9 +135,7 @@ def test_save_result_to_json(
     # First ok test
     mock_write_config = mocker.patch("codeplag.utils.write_config")
     code_engine.reports = Path("./src")
-    code_engine.save_result(
-        features1, features2, compare_info, 'json'
-    )
+    code_engine.save_result(features1, features2, compare_info, "json")
     mock_write_config.assert_called_once()
     assert set(mock_write_config.call_args[0][1].keys()) == set(
         WorksReport.__annotations__.keys() - ["first_modify_date", "second_modify_date"]
@@ -153,9 +145,7 @@ def test_save_result_to_json(
     mock_write_config.reset_mock()
     features1.modify_date = "2023-07-14T11:22:30Z"
     features2.modify_date = "2023-07-09T14:35:07Z"
-    code_engine.save_result(
-        features1, features2, compare_info, 'json'
-    )
+    code_engine.save_result(features1, features2, compare_info, "json")
     mock_write_config.assert_called_once()
     assert (
         mock_write_config.call_args[0][1].keys() == WorksReport.__annotations__.keys()
@@ -166,15 +156,12 @@ def test_save_result_to_csv(
     mocker: MockerFixture,
     mock_default_logger: MagicMock,
     first_tree: ast.Module,
-    second_tree: ast.Module
+    second_tree: ast.Module,
 ):
     parsed_args = {"extension": "py", "root": "check"}
     mock_read_config = mocker.patch("codeplag.utils.read_settings_conf")
     mock_read_config.return_value = Settings(
-        reports=Path("./src"),
-        reports_extension='csv',
-        show_progress=0,
-        threshold=65
+        reports=Path("./src"), reports_extension="csv", show_progress=0, threshold=65
     )
     code_engine = CodeplagEngine(mock_default_logger, parsed_args)
 
@@ -187,24 +174,20 @@ def test_save_result_to_csv(
 
     # First ok test
     code_engine.reports = Path("./src")
-    code_engine.save_result(
-        features1, features2, compare_info, 'csv'
-    )
+    code_engine.save_result(features1, features2, compare_info, "csv")
     code_engine._write_df_to_fs()
     assert "Saving" in mock_default_logger.debug.mock_calls[-1].args[0]
-    df = pd.read_csv(code_engine.reports / CSV_REPORT_FILENAME, sep=';', index_col=0)
+    df = pd.read_csv(code_engine.reports / CSV_REPORT_FILENAME, sep=";", index_col=0)
     assert df.shape[0] == 1
     assert tuple(df.columns) == CSV_REPORT_COLUMNS
 
     # Second ok test
-    code_engine.save_result(
-        features1, features2, compare_info, 'csv'
-    )
+    code_engine.save_result(features1, features2, compare_info, "csv")
     code_engine._write_df_to_fs()
     assert "Saving" in mock_default_logger.debug.mock_calls[-1].args[0]
     code_engine._write_df_to_fs()
     assert "Nothing" in mock_default_logger.debug.mock_calls[-1].args[0]
-    df = pd.read_csv(code_engine.reports / CSV_REPORT_FILENAME, sep=';', index_col=0)
+    df = pd.read_csv(code_engine.reports / CSV_REPORT_FILENAME, sep=";", index_col=0)
     assert df.shape[0] == 2
     assert tuple(df.columns) == CSV_REPORT_COLUMNS
 
@@ -217,10 +200,12 @@ def test_save_result_to_csv(
         deser_compare_info = deserialize_compare_result(df.iloc[i])
         assert deser_compare_info.fast == compare_info.fast
         assert deser_compare_info.structure is not None
-        assert deser_compare_info.structure.similarity == compare_info.structure.similarity
         assert (
-            deser_compare_info.structure.compliance_matrix.tolist() ==
-            compare_info.structure.compliance_matrix.tolist()
+            deser_compare_info.structure.similarity == compare_info.structure.similarity
+        )
+        assert (
+            deser_compare_info.structure.compliance_matrix.tolist()
+            == compare_info.structure.compliance_matrix.tolist()
         )
 
 

@@ -112,7 +112,7 @@ def test_save_reports():
         os.mkdir(REPORTS_FOLDER)
     assert os.path.exists(REPORTS_FOLDER)
 
-    assert modify_settings(REPORTS_FOLDER, reports_extension='json').returncode == 0
+    assert modify_settings(REPORTS_FOLDER, reports_extension="json").returncode == 0
     assert (
         run_check(
             [
