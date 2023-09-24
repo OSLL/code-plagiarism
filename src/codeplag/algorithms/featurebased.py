@@ -6,12 +6,12 @@ from codeplag.types import NodeStructurePlace
 
 
 def counter_metric(counter1: dict, counter2: dict) -> float:
-    '''
-        Function return how same operators or keywords or literals
-        in two trees
-        @param counter1 - dict object with counts of op or kw or list
-        @param counter2 - dict object with counts of op or kw or list
-    '''
+    """Return how same operators or keywords or literals in two trees.
+
+    Args:
+        counter1 - dict object with counts of op or kw or list
+        counter2 - dict object with counts of op or kw or list
+    """
 
     if len(counter1) == 0 and len(counter2) == 0:
         return 1.0
@@ -21,10 +21,8 @@ def counter_metric(counter1: dict, counter2: dict) -> float:
         if key not in counter2:
             percent_of_same[1] += counter1[key]
             continue
-        percent_of_same[0] += min(counter1[key],
-                                  counter2[key])
-        percent_of_same[1] += max(counter1[key],
-                                  counter2[key])
+        percent_of_same[0] += min(counter1[key], counter2[key])
+        percent_of_same[1] += max(counter1[key], counter2[key])
     for key in counter2:
         if key not in counter1:
             percent_of_same[1] += counter2[key]
@@ -37,12 +35,12 @@ def counter_metric(counter1: dict, counter2: dict) -> float:
 
 
 def op_shift_metric(ops1: List[str], ops2: List[str]) -> Tuple[int, float]:
-    '''
-        Returns the maximum value of the operator match and the shift under
-        this condition
-        @param ops1 - sequence of operators of tree1
-        @param ops2 - sequence of operators of tree2
-    '''
+    """Return the maximum value of the operator match and the shift under this condition.
+
+    Args:
+        ops1 - sequence of operators of tree1
+        ops2 - sequence of operators of tree2
+    """
 
     count_el_f = len(ops1)
     count_el_s = len(ops2)
@@ -81,14 +79,17 @@ def op_shift_metric(ops1: List[str], ops2: List[str]) -> Tuple[int, float]:
     return 0, 0.0
 
 
-def get_children_indexes(tree: List[NodeStructurePlace],
-                         count_of_nodes: int) -> Tuple[List[int], int]:
-    """The function returns indexes of her children and their count.
+def get_children_indexes(
+    tree: List[NodeStructurePlace], count_of_nodes: int
+) -> Tuple[List[int], int]:
+    """Return indexes of her children and their count.
 
-    @param tree - a simple structure of the AST.
-    @count_of_nodes - count of elements in the tree
+    Args:
+        tree - a simple structure of the AST.
+        count_of_nodes - count of elements in the tree
 
-    O(len(tree))
+    Complexity:
+        O(len(tree))
     """
 
     indexes = []
@@ -106,14 +107,16 @@ def get_children_indexes(tree: List[NodeStructurePlace],
 
 
 def find_max_index(array: np.ndarray) -> np.ndarray:
-    '''
-        The function for finding index of max element in matrix
-        @param array - matrix of compliance (np.ndarray object)
+    """The function for finding index of max element in matrix.
 
+    Args:
+        array - matrix of compliance (np.ndarray object)
+
+    Complexity:
         rows = array.shape[0]
         columns = array.shape[1]
         O(rows * columns)
-    '''
+    """
 
     maximum = 0
     index = np.array([0, 0], dtype=np.int64)
@@ -131,15 +134,16 @@ def find_max_index(array: np.ndarray) -> np.ndarray:
 
 
 def matrix_value(array: np.ndarray) -> Tuple[list, list]:
-    '''
-        The function returns the value of the similarity of nodes
-        from the compliance matrix.
-        @param array - matrix of compliance (np.ndarray object)
+    """The function returns the value of the similarity of nodes from the compliance matrix.
 
+    Args:
+        array - matrix of compliance (np.ndarray object)
+
+    Complexity:
         rows = array.shape[0]
         columns = array.shpe[1]
         O(min(rows, columns) * rows * columns)
-    '''
+    """
     same_struct_metric = [1, 1]
     minimal = min(array.shape[0], array.shape[1])
     indexes = []
@@ -159,21 +163,24 @@ def matrix_value(array: np.ndarray) -> Tuple[list, list]:
     return same_struct_metric, indexes
 
 
-def add_not_counted(tree: List[NodeStructurePlace],
-                    count_of_children: int,
-                    key_indexes: List[int],
-                    indexes: List[np.ndarray],
-                    axis: int) -> int:
-    """The function returns the count of nodes that didn't
-    account in the previous step.
+def add_not_counted(
+    tree: List[NodeStructurePlace],
+    count_of_children: int,
+    key_indexes: List[int],
+    indexes: List[np.ndarray],
+    axis: int,
+) -> int:
+    """The function return the count of nodes that didn't account in the previous step.
 
-    @tree - part of structure
-    @count_of_children - count of top-level nodes in the tree
-    @key_indexes - indexes of top-level nodes in the tree
-    @indexes - indexes of selected nodes which accounted in the metric
-    @axis - 0 - row, 1 - column
+    Args:
+        tree - part of structure
+        count_of_children - count of top-level nodes in the tree
+        key_indexes - indexes of top-level nodes in the tree
+        indexes - indexes of selected nodes which accounted in the metric
+        axis - 0 - row, 1 - column
 
-    O(count_of_children * len(tree))
+    Complexity:
+        O(count_of_children * len(tree))
     """
 
     count = 0
@@ -182,20 +189,23 @@ def add_not_counted(tree: List[NodeStructurePlace],
         if k in added:
             continue
         else:
-            part_of_tree = tree[key_indexes[k]:key_indexes[k + 1]]
+            part_of_tree = tree[key_indexes[k] : key_indexes[k + 1]]
             count += len(part_of_tree)
 
     return count
 
 
-def struct_compare(tree1: List[NodeStructurePlace],
-                   tree2: List[NodeStructurePlace],
-                   matrix: Optional[np.ndarray] = None) -> list:
-    '''
-        Function for compare structure of two trees
-        @param tree1 - a simple structure of the first AST.
-        @param tree2 - a simple structure of the second AST.
-    '''
+def struct_compare(
+    tree1: List[NodeStructurePlace],
+    tree2: List[NodeStructurePlace],
+    matrix: Optional[np.ndarray] = None,
+) -> list:
+    """Function for compare structure of two trees.
+
+    Args:
+        tree1 - a simple structure of the first AST.
+        tree2 - a simple structure of the second AST.
+    """
 
     if matrix is None:
         matrix = np.array([[[]]], dtype=np.int64)
@@ -211,22 +221,18 @@ def struct_compare(tree1: List[NodeStructurePlace],
         return [1, (count_of_nodes1 + 1)]
 
     # Add counting of nodes
-    key_indexes1, count_of_children1 = get_children_indexes(tree1,
-                                                            count_of_nodes1)
-    key_indexes2, count_of_children2 = get_children_indexes(tree2,
-                                                            count_of_nodes2)
+    key_indexes1, count_of_children1 = get_children_indexes(tree1, count_of_nodes1)
+    key_indexes2, count_of_children2 = get_children_indexes(tree2, count_of_nodes2)
     key_indexes1.append(count_of_nodes1)
     key_indexes2.append(count_of_nodes2)
 
-    array = np.zeros((count_of_children1, count_of_children2, 2),
-                     dtype=np.int64)
+    array = np.zeros((count_of_children1, count_of_children2, 2), dtype=np.int64)
 
     for i in np.arange(0, count_of_children1, 1):
         for j in np.arange(0, count_of_children2, 1):
-            section1 = tree1[key_indexes1[i] + 1:key_indexes1[i + 1]]
-            section2 = tree2[key_indexes2[j] + 1:key_indexes2[j + 1]]
-            array[i][j] = struct_compare(section1,
-                                         section2)
+            section1 = tree1[key_indexes1[i] + 1 : key_indexes1[i + 1]]
+            section2 = tree2[key_indexes2[j] + 1 : key_indexes2[j + 1]]
+            array[i][j] = struct_compare(section1, section2)
 
     if matrix.size != 0:
         for i in np.arange(0, count_of_children1, 1):
@@ -235,12 +241,12 @@ def struct_compare(tree1: List[NodeStructurePlace],
 
     same_struct_metric, indexes = matrix_value(array)
     if count_of_children1 > count_of_children2:
-        same_struct_metric[1] += add_not_counted(tree1, count_of_children1,
-                                                 key_indexes1, indexes,
-                                                 axis=0)
+        same_struct_metric[1] += add_not_counted(
+            tree1, count_of_children1, key_indexes1, indexes, axis=0
+        )
     elif count_of_children2 > count_of_children1:
-        same_struct_metric[1] += add_not_counted(tree2, count_of_children2,
-                                                 key_indexes2, indexes,
-                                                 axis=1)
+        same_struct_metric[1] += add_not_counted(
+            tree2, count_of_children2, key_indexes2, indexes, axis=1
+        )
 
     return same_struct_metric

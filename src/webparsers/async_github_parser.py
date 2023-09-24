@@ -20,7 +20,7 @@ from webparsers.types import (
     WorkInfo,
 )
 
-_GH_URL: Final[str] = 'https://github.com/'
+_GH_URL: Final[str] = "https://github.com/"
 
 
 class AsyncGithubParser:
@@ -44,24 +44,24 @@ class AsyncGithubParser:
         >>> asynio.run(loop())
     """
 
-    USER_INFO = '/users/{username}'
-    USER_REPOS = '/users/{username}/repos{?per_page,page}'
+    USER_INFO = "/users/{username}"
+    USER_REPOS = "/users/{username}/repos{?per_page,page}"
 
-    REPO_GET = '/repos/{username}/{repo}'
+    REPO_GET = "/repos/{username}/{repo}"
 
-    BRANCH_GET = '/repos/{username}/{repo}/branches{/branch}'
+    BRANCH_GET = "/repos/{username}/{repo}/branches{/branch}"
 
-    GIT_BLOB = '/repos/{username}/{repo}/git/blobs/{sha}'
-    GIT_TREE = '/repos/{username}/{repo}/git/trees/{sha}'
+    GIT_BLOB = "/repos/{username}/{repo}/git/blobs/{sha}"
+    GIT_TREE = "/repos/{username}/{repo}/git/trees/{sha}"
 
-    FILE_CONTENT = '/repos/{username}/{repo}/contents/{path}{?ref}'
+    FILE_CONTENT = "/repos/{username}/{repo}/contents/{path}{?ref}"
 
-    COMMITS_INFO = '/repos/{username}/{repo}/commits{?per_page,page,sha,path}'
+    COMMITS_INFO = "/repos/{username}/{repo}/commits{?per_page,page,sha,path}"
 
     PULLS = "/repos/{username}/{repo}/pulls{/number}{?head,base,state}"
     PULL_COMMITS = "/repos/{username}/{repo}/pulls/{number}/commits"
 
-    ORG_REPOS = '/orgs/{org}/repos{?per_page,page}'
+    ORG_REPOS = "/orgs/{org}/repos{?per_page,page}"
 
     def __init__(
         self,
@@ -79,17 +79,17 @@ class AsyncGithubParser:
         self.__file_extensions = file_extensions
         self.__check_all_branches = check_all
         self.__api = gidgethub.aiohttp.GitHubAPI(
-            session, "codeplag", oauth_token=token,
-            cache=cachetools.LRUCache(maxsize=500)
+            session,
+            "codeplag",
+            oauth_token=token,
+            cache=cachetools.LRUCache(maxsize=500),
         )
 
     def _is_accepted_extension(self, path: str) -> bool:
         if self.__file_extensions is None:
             return True
 
-        return any(
-            re.search(extension, path) for extension in self.__file_extensions
-        )
+        return any(re.search(extension, path) for extension in self.__file_extensions)
 
     async def send_get_request(
         self,
@@ -99,30 +99,24 @@ class AsyncGithubParser:
         try:
             return await self.__api.getitem(api_url, url_vars)
         except aiohttp.client_exceptions.ClientConnectionError as err:
-            self.logger.error(
-                "Connection error. Please check the Internet connection."
-            )
+            self.logger.error("Connection error. Please check the Internet connection.")
             self.logger.debug(str(err))
             sys.exit(1)
 
     async def get_list_of_repos(
-        self,
-        owner: str,
-        reg_exp: Optional[re.Pattern] = None
+        self, owner: str, reg_exp: Optional[re.Pattern] = None
     ) -> List[Repository]:
         repos: List[Repository] = []
-        response = await self.send_get_request(
-            self.USER_INFO, {"username": owner}
-        )
-        user_type = response.get('type', '').lower()
+        response = await self.send_get_request(self.USER_INFO, {"username": owner})
+        user_type = response.get("type", "").lower()
         # TODO: classify yourself /user/repos
-        url_vars: Dict[str, Any] = {"per_page": 100, 'page': 1}
-        if user_type == 'user':
+        url_vars: Dict[str, Any] = {"per_page": 100, "page": 1}
+        if user_type == "user":
             api_url = self.USER_REPOS
-            url_vars['username'] = owner
-        elif user_type == 'organization':
+            url_vars["username"] = owner
+        elif user_type == "organization":
             api_url = self.ORG_REPOS
-            url_vars['org'] = owner
+            url_vars["org"] = owner
         else:
             self.logger.error("Not supported user type %s.", user_type)
             sys.exit(1)
@@ -132,19 +126,15 @@ class AsyncGithubParser:
             cnt = 0  # noqa: SIM113
             for repo in response:
                 cnt += 1
-                if (reg_exp is None) or reg_exp.search(repo['name']):
-                    repos.append(Repository(repo['name'], repo['html_url']))
-            if cnt < url_vars['per_page']:
+                if (reg_exp is None) or reg_exp.search(repo["name"]):
+                    repos.append(Repository(repo["name"], repo["html_url"]))
+            if cnt < url_vars["per_page"]:
                 break
-            url_vars['page'] += 1
+            url_vars["page"] += 1
 
         return repos
 
-    async def get_pulls_info(
-        self,
-        owner: str,
-        repo: str
-    ) -> List[PullRequest]:
+    async def get_pulls_info(self, owner: str, repo: str) -> List[PullRequest]:
         pulls: List[PullRequest] = []
         url_vars = {"username": owner, "repo": repo, "page": 1, "per_page": 100}
         while True:
@@ -156,59 +146,44 @@ class AsyncGithubParser:
                 pull_url_vars = {
                     "username": owner,
                     "repo": repo,
-                    "number": pull["number"]
+                    "number": pull["number"],
                 }
-                commits = await self.send_get_request(
-                    self.PULL_COMMITS,
-                    pull_url_vars
-                )
-                pull_owner, owner_branch = pull['head']['label'].split(
-                    ':',
-                    maxsplit=1
-                )
+                commits = await self.send_get_request(self.PULL_COMMITS, pull_url_vars)
+                pull_owner, owner_branch = pull["head"]["label"].split(":", maxsplit=1)
                 pulls.append(
                     PullRequest(
-                        number=pull['number'],
-                        last_commit_sha=commits[0]['sha'],
+                        number=pull["number"],
+                        last_commit_sha=commits[0]["sha"],
                         owner=pull_owner,
                         branch=owner_branch,
-                        state=pull['state'],
-                        draft=pull['draft']
+                        state=pull["state"],
+                        draft=pull["draft"],
                     )
                 )
-            if cnt < url_vars['per_page']:
+            if cnt < url_vars["per_page"]:
                 break
 
-            url_vars['page'] += 1
+            url_vars["page"] += 1
 
         return pulls
 
     async def get_name_default_branch(self, owner: str, repo: str) -> str:
         response = await self.send_get_request(
-            self.REPO_GET,
-            {"username": owner, "repo": repo}
+            self.REPO_GET, {"username": owner, "repo": repo}
         )
 
-        return response['default_branch']
+        return response["default_branch"]
 
     async def _get_branch_last_commit_info(
-        self,
-        owner: str,
-        repo: str,
-        branch: str = 'main'
+        self, owner: str, repo: str, branch: str = "main"
     ) -> dict:
         response = await self.send_get_request(
-            self.BRANCH_GET,
-            {"username": owner, "repo": repo, "branch": branch}
+            self.BRANCH_GET, {"username": owner, "repo": repo, "branch": branch}
         )
 
-        return response['commit']
+        return response["commit"]
 
-    async def get_list_repo_branches(
-        self,
-        owner: str,
-        repo: str
-    ) -> List[Branch]:
+    async def get_list_repo_branches(self, owner: str, repo: str) -> List[Branch]:
         branches: List[Branch] = []
         url_vars = {"per_page": 100, "page": 1, "username": owner, "repo": repo}
         while True:
@@ -218,19 +193,17 @@ class AsyncGithubParser:
             for branch_info in response:
                 cnt += 1
                 branch_name = branch_info["name"]
-                commit_info = await self.send_get_request(
-                    branch_info["commit"]["url"]
-                )
+                commit_info = await self.send_get_request(branch_info["commit"]["url"])
                 branches.append(
                     Branch(
                         name=branch_name,
                         last_commit=Commit(
-                            commit_info['sha'],
-                            commit_info['commit']['author']['date'],
-                        )
+                            commit_info["sha"],
+                            commit_info["commit"]["author"]["date"],
+                        ),
                     )
                 )
-            if cnt < url_vars['per_page']:
+            if cnt < url_vars["per_page"]:
                 break
 
             url_vars["page"] += 1
@@ -244,37 +217,29 @@ class AsyncGithubParser:
         blob_sha: str,
     ) -> str:
         response = await self.send_get_request(
-            self.GIT_BLOB,
-            {"username": owner, "repo": repo, "sha": blob_sha}
+            self.GIT_BLOB, {"username": owner, "repo": repo, "sha": blob_sha}
         )
 
-        file_in_bytes = bytearray(base64.b64decode(response['content']))
-        return file_in_bytes.decode('utf-8', errors='ignore')
+        file_in_bytes = bytearray(base64.b64decode(response["content"]))
+        return file_in_bytes.decode("utf-8", errors="ignore")
 
     async def _get_commit_info(
-        self,
-        owner: str,
-        repo: str,
-        branch: str,
-        path: str
+        self, owner: str, repo: str, branch: str, path: str
     ) -> Commit:
         response: List[dict] = await self.send_get_request(
             self.COMMITS_INFO,
             url_vars={
-                'page': 1,
-                'per_page': 1,
-                'username': owner,
-                'repo': repo,
-                'path': path,
-                'sha': branch
-            }
+                "page": 1,
+                "per_page": 1,
+                "username": owner,
+                "repo": repo,
+                "path": path,
+                "sha": branch,
+            },
         )
         commit_info: Dict[str, Any] = response[0]
 
-        return Commit(
-            commit_info['sha'],
-            commit_info['commit']['author']['date']
-        )
+        return Commit(commit_info["sha"], commit_info["commit"]["author"]["date"])
 
     async def get_files_generator_from_sha_commit(
         self,
@@ -282,34 +247,28 @@ class AsyncGithubParser:
         repo: str,
         branch: Branch,
         sha: str,
-        path: str = '',
-        path_regexp: Optional[re.Pattern] = None
+        path: str = "",
+        path_regexp: Optional[re.Pattern] = None,
     ) -> AsyncGenerator[WorkInfo, None]:
         response: Dict[str, Any] = await self.send_get_request(
-            self.GIT_TREE,
-            {"username": owner, "repo": repo, "sha": sha}
+            self.GIT_TREE, {"username": owner, "repo": repo, "sha": sha}
         )
-        tree: list[Dict[str, Any]] = response['tree']
+        tree: list[Dict[str, Any]] = response["tree"]
         for node in tree:
             current_path = f"{path}/{node['path']}"
-            full_link = (
-                f"{_GH_URL}{owner}/{repo}/blob/{branch.name}{current_path}"
-            )
+            full_link = f"{_GH_URL}{owner}/{repo}/blob/{branch.name}{current_path}"
             node_type = node["type"]
             if node_type == "tree":
                 commit_info = await self._get_commit_info(
-                    owner,
-                    repo,
-                    branch.name,
-                    current_path
+                    owner, repo, branch.name, current_path
                 )
                 async for file_gen in self.get_files_generator_from_sha_commit(
                     owner=owner,
                     repo=repo,
                     branch=Branch(branch.name, commit_info),
-                    sha=node['sha'],
+                    sha=node["sha"],
                     path=current_path,
-                    path_regexp=path_regexp
+                    path_regexp=path_regexp,
                 ):
                     yield file_gen
                 continue
@@ -321,53 +280,42 @@ class AsyncGithubParser:
                 continue
 
             commit_info = await self._get_commit_info(
-                owner,
-                repo,
-                branch.name,
-                current_path
+                owner, repo, branch.name, current_path
             )
 
             file_content = await self.get_file_content_by_sha(
                 owner,
                 repo,
-                node['sha'],
+                node["sha"],
             )
 
             yield WorkInfo(file_content, full_link, commit_info)
 
     async def get_files_generator_from_repo_url(
-        self,
-        repo_url: str,
-        path_regexp: Optional[re.Pattern] = None
+        self, repo_url: str, path_regexp: Optional[re.Pattern] = None
     ) -> AsyncGenerator[WorkInfo, None]:
         try:
             repo_url = GitHubRepoUrl(repo_url)
         except ValueError as error:
-            self.logger.error(
-                f'{repo_url} is incorrect link to GitHub repository'
-            )
+            self.logger.error(f"{repo_url} is incorrect link to GitHub repository")
             raise error
 
         if self.__check_all_branches:
-            branches = await self.get_list_repo_branches(
-                repo_url.owner, repo_url.repo
-            )
+            branches = await self.get_list_repo_branches(repo_url.owner, repo_url.repo)
         else:
             default_branch = await self.get_name_default_branch(
                 repo_url.owner, repo_url.repo
             )
             commit_info = await self._get_branch_last_commit_info(
-                repo_url.owner,
-                repo_url.repo,
-                default_branch
+                repo_url.owner, repo_url.repo, default_branch
             )
             branches = [
                 Branch(
                     name=default_branch,
                     last_commit=Commit(
-                        commit_info['sha'],
-                        commit_info['commit']['author']['date'],
-                    )
+                        commit_info["sha"],
+                        commit_info["commit"]["author"]["date"],
+                    ),
                 )
             ]
 
@@ -377,7 +325,7 @@ class AsyncGithubParser:
                 repo=repo_url.repo,
                 branch=branch,
                 sha=branch.last_commit.sha,
-                path_regexp=path_regexp
+                path_regexp=path_regexp,
             ):
                 yield file
 
@@ -386,7 +334,7 @@ class AsyncGithubParser:
             file_url = GitHubContentUrl(file_url)
         except ValueError as error:
             self.logger.error(
-                f'{file_url} is incorrect link to content of GitHub repository'
+                f"{file_url} is incorrect link to content of GitHub repository"
             )
             raise error
 
@@ -396,35 +344,28 @@ class AsyncGithubParser:
                 "username": file_url.owner,
                 "repo": file_url.repo,
                 "path": file_url.path,
-                "ref": file_url.branch
-            }
+                "ref": file_url.branch,
+            },
         )
 
         return WorkInfo(
             await self.get_file_content_by_sha(
-                file_url.owner,
-                file_url.repo,
-                response['sha']
+                file_url.owner, file_url.repo, response["sha"]
             ),
             file_url,
             await self._get_commit_info(
-                file_url.owner,
-                file_url.repo,
-                file_url.branch,
-                file_url.path
-            )
+                file_url.owner, file_url.repo, file_url.branch, file_url.path
+            ),
         )
 
     async def get_files_generator_from_dir_url(
-        self,
-        dir_url: str,
-        path_regexp: Optional[re.Pattern] = None
+        self, dir_url: str, path_regexp: Optional[re.Pattern] = None
     ) -> AsyncGenerator[WorkInfo, None]:
         try:
             dir_url = GitHubContentUrl(dir_url)
         except ValueError as error:
             self.logger.error(
-                f'{dir_url} is incorrect link to content of GitHub repository'
+                f"{dir_url} is incorrect link to content of GitHub repository"
             )
             raise error
 
@@ -434,31 +375,28 @@ class AsyncGithubParser:
                 "username": dir_url.owner,
                 "repo": dir_url.repo,
                 "path": dir_url.path,
-                "ref": dir_url.branch
-            }
+                "ref": dir_url.branch,
+            },
         )
 
         for node in response:
             current_path = f'/{node["path"]}'
             full_link = (
-                f'{_GH_URL}{dir_url.owner}/{dir_url.repo}'
-                f'/tree/{dir_url.branch}/{current_path[2:]}'
+                f"{_GH_URL}{dir_url.owner}/{dir_url.repo}"
+                f"/tree/{dir_url.branch}/{current_path[2:]}"
             )
             node_type = node["type"]
             if node_type == "dir":
                 commit_info = await self._get_commit_info(
-                    dir_url.owner,
-                    dir_url.repo,
-                    dir_url.branch,
-                    current_path
+                    dir_url.owner, dir_url.repo, dir_url.branch, current_path
                 )
                 async for work_info in self.get_files_generator_from_sha_commit(
                     owner=dir_url.owner,
                     repo=dir_url.repo,
                     branch=Branch(dir_url.branch, commit_info),
-                    sha=node['sha'],
+                    sha=node["sha"],
                     path=current_path,
-                    path_regexp=path_regexp
+                    path_regexp=path_regexp,
                 ):
                     yield work_info
             if (
@@ -469,16 +407,13 @@ class AsyncGithubParser:
                 continue
 
             commit_info = await self._get_commit_info(
-                dir_url.owner,
-                dir_url.repo,
-                dir_url.branch,
-                current_path
+                dir_url.owner, dir_url.repo, dir_url.branch, current_path
             )
 
             file_content = await self.get_file_content_by_sha(
                 owner=dir_url.owner,
                 repo=dir_url.repo,
-                blob_sha=node['sha'],
+                blob_sha=node["sha"],
             )
 
             yield WorkInfo(file_content, full_link, commit_info)

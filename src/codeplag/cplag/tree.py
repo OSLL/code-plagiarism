@@ -8,19 +8,14 @@ from codeplag.types import ASTFeatures, NodeStructurePlace
 
 
 def get_not_ignored(tree: Cursor, src: Union[Path, str]) -> List[Cursor]:
-    '''
-        Function helps to discard unnecessary nodes such as imports
-    '''
+    "Function helps to discard unnecessary nodes such as imports."
 
     parsed_nodes = []
     for child in tree.get_children():
         loc = child.location.file
-        last_loc_part = str(loc).rsplit('/', maxsplit=1)[-1]
-        last_src_part = str(src).rsplit('/', maxsplit=1)[-1]
-        if (
-            last_loc_part == last_src_part and
-            child.kind not in IGNORE
-        ):
+        last_loc_part = str(loc).rsplit("/", maxsplit=1)[-1]
+        last_src_part = str(src).rsplit("/", maxsplit=1)[-1]
+        if last_loc_part == last_src_part and child.kind not in IGNORE:
             parsed_nodes.append(child)
 
     return parsed_nodes
@@ -36,10 +31,7 @@ def generic_visit(node, features: ASTFeatures, curr_depth: int = 0) -> None:
             features.from_num[features.count_unodes] = node_name
             features.count_unodes += 1
         features.structure.append(
-            NodeStructurePlace(
-                curr_depth,
-                features.unodes[node_name]
-            )
+            NodeStructurePlace(curr_depth, features.unodes[node_name])
         )
         children = list(node.get_children())
 
@@ -54,10 +46,7 @@ def generic_visit(node, features: ASTFeatures, curr_depth: int = 0) -> None:
                 features.from_num[features.count_unodes] = token_name
                 features.count_unodes += 1
             features.structure.append(
-                NodeStructurePlace(
-                    curr_depth,
-                    features.unodes[token_name]
-                )
+                NodeStructurePlace(curr_depth, features.unodes[token_name])
             )
 
             if curr_depth == 1:
@@ -69,13 +58,10 @@ def generic_visit(node, features: ASTFeatures, curr_depth: int = 0) -> None:
             generic_visit(child, features, curr_depth + 1)
 
 
-def get_features(tree: Cursor, filepath: Union[Path, str] = '') -> ASTFeatures:
+def get_features(tree: Cursor, filepath: Union[Path, str] = "") -> ASTFeatures:
     features = ASTFeatures(filepath or tree.displayname)
     for token in tree.get_tokens():
-        if (
-            token.kind == TokenKind.PUNCTUATION and
-            token.spelling in OPERATORS
-        ):
+        if token.kind == TokenKind.PUNCTUATION and token.spelling in OPERATORS:
             features.operators[token.spelling] += 1
         if token.kind == TokenKind.KEYWORD:
             features.keywords[token.spelling] += 1

@@ -1,3 +1,4 @@
+# fmt: off
 IGNORE = ('lineno', 'end_lineno', 'col_offset',
           'end_col_offset', 'kind', 'ctx')
 IGNORE_NODES = ('Import', 'ImportFrom')

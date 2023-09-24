@@ -4,14 +4,11 @@ from utils import SUCCESS_CODE, run_check, run_cmd
 
 
 def test_log_once():
-    dir = 'src/codeplag'
-    result = run_check(
-        ['--directories', dir],
-        extension='cpp'
-    )
+    dir = "src/codeplag"
+    result = run_check(["--directories", dir], extension="cpp")
 
-    pattern = f'Getting works features from {dir}'
-    output_result = result.stdout.decode('utf-8')
+    pattern = f"Getting works features from {dir}"
+    output_result = result.stdout.decode("utf-8")
 
     assert result.returncode == SUCCESS_CODE
     assert pattern in output_result
@@ -21,6 +18,6 @@ def test_log_once():
 
 
 def test_man_unminimized():
-    result = run_cmd(['dpkg-divert', '--truename', '/usr/bin/man'])
+    result = run_cmd(["dpkg-divert", "--truename", "/usr/bin/man"])
 
-    assert result.stdout.decode('utf-8').strip() == '/usr/bin/man'
+    assert result.stdout.decode("utf-8").strip() == "/usr/bin/man"

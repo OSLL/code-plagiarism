@@ -1,4 +1,4 @@
-UTIL_VERSION            := 0.3.6
+UTIL_VERSION            := 0.3.7
 UTIL_NAME               := codeplag
 PWD                     := $(shell pwd)
 
@@ -10,6 +10,7 @@ BASE_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-base-ubuntu20.04:$(BASE_DOC
 TEST_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-test-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
 DOCKER_TAG              ?= $(shell echo $(UTIL_NAME)-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
 
+PYTHONDONTWRITEBYTECODE := "1"
 PYTHONPATH              := $(PWD)/src/:$(PWD)/test/auto
 
 LOGS_PATH               := /var/log/$(UTIL_NAME)

@@ -24,59 +24,59 @@ def get_ast_from_content(code: str, path: Union[Path, str]) -> Optional[ast.Modu
         tree = ast.parse(code)
     except TabError as err:
         eprint(
-            '-' * 40,
+            "-" * 40,
             red_bold(f"'{path}' not parsed."),
-            red_bold(f'TabError: {err.args[0]}'),
-            red_bold(f'In line {str(err.args[1][1])}'),
-            '-' * 40,
-            sep='\n'
+            red_bold(f"TabError: {err.args[0]}"),
+            red_bold(f"In line {str(err.args[1][1])}"),
+            "-" * 40,
+            sep="\n",
         )
     except IndentationError as err:
         eprint(
-            '-' * 40,
+            "-" * 40,
             red_bold(f"'{path}' not parsed."),
-            red_bold(f'IdentationError: {err.args[0]}'),
-            red_bold(f'In line {str(err.args[1][1])}'),
-            '-' * 40,
-            sep='\n'
+            red_bold(f"IdentationError: {err.args[0]}"),
+            red_bold(f"In line {str(err.args[1][1])}"),
+            "-" * 40,
+            sep="\n",
         )
     except SyntaxError as err:
         eprint(
-            '-' * 40,
+            "-" * 40,
             red_bold(f"'{path}' not parsed."),
-            red_bold(f'SyntaxError: {err.args[0]}'),
-            red_bold(f'In line {str(err.args[1][1])}'),
-            red_bold(f'In column {str(err.args[1][2])}'),
-            '-' * 40,
-            sep='\n'
+            red_bold(f"SyntaxError: {err.args[0]}"),
+            red_bold(f"In line {str(err.args[1][1])}"),
+            red_bold(f"In column {str(err.args[1][2])}"),
+            "-" * 40,
+            sep="\n",
         )
     except Exception as err:
         eprint(
-            '-' * 40,
+            "-" * 40,
             red_bold(f"'{path}' not parsed."),
             red_bold(err.__class__.__name__),
-            sep='\n'
+            sep="\n",
         )
         for element in err.args:
             eprint(red_bold(element))
-        eprint('-' * 40)
+        eprint("-" * 40)
 
     return tree
 
 
 def get_ast_from_filename(filepath: Path) -> Optional[ast.Module]:
-    '''
-        Function return ast which has type ast.Module
-        @param filename - full path to file with code which will have
-        analyzed
-    '''
+    """Function return ast which has type ast.Module.
+
+    Args:
+        filename - full path to file with code which will have analyzed
+    """
     if not filepath.is_file():
         logger.error("'%s' is not a file / doesn't exist.", filepath)
         return None
 
     tree = None
     try:
-        with open(filepath, 'r', encoding='utf-8') as file:
+        with open(filepath, "r", encoding="utf-8") as file:
             tree = get_ast_from_content(file.read(), filepath)
     except UnicodeDecodeError:
         # TODO: Process this such as in the GitHubParser
@@ -114,22 +114,21 @@ def _get_works_from_filepaths(filenames: List[Path]) -> List[ASTFeatures]:
 
 
 class PyFeaturesGetter(AbstractGetter):
-
     def __init__(
         self,
         environment: Optional[Path] = None,
         all_branches: bool = False,
         logger: Optional[logging.Logger] = None,
-        repo_regexp: str = '',
-        path_regexp: str = ''
+        repo_regexp: str = "",
+        path_regexp: str = "",
     ):
         super().__init__(
-            extension='py',
+            extension="py",
             environment=environment,
             all_branches=all_branches,
             logger=logger,
             repo_regexp=repo_regexp,
-            path_regexp=path_regexp
+            path_regexp=path_regexp,
         )
 
     def get_from_content(self, work_info: WorkInfo) -> Optional[ASTFeatures]:
@@ -147,14 +146,14 @@ class PyFeaturesGetter(AbstractGetter):
         if not files:
             return []
 
-        self.logger.debug(f'{GET_FRAZE} files')
+        self.logger.debug(f"{GET_FRAZE} files")
         return _get_works_from_filepaths(files)
 
     def get_works_from_dir(self, directory: Path) -> List[ASTFeatures]:
         filepaths = get_files_path_from_directory(
             directory,
             extensions=SUPPORTED_EXTENSIONS[self.extension],
-            path_regexp=self.path_regexp
+            path_regexp=self.path_regexp,
         )
 
         return _get_works_from_filepaths(filepaths)

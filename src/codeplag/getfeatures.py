@@ -25,7 +25,7 @@ from codeplag.types import ASTFeatures, Extension, Extensions
 def get_files_path_from_directory(
     directory: Path,
     extensions: Optional[Extensions] = None,
-    path_regexp: Optional[re.Pattern] = None
+    path_regexp: Optional[re.Pattern] = None,
 ) -> List[Path]:
     """Recursive gets file paths from provided directory.
 
@@ -60,7 +60,6 @@ def get_files_path_from_directory(
 
 
 class AbstractGetter(ABC):
-
     def __init__(
         self,
         extension: Extension,
@@ -68,7 +67,7 @@ class AbstractGetter(ABC):
         all_branches: bool = False,
         logger: Optional[logging.Logger] = None,
         repo_regexp: Optional[str] = None,
-        path_regexp: Optional[str] = None
+        path_regexp: Optional[str] = None,
     ):
         self.logger = logger if logger is not None else logging.getLogger(UTIL_NAME)
         self.extension: Extension = extension
@@ -81,7 +80,8 @@ class AbstractGetter(ABC):
         except re.error as regexp_err:
             self.logger.error(
                 "Error while compiling regular expression '%s': '%s'.",
-                repo_regexp, regexp_err
+                repo_regexp,
+                regexp_err,
             )
             sys.exit(1)
         try:
@@ -92,7 +92,8 @@ class AbstractGetter(ABC):
         except re.error as regexp_err:
             self.logger.error(
                 "Error while compiling regular expression '%s': '%s'.",
-                path_regexp, regexp_err
+                path_regexp,
+                regexp_err,
             )
             sys.exit(1)
 
@@ -106,21 +107,21 @@ class AbstractGetter(ABC):
                 "Env file not found or not a file. "
                 "Trying to get token from environment."
             )
-            self._access_token: str = os.environ.get('ACCESS_TOKEN', '')
+            self._access_token: str = os.environ.get("ACCESS_TOKEN", "")
         else:
             env_config = Config(RepositoryEnv(env_path))
-            self._access_token: str = env_config.get('ACCESS_TOKEN', default='')  # type: ignore
+            self._access_token: str = env_config.get("ACCESS_TOKEN", default="")  # type: ignore
 
         if not self._access_token:
-            self.logger.warning('GitHub access token is not defined.')
+            self.logger.warning("GitHub access token is not defined.")
 
     def _set_github_parser(self, branch_policy: bool) -> None:
         self.github_parser = GitHubParser(
             file_extensions=SUPPORTED_EXTENSIONS[self.extension],
             check_all=branch_policy,
             access_token=self._access_token,
-            logger=get_logger('webparsers', LOG_PATH),
-            session=Session()
+            logger=get_logger("webparsers", LOG_PATH),
+            session=Session(),
         )
 
     @abstractmethod
@@ -154,7 +155,7 @@ class AbstractGetter(ABC):
     ) -> Union[List[ASTFeatures], List[List[ASTFeatures]]]:
         works = []
         for directory in directories:
-            self.logger.debug(f'{GET_FRAZE} {directory}')
+            self.logger.debug(f"{GET_FRAZE} {directory}")
             new_works = self.get_works_from_dir(directory)
             if independent:
                 works.append(new_works)
@@ -205,7 +206,7 @@ class AbstractGetter(ABC):
         works = []
         for github_project in github_project_folders:
             nested_works: List[ASTFeatures] = []
-            self.logger.debug(f'{GET_FRAZE} {github_project}')
+            self.logger.debug(f"{GET_FRAZE} {github_project}")
             gh_prj_files = self.github_parser.get_files_generator_from_dir_url(
                 github_project, path_regexp=self.path_regexp
             )
@@ -250,13 +251,12 @@ class AbstractGetter(ABC):
             return works
 
         repos = self.github_parser.get_list_of_repos(
-            owner=github_user,
-            reg_exp=self.repo_regexp
+            owner=github_user, reg_exp=self.repo_regexp
         )
         for repo in repos:
             nested_works: List[ASTFeatures] = []
 
-            self.logger.debug(f'{GET_FRAZE} {repo.html_url}')
+            self.logger.debug(f"{GET_FRAZE} {repo.html_url}")
             files = self.github_parser.get_files_generator_from_repo_url(
                 repo.html_url, path_regexp=self.path_regexp
             )

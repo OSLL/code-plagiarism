@@ -17,27 +17,24 @@ from pytest_mock import MockerFixture
 
 @pytest.fixture
 def mock_json_load(request, mocker: MockerFixture) -> dict:
-    mocker.patch.object(json, 'load', return_value=request.param)
+    mocker.patch.object(json, "load", return_value=request.param)
 
     return request.param
 
 
 @pytest.fixture
 def mock_json_dump(mocker: MockerFixture) -> MagicMock:
-    return mocker.patch.object(json, 'dump')
+    return mocker.patch.object(json, "dump")
 
 
 @pytest.fixture
 def path(mocker: MockerFixture):
-    return mocker.MagicMock(autospec=Path('.'))
+    return mocker.MagicMock(autospec=Path("."))
 
 
 @pytest.fixture
 def settings_config(request, mocker: MockerFixture):
-    mocker.patch(
-        'codeplag.config.read_config',
-        return_value=request.param
-    )
+    mocker.patch("codeplag.config.read_config", return_value=request.param)
 
     return request.param
 
@@ -49,17 +46,15 @@ def dummy_logger(mocker: MockerFixture):
 
 @pytest.fixture
 def mock_write_config(mocker: MockerFixture):
-    return mocker.patch('codeplag.config.write_config')
+    return mocker.patch("codeplag.config.write_config")
 
 
 @pytest.mark.parametrize(
     "mock_json_load",
     [
-        {'threshold': 75},
-        {
-            'threshold': 97, 'reports': 'reports', 'environment': '.env'
-        },
-        {}
+        {"threshold": 75},
+        {"threshold": 97, "reports": "reports", "environment": ".env"},
+        {},
     ],
     indirect=True,
 )
@@ -71,26 +66,18 @@ def test_read_config(path, mock_json_load):
     "except_type",
     [
         json.decoder.JSONDecodeError(
-            msg="Json decode error.",
-            doc="This is json decode error.",
-            pos=1
+            msg="Json decode error.", doc="This is json decode error.", pos=1
         ),
         FileNotFoundError,
-        PermissionError
-    ]
+        PermissionError,
+    ],
 )
 def test_read_config_safe(path, except_type):
     path.open.side_effect = except_type
     assert read_config(path, safe=True) is None
 
 
-@pytest.mark.parametrize(
-    "except_type",
-    [
-        FileNotFoundError,
-        PermissionError
-    ]
-)
+@pytest.mark.parametrize("except_type", [FileNotFoundError, PermissionError])
 def test_read_config_bad(path, except_type):
     path.open.side_effect = except_type
     with pytest.raises(except_type):
@@ -102,10 +89,10 @@ def test_read_config_bad(path, except_type):
     [
         [{}, {}],
         [
-            {'field1': 10, 'field2': Path('settings.json'), 'field3': [1, 2, 3]},
-            {'field1': 10, 'field2': 'settings.json', 'field3': [1, 2, 3]}
+            {"field1": 10, "field2": Path("settings.json"), "field3": [1, 2, 3]},
+            {"field1": 10, "field2": "settings.json", "field3": [1, 2, 3]},
         ],
-    ]
+    ],
 )
 def test_write_config(path, mock_json_dump, dumped_dict, expected):
     copy_dumped = dict(dumped_dict)
@@ -126,40 +113,39 @@ def test_read_default_settings_conf(dummy_logger, settings_config):
     [
         [{}, DefaultSettingsConfig],
         [
-            {'reports': '/home/bukabyka/reports'},
+            {"reports": "/home/bukabyka/reports"},
             {
-                'threshold': 65,
-                'reports': Path('/home/bukabyka/reports'),
-                'show_progress': 0,
-                'reports_extension': 'csv',
-            }
+                "threshold": 65,
+                "reports": Path("/home/bukabyka/reports"),
+                "show_progress": 0,
+                "reports_extension": "csv",
+            },
         ],
         [
             {
-                'threshold': 99,
-                'environment':
-                '/home/bukabyka/.env',
-                'show_progress': 1,
-                'reports_extension': 'json',
+                "threshold": 99,
+                "environment": "/home/bukabyka/.env",
+                "show_progress": 1,
+                "reports_extension": "json",
             },
             {
-                'threshold': 99,
-                'environment': Path('/home/bukabyka/.env'),
-                'show_progress': 1,
-                'reports_extension': 'json',
-            }
+                "threshold": 99,
+                "environment": Path("/home/bukabyka/.env"),
+                "show_progress": 1,
+                "reports_extension": "json",
+            },
         ],
         [
-            {'bad_field': 'bad_field', 'reports': '/home/bukabyka/reports'},
+            {"bad_field": "bad_field", "reports": "/home/bukabyka/reports"},
             {
-                'threshold': 65,
-                'reports': Path('/home/bukabyka/reports'),
-                'show_progress': 0,
-                'reports_extension': 'csv',
-            }
-        ]
+                "threshold": 65,
+                "reports": Path("/home/bukabyka/reports"),
+                "show_progress": 0,
+                "reports_extension": "csv",
+            },
+        ],
     ],
-    indirect=["settings_config"]
+    indirect=["settings_config"],
 )
 def test_read_settings_conf(dummy_logger, settings_config, expected):
     assert read_settings_conf(dummy_logger) == expected
@@ -168,7 +154,4 @@ def test_read_settings_conf(dummy_logger, settings_config, expected):
 
 def test_write_settings_conf(mock_write_config):
     write_settings_conf(DefaultSettingsConfig)
-    mock_write_config.assert_called_once_with(
-        CONFIG_PATH,
-        DefaultSettingsConfig
-    )
+    mock_write_config.assert_called_once_with(CONFIG_PATH, DefaultSettingsConfig)

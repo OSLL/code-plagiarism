@@ -1,3 +1,4 @@
+# fmt: off
 import unittest
 
 import numpy as np
@@ -117,8 +118,8 @@ class TestFeaturebased(unittest.TestCase):
         self.assertEqual(indexes3, [])
 
     def test_add_not_counted(self):
-        structure = ((1, 2), (2, 1), (1, 3), (2, 4),
-                     (3, 5), (1, 4), (2, 2), (2, 5))
+        structure = [(1, 2), (2, 1), (1, 3), (2, 4),
+                     (3, 5), (1, 4), (2, 2), (2, 5)]
         res1 = add_not_counted(structure, 3, [0, 2, 5, len(structure)],
                                [[0, 0], [1, 1]], axis=0)
 

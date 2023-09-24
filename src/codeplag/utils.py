@@ -33,9 +33,11 @@ from codeplag.types import (
 )
 
 
-def fast_compare(features_f: ASTFeatures,
-                 features_s: ASTFeatures,
-                 weights: tuple = (1, 0.4, 0.4, 0.4)) -> FastMetrics:
+def fast_compare(
+    features_f: ASTFeatures,
+    features_s: ASTFeatures,
+    weights: tuple = (1, 0.4, 0.4, 0.4),
+) -> FastMetrics:
     """The function calculates the similarity of features of two programs
     using four algorithms, calculates their weighted average, and returns
     all of this  in 'FastMetrics' structure.
@@ -51,8 +53,7 @@ def fast_compare(features_f: ASTFeatures,
     kw_res = counter_metric(features_f.keywords, features_s.keywords)
     lits_res = counter_metric(features_f.literals, features_s.literals)
     weighted_average = np.average(
-        [jakkar_coef, ops_res, kw_res, lits_res],
-        weights=weights
+        [jakkar_coef, ops_res, kw_res, lits_res], weights=weights
     )
 
     fast_metrics = FastMetrics(
@@ -60,15 +61,15 @@ def fast_compare(features_f: ASTFeatures,
         operators=ops_res,
         keywords=kw_res,
         literals=lits_res,
-        weighted_average=weighted_average
+        weighted_average=weighted_average,
     )
 
     return fast_metrics
 
 
-def compare_works(features1: ASTFeatures,
-                  features2: ASTFeatures,
-                  threshold: int = 60) -> CompareInfo:
+def compare_works(
+    features1: ASTFeatures, features2: ASTFeatures, threshold: int = 60
+) -> CompareInfo:
     """The function returns the result of comparing two files
 
     @features1 - the features of the first  source file
@@ -81,22 +82,18 @@ def compare_works(features1: ASTFeatures,
         return CompareInfo(fast=fast_metrics)
 
     compliance_matrix = np.zeros(
-        (len(features1.head_nodes), len(features2.head_nodes), 2),
-        dtype=np.int64
+        (len(features1.head_nodes), len(features2.head_nodes), 2), dtype=np.int64
     )
-    struct_res = struct_compare(features1.structure, features2.structure,
-                                compliance_matrix)
+    struct_res = struct_compare(
+        features1.structure, features2.structure, compliance_matrix
+    )
     struct_res = struct_res[0] / struct_res[1]
 
     structure_info = StructuresInfo(
-        similarity=struct_res,
-        compliance_matrix=compliance_matrix
+        similarity=struct_res, compliance_matrix=compliance_matrix
     )
 
-    return CompareInfo(
-        fast=fast_metrics,
-        structure=structure_info
-    )
+    return CompareInfo(fast=fast_metrics, structure=structure_info)
 
 
 def serialize_compare_result(
@@ -108,32 +105,28 @@ def serialize_compare_result(
 
     return pd.DataFrame(
         {
-            'date': datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            'first_modify_date': first_work.modify_date,
-            'second_modify_date': second_work.modify_date,
-            'first_path': first_work.filepath.__str__(),
-            'second_path': second_work.filepath.__str__(),
-            'jakkar': compare_info.fast.jakkar,
-            'operators': compare_info.fast.operators,
-            'keywords': compare_info.fast.keywords,
-            'literals': compare_info.fast.literals,
-            'weighted_average': compare_info.fast.weighted_average,
-            'struct_similarity': compare_info.structure.similarity,
-            'first_heads': [first_work.head_nodes],
-            'second_heads': [second_work.head_nodes],
-            'compliance_matrix': [
-                compare_info.structure.compliance_matrix.tolist()
-            ],
+            "date": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            "first_modify_date": first_work.modify_date,
+            "second_modify_date": second_work.modify_date,
+            "first_path": first_work.filepath.__str__(),
+            "second_path": second_work.filepath.__str__(),
+            "jakkar": compare_info.fast.jakkar,
+            "operators": compare_info.fast.operators,
+            "keywords": compare_info.fast.keywords,
+            "literals": compare_info.fast.literals,
+            "weighted_average": compare_info.fast.weighted_average,
+            "struct_similarity": compare_info.structure.similarity,
+            "first_heads": [first_work.head_nodes],
+            "second_heads": [second_work.head_nodes],
+            "compliance_matrix": [compare_info.structure.compliance_matrix.tolist()],
         },
-        dtype=object
+        dtype=object,
     )
 
 
 def deserialize_compare_result(compare_result: pd.Series) -> CompareInfo:
     if isinstance(compare_result.compliance_matrix, str):
-        similarity_matrix = np.array(
-            json.loads(compare_result.compliance_matrix)
-        )
+        similarity_matrix = np.array(json.loads(compare_result.compliance_matrix))
     else:
         similarity_matrix = np.array(compare_result.compliance_matrix)
 
@@ -143,24 +136,24 @@ def deserialize_compare_result(compare_result: pd.Series) -> CompareInfo:
             operators=float(compare_result.operators),
             keywords=float(compare_result.keywords),
             literals=float(compare_result.literals),
-            weighted_average=np.float64(compare_result.weighted_average)
+            weighted_average=np.float64(compare_result.weighted_average),
         ),
         structure=StructuresInfo(
             compliance_matrix=similarity_matrix,
-            similarity=float(compare_result.struct_similarity)
-        )
+            similarity=float(compare_result.struct_similarity),
+        ),
     )
 
     return compare_info
 
 
-def calc_iterations(count: int, mode: Mode = 'many_to_many') -> int:
+def calc_iterations(count: int, mode: Mode = "many_to_many") -> int:
     if count <= 1:
         return 0
 
-    if mode == 'many_to_many':
+    if mode == "many_to_many":
         return (count * (count - 1)) // 2
-    if mode == 'one_to_one':
+    if mode == "one_to_one":
         return math.factorial(count) // 2 * math.factorial(count - 2)
 
     return 0
@@ -170,7 +163,7 @@ def calc_progress(
     iteration: int,
     iterations: int,
     internal_iteration: int = 0,
-    internal_iterations: int = 0
+    internal_iterations: int = 0,
 ) -> float:
     if iterations == 0:
         return 0.0
@@ -186,7 +179,6 @@ def calc_progress(
 
 
 class CodeplagEngine:
-
     def __init__(self, logger: logging.Logger, parsed_args: Dict[str, Any]) -> None:
         self.root: str = parsed_args.pop("root")
         self.command: Optional[str] = None
@@ -202,62 +194,65 @@ class CodeplagEngine:
             self.reports: Optional[Path] = parsed_args.pop("reports")
             self.threshold: int = parsed_args.pop("threshold")
             self.show_progress: Flag = parsed_args.pop("show_progress")
-            self.reports_extension: ReportsExtension = parsed_args.pop("reports_extension")
+            self.reports_extension: ReportsExtension = parsed_args.pop(
+                "reports_extension"
+            )
         else:
             settings_conf = read_settings_conf(logger)
             self._set_features_getter(parsed_args, settings_conf, logger)
 
-            self.mode: str = parsed_args.pop('mode', 'many_to_many')
-            self.show_progress: Flag = settings_conf['show_progress']
+            self.mode: str = parsed_args.pop("mode", "many_to_many")
+            self.show_progress: Flag = settings_conf["show_progress"]
             self.threshold: int = settings_conf["threshold"]
 
-            self.reports: Optional[Path] = settings_conf.get('reports')
-            self.__reports_extension: ReportsExtension = settings_conf['reports_extension']
-            if self.__reports_extension == 'csv' and self.reports:
+            self.reports: Optional[Path] = settings_conf.get("reports")
+            self.__reports_extension: ReportsExtension = settings_conf[
+                "reports_extension"
+            ]
+            if self.__reports_extension == "csv" and self.reports:
                 reports_path = self.reports / CSV_REPORT_FILENAME
                 if reports_path.is_file():
                     self.__df_report = pd.read_csv(
                         self.reports / CSV_REPORT_FILENAME,
-                        sep=';',
+                        sep=";",
                         index_col=0,
-                        dtype=object
+                        dtype=object,
                     )
                     self.__start_report_lines = self.__df_report.shape[0]
                 else:
                     self.__df_report = pd.DataFrame(
-                        columns=CSV_REPORT_COLUMNS,
-                        dtype=object
+                        columns=CSV_REPORT_COLUMNS, dtype=object
                     )
                     self.__start_report_lines = 0
                 self.__csv_last_save = perf_counter()
 
-            self.github_files: List[str] = parsed_args.pop('github_files', [])
+            self.github_files: List[str] = parsed_args.pop("github_files", [])
             self.github_project_folders: List[str] = parsed_args.pop(
-                'github_project_folders', []
+                "github_project_folders", []
             )
-            self.github_user: str = parsed_args.pop('github_user', '')
+            self.github_user: str = parsed_args.pop("github_user", "")
 
-            self.files: List[Path] = parsed_args.pop('files', [])
-            self.directories: List[Path] = parsed_args.pop('directories', [])
+            self.files: List[Path] = parsed_args.pop("files", [])
+            self.directories: List[Path] = parsed_args.pop("directories", [])
 
     def _set_features_getter(
         self,
         parsed_args: Dict[str, Any],
         settings_conf: Settings,
-        logger: logging.Logger
+        logger: logging.Logger,
     ) -> None:
-        extension: Extension = parsed_args.pop('extension')
-        if extension == 'py':
+        extension: Extension = parsed_args.pop("extension")
+        if extension == "py":
             FeaturesGetter = PyFeaturesGetter
-        elif extension == 'cpp':
+        elif extension == "cpp":
             FeaturesGetter = CFeaturesGetter
 
         self.features_getter: AbstractGetter = FeaturesGetter(
             environment=settings_conf.get("environment"),
-            all_branches=parsed_args.pop('all_branches', False),
+            all_branches=parsed_args.pop("all_branches", False),
             logger=logger,
-            repo_regexp=parsed_args.pop('repo_regexp', None),
-            path_regexp=parsed_args.pop('path_regexp', None)
+            repo_regexp=parsed_args.pop("repo_regexp", None),
+            path_regexp=parsed_args.pop("path_regexp", None),
         )
 
     def save_result(
@@ -265,7 +260,7 @@ class CodeplagEngine:
         first_work: ASTFeatures,
         second_work: ASTFeatures,
         compare_info: CompareInfo,
-        reports_extension: ReportsExtension
+        reports_extension: ReportsExtension,
     ) -> None:
         if self.reports is None or not self.reports.is_dir():
             self.logger.error(
@@ -274,7 +269,7 @@ class CodeplagEngine:
             return
 
         # TODO: use match in the next py version
-        if reports_extension == 'csv':
+        if reports_extension == "csv":
             self.__save_result_to_csv(
                 first_work,
                 second_work,
@@ -296,9 +291,9 @@ class CodeplagEngine:
         assert metrics.structure is not None
 
         struct_info_dict = metrics.structure._asdict()
-        struct_info_dict['compliance_matrix'] = (
-            struct_info_dict['compliance_matrix'].tolist()
-        )
+        struct_info_dict["compliance_matrix"] = struct_info_dict[
+            "compliance_matrix"
+        ].tolist()
         report = WorksReport(
             date=datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
             first_path=first_work.filepath.__str__(),
@@ -306,7 +301,7 @@ class CodeplagEngine:
             first_heads=first_work.head_nodes,
             second_heads=second_work.head_nodes,
             fast=metrics.fast._asdict(),
-            structure=struct_info_dict
+            structure=struct_info_dict,
         )
         if first_work.modify_date:
             report["first_modify_date"] = first_work.modify_date
@@ -314,15 +309,13 @@ class CodeplagEngine:
             report["second_modify_date"] = second_work.modify_date
 
         try:
-            report_file = self.reports / f'{uuid.uuid4().hex}.json'  # type: ignore
+            report_file = self.reports / f"{uuid.uuid4().hex}.json"  # type: ignore
             write_config(report_file, report)
         except PermissionError:
-            self.logger.error(
-                "Not enough rights to write reports to the folder."
-            )
+            self.logger.error("Not enough rights to write reports to the folder.")
 
     def _write_df_to_fs(self) -> None:
-        if self.__reports_extension != 'csv' or not self.reports:
+        if self.__reports_extension != "csv" or not self.reports:
             return
 
         if self.__start_report_lines == self.__df_report.shape[0]:
@@ -331,7 +324,7 @@ class CodeplagEngine:
 
         report_path = self.reports / CSV_REPORT_FILENAME
         self.logger.debug(f"Saving report to the file '{report_path}'")
-        self.__df_report.to_csv(report_path, sep=';')
+        self.__df_report.to_csv(report_path, sep=";")
         self.__start_report_lines = self.__df_report.shape[0]
 
     def __save_result_to_csv(
@@ -343,9 +336,9 @@ class CodeplagEngine:
         self.__df_report = pd.concat(
             [
                 self.__df_report,
-                serialize_compare_result(first_work, second_work, metrics)
+                serialize_compare_result(first_work, second_work, metrics),
             ],
-            ignore_index=True
+            ignore_index=True,
         )
         if perf_counter() - self.__csv_last_save > CSV_SAVE_TICK:
             self._write_df_to_fs()
@@ -359,10 +352,10 @@ class CodeplagEngine:
         work1, work2 = sorted([work1, work2])
         metrics = None
         if self.reports:
-            if self.__reports_extension == 'csv':
+            if self.__reports_extension == "csv":
                 cache_val = self.__df_report[
-                    (self.__df_report.first_path == str(work1.filepath)) &
-                    (self.__df_report.second_path == str(work2.filepath))
+                    (self.__df_report.first_path == str(work1.filepath))
+                    & (self.__df_report.second_path == str(work2.filepath))
                 ]
                 if cache_val.shape[0]:
                     metrics = deserialize_compare_result(cache_val.iloc[0])
@@ -371,45 +364,32 @@ class CodeplagEngine:
                 metrics = compare_works(work1, work2, self.threshold)
                 if metrics.structure is None:
                     return
-                self.save_result(
-                    work1,
-                    work2,
-                    metrics,
-                    self.__reports_extension
-                )
+                self.save_result(work1, work2, metrics, self.__reports_extension)
         else:
             metrics = compare_works(work1, work2, self.threshold)
             if metrics.structure is None:
                 return
 
-        print_compare_result(
-            work1,
-            work2,
-            metrics,
-            self.threshold
-        )
+        print_compare_result(work1, work2, metrics, self.threshold)
 
     def _calc_and_print_progress(
         self,
         iteration: int,
         iterations: int,
         internal_iteration: int = 0,
-        internal_iterations: int = 0
+        internal_iterations: int = 0,
     ) -> None:
         progress = calc_progress(
             iteration, iterations, internal_iteration, internal_iterations
         )
-        print(f"Check progress: {progress:.2%}.", end='\r')
+        print(f"Check progress: {progress:.2%}.", end="\r")
 
     def _settings_show(self) -> None:
         settings_config = read_settings_conf(self.logger)
         table = pd.DataFrame(
             list(settings_config.values()),
             index=[k.capitalize() for k in settings_config],
-            columns=pd.Index(
-                ["Value"],
-                name="Key"
-            )
+            columns=pd.Index(["Value"], name="Key"),
         )
         print(table)
 
@@ -427,8 +407,7 @@ class CodeplagEngine:
 
     def __check(self) -> None:
         self.logger.debug(
-            f"Mode: {self.mode}; "
-            f"Extension: {self.features_getter.extension}."
+            f"Mode: {self.mode}; Extension: {self.features_getter.extension}."
         )
 
         begin_time = time()
@@ -439,23 +418,17 @@ class CodeplagEngine:
         )
 
         self.logger.info("Starting searching for plagiarism ...")
-        if self.mode == 'many_to_many':
+        if self.mode == "many_to_many":
             works: List[ASTFeatures] = []
             works.extend(features_from_files)
-            works.extend(
-                self.features_getter.get_from_dirs(
-                    self.directories
-                )
-            )
+            works.extend(self.features_getter.get_from_dirs(self.directories))
             works.extend(features_from_gh_files)
             works.extend(
                 self.features_getter.get_from_github_project_folders(
                     self.github_project_folders
                 )
             )
-            works.extend(
-                self.features_getter.get_from_users_repos(self.github_user)
-            )
+            works.extend(self.features_getter.get_from_users_repos(self.github_user))
 
             count_works = len(works)
             iterations = calc_iterations(count_works)
@@ -466,13 +439,11 @@ class CodeplagEngine:
                         continue
 
                     if self.show_progress:
-                        self._calc_and_print_progress(
-                            iteration, iterations
-                        )
+                        self._calc_and_print_progress(iteration, iterations)
                         iteration += 1
 
                     self._do_step(work1, work2)
-        elif self.mode == 'one_to_one':
+        elif self.mode == "one_to_one":
             combined_elements = filter(
                 bool,
                 (
@@ -486,8 +457,8 @@ class CodeplagEngine:
                     ),
                     *self.features_getter.get_from_users_repos(
                         self.github_user, independent=True
-                    )
-                )
+                    ),
+                ),
             )
             if self.show_progress:
                 combined_elements = list(combined_elements)
@@ -495,15 +466,10 @@ class CodeplagEngine:
                 iterations = calc_iterations(count_sequences, self.mode)
                 iteration = 0
 
-            cases = combinations(
-                combined_elements,
-                r=2
-            )
+            cases = combinations(combined_elements, r=2)
             for case in cases:
                 first_sequence, second_sequence = case
-                internal_iterations = (
-                    len(first_sequence) * len(second_sequence)
-                )
+                internal_iterations = len(first_sequence) * len(second_sequence)
                 internal_iteration = 0
                 for work1 in first_sequence:
                     for work2 in second_sequence:
@@ -512,7 +478,7 @@ class CodeplagEngine:
                                 iteration,  # type: ignore
                                 iterations,  # type: ignore
                                 internal_iteration,
-                                internal_iterations
+                                internal_iterations,
                             )
                             internal_iteration += 1
 
@@ -520,9 +486,7 @@ class CodeplagEngine:
                 if self.show_progress:
                     iteration += 1  # type: ignore
 
-        self.logger.debug(
-            f'Time for all {time() - begin_time:.2f} s'
-        )
+        self.logger.debug(f"Time for all {time() - begin_time:.2f}s")
         self.logger.info("Ending searching for plagiarism ...")
 
     def run(self) -> None:

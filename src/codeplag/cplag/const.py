@@ -5,10 +5,10 @@ from clang.cindex import CursorKind
 
 
 def get_compile_args() -> List[str]:
-    syspath = ccsyspath.system_include_paths('clang++')
-    incargs = [b'-I' + inc for inc in syspath]
+    syspath = ccsyspath.system_include_paths("clang++")
+    incargs = [b"-I" + inc for inc in syspath]
 
-    return ['-x', 'c++', '--std=c++11'] + incargs
+    return ["-x", "c++", "--std=c++11"] + incargs
 
 
 COMPILE_ARGS = get_compile_args()
@@ -18,8 +18,9 @@ IGNORE = [
     CursorKind.MACRO_INSTANTIATION,
     CursorKind.INCLUSION_DIRECTIVE,
     CursorKind.USING_DIRECTIVE,
-    CursorKind.NAMESPACE
+    CursorKind.NAMESPACE,
 ]
+# fmt: off
 OPERATORS = (
     '+', '-', '*', '/', '%',               # Arithmetic Operators
     '+=', '-=', '*=', '/=', '%=', '=',     # Assignment Operators
@@ -27,3 +28,4 @@ OPERATORS = (
     '!=', '==', '<=', '>=', '<', '>',      # Relational Operators
     '^', '&', '|', '<<', '>>', '~'         # Bitwise Operators
 )
+# fmt: on

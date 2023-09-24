@@ -22,7 +22,8 @@ Extension = Literal["py", "cpp"]
 Extensions = Tuple[Pattern, ...]
 Flag = Literal[0, 1]
 Mode = Literal["many_to_many", "one_to_one"]
-ReportsExtension = Literal['json', 'csv']
+ReportsExtension = Literal["json", "csv"]
+# fmt: off
 Threshold = Literal[
     50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
     60, 61, 62, 63, 64, 65, 66, 67, 68, 69,
@@ -30,6 +31,7 @@ Threshold = Literal[
     80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
     90, 91, 92, 93, 94, 95, 96, 97, 98, 99
 ]
+# fmt: on
 
 # ----------------------------------------------------------------------------
 # AST
@@ -113,12 +115,13 @@ class WorksReport(TypedDict):
     fast: Dict[str, int]  # dict from FastMetrics
     structure: dict  # dict from StructuresInfo
 
+
 # ----------------------------------------------------------------------------
 
 
 class Settings(TypedDict):
     environment: NotRequired[Path]
     reports: NotRequired[Path]
-    reports_extension: Literal['json', 'csv']
+    reports_extension: Literal["json", "csv"]
     show_progress: Flag
     threshold: Threshold

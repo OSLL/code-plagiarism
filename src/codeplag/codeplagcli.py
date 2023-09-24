@@ -82,9 +82,9 @@ class CodeplagCLI(argparse.ArgumentParser):
             version=f"{UTIL_NAME} {UTIL_VERSION}",
         )
         self.add_argument(
-            '--verbose',
-            help='Show debug messages.',
-            action='store_true',
+            "--verbose",
+            help="Show debug messages.",
+            action="store_true",
         )
 
         subparsers = self.add_subparsers(
@@ -128,7 +128,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             "--reports_extension",
             help="Extension of saved report files.",
             type=str,
-            choices=REPORTS_EXTENSION_CHOICE
+            choices=REPORTS_EXTENSION_CHOICE,
         )
         settings_modify.add_argument(
             "-sp",

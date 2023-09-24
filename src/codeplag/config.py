@@ -22,7 +22,7 @@ def read_config(file: Path, safe: bool = False) -> Optional[dict]:
 def read_config(file: Path, safe: bool = False) -> Optional[dict]:
     config = None
     try:
-        with file.open(mode='r') as f:
+        with file.open(mode="r") as f:
             config = json.load(f)
     except (json.decoder.JSONDecodeError, FileNotFoundError, PermissionError):
         if not safe:
@@ -38,7 +38,7 @@ def write_config(file: Path, config: Union[dict, TypedDict]) -> None:
         if isinstance(config_for_dump[key], Path):
             config_for_dump[key] = str(config_for_dump[key])
 
-    with file.open(mode='w', encoding='utf-8') as f:
+    with file.open(mode="w", encoding="utf-8") as f:
         json.dump(config_for_dump, f)
 
 
@@ -47,7 +47,7 @@ def read_settings_conf(logger: logging.Logger) -> Settings:
     if loaded_settings_config is None:
         logger.warning(
             "Unsuccessful attempt to read config '%s'. Returning default config.",
-            CONFIG_PATH
+            CONFIG_PATH,
         )
         return DefaultSettingsConfig
 
@@ -62,7 +62,8 @@ def read_settings_conf(logger: logging.Logger) -> Settings:
 
     return Settings(
         **{
-            key: loaded_settings_config[key] for key in Settings.__annotations__
+            key: loaded_settings_config[key]
+            for key in Settings.__annotations__
             if key in loaded_settings_config
         }
     )
@@ -73,7 +74,5 @@ def write_settings_conf(settings: Settings) -> None:
 
 
 DefaultSettingsConfig = Settings(
-    threshold=DEFAULT_THRESHOLD,
-    show_progress=0,
-    reports_extension='csv'
+    threshold=DEFAULT_THRESHOLD, show_progress=0, reports_extension="csv"
 )

@@ -10,19 +10,20 @@ from codeplag.types import ASTFeatures, CompareInfo, NodeCodePlace
 
 
 class Color(Enum):
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-    END = '\033[0m'
+    HEADER = "\033[95m"
+    OKBLUE = "\033[94m"
+    OKCYAN = "\033[96m"
+    OKGREEN = "\033[92m"
+    WARNING = "\033[93m"
+    FAIL = "\033[91m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+    END = "\033[0m"
 
 
-def colorize(text: str, color: Color,
-             bold: bool = False, underline: bool = False) -> str:
+def colorize(
+    text: str, color: Color, bold: bool = False, underline: bool = False
+) -> str:
     if bold:
         text = f"{Color.BOLD.value}{text}"
     if underline:
@@ -41,19 +42,16 @@ def eprint(*args, **kwargs) -> None:
     print(*args, file=sys.stderr, **kwargs)
 
 
-def print_suspect_parts(source_code: str,
-                        marked_tokens: List[int],
-                        tokens_pos: List[NodeCodePlace]) -> None:
-    ROWS = {
-        row for (row, _column) in
-        [tokens_pos[index] for index in marked_tokens]
-    }
+def print_suspect_parts(
+    source_code: str, marked_tokens: List[int], tokens_pos: List[NodeCodePlace]
+) -> None:
+    ROWS = {row for (row, _column) in [tokens_pos[index] for index in marked_tokens]}
 
     row = 1
     column = 1  # noqa
 
     for symbol in source_code:
-        if symbol == '\n':
+        if symbol == "\n":
             row += 1
             column = 1
 
@@ -63,17 +61,16 @@ def print_suspect_parts(source_code: str,
         column += 1
 
 
-def print_code_and_highlight_suspect(source_code: str,
-                                     marked_tokens: List[int],
-                                     tokens_pos: List[NodeCodePlace]) -> None:
-    ROWS = {row for (row, column) in
-            [tokens_pos[index] for index in marked_tokens]}
+def print_code_and_highlight_suspect(
+    source_code: str, marked_tokens: List[int], tokens_pos: List[NodeCodePlace]
+) -> None:
+    ROWS = {row for (row, column) in [tokens_pos[index] for index in marked_tokens]}
 
     row = 1
     column = 1  # noqa
 
     for symbol in source_code:
-        if symbol == '\n':
+        if symbol == "\n":
             row += 1
             column = 1
 
@@ -85,10 +82,12 @@ def print_code_and_highlight_suspect(source_code: str,
         column += 1
 
 
-def print_compare_result(features1: ASTFeatures,
-                         features2: ASTFeatures,
-                         compare_info: CompareInfo,
-                         threshold: int = 60) -> None:
+def print_compare_result(
+    features1: ASTFeatures,
+    features2: ASTFeatures,
+    compare_info: CompareInfo,
+    threshold: int = 60,
+) -> None:
     """The function prints the result of comparing two files
 
     @features1 - the features of the first  source file
@@ -98,28 +97,25 @@ def print_compare_result(features1: ASTFeatures,
     """
 
     print(" " * 40)
-    print('+' * 40)
+    print("+" * 40)
     if features1.modify_date is not None and features2.modify_date is not None:
         message = (
-            '-----\n'
-            f'{features1.filepath}\n{features1.modify_date}\n'
-            '-----\n'
-            f'{features2.filepath}\n{features2.modify_date}\n'
-            '-----\n'
+            "-----\n"
+            f"{features1.filepath}\n{features1.modify_date}\n"
+            "-----\n"
+            f"{features2.filepath}\n{features2.modify_date}\n"
+            "-----\n"
         )
     else:
-        message = (
-            f'{features1.filepath}\n'
-            f'{features2.filepath}\n'
-        )
+        message = f"{features1.filepath}\n{features2.filepath}\n"
 
-    print('May be similar:', message, end='\n\n', sep='\n')
+    print("May be similar:", message, end="\n\n", sep="\n")
     main_metrics_df = pd.DataFrame(
-        [compare_info.fast], index=['Similarity'],
+        [compare_info.fast],
+        index=["Similarity"],
         columns=pd.Index(
-            (field.upper() for field in compare_info.fast._fields),
-            name='FastMetrics:'
-        )
+            (field.upper() for field in compare_info.fast._fields), name="FastMetrics:"
+        ),
     )
     print(main_metrics_df)
     print()
@@ -128,11 +124,9 @@ def print_compare_result(features1: ASTFeatures,
         return
 
     additional_metrics_df = pd.DataFrame(
-        compare_info.structure.similarity, index=['Similarity'],
-        columns=pd.Index(
-            ['Structure'],
-            name='AdditionalMetrics:'
-        )
+        compare_info.structure.similarity,
+        index=["Similarity"],
+        columns=pd.Index(["Structure"], name="AdditionalMetrics:"),
     )
     print(additional_metrics_df)
     print()
@@ -141,26 +135,20 @@ def print_compare_result(features1: ASTFeatures,
         data = np.zeros(
             (
                 compare_info.structure.compliance_matrix.shape[0],
-                compare_info.structure.compliance_matrix.shape[1]
+                compare_info.structure.compliance_matrix.shape[1],
             ),
-            dtype=np.float64
+            dtype=np.float64,
         )
-        for row in range(
-            compare_info.structure.compliance_matrix.shape[0]
-        ):
-            for col in range(
-                compare_info.structure.compliance_matrix.shape[1]
-            ):
+        for row in range(compare_info.structure.compliance_matrix.shape[0]):
+            for col in range(compare_info.structure.compliance_matrix.shape[1]):
                 data[row][col] = (
                     compare_info.structure.compliance_matrix[row][col][0]
                     / compare_info.structure.compliance_matrix[row][col][1]
                 )
         compliance_matrix_df = pd.DataFrame(
-            data=data,
-            index=features1.head_nodes,
-            columns=features2.head_nodes
+            data=data, index=features1.head_nodes, columns=features2.head_nodes
         )
 
-        print(compliance_matrix_df, '\n')
+        print(compliance_matrix_df, "\n")
 
-    print('+' * 40)
+    print("+" * 40)
