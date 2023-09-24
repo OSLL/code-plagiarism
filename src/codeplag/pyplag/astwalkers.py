@@ -1,4 +1,6 @@
 import ast
+from contextlib import suppress
+from typing import Optional
 
 from codeplag.pyplag.const import IGNORE_NODES, KEYWORDS, LITERALS, OPERATORS, TO_TOKEN
 from codeplag.types import ASTFeatures, NodeCodePlace, NodeStructurePlace
@@ -14,6 +16,28 @@ class ASTWalker(ast.NodeVisitor):
         self.features.from_num[self.features.count_unodes] = node_name
         self.features.count_unodes += 1
 
+    def __get_actual_name_from_node(self, node: ast.AST) -> Optional[str]:
+        # TODO: Also handle ast.Expr
+        if isinstance(node, (ast.AnnAssign, ast.AugAssign)):
+            if isinstance(node.target, ast.Name):
+                return node.target.id
+            elif isinstance(node.target, ast.Attribute):
+                target_id = getattr(node.target.value, "id", None)
+                if target_id is None:
+                    return
+                return f"{target_id}.{node.target.attr}"
+            elif isinstance(node.target, ast.Subscript):
+                # TODO
+                ...
+        elif isinstance(node, ast.Assign):
+            target = None
+            with suppress(IndexError):
+                target = node.targets[0]
+            if target is None:
+                return
+            if isinstance(target, ast.Name):
+                return target.id
+
     def add_node_to_structure(self, node: ast.AST, node_name: str) -> None:
         self.features.structure.append(
             NodeStructurePlace(
@@ -21,19 +45,10 @@ class ASTWalker(ast.NodeVisitor):
             )
         )
         if self.curr_depth == 1:
-            actual_node_name = node_name
-            # TODO: Also handle ast.Assign and ast.Expr
-            if isinstance(node, (ast.AnnAssign, ast.AugAssign)):
-                if isinstance(node.target, ast.Name):
-                    actual_node_name = node.target.id
-                elif isinstance(node.target, ast.Attribute):
-                    actual_node_name = (
-                        getattr(node.target.value, "id", node_name) + node.target.attr
-                    )
-                elif isinstance(node.target, ast.Subscript):
-                    # TODO
-                    ...
-            self.features.head_nodes.append(actual_node_name)
+            actual_node_name = self.__get_actual_name_from_node(node)
+            if actual_node_name is None:
+                actual_node_name = node_name
+            self.features.head_nodes.append(f"{actual_node_name}[{node.lineno}]")
 
     def generic_visit(self, node: ast.AST) -> None:
         """Function for traverse, counting operators, keywords, literals
