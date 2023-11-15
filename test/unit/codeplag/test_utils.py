@@ -2,9 +2,10 @@ import ast
 import logging
 import os
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 from unittest.mock import MagicMock, call
 
+import numpy as np
 import pandas as pd
 import pytest
 from codeplag.consts import CSV_REPORT_COLUMNS, CSV_REPORT_FILENAME
@@ -15,9 +16,14 @@ from codeplag.utils import (
     calc_iterations,
     calc_progress,
     compare_works,
+    convert_similarity_matrix_to_percent_matrix,
     deserialize_compare_result,
+    deserialize_head_nodes,
     fast_compare,
+    get_compliance_matrix_df,
+    replace_minimal_value,
 )
+from pandas.testing import assert_frame_equal
 from pytest_mock import MockerFixture
 
 CWD = Path(os.path.dirname(os.path.abspath(__file__)))
@@ -53,6 +59,25 @@ def mock_default_logger(mocker: MockerFixture) -> MagicMock:
     mocker.patch.object(logging, "getLogger", return_value=mocked_logger)
 
     return mocked_logger
+
+
+def test_get_compliance_matrix_df():
+    compliance_matrix = np.array([[[1, 2], [1, 10], [3, 4]], [[1, 8], [1, 4], [3, 5]]])
+    heads1 = ["get_value", "set_value"]
+    heads2 = ["getter", "setter", "returner"]
+
+    assert_frame_equal(
+        get_compliance_matrix_df(compliance_matrix, heads1, heads2),
+        pd.DataFrame(
+            data=[[0.5, 0.1, 0.75], [0.125, 0.25, 0.6]], index=heads1, columns=heads2
+        ),
+    )
+
+
+def test_convert_similarity_matrix_to_percent_matrix():
+    assert convert_similarity_matrix_to_percent_matrix(
+        np.array([[[1, 2], [1, 3], [3, 4]], [[1, 8], [1, 4], [3, 5]]])
+    ).tolist() == [[50.0, 33.33, 75.0], [12.5, 25.0, 60.0]]
 
 
 def test_fast_compare_normal(first_tree: ast.Module, second_tree: ast.Module):
@@ -102,6 +127,29 @@ def test_compare_works(
     assert compare_info2.structure is None
 
 
+@pytest.mark.parametrize(
+    "same_parts,new_key,new_value,expected",
+    [
+        ({"foo": 10.1, "bar": 20.5}, "foorbar", 30.5, {"bar": 20.5, "foorbar": 30.5}),
+        ({"foo": 30.1, "bar": 20.5}, "foobar", 5.5, {"foo": 30.1, "bar": 20.5}),
+    ],
+    ids=[
+        "'foo' replaced with 'foobar'",
+        "new value is smaller than provided and not inserted",
+    ],
+)
+def test_replace_minimal_value(
+    same_parts: Dict[str, float],
+    new_key: str,
+    new_value: float,
+    expected: Dict[str, float],
+):
+    replace_minimal_value(same_parts, new_key, new_value)
+
+    assert same_parts == expected
+
+
+# TODO: simplify it
 def test_save_result_to_json(
     mocker: MockerFixture,
     mock_default_logger: MagicMock,
@@ -152,6 +200,7 @@ def test_save_result_to_json(
     )
 
 
+# TODO: simplify it
 def test_save_result_to_csv(
     mocker: MockerFixture,
     mock_default_logger: MagicMock,
@@ -177,7 +226,8 @@ def test_save_result_to_csv(
     code_engine.save_result(features1, features2, compare_info, "csv")
     code_engine._write_df_to_fs()
     assert "Saving" in mock_default_logger.debug.mock_calls[-1].args[0]
-    df = pd.read_csv(code_engine.reports / CSV_REPORT_FILENAME, sep=";", index_col=0)
+    report_path = code_engine.reports / CSV_REPORT_FILENAME
+    df = pd.read_csv(report_path, sep=";", index_col=0)
     assert df.shape[0] == 1
     assert tuple(df.columns) == CSV_REPORT_COLUMNS
 
@@ -187,7 +237,8 @@ def test_save_result_to_csv(
     assert "Saving" in mock_default_logger.debug.mock_calls[-1].args[0]
     code_engine._write_df_to_fs()
     assert "Nothing" in mock_default_logger.debug.mock_calls[-1].args[0]
-    df = pd.read_csv(code_engine.reports / CSV_REPORT_FILENAME, sep=";", index_col=0)
+    df = pd.read_csv(report_path, sep=";", index_col=0)
+    report_path.unlink()
     assert df.shape[0] == 2
     assert tuple(df.columns) == CSV_REPORT_COLUMNS
 
@@ -230,3 +281,20 @@ def test_calc_progress(args: List[int], result: float):
 )
 def test_calc_iterations(count: int, mode: Mode, expected: int):
     assert calc_iterations(count, mode) == expected
+
+
+@pytest.mark.parametrize(
+    "str_head_nodes,list_head_nodes",
+    [
+        (
+            "['_GH_URL[23]', 'AsyncGithubParser[26]']",
+            ["_GH_URL[23]", "AsyncGithubParser[26]"],
+        ),
+        (
+            "['Expr[1]', 'Expr[14]', 'application[16]']",
+            ["Expr[1]", "Expr[14]", "application[16]"],
+        ),
+    ],
+)
+def test_deserialize_head_nodes(str_head_nodes: str, list_head_nodes: List[str]):
+    assert deserialize_head_nodes(str_head_nodes) == list_head_nodes

@@ -1,9 +1,8 @@
 import sys
 from enum import Enum
 from functools import partial
-from typing import List
+from typing import List, Optional
 
-import numpy as np
 import pandas as pd
 
 from codeplag.types import ASTFeatures, CompareInfo, NodeCodePlace
@@ -86,7 +85,7 @@ def print_compare_result(
     features1: ASTFeatures,
     features2: ASTFeatures,
     compare_info: CompareInfo,
-    threshold: int = 60,
+    compliance_matrix: Optional[pd.DataFrame] = None,
 ) -> None:
     """The function prints the result of comparing two files
 
@@ -131,24 +130,7 @@ def print_compare_result(
     print(additional_metrics_df)
     print()
 
-    if (compare_info.structure.similarity * 100) > threshold:
-        data = np.zeros(
-            (
-                compare_info.structure.compliance_matrix.shape[0],
-                compare_info.structure.compliance_matrix.shape[1],
-            ),
-            dtype=np.float64,
-        )
-        for row in range(compare_info.structure.compliance_matrix.shape[0]):
-            for col in range(compare_info.structure.compliance_matrix.shape[1]):
-                data[row][col] = (
-                    compare_info.structure.compliance_matrix[row][col][0]
-                    / compare_info.structure.compliance_matrix[row][col][1]
-                )
-        compliance_matrix_df = pd.DataFrame(
-            data=data, index=features1.head_nodes, columns=features2.head_nodes
-        )
-
-        print(compliance_matrix_df, "\n")
+    if compliance_matrix is not None:
+        print(compliance_matrix, "\n")
 
     print("+" * 40)

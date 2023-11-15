@@ -116,6 +116,7 @@ class WorksReport(TypedDict):
     structure: dict  # dict from StructuresInfo
 
 
+# Misc
 # ----------------------------------------------------------------------------
 
 
@@ -125,3 +126,11 @@ class Settings(TypedDict):
     reports_extension: Literal["json", "csv"]
     show_progress: Flag
     threshold: Threshold
+
+
+class SameHead(NamedTuple):
+    name: str
+    percent: float
+
+
+SameFuncs = Dict[str, List[SameHead]]

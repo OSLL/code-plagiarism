@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Сравнительный отчёт</title>
+    <style>
+        table {
+            border-spacing: 0;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            background-color: #f5f5f5;
+            border: 0.1rem solid grey;
+            font-size: 1.2rem;
+        }
+
+        .table__row:nth-child(even) {
+            background-color: #e5e5e5;
+        }
+
+        .table__header {
+            text-align: left;
+            font-weight: bold;
+        }
+
+        th {
+            padding: 8px;
+            border: 0.005rem solid grey;
+        }
+
+        td {
+            border: 0.03rem dotted #999;
+        }
+
+        caption {
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <h1 align="center">Результаты проверки</h1>
+    {% for line, cmp_res, same_parts_of_second, same_parts_of_first in data %}
+        <div style="border: 0.2rem solid black; padding: 1rem; margin: 0.5rem;">
+            <table align="center">
+                <caption>Общая информация</caption>
+                <tr class="table__header">
+                    <th>Путь</th>
+                    <th>Дата последний модификации</th>
+                    <th>Дата проверки</th>
+                </tr>
+                <tr class="table__row">
+                    <td>{{ line.first_path }}</td>
+                    <td>{{ line.first_modify_date or "—" }}</td>
+                    <td rowspan="2">{{ line.date }}</th>
+                </tr>
+                <tr class="table__row">
+                    <td>{{ line.second_path }}</td>
+                    <td>{{ line.second_modify_date or "—" }}</td>
+                </tr>
+            </table>
+            <table align="center">
+                <caption>Информация по метрикам</caption>
+                <tr class="table__header">
+                    <th>Метрика</th>
+                    <th>Значение, %</th>
+                </tr>
+                <tr class="table__row">
+                    <td>Коэффициент Жаккара</td>
+                    <td>{{ round(cmp_res.fast.jakkar * 100, 2) }}</td>
+                </tr>
+                <tr class="table__row">
+                    <td>Схожеть операторов</td>
+                    <td>{{ round(cmp_res.fast.operators * 100, 2) }}</td>
+                </tr>
+                <tr class="table__row">
+                    <td>Схожеть ключевых слов</td>
+                    <td>{{ round(cmp_res.fast.keywords * 100, 2) }}</td>
+                </tr>
+                <tr class="table__row">
+                    <td>Схожеть литералов</td>
+                    <td>{{ round(cmp_res.fast.literals * 100, 2) }}</td>
+                </tr class="table__row">
+                    <td>Средневзвешенное по быстрым метрикам</td>
+                    <td>{{ round(cmp_res.fast.weighted_average * 100, 2) }}</td>
+                <tr class="table__row">
+                    <td>Схожесть структур</td>
+                    <td>{{ round(cmp_res.structure.similarity * 100, 2) }}</td>
+                <tr>
+            </table>
+            <div align="center">
+            <table align="center" style="display: inline-table;">
+                <caption>Схожие части второй программы относительно первой</caption>
+                <tr class="table__header">
+                    <th>Часть первой программ</th>
+                    <th>Часть второй программы</th>
+                    <th>Схожесть, %</th>
+                </tr>
+                {% for first_head in same_parts_of_second %}
+                {% set second_head = same_parts_of_second[first_head][0].name %}
+                <tr class="table__row">
+                    <td rowspan="{{ len(same_parts_of_second[first_head]) }}">{{ first_head }}</td>
+                    <td>{{ second_head }}</td>
+                    {% set head_percent = same_parts_of_second[first_head].pop(0).percent %}
+                    {% if head_percent > threshold %}
+                        <td style="background-color: rgb(255, 200, 200); font-weight: bold;">{{ head_percent }}</td>
+                    {% else %}
+                        <td>{{ head_percent }}</td>
+                    {% endif %}
+                </tr>
+                {% for same_head_info in same_parts_of_second[first_head] %}
+                <tr class="table__row">
+                    <td>{{ same_head_info.name }}</td>
+                    {% if same_head_info.percent > threshold %}
+                        <td style="background-color: rgb(255, 200, 200); font-weight: bold;">{{ same_head_info.percent }}</td>
+                    {% else %}
+                        <td>{{ same_head_info.percent }}</td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+                {% endfor %}
+            </table>
+            <table align="center" style="display: inline-table;">
+                <caption>Схожие части первой программы относительно второй</caption>
+                <tr class="table__header">
+                    <th>Часть второй программ</th>
+                    <th>Часть первой программы</th>
+                    <th>Схожесть, %</th>
+                </tr>
+                {% for first_head in same_parts_of_first %}
+                {% set second_head = same_parts_of_first[first_head][0].name %}
+                <tr class="table__row">
+                    <td rowspan="{{ len(same_parts_of_first[first_head]) }}">{{ first_head }}</td>
+                    <td>{{ second_head }}</td>
+                    {% set head_percent = same_parts_of_first[first_head].pop(0).percent %}
+                    {% if head_percent > threshold %}
+                        <td style="background-color: rgb(255, 200, 200); font-weight: bold;">{{ head_percent }}</td>
+                    {% else %}
+                        <td>{{ head_percent }}</td>
+                    {% endif %}
+                </tr>
+                {% for same_head_info in same_parts_of_first[first_head] %}
+                <tr class="table__row">
+                    <td>{{ same_head_info.name }}</td>
+                    {% if same_head_info.percent > threshold %}
+                        <td style="background-color: rgb(255, 200, 200); font-weight: bold;">{{ same_head_info.percent }}</td>
+                    {% else %}
+                        <td>{{ same_head_info.percent }}</td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+                {% endfor %}
+            </table>
+            </div>
+        </div>
+    {% endfor %}
+</body>
+</html>

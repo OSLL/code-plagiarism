@@ -11,7 +11,9 @@ UTIL_VERSION: Final[str] = "@UTIL_VERSION@"
 CONFIG_PATH: Final[Path] = Path("@CONFIG_PATH@")
 FILE_DOWNLOAD_PATH: Final[Path] = Path(f"/tmp/{UTIL_NAME}_download.out")
 LOG_PATH: Final[Path] = Path("@CODEPLAG_LOG_PATH@")
+TEMPLATE_PATH: Final[Path] = Path("@LIB_PATH@/report.templ")
 
+DEFAULT_GENERAL_REPORT_NAME: Final[str] = "report.html"
 GET_FRAZE: Final[str] = "Getting works features from"
 
 # CSV report
@@ -35,6 +37,7 @@ CSV_REPORT_COLUMNS: Final[Tuple[str, ...]] = (
 )
 
 DEFAULT_THRESHOLD: Final[Threshold] = 65
+DEFAULT_WEIGHTS: Final[Tuple[float, float, float, float]] = (1.0, 0.4, 0.4, 0.4)
 MODE_CHOICE: Final[List[Mode]] = ["many_to_many", "one_to_one"]
 REPORTS_EXTENSION_CHOICE: Final[List[ReportsExtension]] = ["csv", "json"]
 EXTENSION_CHOICE: Final[List[Extension]] = ["py", "cpp"]

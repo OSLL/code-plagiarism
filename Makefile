@@ -1,4 +1,4 @@
-UTIL_VERSION            := 0.3.7
+UTIL_VERSION            := 0.3.8
 UTIL_NAME               := codeplag
 PWD                     := $(shell pwd)
 
@@ -16,6 +16,7 @@ PYTHONPATH              := $(PWD)/src/:$(PWD)/test/auto
 LOGS_PATH               := /var/log/$(UTIL_NAME)
 CODEPLAG_LOG_PATH       := $(LOGS_PATH)/$(UTIL_NAME).log
 CONFIG_PATH             := /etc/$(UTIL_NAME)/settings.conf
+LIB_PATH                := /var/lib/$(UTIL_NAME)
 DEBIAN_PACKAGES_PATH    := debian/deb
 
 SOURCE_SUB_FILES        := src/$(UTIL_NAME)/consts.py
@@ -44,6 +45,7 @@ substitute = @sed \
 		-e "s|@DEVEL_SUFFIX@|${DEVEL_SUFFIX}|g" \
 		-e "s|@PYTHON_REQUIRED_LIBS@|${PYTHON_REQUIRED_LIBS}|g" \
 		-e "s|@LOGS_PATH@|${LOGS_PATH}|g" \
+		-e "s|@LIB_PATH@|${LIB_PATH}|g" \
 		-e "s|@CONFIG_PATH@|${CONFIG_PATH}|g" \
 		-e "s|@BASE_DOCKER_TAG@|${BASE_DOCKER_TAG}|g" \
 		-e "s|@DEBIAN_PACKAGES_PATH@|${DEBIAN_PACKAGES_PATH}|g" \
@@ -82,6 +84,8 @@ install: substitute-sources man
 
 	install -D -d -m 0755 $(DESTDIR)/$(LOGS_PATH)
 	install -D -m 0666 /dev/null $(DESTDIR)/$(CODEPLAG_LOG_PATH)
+	install -D -d -m 0755 $(DESTDIR)/$(LIB_PATH)
+	install -D -m 0666 src/templates/report.templ $(DESTDIR)/$(LIB_PATH)/report.templ
 
 	if [ ! -f $(DESTDIR)/$(CONFIG_PATH) ]; then \
 		install -D -d -m 0755 $(DESTDIR)/etc/$(UTIL_NAME); \

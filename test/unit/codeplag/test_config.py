@@ -1,5 +1,4 @@
 import json
-import logging
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -11,7 +10,7 @@ from codeplag.config import (
     write_config,
     write_settings_conf,
 )
-from codeplag.consts import CONFIG_PATH, UTIL_NAME
+from codeplag.consts import CONFIG_PATH
 from pytest_mock import MockerFixture
 
 
@@ -37,11 +36,6 @@ def settings_config(request, mocker: MockerFixture):
     mocker.patch("codeplag.config.read_config", return_value=request.param)
 
     return request.param
-
-
-@pytest.fixture
-def dummy_logger(mocker: MockerFixture):
-    return mocker.MagicMock(autospec=logging.Logger(UTIL_NAME))
 
 
 @pytest.fixture

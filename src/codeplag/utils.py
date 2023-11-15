@@ -6,15 +6,25 @@ from datetime import datetime
 from itertools import combinations
 from pathlib import Path
 from time import perf_counter, time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Generator, List, Literal, Optional, Tuple
 
+import jinja2
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 
 from codeplag.algorithms.featurebased import counter_metric, struct_compare
 from codeplag.algorithms.tokenbased import value_jakkar_coef
 from codeplag.config import read_settings_conf, write_config, write_settings_conf
-from codeplag.consts import CSV_REPORT_COLUMNS, CSV_REPORT_FILENAME, CSV_SAVE_TICK
+from codeplag.consts import (
+    CSV_REPORT_COLUMNS,
+    CSV_REPORT_FILENAME,
+    CSV_SAVE_TICK,
+    DEFAULT_GENERAL_REPORT_NAME,
+    DEFAULT_THRESHOLD,
+    DEFAULT_WEIGHTS,
+    TEMPLATE_PATH,
+)
 from codeplag.cplag.utils import CFeaturesGetter
 from codeplag.display import print_compare_result
 from codeplag.getfeatures import AbstractGetter
@@ -27,16 +37,50 @@ from codeplag.types import (
     Flag,
     Mode,
     ReportsExtension,
+    SameFuncs,
+    SameHead,
     Settings,
     StructuresInfo,
     WorksReport,
 )
 
 
+def get_compliance_matrix_df(
+    compliance_matrix: NDArray,
+    head_nodes1: List[str],
+    head_nodes2: List[str],
+) -> pd.DataFrame:
+    data = np.zeros(
+        (
+            compliance_matrix.shape[0],
+            compliance_matrix.shape[1],
+        ),
+        dtype=np.float64,
+    )
+    for row in range(compliance_matrix.shape[0]):
+        for col in range(compliance_matrix.shape[1]):
+            data[row][col] = (
+                compliance_matrix[row][col][0] / compliance_matrix[row][col][1]
+            )
+    compliance_matrix_df = pd.DataFrame(
+        data=data, index=head_nodes1, columns=head_nodes2
+    )
+    return compliance_matrix_df
+
+
+def convert_similarity_matrix_to_percent_matrix(matrix: NDArray) -> NDArray:
+    """Convert compliance matrix of size N x M x 2 to percent 2 dimensional matrix."""
+    percent_matrix = np.zeros((matrix.shape[0], matrix.shape[1]), dtype=np.float64)
+    for i in range(matrix.shape[0]):
+        for j in range(matrix.shape[1]):
+            percent_matrix[i][j] = round(matrix[i][j][0] / matrix[i][j][1] * 100, 2)
+    return percent_matrix
+
+
 def fast_compare(
     features_f: ASTFeatures,
     features_s: ASTFeatures,
-    weights: tuple = (1, 0.4, 0.4, 0.4),
+    weights: Tuple[float, float, float, float] = DEFAULT_WEIGHTS,
 ) -> FastMetrics:
     """The function calculates the similarity of features of two programs
     using four algorithms, calculates their weighted average, and returns
@@ -124,6 +168,10 @@ def serialize_compare_result(
     )
 
 
+def deserialize_head_nodes(head_nodes: str) -> List[str]:
+    return [head[1:-1] for head in head_nodes[1:-1].split(", ")]
+
+
 def deserialize_compare_result(compare_result: pd.Series) -> CompareInfo:
     if isinstance(compare_result.compliance_matrix, str):
         similarity_matrix = np.array(json.loads(compare_result.compliance_matrix))
@@ -145,6 +193,88 @@ def deserialize_compare_result(compare_result: pd.Series) -> CompareInfo:
     )
 
     return compare_info
+
+
+def replace_minimal_value(same_parts: dict, new_key: str, new_value: float) -> None:
+    min_key = next(iter(same_parts))
+    min_value = same_parts[min_key]
+    for key, value in same_parts.items():
+        if value >= min_value:
+            continue
+        min_value = value
+        min_key = key
+    if new_value <= min_value:
+        return
+    del same_parts[min_key]
+    same_parts[new_key] = new_value
+
+
+def get_same_funcs(
+    first_heads: List[str],
+    second_heads: List[str],
+    percent_matrix: NDArray,
+    threshold: int = DEFAULT_THRESHOLD,
+    n: int = 3,
+) -> SameFuncs:
+    result = {}
+    for i, first_head in enumerate(first_heads):
+        result[first_head] = {}
+        inner_result = result[first_head]
+        for j, second_head in enumerate(second_heads):
+            same_percent = percent_matrix[i][j]
+            if not inner_result:
+                inner_result[second_head] = same_percent
+            elif same_percent < threshold:
+                continue
+            elif len(inner_result) < n:
+                inner_result[second_head] = same_percent
+            else:
+                replace_minimal_value(inner_result, second_head, same_percent)
+    for first_head in result:
+        result[first_head] = sorted(
+            (SameHead(key, value) for key, value in result[first_head].items()),
+            key=lambda element: element.percent,
+            reverse=True,
+        )
+    return result
+
+
+def get_parsed_line(
+    df: pd.DataFrame,
+) -> Generator[Tuple[pd.Series, CompareInfo, SameFuncs, SameFuncs], None, None]:
+    for _, line in df.iterrows():
+        cmp_res = deserialize_compare_result(line)
+        first_heads = deserialize_head_nodes(line.first_heads)
+        second_heads = deserialize_head_nodes(line.second_heads)
+        assert cmp_res.structure is not None
+        percent_matrix = convert_similarity_matrix_to_percent_matrix(
+            cmp_res.structure.compliance_matrix
+        )
+        same_parts_of_second = get_same_funcs(first_heads, second_heads, percent_matrix)
+        same_parts_of_first = get_same_funcs(
+            second_heads, first_heads, percent_matrix.T
+        )
+        if isinstance(line.first_modify_date, float):
+            line.first_modify_date = ""
+        if isinstance(line.second_modify_date, float):
+            line.second_modify_date = ""
+        yield line, cmp_res, same_parts_of_second, same_parts_of_first
+
+
+def create_report(df_path: Path, save_path: Path, threshold: int = DEFAULT_THRESHOLD):
+    environment = jinja2.Environment()
+    template = environment.from_string(TEMPLATE_PATH.read_text())
+    if save_path.is_dir():
+        save_path = save_path / DEFAULT_GENERAL_REPORT_NAME
+    save_path.write_text(
+        template.render(
+            data=get_parsed_line(read_df(df_path)),
+            list=list,
+            len=len,
+            round=round,
+            threshold=threshold,
+        )
+    )
 
 
 def calc_iterations(count: int, mode: Mode = "many_to_many") -> int:
@@ -178,6 +308,10 @@ def calc_progress(
     return progress
 
 
+def read_df(path: Path) -> pd.DataFrame:
+    return pd.read_csv(path, sep=";", index_col=0, dtype=object)
+
+
 class CodeplagEngine:
     def __init__(self, logger: logging.Logger, parsed_args: Dict[str, Any]) -> None:
         self.root: str = parsed_args.pop("root")
@@ -197,6 +331,8 @@ class CodeplagEngine:
             self.reports_extension: ReportsExtension = parsed_args.pop(
                 "reports_extension"
             )
+        elif self.root == "report":
+            self.path: Path = parsed_args.pop("path")
         else:
             settings_conf = read_settings_conf(logger)
             self._set_features_getter(parsed_args, settings_conf, logger)
@@ -212,12 +348,7 @@ class CodeplagEngine:
             if self.__reports_extension == "csv" and self.reports:
                 reports_path = self.reports / CSV_REPORT_FILENAME
                 if reports_path.is_file():
-                    self.__df_report = pd.read_csv(
-                        self.reports / CSV_REPORT_FILENAME,
-                        sep=";",
-                        index_col=0,
-                        dtype=object,
-                    )
+                    self.__df_report = read_df(self.reports / CSV_REPORT_FILENAME)
                     self.__start_report_lines = self.__df_report.shape[0]
                 else:
                     self.__df_report = pd.DataFrame(
@@ -370,7 +501,22 @@ class CodeplagEngine:
             if metrics.structure is None:
                 return
 
-        print_compare_result(work1, work2, metrics, self.threshold)
+        if (
+            metrics.structure is None
+            or (metrics.structure.similarity * 100) <= self.threshold
+        ):
+            print_compare_result(work1, work2, metrics)
+        else:
+            print_compare_result(
+                work1,
+                work2,
+                metrics,
+                get_compliance_matrix_df(
+                    metrics.structure.compliance_matrix,
+                    work1.head_nodes,
+                    work2.head_nodes,
+                ),
+            )
 
     def _calc_and_print_progress(
         self,
@@ -489,17 +635,41 @@ class CodeplagEngine:
         self.logger.debug(f"Time for all {time() - begin_time:.2f}s")
         self.logger.info("Ending searching for plagiarism ...")
 
-    def run(self) -> None:
+    def _report_create(self) -> Literal[0, 1]:
+        settings_config = read_settings_conf(self.logger)
+        reports_path = settings_config.get("reports")
+        if not reports_path:
+            self.logger.error(
+                "Can't create general report without provided in settings 'report' path."
+            )
+            return 1
+        if settings_config["reports_extension"] == "json":
+            self.logger.error("Can create report only when 'reports_extension' is csv.")
+            return 1
+        if not reports_path.exists():
+            self.logger.error(
+                f"There is nothing in '{reports_path}' to create a basic html report from."
+            )
+            return 1
+        create_report(
+            reports_path / CSV_REPORT_FILENAME,
+            self.path,
+            threshold=settings_config["threshold"],
+        )
+        return 0
+
+    def run(self) -> Literal[0, 1]:
         self.logger.debug("Starting codeplag util ...")
 
         if self.root == "settings":
             if self.command == "show":
                 self._settings_show()
-                return
             elif self.command == "modify":
                 self._settings_modify()
                 self._settings_show()
-                return
+        elif self.root == "report":
+            return self._report_create()
         else:
             self.__check()
             self._write_df_to_fs()
+        return 0

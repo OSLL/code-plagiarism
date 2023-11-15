@@ -16,6 +16,7 @@ INSTALL_REQUIREMENTS = [
     "requests~=2.31.0",
     "typing-extensions~=4.3.0",
     "aiohttp~=3.8.5",
+    "Jinja2~=3.1.2",
     "cachetools==5.3.1",
     "gidgethub~=5.3.0",
 ]

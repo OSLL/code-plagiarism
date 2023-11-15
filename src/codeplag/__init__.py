@@ -20,7 +20,7 @@ def main() -> Literal[0, 1, 2]:
     logger = get_logger(__name__, LOG_PATH, verbose=parsed_args["verbose"])
     codeplag_util = CodeplagEngine(logger, parsed_args)
     try:
-        codeplag_util.run()
+        code = codeplag_util.run()
     except KeyboardInterrupt:
         logger.warning("The util stopped by keyboard interrupt.")
         return 1
@@ -33,4 +33,4 @@ def main() -> Literal[0, 1, 2]:
         logger.debug("Trace:", exc_info=True)
         return 2
 
-    return 0
+    return code
