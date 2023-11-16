@@ -10,7 +10,7 @@ import pandas as pd
 import pytest
 from codeplag.consts import CSV_REPORT_COLUMNS, CSV_REPORT_FILENAME
 from codeplag.pyplag.utils import get_ast_from_filename, get_features_from_ast
-from codeplag.types import Mode, Settings, WorksReport
+from codeplag.types import Mode, SameHead, Settings, WorksReport
 from codeplag.utils import (
     CodeplagEngine,
     calc_iterations,
@@ -21,6 +21,7 @@ from codeplag.utils import (
     deserialize_head_nodes,
     fast_compare,
     get_compliance_matrix_df,
+    get_same_funcs,
     replace_minimal_value,
 )
 from pandas.testing import assert_frame_equal
@@ -147,6 +148,30 @@ def test_replace_minimal_value(
     replace_minimal_value(same_parts, new_key, new_value)
 
     assert same_parts == expected
+
+
+def test_get_same_funcs():
+    first_heads = ["foo", "bar", "foobar", "barfoo"]
+    second_heads = ["func_name", "sum", "mult", "div", "sub"]
+    threshold = 70
+    n = 2
+    percent_matrix = np.array(
+        [
+            [10.0, 20.0, 30.0, 40.0, 50.0],
+            [72.0, 74.0, 3.0, 80.0, 5.0],
+            [70.0, 75.0, 80.0, 85.0, 90.0],
+            [40.0, 30.0, 20.0, 10.0, 10.0],
+        ]
+    )
+    expected = {
+        "foo": [SameHead("sub", 50.0)],
+        "bar": [SameHead("div", 80.0), SameHead("sum", 74.0)],
+        "foobar": [SameHead("sub", 90.0), SameHead("div", 85.0)],
+        "barfoo": [SameHead("func_name", 40.0)],
+    }
+
+    result = get_same_funcs(first_heads, second_heads, percent_matrix, threshold, n)
+    assert expected == result
 
 
 # TODO: simplify it

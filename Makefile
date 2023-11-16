@@ -106,7 +106,7 @@ package: substitute-debian
 	)
 
 test: substitute-sources
-	pytest test/unit -q
+	pytest test/unit -vv
 	make clean-cache
 
 autotest:

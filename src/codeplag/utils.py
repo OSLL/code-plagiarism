@@ -222,11 +222,18 @@ def get_same_funcs(
         inner_result = result[first_head]
         for j, second_head in enumerate(second_heads):
             same_percent = percent_matrix[i][j]
-            if not inner_result:
+            cnt_items = len(inner_result)
+            if not cnt_items:
                 inner_result[second_head] = same_percent
             elif same_percent < threshold:
+                if (
+                    cnt_items == 1
+                    and inner_result[(key := next(iter(inner_result)))] < same_percent
+                ):
+                    inner_result[second_head] = same_percent
+                    del inner_result[key]
                 continue
-            elif len(inner_result) < n:
+            elif cnt_items < n:
                 inner_result[second_head] = same_percent
             else:
                 replace_minimal_value(inner_result, second_head, same_percent)
