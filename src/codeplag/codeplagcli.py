@@ -11,6 +11,7 @@ from webparsers.types import GitHubContentUrl
 from codeplag.consts import (
     DEFAULT_GENERAL_REPORT_NAME,
     EXTENSION_CHOICE,
+    LANGUAGE_CHOICE,
     MODE_CHOICE,
     REPORTS_EXTENSION_CHOICE,
     UTIL_NAME,
@@ -125,6 +126,13 @@ class CodeplagCLI(argparse.ArgumentParser):
             type=int,
             choices=range(50, 100),
             metavar="{50, 51, ..., 99}",
+        )
+        settings_modify.add_argument(
+            "-l",
+            "--language",
+            help="The language of help messages, generated reports, errors.",
+            type=str,
+            choices=LANGUAGE_CHOICE,
         )
 
         # settings show

@@ -113,6 +113,7 @@ def test_read_default_settings_conf(dummy_logger, settings_config):
                 "reports": Path("/home/bukabyka/reports"),
                 "show_progress": 0,
                 "reports_extension": "csv",
+                "language": "en",
             },
         ],
         [
@@ -121,12 +122,14 @@ def test_read_default_settings_conf(dummy_logger, settings_config):
                 "environment": "/home/bukabyka/.env",
                 "show_progress": 1,
                 "reports_extension": "json",
+                "language": "ru",
             },
             {
                 "threshold": 99,
                 "environment": Path("/home/bukabyka/.env"),
                 "show_progress": 1,
                 "reports_extension": "json",
+                "language": "ru",
             },
         ],
         [
@@ -136,6 +139,7 @@ def test_read_default_settings_conf(dummy_logger, settings_config):
                 "reports": Path("/home/bukabyka/reports"),
                 "show_progress": 0,
                 "reports_extension": "csv",
+                "language": "en",
             },
         ],
     ],

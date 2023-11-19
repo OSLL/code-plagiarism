@@ -85,7 +85,9 @@ install: substitute-sources man
 	install -D -d -m 0755 $(DESTDIR)/$(LOGS_PATH)
 	install -D -m 0666 /dev/null $(DESTDIR)/$(CODEPLAG_LOG_PATH)
 	install -D -d -m 0755 $(DESTDIR)/$(LIB_PATH)
-	install -D -m 0666 src/templates/report.templ $(DESTDIR)/$(LIB_PATH)/report.templ
+
+	install -D -m 0666 src/templates/report_ru.templ $(DESTDIR)/$(LIB_PATH)/report_ru.templ
+	install -D -m 0666 src/templates/report_en.templ $(DESTDIR)/$(LIB_PATH)/report_en.templ
 
 	if [ ! -f $(DESTDIR)/$(CONFIG_PATH) ]; then \
 		install -D -d -m 0755 $(DESTDIR)/etc/$(UTIL_NAME); \

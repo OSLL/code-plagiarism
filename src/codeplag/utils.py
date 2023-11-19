@@ -21,6 +21,7 @@ from codeplag.consts import (
     CSV_REPORT_FILENAME,
     CSV_SAVE_TICK,
     DEFAULT_GENERAL_REPORT_NAME,
+    DEFAULT_LANGUAGE,
     DEFAULT_THRESHOLD,
     DEFAULT_WEIGHTS,
     TEMPLATE_PATH,
@@ -35,6 +36,7 @@ from codeplag.types import (
     Extension,
     FastMetrics,
     Flag,
+    Language,
     Mode,
     ReportsExtension,
     SameFuncs,
@@ -268,9 +270,14 @@ def get_parsed_line(
         yield line, cmp_res, same_parts_of_second, same_parts_of_first
 
 
-def create_report(df_path: Path, save_path: Path, threshold: int = DEFAULT_THRESHOLD):
+def create_report(
+    df_path: Path,
+    save_path: Path,
+    threshold: int = DEFAULT_THRESHOLD,
+    language: Language = DEFAULT_LANGUAGE,
+):
     environment = jinja2.Environment()
-    template = environment.from_string(TEMPLATE_PATH.read_text())
+    template = environment.from_string(TEMPLATE_PATH[language].read_text())
     if save_path.is_dir():
         save_path = save_path / DEFAULT_GENERAL_REPORT_NAME
     save_path.write_text(
@@ -338,6 +345,7 @@ class CodeplagEngine:
             self.reports_extension: ReportsExtension = parsed_args.pop(
                 "reports_extension"
             )
+            self.language: Language = parsed_args.pop("language")
         elif self.root == "report":
             self.path: Path = parsed_args.pop("path")
         else:
@@ -662,6 +670,7 @@ class CodeplagEngine:
             reports_path / CSV_REPORT_FILENAME,
             self.path,
             threshold=settings_config["threshold"],
+            language=settings_config["language"],
         )
         return 0
 
