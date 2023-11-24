@@ -85,7 +85,7 @@ def print_compare_result(
     features1: ASTFeatures,
     features2: ASTFeatures,
     compare_info: CompareInfo,
-    compliance_matrix: Optional[pd.DataFrame] = None,
+    compliance_matrix_df: Optional[pd.DataFrame] = None,
 ) -> None:
     """The function prints the result of comparing two files
 
@@ -130,7 +130,7 @@ def print_compare_result(
     print(additional_metrics_df)
     print()
 
-    if compliance_matrix is not None:
-        print(compliance_matrix, "\n")
+    if compliance_matrix_df is not None:
+        print(compliance_matrix_df, "\n")
 
     print("+" * 40)
