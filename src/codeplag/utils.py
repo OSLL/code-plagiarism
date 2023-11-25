@@ -277,6 +277,7 @@ def create_report(
     language: Language = DEFAULT_LANGUAGE,
 ):
     environment = jinja2.Environment()
+    # TODO: use JinJa2 i18n
     template = environment.from_string(TEMPLATE_PATH[language].read_text())
     if save_path.is_dir():
         save_path = save_path / DEFAULT_GENERAL_REPORT_NAME

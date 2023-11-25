@@ -1,4 +1,4 @@
-UTIL_VERSION            := 0.3.8
+UTIL_VERSION            := 0.4.0
 UTIL_NAME               := codeplag
 PWD                     := $(shell pwd)
 
@@ -112,7 +112,7 @@ test: substitute-sources
 	make clean-cache
 
 autotest:
-	pytest test/auto -q
+	pytest test/auto -vv
 	make clean-cache
 
 pre-commit:
