@@ -1,11 +1,11 @@
-UTIL_VERSION            := 0.3.7
+UTIL_VERSION            := 0.4.0
 UTIL_NAME               := codeplag
 PWD                     := $(shell pwd)
 
 USER_UID                ?= $(shell id --user)
 USER_GID                ?= $(shell id --group)
 
-BASE_DOCKER_VERSION     := 1.2
+BASE_DOCKER_VERSION     := 1.3
 BASE_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-base-ubuntu20.04:$(BASE_DOCKER_VERSION) | tr A-Z a-z)
 TEST_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-test-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
 DOCKER_TAG              ?= $(shell echo $(UTIL_NAME)-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
@@ -16,6 +16,7 @@ PYTHONPATH              := $(PWD)/src/:$(PWD)/test/auto
 LOGS_PATH               := /var/log/$(UTIL_NAME)
 CODEPLAG_LOG_PATH       := $(LOGS_PATH)/$(UTIL_NAME).log
 CONFIG_PATH             := /etc/$(UTIL_NAME)/settings.conf
+LIB_PATH                := /var/lib/$(UTIL_NAME)
 DEBIAN_PACKAGES_PATH    := debian/deb
 
 SOURCE_SUB_FILES        := src/$(UTIL_NAME)/consts.py
@@ -44,6 +45,7 @@ substitute = @sed \
 		-e "s|@DEVEL_SUFFIX@|${DEVEL_SUFFIX}|g" \
 		-e "s|@PYTHON_REQUIRED_LIBS@|${PYTHON_REQUIRED_LIBS}|g" \
 		-e "s|@LOGS_PATH@|${LOGS_PATH}|g" \
+		-e "s|@LIB_PATH@|${LIB_PATH}|g" \
 		-e "s|@CONFIG_PATH@|${CONFIG_PATH}|g" \
 		-e "s|@BASE_DOCKER_TAG@|${BASE_DOCKER_TAG}|g" \
 		-e "s|@DEBIAN_PACKAGES_PATH@|${DEBIAN_PACKAGES_PATH}|g" \
@@ -82,6 +84,10 @@ install: substitute-sources man
 
 	install -D -d -m 0755 $(DESTDIR)/$(LOGS_PATH)
 	install -D -m 0666 /dev/null $(DESTDIR)/$(CODEPLAG_LOG_PATH)
+	install -D -d -m 0755 $(DESTDIR)/$(LIB_PATH)
+
+	install -D -m 0666 src/templates/report_ru.templ $(DESTDIR)/$(LIB_PATH)/report_ru.templ
+	install -D -m 0666 src/templates/report_en.templ $(DESTDIR)/$(LIB_PATH)/report_en.templ
 
 	if [ ! -f $(DESTDIR)/$(CONFIG_PATH) ]; then \
 		install -D -d -m 0755 $(DESTDIR)/etc/$(UTIL_NAME); \
@@ -102,11 +108,11 @@ package: substitute-debian
 	)
 
 test: substitute-sources
-	pytest test/unit -q
+	pytest test/unit -vv
 	make clean-cache
 
 autotest:
-	pytest test/auto -q
+	pytest test/auto -vv
 	make clean-cache
 
 pre-commit:

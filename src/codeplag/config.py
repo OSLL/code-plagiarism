@@ -5,7 +5,12 @@ from typing import Literal, Optional, TypedDict, Union, overload
 
 from typing_extensions import NotRequired
 
-from codeplag.consts import CONFIG_PATH, DEFAULT_THRESHOLD
+from codeplag.consts import (
+    CONFIG_PATH,
+    DEFAULT_LANGUAGE,
+    DEFAULT_REPORT_EXTENSION,
+    DEFAULT_THRESHOLD,
+)
 from codeplag.types import Settings
 
 
@@ -74,5 +79,8 @@ def write_settings_conf(settings: Settings) -> None:
 
 
 DefaultSettingsConfig = Settings(
-    threshold=DEFAULT_THRESHOLD, show_progress=0, reports_extension="csv"
+    threshold=DEFAULT_THRESHOLD,
+    show_progress=0,
+    reports_extension=DEFAULT_REPORT_EXTENSION,
+    language=DEFAULT_LANGUAGE,
 )

@@ -25,12 +25,12 @@ def test_modify_settings(env, reports, threshold, show_progress):
         threshold=threshold,
         show_progress=show_progress,
     )
-    assert result.returncode == 0
+    result.assert_success()
 
-    assert bytes(env, encoding="utf-8") in result.stdout
-    assert bytes(reports, encoding="utf-8") in result.stdout
-    assert bytes(str(threshold), encoding="utf-8") in result.stdout
-    assert bytes(str(show_progress), encoding="utf-8") in result.stdout
+    assert bytes(env, encoding="utf-8") in result.cmd_res.stdout
+    assert bytes(reports, encoding="utf-8") in result.cmd_res.stdout
+    assert bytes(str(threshold), encoding="utf-8") in result.cmd_res.stdout
+    assert bytes(str(show_progress), encoding="utf-8") in result.cmd_res.stdout
 
 
 @pytest.mark.parametrize(
@@ -42,9 +42,6 @@ def test_modify_settings(env, reports, threshold, show_progress):
     ],
 )
 def test_modify_settings_bad(env, reports, threshold):
-    assert (
-        modify_settings(
-            environment=env, reports=reports, threshold=threshold
-        ).returncode
-        != 0
-    )
+    modify_settings(
+        environment=env, reports=reports, threshold=threshold
+    ).assert_failed()

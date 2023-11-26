@@ -118,7 +118,19 @@
 
 ## 4. Demo examples (works in the project directory and with an installed codeplag package)
 
-- Python analyzer
+- Show help: `$ codeplag --help`
+- Show help of subcommands (and further along the chain similarly): `$ codeplag check --help`
+- Setting up the util:
+  ```
+  # Setup check threshold to 70
+  # Language to English
+  # Show check progress
+  # Extension of reports 'csv'
+  # Reports path to '/usr/src/works'
+  # Path to environment variables '/usr/src/works/.env'
+  $ codeplag settings modify --threshold 70 --language en --show_progress 1 --reports_extension csv --reports /usr/src/works --environment /usr/src/works/.env
+  ```
+- Python analyzer:
   ```
   $ codeplag check --extension py --files src/codeplag/pyplag/astwalkers.py --directories src/codeplag/pyplag
   $ codeplag check --extension py --directories src/codeplag/algorithms src
@@ -129,11 +141,11 @@
   $ codeplag check --extension py --github-project-folders https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag --github-user OSLL --repo-regexp code-
   $ codeplag check --extension py --github-project-folders https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/pyplag --directories src/codeplag/pyplag/
   ```
-
-- C++/C analyzer
+- C++/C analyzer:
   ```
   $ codeplag check --extension cpp --directories src/codeplag/cplag/tests/data src/ --files test/codeplag/cplag/data/sample1.cpp test/codeplag/cplag/data/sample2.cpp
   $ codeplag check --extension cpp --github-files https://github.com/OSLL/code-plagiarism/blob/main/test/codeplag/cplag/data/sample3.cpp https://github.com/OSLL/code-plagiarism/blob/main/test/codeplag/cplag/data/sample4.cpp
   $ codeplag check --extension cpp --github-project-folders https://github.com/OSLL/code-plagiarism/tree/main/test
   $ codeplag check --extension cpp --github-user OSLL --repo-regexp "code-plag"
   ```
+- Create html report: `codeplag report create --path /usr/src/works`

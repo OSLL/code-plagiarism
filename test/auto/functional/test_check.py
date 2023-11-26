@@ -1,13 +1,12 @@
 import json
 import os
 import re
-import shutil
-from contextlib import suppress
 
 import pytest
 from codeplag.consts import UTIL_NAME, UTIL_VERSION
 from codeplag.types import WorksReport
-from utils import SUCCESS_CODE, modify_settings, run_check, run_util
+from const import REPORTS_FOLDER
+from utils import modify_settings, run_check, run_util
 
 CPP_FILES = [
     "test/unit/codeplag/cplag/data/sample1.cpp",
@@ -17,7 +16,6 @@ PY_FILES = ["src/codeplag/pyplag/astwalkers.py", "setup.py"]
 CPP_DIR = "test/unit/codeplag/cplag/data"
 PY_DIRS = ["test/unit/codeplag/cplag", "test/unit"]
 REPO_URL = "https://github.com/OSLL/code-plagiarism"
-REPORTS_FOLDER = os.path.abspath("./reports")
 CPP_GITHUB_FILES = [
     f"{REPO_URL}/blob/main/test/unit/codeplag/cplag/data/sample3.cpp",
     f"{REPO_URL}/blob/main/test/unit/codeplag/cplag/data/sample4.cpp",
@@ -32,7 +30,7 @@ PY_GITHUB_DIR = f"{REPO_URL}/blob/main/src/codeplag/pyplag"
 
 @pytest.fixture(scope="module", autouse=True)
 def setup_module():
-    first_cond = modify_settings(environment=".env").returncode == 0
+    first_cond = not modify_settings(environment=".env").cmd_res.returncode
     second_cond = os.environ.get("ACCESS_TOKEN", "") != ""
 
     assert first_cond or second_cond
@@ -41,8 +39,8 @@ def setup_module():
 def test_check_util_version():
     result = run_util(["--version"])
 
-    assert result.returncode == SUCCESS_CODE
-    assert f"{UTIL_NAME} {UTIL_VERSION}" in result.stdout.decode("utf-8")
+    result.assert_success()
+    assert f"{UTIL_NAME} {UTIL_VERSION}" in result.cmd_res.stdout.decode("utf-8")
 
 
 @pytest.mark.parametrize(
@@ -70,8 +68,8 @@ def test_check_util_version():
 def test_compare_cpp_files(cmd, out):
     result = run_check(cmd, extension="cpp")
 
-    assert result.returncode == SUCCESS_CODE
-    assert out in result.stdout
+    result.assert_success()
+    assert out in result.cmd_res.stdout
 
 
 @pytest.mark.parametrize(
@@ -103,25 +101,18 @@ def test_compare_cpp_files(cmd, out):
 def test_compare_py_files(cmd, out):
     result = run_check(cmd)
 
-    assert result.returncode == SUCCESS_CODE
-    assert out in result.stdout
+    result.assert_success()
+    assert out in result.cmd_res.stdout
 
 
-def test_save_reports():
-    with suppress(Exception):
-        os.mkdir(REPORTS_FOLDER)
-    assert os.path.exists(REPORTS_FOLDER)
-
-    assert modify_settings(REPORTS_FOLDER, reports_extension="json").returncode == 0
-    assert (
-        run_check(
-            [
-                "--directories",
-                "./src",
-            ]
-        ).returncode
-        == 0
-    )
+def test_save_reports(create_reports_folder: None):
+    modify_settings(REPORTS_FOLDER, reports_extension="json").assert_success()
+    run_check(
+        [
+            "--directories",
+            "./src",
+        ]
+    ).assert_success()
     reports_files = os.listdir(REPORTS_FOLDER)
 
     assert len(reports_files) > 0
@@ -135,5 +126,3 @@ def test_save_reports():
                 - ["first_modify_date", "second_modify_date"]
             ):
                 assert key in report
-
-    shutil.rmtree(REPORTS_FOLDER)
