@@ -1,4 +1,3 @@
-import sys
 from enum import Enum
 from functools import partial
 from typing import List, Optional
@@ -35,10 +34,6 @@ info = partial(colorize, color=Color.OKGREEN)
 warning = partial(colorize, color=Color.WARNING)
 error = partial(colorize, color=Color.FAIL)
 red_bold = partial(colorize, color=Color.FAIL, bold=True)
-
-
-def eprint(*args, **kwargs) -> None:
-    print(*args, file=sys.stderr, **kwargs)
 
 
 def print_suspect_parts(

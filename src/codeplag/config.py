@@ -1,5 +1,4 @@
 import json
-import logging
 from pathlib import Path
 from typing import Literal, Optional, TypedDict, Union, overload
 
@@ -11,6 +10,7 @@ from codeplag.consts import (
     DEFAULT_REPORT_EXTENSION,
     DEFAULT_THRESHOLD,
 )
+from codeplag.logger import codeplag_logger as logger
 from codeplag.types import Settings
 
 
@@ -47,7 +47,7 @@ def write_config(file: Path, config: Union[dict, TypedDict]) -> None:
         json.dump(config_for_dump, f)
 
 
-def read_settings_conf(logger: logging.Logger) -> Settings:
+def read_settings_conf() -> Settings:
     loaded_settings_config = read_config(CONFIG_PATH, safe=True)
     if loaded_settings_config is None:
         logger.warning(

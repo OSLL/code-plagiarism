@@ -9,8 +9,8 @@ from webparsers.types import WorkInfo
 from codeplag.consts import FILE_DOWNLOAD_PATH, GET_FRAZE, SUPPORTED_EXTENSIONS
 from codeplag.cplag.const import COMPILE_ARGS
 from codeplag.cplag.tree import get_features
-from codeplag.display import eprint
 from codeplag.getfeatures import AbstractGetter, get_files_path_from_directory
+from codeplag.logger import log_err
 from codeplag.types import ASTFeatures
 
 
@@ -28,8 +28,7 @@ def get_cursor_from_file(
         args = COMPILE_ARGS
 
     if not filepath.is_file():
-        # TODO: print to log
-        eprint(filepath, "Is not a file / does not exist")
+        log_err(f"'{filepath}' is not a file or does not exist.")
         return
 
     index = Index.create()
@@ -56,8 +55,7 @@ def _get_works_from_filepaths(
     for filepath in filepaths:
         cursor = get_cursor_from_file(filepath, compile_args)
         if cursor is None:
-            # TODO: print to log
-            eprint(f"{filepath} does not parsed")
+            log_err(f"'{filepath}' does not parsed.")
             continue
 
         features = get_features(cursor, filepath)
@@ -69,16 +67,12 @@ def _get_works_from_filepaths(
 class CFeaturesGetter(AbstractGetter):
     def __init__(
         self,
-        environment: Optional[Path] = None,
-        all_branches: bool = False,
         logger: Optional[logging.Logger] = None,
         repo_regexp: str = "",
         path_regexp: str = "",
     ):
         super().__init__(
             extension="cpp",
-            environment=environment,
-            all_branches=all_branches,
             logger=logger,
             repo_regexp=repo_regexp,
             path_regexp=path_regexp,

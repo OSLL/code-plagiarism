@@ -1,6 +1,7 @@
 import json
 import logging
 import math
+import os
 import uuid
 from datetime import datetime
 from itertools import combinations
@@ -11,7 +12,10 @@ from typing import Any, Dict, Generator, List, Literal, Optional, Tuple
 import jinja2
 import numpy as np
 import pandas as pd
+from decouple import Config, RepositoryEnv
 from numpy.typing import NDArray
+from requests import Session
+from webparsers.github_parser import GitHubParser
 
 from codeplag.algorithms.featurebased import counter_metric, struct_compare
 from codeplag.algorithms.tokenbased import value_jakkar_coef
@@ -24,6 +28,7 @@ from codeplag.consts import (
     DEFAULT_LANGUAGE,
     DEFAULT_THRESHOLD,
     DEFAULT_WEIGHTS,
+    SUPPORTED_EXTENSIONS,
     TEMPLATE_PATH,
 )
 from codeplag.cplag.utils import CFeaturesGetter
@@ -99,7 +104,7 @@ def fast_compare(
     kw_res = counter_metric(features_f.keywords, features_s.keywords)
     lits_res = counter_metric(features_f.literals, features_s.literals)
     weighted_average = np.average(
-        [jakkar_coef, ops_res, kw_res, lits_res], weights=weights
+        np.array([jakkar_coef, ops_res, kw_res, lits_res]), weights=weights
     )
 
     fast_metrics = FastMetrics(
@@ -107,7 +112,7 @@ def fast_compare(
         operators=ops_res,
         keywords=kw_res,
         literals=lits_res,
-        weighted_average=weighted_average,
+        weighted_average=float(weighted_average),
     )
 
     return fast_metrics
@@ -186,7 +191,7 @@ def deserialize_compare_result(compare_result: pd.Series) -> CompareInfo:
             operators=float(compare_result.operators),
             keywords=float(compare_result.keywords),
             literals=float(compare_result.literals),
-            weighted_average=np.float64(compare_result.weighted_average),
+            weighted_average=float(compare_result.weighted_average),
         ),
         structure=StructuresInfo(
             compliance_matrix=similarity_matrix,
@@ -350,8 +355,8 @@ class CodeplagEngine:
         elif self.root == "report":
             self.path: Path = parsed_args.pop("path")
         else:
-            settings_conf = read_settings_conf(logger)
-            self._set_features_getter(parsed_args, settings_conf, logger)
+            settings_conf = read_settings_conf()
+            self._set_features_getter(parsed_args)
 
             self.mode: str = parsed_args.pop("mode", "many_to_many")
             self.show_progress: Flag = settings_conf["show_progress"]
@@ -378,6 +383,8 @@ class CodeplagEngine:
                 "github_project_folders", []
             )
             self.github_user: str = parsed_args.pop("github_user", "")
+            if self.github_files or self.github_project_folders or self.github_user:
+                self._set_github_parser(parsed_args, settings_conf)
 
             self.files: List[Path] = parsed_args.pop("files", [])
             self.directories: List[Path] = parsed_args.pop("directories", [])
@@ -385,8 +392,6 @@ class CodeplagEngine:
     def _set_features_getter(
         self,
         parsed_args: Dict[str, Any],
-        settings_conf: Settings,
-        logger: logging.Logger,
     ) -> None:
         extension: Extension = parsed_args.pop("extension")
         if extension == "py":
@@ -395,11 +400,34 @@ class CodeplagEngine:
             FeaturesGetter = CFeaturesGetter
 
         self.features_getter: AbstractGetter = FeaturesGetter(
-            environment=settings_conf.get("environment"),
-            all_branches=parsed_args.pop("all_branches", False),
-            logger=logger,
+            logger=self.logger,
             repo_regexp=parsed_args.pop("repo_regexp", None),
             path_regexp=parsed_args.pop("path_regexp", None),
+        )
+
+    def _set_github_parser(
+        self, parsed_args: Dict[str, Any], settings_conf: Settings
+    ) -> None:
+        environment = settings_conf.get("environment")
+        if not environment:
+            self.logger.warning(
+                "Env file not found or not a file. "
+                "Trying to get token from environment."
+            )
+            access_token: str = os.environ.get("ACCESS_TOKEN", "")
+        else:
+            env_config = Config(RepositoryEnv(environment))
+            access_token: str = env_config.get("ACCESS_TOKEN", default="")  # type: ignore
+        if not access_token:
+            self.logger.warning("GitHub access token is not defined.")
+        self.features_getter.set_github_parser(
+            GitHubParser(
+                file_extensions=SUPPORTED_EXTENSIONS[self.features_getter.extension],
+                check_all=parsed_args.pop("all_branches", False),
+                access_token=access_token,
+                logger=logging.getLogger(f"{self.logger.name}.webparsers"),
+                session=Session(),
+            )
         )
 
     def save_result(
@@ -547,7 +575,7 @@ class CodeplagEngine:
         print(f"Check progress: {progress:.2%}.", end="\r")
 
     def _settings_show(self) -> None:
-        settings_config = read_settings_conf(self.logger)
+        settings_config = read_settings_conf()
         table = pd.DataFrame(
             list(settings_config.values()),
             index=[k.capitalize() for k in settings_config],
@@ -556,7 +584,7 @@ class CodeplagEngine:
         print(table)
 
     def _settings_modify(self) -> None:
-        settings_config = read_settings_conf(self.logger)
+        settings_config = read_settings_conf()
         for key in Settings.__annotations__:
             new_value = getattr(self, key, None)
             if new_value is not None:
@@ -652,7 +680,7 @@ class CodeplagEngine:
         self.logger.info("Ending searching for plagiarism ...")
 
     def _report_create(self) -> Literal[0, 1]:
-        settings_config = read_settings_conf(self.logger)
+        settings_config = read_settings_conf()
         reports_path = settings_config.get("reports")
         if not reports_path:
             self.logger.error(

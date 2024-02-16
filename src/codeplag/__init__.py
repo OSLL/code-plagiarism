@@ -7,7 +7,8 @@ def main() -> Literal[0, 1, 2]:
 
     from codeplag.codeplagcli import CodeplagCLI
     from codeplag.consts import LOG_PATH
-    from codeplag.logger import get_logger
+    from codeplag.logger import codeplag_logger as logger
+    from codeplag.logger import set_handlers
     from codeplag.utils import CodeplagEngine
 
     pd.set_option("display.float_format", "{:,.2%}".format)
@@ -16,8 +17,9 @@ def main() -> Literal[0, 1, 2]:
     cli = CodeplagCLI()
     argcomplete.autocomplete(cli)
     parsed_args = vars(cli.parse_args())
+    verbose = bool(parsed_args["verbose"])
 
-    logger = get_logger(__name__, LOG_PATH, verbose=parsed_args["verbose"])
+    set_handlers(logger, LOG_PATH, verbose)
     codeplag_util = CodeplagEngine(logger, parsed_args)
     try:
         code = codeplag_util.run()

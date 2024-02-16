@@ -2,6 +2,7 @@ import logging
 import sys
 from pathlib import Path
 
+from codeplag.consts import UTIL_NAME
 from codeplag.display import error, info, red_bold, warning
 
 
@@ -64,15 +65,19 @@ def get_stdout_handler() -> logging.StreamHandler:
     return stdout_handler
 
 
-def get_logger(name: str, filename: Path, verbose: bool = False) -> logging.Logger:
-    logger = logging.getLogger(name)
+def set_handlers(logger: logging.Logger, filename: Path, verbose: bool = False) -> None:
     if verbose:
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)
-
     logger.addHandler(get_file_handler(filename))
     logger.addHandler(get_stdout_handler())
     logger.addHandler(get_stderr_handler())
 
-    return logger
+
+def log_err(*msgs) -> None:
+    for msg in msgs:
+        codeplag_logger.error(msg)
+
+
+codeplag_logger = logging.getLogger(UTIL_NAME)
