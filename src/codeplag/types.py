@@ -14,7 +14,6 @@ from typing import (
     Union,
 )
 
-import numpy as np
 import numpy.typing as npt
 from typing_extensions import NotRequired
 
@@ -91,7 +90,7 @@ class FastMetrics(NamedTuple):
     operators: float
     keywords: float
     literals: float
-    weighted_average: np.float64
+    weighted_average: float
 
 
 class StructuresInfo(NamedTuple):

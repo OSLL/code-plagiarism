@@ -5,61 +5,52 @@ from typing import List, Optional, Union
 
 from webparsers.types import WorkInfo
 
-from codeplag.consts import GET_FRAZE, LOG_PATH, SUPPORTED_EXTENSIONS
-from codeplag.display import eprint, red_bold
+from codeplag.consts import GET_FRAZE, SUPPORTED_EXTENSIONS
+from codeplag.display import red_bold
 from codeplag.getfeatures import AbstractGetter, get_files_path_from_directory
-from codeplag.logger import get_logger
+from codeplag.logger import log_err
 from codeplag.pyplag.astwalkers import ASTWalker
 from codeplag.types import ASTFeatures
-
-# TODO: Remove from globals
-logger = get_logger(__name__, LOG_PATH)
 
 
 def get_ast_from_content(code: str, path: Union[Path, str]) -> Optional[ast.Module]:
     tree = None
-
-    # TODO: Add logging and check for correct colored output
     try:
         tree = ast.parse(code)
     except TabError as err:
-        eprint(
+        log_err(
             "-" * 40,
             red_bold(f"'{path}' not parsed."),
             red_bold(f"TabError: {err.args[0]}"),
             red_bold(f"In line {str(err.args[1][1])}"),
             "-" * 40,
-            sep="\n",
         )
     except IndentationError as err:
-        eprint(
+        log_err(
             "-" * 40,
             red_bold(f"'{path}' not parsed."),
             red_bold(f"IdentationError: {err.args[0]}"),
             red_bold(f"In line {str(err.args[1][1])}"),
             "-" * 40,
-            sep="\n",
         )
     except SyntaxError as err:
-        eprint(
+        log_err(
             "-" * 40,
             red_bold(f"'{path}' not parsed."),
             red_bold(f"SyntaxError: {err.args[0]}"),
             red_bold(f"In line {str(err.args[1][1])}"),
             red_bold(f"In column {str(err.args[1][2])}"),
             "-" * 40,
-            sep="\n",
         )
     except Exception as err:
-        eprint(
+        log_err(
             "-" * 40,
             red_bold(f"'{path}' not parsed."),
             red_bold(err.__class__.__name__),
-            sep="\n",
         )
         for element in err.args:
-            eprint(red_bold(element))
-        eprint("-" * 40)
+            log_err(red_bold(element))
+        log_err("-" * 40)
 
     return tree
 
@@ -71,7 +62,7 @@ def get_ast_from_filename(filepath: Path) -> Optional[ast.Module]:
         filename - full path to file with code which will have analyzed
     """
     if not filepath.is_file():
-        logger.error("'%s' is not a file / doesn't exist.", filepath)
+        log_err(f"'{filepath}' is not a file or doesn't exist.")
         return None
 
     tree = None
@@ -80,10 +71,10 @@ def get_ast_from_filename(filepath: Path) -> Optional[ast.Module]:
             tree = get_ast_from_content(file.read(), filepath)
     except UnicodeDecodeError:
         # TODO: Process this such as in the GitHubParser
-        logger.error("Can't decode file '%s'.", filepath)
+        log_err(f"Can't decode file '{filepath}'.")
         return None
     except PermissionError:
-        logger.error("Can't access to the file '%s'.", filepath)
+        log_err(f"Can't access to the file '{filepath}'.")
         return None
 
     return tree
@@ -116,16 +107,12 @@ def _get_works_from_filepaths(filenames: List[Path]) -> List[ASTFeatures]:
 class PyFeaturesGetter(AbstractGetter):
     def __init__(
         self,
-        environment: Optional[Path] = None,
-        all_branches: bool = False,
         logger: Optional[logging.Logger] = None,
         repo_regexp: str = "",
         path_regexp: str = "",
     ):
         super().__init__(
             extension="py",
-            environment=environment,
-            all_branches=all_branches,
             logger=logger,
             repo_regexp=repo_regexp,
             path_regexp=path_regexp,

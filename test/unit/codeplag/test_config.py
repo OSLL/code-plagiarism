@@ -1,21 +1,20 @@
 import json
+import logging
 from pathlib import Path
+from typing import Optional
 from unittest.mock import MagicMock
 
 import pytest
-from codeplag.config import (
-    DefaultSettingsConfig,
-    read_config,
-    read_settings_conf,
-    write_config,
-    write_settings_conf,
-)
-from codeplag.consts import CONFIG_PATH
+from codeplag import config
+from codeplag.consts import CONFIG_PATH, UTIL_NAME
+from codeplag.types import Settings
 from pytest_mock import MockerFixture
+
+config.logger = MagicMock(autospec=logging.Logger(UTIL_NAME))
 
 
 @pytest.fixture
-def mock_json_load(request, mocker: MockerFixture) -> dict:
+def mock_json_load(request: pytest.FixtureRequest, mocker: MockerFixture) -> dict:
     mocker.patch.object(json, "load", return_value=request.param)
 
     return request.param
@@ -27,20 +26,19 @@ def mock_json_dump(mocker: MockerFixture) -> MagicMock:
 
 
 @pytest.fixture
-def path(mocker: MockerFixture):
+def path(mocker: MockerFixture) -> MagicMock:
     return mocker.MagicMock(autospec=Path("."))
 
 
 @pytest.fixture
-def settings_config(request, mocker: MockerFixture):
-    mocker.patch("codeplag.config.read_config", return_value=request.param)
-
+def settings_config(request, mocker: MockerFixture) -> Optional[Settings]:
+    mocker.patch.object(config, "read_config", return_value=request.param)
     return request.param
 
 
 @pytest.fixture
-def mock_write_config(mocker: MockerFixture):
-    return mocker.patch("codeplag.config.write_config")
+def mock_write_config(mocker: MockerFixture) -> MagicMock:
+    return mocker.patch.object(config, "write_config")
 
 
 @pytest.mark.parametrize(
@@ -52,8 +50,8 @@ def mock_write_config(mocker: MockerFixture):
     ],
     indirect=True,
 )
-def test_read_config(path, mock_json_load):
-    assert read_config(path) == mock_json_load
+def test_read_config(path: MagicMock, mock_json_load: dict):
+    assert config.read_config(path) == mock_json_load
 
 
 @pytest.mark.parametrize(
@@ -66,16 +64,16 @@ def test_read_config(path, mock_json_load):
         PermissionError,
     ],
 )
-def test_read_config_safe(path, except_type):
+def test_read_config_safe(path: MagicMock, except_type: Exception):
     path.open.side_effect = except_type
-    assert read_config(path, safe=True) is None
+    assert config.read_config(path, safe=True) is None
 
 
 @pytest.mark.parametrize("except_type", [FileNotFoundError, PermissionError])
-def test_read_config_bad(path, except_type):
+def test_read_config_bad(path: MagicMock, except_type: Exception):
     path.open.side_effect = except_type
     with pytest.raises(except_type):
-        read_config(path)
+        config.read_config(path)
 
 
 @pytest.mark.parametrize(
@@ -88,24 +86,27 @@ def test_read_config_bad(path, except_type):
         ],
     ],
 )
-def test_write_config(path, mock_json_dump, dumped_dict, expected):
+def test_write_config(
+    path: MagicMock, mock_json_dump: MagicMock, dumped_dict: dict, expected: dict
+):
     copy_dumped = dict(dumped_dict)
-    write_config(path, dumped_dict)
+    config.write_config(path, dumped_dict)
     mock_json_dump.assert_called_once()
     assert mock_json_dump.mock_calls[0].args[0] == expected
     assert copy_dumped == dumped_dict
 
 
 @pytest.mark.parametrize("settings_config", [None], indirect=True)
-def test_read_default_settings_conf(dummy_logger, settings_config):
-    assert read_settings_conf(dummy_logger) == DefaultSettingsConfig
-    dummy_logger.warning.assert_called_once()
+def test_read_default_settings_conf(settings_config: Optional[Settings]):
+    assert config.read_settings_conf() == config.DefaultSettingsConfig
+    config.logger.warning.assert_called_once()
+    config.logger.reset_mock()
 
 
 @pytest.mark.parametrize(
     "settings_config, expected",
     [
-        [{}, DefaultSettingsConfig],
+        [{}, config.DefaultSettingsConfig],
         [
             {"reports": "/home/bukabyka/reports"},
             {
@@ -145,11 +146,12 @@ def test_read_default_settings_conf(dummy_logger, settings_config):
     ],
     indirect=["settings_config"],
 )
-def test_read_settings_conf(dummy_logger, settings_config, expected):
-    assert read_settings_conf(dummy_logger) == expected
-    dummy_logger.error.assert_not_called()
+def test_read_settings_conf(settings_config: Settings, expected: Settings):
+    assert config.read_settings_conf() == expected
+    config.logger.warning.assert_not_called()
+    config.logger.reset_mock()
 
 
-def test_write_settings_conf(mock_write_config):
-    write_settings_conf(DefaultSettingsConfig)
-    mock_write_config.assert_called_once_with(CONFIG_PATH, DefaultSettingsConfig)
+def test_write_settings_conf(mock_write_config: MagicMock):
+    config.write_settings_conf(config.DefaultSettingsConfig)
+    mock_write_config.assert_called_once_with(CONFIG_PATH, config.DefaultSettingsConfig)

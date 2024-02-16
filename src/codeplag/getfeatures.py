@@ -6,19 +6,14 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import List, Literal, Optional, Union, overload
 
-from decouple import Config, RepositoryEnv
-from requests import Session
 from webparsers.github_parser import GitHubParser
 from webparsers.types import WorkInfo
 
 from codeplag.consts import (
     ALL_EXTENSIONS,
     GET_FRAZE,
-    LOG_PATH,
-    SUPPORTED_EXTENSIONS,
     UTIL_NAME,
 )
-from codeplag.logger import get_logger
 from codeplag.types import ASTFeatures, Extension, Extensions
 
 
@@ -63,14 +58,13 @@ class AbstractGetter(ABC):
     def __init__(
         self,
         extension: Extension,
-        environment: Optional[Path] = None,
-        all_branches: bool = False,
         logger: Optional[logging.Logger] = None,
         repo_regexp: Optional[str] = None,
         path_regexp: Optional[str] = None,
     ):
         self.logger = logger if logger is not None else logging.getLogger(UTIL_NAME)
         self.extension: Extension = extension
+        self.github_parser: Optional[GitHubParser] = None
 
         try:
             if repo_regexp is not None:
@@ -97,32 +91,17 @@ class AbstractGetter(ABC):
             )
             sys.exit(1)
 
-        self._set_access_token(environment)
-        self._set_github_parser(all_branches)
-
-    def _set_access_token(self, env_path: Optional[Path]) -> None:
-        # TODO: Set only if defined GitHub options
-        if not env_path:
-            self.logger.warning(
-                "Env file not found or not a file. "
-                "Trying to get token from environment."
+    def check_github_parser_provided(self) -> None:
+        if not isinstance(self.github_parser, GitHubParser):
+            raise TypeError(
+                "GitHubParser is not provided, or the provided object "
+                "is not a GitHubParser instance."
             )
-            self._access_token: str = os.environ.get("ACCESS_TOKEN", "")
-        else:
-            env_config = Config(RepositoryEnv(env_path))
-            self._access_token: str = env_config.get("ACCESS_TOKEN", default="")  # type: ignore
 
-        if not self._access_token:
-            self.logger.warning("GitHub access token is not defined.")
-
-    def _set_github_parser(self, branch_policy: bool) -> None:
-        self.github_parser = GitHubParser(
-            file_extensions=SUPPORTED_EXTENSIONS[self.extension],
-            check_all=branch_policy,
-            access_token=self._access_token,
-            logger=get_logger("webparsers", LOG_PATH),
-            session=Session(),
-        )
+    def set_github_parser(self, github_parser: GitHubParser) -> None:
+        if self.github_parser:
+            self.github_parser.close_session()
+        self.github_parser = github_parser
 
     @abstractmethod
     def get_from_content(self, work_info: WorkInfo) -> Optional[ASTFeatures]:
@@ -172,6 +151,8 @@ class AbstractGetter(ABC):
         works: List[ASTFeatures] = []
         if not github_files:
             return works
+        self.check_github_parser_provided()
+        assert self.github_parser
 
         self.logger.debug(f"{GET_FRAZE} GitHub urls")
         for github_file in github_files:
@@ -204,6 +185,11 @@ class AbstractGetter(ABC):
         self, github_project_folders: List[str], independent: bool = False
     ) -> Union[List[ASTFeatures], List[List[ASTFeatures]]]:
         works = []
+        if not github_project_folders:
+            return works
+        self.check_github_parser_provided()
+        assert self.github_parser
+
         for github_project in github_project_folders:
             nested_works: List[ASTFeatures] = []
             self.logger.debug(f"{GET_FRAZE} {github_project}")
@@ -249,6 +235,8 @@ class AbstractGetter(ABC):
         works = []
         if not github_user:
             return works
+        self.check_github_parser_provided()
+        assert self.github_parser
 
         repos = self.github_parser.get_list_of_repos(
             owner=github_user, reg_exp=self.repo_regexp

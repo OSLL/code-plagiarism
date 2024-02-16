@@ -51,6 +51,11 @@ class GitHubParser:
 
         return any(re.search(extension, path) for extension in self.__file_extensions)
 
+    def close_session(self):
+        if self.__session:
+            self.__session.close()
+            self.__session = None
+
     def send_get_request(
         self, api_url: str, params: Optional[dict] = None, address: str = _API_URL
     ) -> requests.Response:
