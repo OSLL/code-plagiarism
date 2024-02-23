@@ -1,16 +1,18 @@
-from typing import List, Optional, Tuple
+from typing import List, Mapping, Optional, Tuple
 
 import numpy as np
 
 from codeplag.types import NodeStructurePlace
 
 
-def counter_metric(counter1: dict, counter2: dict) -> float:
+def counter_metric(counter1: Mapping[str, int], counter2: Mapping[str, int]) -> float:
     """Return how same operators or keywords or literals in two trees.
 
     Args:
-        counter1 - dict object with counts of op or kw or list
-        counter2 - dict object with counts of op or kw or list
+        counter1 - dict object with counts of operators or keywords
+          or literals
+        counter2 - dict object with counts of operators or keywords
+          or literals
     """
 
     if len(counter1) == 0 and len(counter2) == 0:

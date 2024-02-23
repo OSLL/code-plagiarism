@@ -2,7 +2,8 @@ import os
 import sys
 from pathlib import Path
 
-from setuptools import find_packages, setup
+from Cython.Build import cythonize
+from setuptools import Extension, find_packages, setup
 
 INSTALL_REQUIREMENTS = [
     "argcomplete~=2.0.0",
@@ -15,7 +16,7 @@ INSTALL_REQUIREMENTS = [
     "python-decouple~=3.6",
     "requests~=2.31.0",
     "typing-extensions~=4.3.0",
-    "aiohttp~=3.8.5",
+    "aiohttp~=3.9.3",
     "Jinja2~=3.1.2",
     "cachetools==5.3.1",
     "gidgethub~=5.3.0",
@@ -53,11 +54,17 @@ setup(
     ],
     package_dir={"": "src"},
     packages=find_packages("src"),
+    ext_modules=cythonize(
+        [
+            Extension("*", [f"src/{UTIL_NAME}/**/*.py"]),
+        ],
+        language_level=3,
+    ),
     python_requires=">=3.8",
     install_requires=INSTALL_REQUIREMENTS,
     entry_points={
         "console_scripts": [
-            "codeplag = codeplag:main",
+            f"{UTIL_NAME} = {UTIL_NAME}:main",
         ]
     },
 )
