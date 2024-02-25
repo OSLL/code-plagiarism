@@ -33,7 +33,7 @@ jobs:
         make substitute-sources
         pip install $(python3 setup.py --install-requirements)
         pip install --requirement docs/notebooks/requirements.txt
-        pip install pre-commit==3.4.0
+        pip install pre-commit==3.4.0 Cython==3.0.8
         make pre-commit
 
   docker-build-test-autotest:
