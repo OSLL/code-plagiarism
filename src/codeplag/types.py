@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from functools import total_ordering
 from pathlib import Path
 from typing import (
+    DefaultDict,
     Dict,
     List,
     Literal,
@@ -57,9 +58,15 @@ class ASTFeatures:
 
     count_of_nodes: int = 0
     head_nodes: List[str] = field(default_factory=list)
-    operators: Dict[str, int] = field(default_factory=lambda: defaultdict(lambda: 0))
-    keywords: Dict[str, int] = field(default_factory=lambda: defaultdict(lambda: 0))
-    literals: Dict[str, int] = field(default_factory=lambda: defaultdict(lambda: 0))
+    operators: DefaultDict[str, int] = field(
+        default_factory=lambda: defaultdict(lambda: 0)
+    )
+    keywords: DefaultDict[str, int] = field(
+        default_factory=lambda: defaultdict(lambda: 0)
+    )
+    literals: DefaultDict[str, int] = field(
+        default_factory=lambda: defaultdict(lambda: 0)
+    )
 
     # unique nodes
     unodes: Dict[str, int] = field(default_factory=dict)

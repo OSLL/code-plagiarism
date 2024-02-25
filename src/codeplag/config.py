@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Literal, Optional, TypedDict, Union, overload
+from typing import Any, Dict, Literal, Mapping, Optional, overload
 
 from typing_extensions import NotRequired
 
@@ -13,18 +13,20 @@ from codeplag.consts import (
 from codeplag.logger import codeplag_logger as logger
 from codeplag.types import Settings
 
+Config = Dict[str, Any]
+
 
 @overload
-def read_config(file: Path, safe: Literal[False] = False) -> dict:
+def read_config(file: Path, safe: Literal[False] = False) -> Config:
     ...
 
 
 @overload
-def read_config(file: Path, safe: bool = False) -> Optional[dict]:
+def read_config(file: Path, safe: bool = False) -> Optional[Config]:
     ...
 
 
-def read_config(file: Path, safe: bool = False) -> Optional[dict]:
+def read_config(file: Path, safe: bool = False) -> Optional[Config]:
     config = None
     try:
         with file.open(mode="r") as f:
@@ -37,7 +39,7 @@ def read_config(file: Path, safe: bool = False) -> Optional[dict]:
 
 
 # TODO: Handle permission denied
-def write_config(file: Path, config: Union[dict, TypedDict]) -> None:
+def write_config(file: Path, config: Mapping[str, Any]) -> None:
     config_for_dump = dict(config)
     for key in config_for_dump:
         if isinstance(config_for_dump[key], Path):

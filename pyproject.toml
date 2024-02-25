@@ -32,3 +32,6 @@ executionEnvironments = [
 ]
 
 typeCheckingMode = "basic"
+
+[build-system]
+requires = ["setuptools", "Cython"]

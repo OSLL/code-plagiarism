@@ -108,8 +108,8 @@ class PyFeaturesGetter(AbstractGetter):
     def __init__(
         self,
         logger: Optional[logging.Logger] = None,
-        repo_regexp: str = "",
-        path_regexp: str = "",
+        repo_regexp: Optional[str] = None,
+        path_regexp: Optional[str] = None,
     ):
         super().__init__(
             extension="py",

@@ -382,7 +382,7 @@ class CodeplagEngine:
             self.github_project_folders: List[str] = parsed_args.pop(
                 "github_project_folders", []
             )
-            self.github_user: str = parsed_args.pop("github_user", "")
+            self.github_user: str = parsed_args.pop("github_user", "") or ""
             if self.github_files or self.github_project_folders or self.github_user:
                 self._set_github_parser(parsed_args, settings_conf)
 

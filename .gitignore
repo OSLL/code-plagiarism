@@ -25,7 +25,6 @@ debian/deb/
 debian/debhelper-build-stamp
 debian/files
 debian/preinst
-debian/postinst
 debian/copyright
 
 # Substituting

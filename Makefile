@@ -1,11 +1,11 @@
-UTIL_VERSION            := 0.4.1
+UTIL_VERSION            := 0.4.2
 UTIL_NAME               := codeplag
 PWD                     := $(shell pwd)
 
 USER_UID                ?= $(shell id --user)
 USER_GID                ?= $(shell id --group)
 
-BASE_DOCKER_VERSION     := 1.3
+BASE_DOCKER_VERSION     := 1.4
 BASE_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-base-ubuntu20.04:$(BASE_DOCKER_VERSION) | tr A-Z a-z)
 TEST_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-test-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
 DOCKER_TAG              ?= $(shell echo $(UTIL_NAME)-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
@@ -18,6 +18,7 @@ CODEPLAG_LOG_PATH       := $(LOGS_PATH)/$(UTIL_NAME).log
 CONFIG_PATH             := /etc/$(UTIL_NAME)/settings.conf
 LIB_PATH                := /var/lib/$(UTIL_NAME)
 DEBIAN_PACKAGES_PATH    := debian/deb
+PY_INSTALL_PATH         := $(shell python3 -c "import site; print(site.getsitepackages()[0]);")
 
 SOURCE_SUB_FILES        := src/$(UTIL_NAME)/consts.py
 IS_DEVELOPED            ?= 1
@@ -31,6 +32,7 @@ DOCKER_SUB_FILES        := docker/base_ubuntu2004.dockerfile \
                            docker/ubuntu2004.dockerfile
 
 PYTHON_REQUIRED_LIBS    := $(shell python3 setup.py --install-requirements)
+PYTHON_BUILD_LIBS       := $(shell python3 setup.py --build-requirements)
 
 
 ifeq ($(IS_DEVELOPED), 1)
@@ -44,6 +46,7 @@ substitute = @sed \
 		-e "s|@CODEPLAG_LOG_PATH@|${CODEPLAG_LOG_PATH}|g" \
 		-e "s|@DEVEL_SUFFIX@|${DEVEL_SUFFIX}|g" \
 		-e "s|@PYTHON_REQUIRED_LIBS@|${PYTHON_REQUIRED_LIBS}|g" \
+		-e "s|@PYTHON_BUILD_LIBS@|${PYTHON_BUILD_LIBS}|g" \
 		-e "s|@LOGS_PATH@|${LOGS_PATH}|g" \
 		-e "s|@LIB_PATH@|${LIB_PATH}|g" \
 		-e "s|@CONFIG_PATH@|${CONFIG_PATH}|g" \
@@ -81,6 +84,14 @@ man: substitute-sources
 
 install: substitute-sources man
 	python3 -m pip install --root=/$(DESTDIR) .
+
+	@echo "Cleaning unnecessary files after Cython compilation"
+	find "$(DESTDIR)/$(PY_INSTALL_PATH)/$(UTIL_NAME)/" -type f -name '*.py' -exec rm --force {} +
+	find "$(DESTDIR)/$(PY_INSTALL_PATH)/$(UTIL_NAME)" -type d -iname "__pycache__" -exec rm --recursive --force {} +
+
+	@echo "Cleaning unnecessary temporary Python files after installation"
+	find "$(DESTDIR)/$(PY_INSTALL_PATH)/$(UTIL_NAME)/" -type f -name '*.tmp.py' -exec rm --force {} +
+	rm --recursive --force "$(DESTDIR)/$(PY_INSTALL_PATH)/$(UTIL_NAME)/consts"
 
 	install -D -d -m 0755 $(DESTDIR)/$(LOGS_PATH)
 	install -D -m 0666 /dev/null $(DESTDIR)/$(CODEPLAG_LOG_PATH)
@@ -146,7 +157,6 @@ clean-all: clean
 	rm --force debian/changelog
 	rm --force debian/control
 	rm --force debian/preinst
-	rm --force debian/postinst
 	rm --force debian/copyright
 
 uninstall:
