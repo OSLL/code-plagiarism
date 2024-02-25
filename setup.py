@@ -1,11 +1,15 @@
 import os
 import sys
 from pathlib import Path
+from typing import Tuple
 
-from Cython.Build import cythonize
 from setuptools import Extension, find_packages, setup
 
-INSTALL_REQUIREMENTS = [
+BUILD_REQUIREMENTS: Tuple[str, ...] = (
+    "argparse-manpage==3",
+    "Cython~=3.0.8",
+)
+INSTALL_REQUIREMENTS: Tuple[str, ...] = (
     "argcomplete~=2.0.0",
     "numpy~=1.23.5",
     "pandas~=1.4.3",
@@ -20,16 +24,27 @@ INSTALL_REQUIREMENTS = [
     "Jinja2~=3.1.2",
     "cachetools==5.3.1",
     "gidgethub~=5.3.0",
-]
+)
 UTIL_NAME = os.getenv("UTIL_NAME")
 UTIL_VERSION = os.getenv("UTIL_VERSION")
 
 
-if "--install-requirements" in sys.argv:
+if "--build-requirements" in sys.argv:
+    print(" ".join(BUILD_REQUIREMENTS))
+    sys.exit(0)
+elif "--install-requirements" in sys.argv:
     print(" ".join(INSTALL_REQUIREMENTS))
     sys.exit(0)
 elif UTIL_NAME is None or UTIL_VERSION is None:
     print("Please provide UTIL_NAME and UTIL_VERSION environment variables.")
+    sys.exit(1)
+try:
+    from Cython.Build import cythonize
+except ModuleNotFoundError:
+    print(
+        "For the correct build install required build dependencies: "
+        f"'{' '.join(BUILD_REQUIREMENTS)}'."
+    )
     sys.exit(1)
 
 

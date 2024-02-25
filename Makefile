@@ -32,6 +32,7 @@ DOCKER_SUB_FILES        := docker/base_ubuntu2004.dockerfile \
                            docker/ubuntu2004.dockerfile
 
 PYTHON_REQUIRED_LIBS    := $(shell python3 setup.py --install-requirements)
+PYTHON_BUILD_LIBS       := $(shell python3 setup.py --build-requirements)
 
 
 ifeq ($(IS_DEVELOPED), 1)
@@ -45,6 +46,7 @@ substitute = @sed \
 		-e "s|@CODEPLAG_LOG_PATH@|${CODEPLAG_LOG_PATH}|g" \
 		-e "s|@DEVEL_SUFFIX@|${DEVEL_SUFFIX}|g" \
 		-e "s|@PYTHON_REQUIRED_LIBS@|${PYTHON_REQUIRED_LIBS}|g" \
+		-e "s|@PYTHON_BUILD_LIBS@|${PYTHON_BUILD_LIBS}|g" \
 		-e "s|@LOGS_PATH@|${LOGS_PATH}|g" \
 		-e "s|@LIB_PATH@|${LIB_PATH}|g" \
 		-e "s|@CONFIG_PATH@|${CONFIG_PATH}|g" \
