@@ -3,6 +3,7 @@ import logging
 import math
 import os
 import uuid
+from concurrent.futures import Future, ProcessPoolExecutor
 from datetime import datetime
 from itertools import combinations
 from pathlib import Path
@@ -32,7 +33,7 @@ from codeplag.consts import (
     TEMPLATE_PATH,
 )
 from codeplag.cplag.utils import CFeaturesGetter
-from codeplag.display import print_compare_result
+from codeplag.display import calc_and_print_progress, print_compare_result
 from codeplag.getfeatures import AbstractGetter
 from codeplag.pyplag.utils import PyFeaturesGetter
 from codeplag.types import (
@@ -43,6 +44,7 @@ from codeplag.types import (
     Flag,
     Language,
     Mode,
+    ProcessingWorksInfo,
     ReportsExtension,
     SameFuncs,
     SameHead,
@@ -298,6 +300,7 @@ def create_report(
 
 
 def calc_iterations(count: int, mode: Mode = "many_to_many") -> int:
+    """Calculates the required number of iterations for all checks."""
     if count <= 1:
         return 0
 
@@ -305,27 +308,8 @@ def calc_iterations(count: int, mode: Mode = "many_to_many") -> int:
         return (count * (count - 1)) // 2
     if mode == "one_to_one":
         return math.factorial(count) // 2 * math.factorial(count - 2)
-
-    return 0
-
-
-def calc_progress(
-    iteration: int,
-    iterations: int,
-    internal_iteration: int = 0,
-    internal_iterations: int = 0,
-) -> float:
-    if iterations == 0:
-        return 0.0
-
-    progress = iteration / iterations
-    if internal_iterations == 0:
-        return progress
-
-    if internal_iteration * internal_iterations:
-        progress += internal_iteration / (internal_iterations * iterations)
-
-    return progress
+    else:
+        raise ValueError(f"The provided mode '{mode}' is invalid.")
 
 
 def read_df(path: Path) -> pd.DataFrame:
@@ -398,6 +382,8 @@ class CodeplagEngine:
             FeaturesGetter = PyFeaturesGetter
         elif extension == "cpp":
             FeaturesGetter = CFeaturesGetter
+        else:
+            raise Exception(f"Unsupported extension '{extension}'.")
 
         self.features_getter: AbstractGetter = FeaturesGetter(
             logger=self.logger,
@@ -520,35 +506,60 @@ class CodeplagEngine:
             # Time to write can be long
             self.__csv_last_save = perf_counter()
 
-    def _do_step(self, work1: ASTFeatures, work2: ASTFeatures) -> None:
+    def get_compare_result_from_cache(
+        self, work1: ASTFeatures, work2: ASTFeatures
+    ) -> Optional[CompareInfo]:
+        if not (self.reports and self.__reports_extension == "csv"):
+            return
+        cache_val = self.__df_report[
+            (self.__df_report.first_path == str(work1.filepath))
+            & (self.__df_report.second_path == str(work2.filepath))
+        ]
+        if cache_val.shape[0]:
+            return deserialize_compare_result(cache_val.iloc[0])
+
+    def _create_future_compare(
+        self,
+        executor: ProcessPoolExecutor,
+        work1: ASTFeatures,
+        work2: ASTFeatures,
+    ) -> Future:
+        return executor.submit(compare_works, work1, work2, self.threshold)
+
+    def _do_step(
+        self,
+        executor: ProcessPoolExecutor,
+        processing: List[ProcessingWorksInfo],
+        work1: ASTFeatures,
+        work2: ASTFeatures,
+    ) -> None:
         if work1.filepath == work2.filepath:
             return
 
         work1, work2 = sorted([work1, work2])
-        metrics = None
-        if self.reports:
-            if self.__reports_extension == "csv":
-                cache_val = self.__df_report[
-                    (self.__df_report.first_path == str(work1.filepath))
-                    & (self.__df_report.second_path == str(work2.filepath))
-                ]
-                if cache_val.shape[0]:
-                    metrics = deserialize_compare_result(cache_val.iloc[0])
-                    assert metrics.structure is not None
-            if metrics is None:
-                metrics = compare_works(work1, work2, self.threshold)
-                if metrics.structure is None:
-                    return
-                self.save_result(work1, work2, metrics, self.__reports_extension)
-        else:
-            metrics = compare_works(work1, work2, self.threshold)
-            if metrics.structure is None:
-                return
+        metrics = self.get_compare_result_from_cache(work1, work2)
+        if metrics is None:
+            processing.append(
+                ProcessingWorksInfo(
+                    work1, work2, self._create_future_compare(executor, work1, work2)
+                )
+            )
+            return
+        self._handle_compare_result(work1, work2, metrics)
 
-        if (
-            metrics.structure is None
-            or (metrics.structure.similarity * 100) <= self.threshold
-        ):
+    def _handle_compare_result(
+        self,
+        work1: ASTFeatures,
+        work2: ASTFeatures,
+        metrics: CompareInfo,
+        save: bool = False,
+    ) -> None:
+        if metrics.structure is None:
+            return
+        if self.reports and save:
+            self.save_result(work1, work2, metrics, self.__reports_extension)
+
+        if (metrics.structure.similarity * 100) <= self.threshold:
             print_compare_result(work1, work2, metrics)
         else:
             print_compare_result(
@@ -562,17 +573,12 @@ class CodeplagEngine:
                 ),
             )
 
-    def _calc_and_print_progress(
-        self,
-        iteration: int,
-        iterations: int,
-        internal_iteration: int = 0,
-        internal_iterations: int = 0,
-    ) -> None:
-        progress = calc_progress(
-            iteration, iterations, internal_iteration, internal_iterations
-        )
-        print(f"Check progress: {progress:.2%}.", end="\r")
+    def _handle_completed_futures(self, processing: List[ProcessingWorksInfo]):
+        for proc_works_info in processing:
+            metrics: CompareInfo = proc_works_info.compare_future.result()
+            self._handle_compare_result(
+                proc_works_info.work1, proc_works_info.work2, metrics, save=True
+            )
 
     def _settings_show(self) -> None:
         settings_config = read_settings_conf()
@@ -623,16 +629,19 @@ class CodeplagEngine:
             count_works = len(works)
             iterations = calc_iterations(count_works)
             iteration = 0
-            for i, work1 in enumerate(works):
-                for j, work2 in enumerate(works):
-                    if i <= j:
-                        continue
+            with ProcessPoolExecutor() as executor:
+                processed: List[ProcessingWorksInfo] = []
+                for i, work1 in enumerate(works):
+                    for j, work2 in enumerate(works):
+                        if i <= j:
+                            continue
 
-                    if self.show_progress:
-                        self._calc_and_print_progress(iteration, iterations)
-                        iteration += 1
+                        if self.show_progress:
+                            calc_and_print_progress(iteration, iterations)
+                            iteration += 1
 
-                    self._do_step(work1, work2)
+                        self._do_step(executor, processed, work1, work2)
+                self._handle_completed_futures(processed)
         elif self.mode == "one_to_one":
             combined_elements = filter(
                 bool,
@@ -657,24 +666,27 @@ class CodeplagEngine:
                 iteration = 0
 
             cases = combinations(combined_elements, r=2)
-            for case in cases:
-                first_sequence, second_sequence = case
-                internal_iterations = len(first_sequence) * len(second_sequence)
-                internal_iteration = 0
-                for work1 in first_sequence:
-                    for work2 in second_sequence:
-                        if self.show_progress:
-                            self._calc_and_print_progress(
-                                iteration,  # type: ignore
-                                iterations,  # type: ignore
-                                internal_iteration,
-                                internal_iterations,
-                            )
-                            internal_iteration += 1
+            with ProcessPoolExecutor() as executor:
+                processed: List[ProcessingWorksInfo] = []
+                for case in cases:
+                    first_sequence, second_sequence = case
+                    internal_iterations = len(first_sequence) * len(second_sequence)
+                    internal_iteration = 0
+                    for work1 in first_sequence:
+                        for work2 in second_sequence:
+                            if self.show_progress:
+                                calc_and_print_progress(
+                                    iteration,  # type: ignore
+                                    iterations,  # type: ignore
+                                    internal_iteration,
+                                    internal_iterations,
+                                )
+                                internal_iteration += 1
 
-                        self._do_step(work1, work2)
-                if self.show_progress:
-                    iteration += 1  # type: ignore
+                            self._do_step(executor, processed, work1, work2)
+                    if self.show_progress:
+                        iteration += 1  # type: ignore
+                self._handle_completed_futures(processed)
 
         self.logger.debug(f"Time for all {time() - begin_time:.2f}s")
         self.logger.info("Ending searching for plagiarism ...")
