@@ -22,6 +22,7 @@ class Color(Enum):
 def colorize(
     text: str, color: Color, bold: bool = False, underline: bool = False
 ) -> str:
+    """Wraps provided text to change color, bold, or underline it for printing."""
     if bold:
         text = f"{Color.BOLD.value}{text}"
     if underline:
@@ -82,12 +83,13 @@ def print_compare_result(
     compare_info: CompareInfo,
     compliance_matrix_df: Optional[pd.DataFrame] = None,
 ) -> None:
-    """The function prints the result of comparing two files
+    """Prints the pretty result of comparing two files.
 
-    @features1 - the features of the first  source file
-    @features2 - the features of the second  source file
-    @compare_info - structure consist compare metrics of two works
-    @threshold - threshold of plagiarism searcher alarm
+    Args:
+        features1: The features of the first  source file.
+        features2: The features of the second  source file.
+        compare_info: The compare metrics of two works.
+        threshold: Threshold of plagiarism searcher alarm.
     """
 
     print(" " * 40)
@@ -129,3 +131,34 @@ def print_compare_result(
         print(compliance_matrix_df, "\n")
 
     print("+" * 40)
+
+
+def calc_and_print_progress(
+    iteration: int,
+    iterations: int,
+    internal_iteration: int = 0,
+    internal_iterations: int = 0,
+) -> None:
+    progress = _calc_progress(
+        iteration, iterations, internal_iteration, internal_iterations
+    )
+    print(f"Check progress: {progress:.2%}.", end="\r")
+
+
+def _calc_progress(
+    iteration: int,
+    iterations: int,
+    internal_iteration: int = 0,
+    internal_iterations: int = 0,
+) -> float:
+    if iterations == 0:
+        return 0.0
+
+    progress = iteration / iterations
+    if internal_iterations == 0:
+        return progress
+
+    if internal_iteration * internal_iterations:
+        progress += internal_iteration / (internal_iterations * iterations)
+
+    return progress

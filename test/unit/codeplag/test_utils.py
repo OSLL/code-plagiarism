@@ -20,7 +20,6 @@ from codeplag.types import (
 from codeplag.utils import (
     CodeplagEngine,
     calc_iterations,
-    calc_progress,
     compare_works,
     convert_similarity_matrix_to_percent_matrix,
     deserialize_compare_result,
@@ -335,19 +334,10 @@ def test_save_result_to_csv(
 
 
 @pytest.mark.parametrize(
-    "args, result",
-    [([4, 10], 0.4), ([10, 0], 0.0), ([5, 10, 15, 0], 0.5), ([5, 6, 1, 4], 0.875)],
-)
-def test_calc_progress(args: List[int], result: float):
-    assert calc_progress(*args) == result
-
-
-@pytest.mark.parametrize(
     "count, mode, expected",
     [
         (10, "many_to_many", 45),
         (3, "one_to_one", 3),
-        (10, "bad_mode", 0),
         (-100, "many_to_many", 0),
         (0, "one_to_one", 0),
         (-10, "bad_mode", 0),
@@ -355,6 +345,11 @@ def test_calc_progress(args: List[int], result: float):
 )
 def test_calc_iterations(count: int, mode: Mode, expected: int):
     assert calc_iterations(count, mode) == expected
+
+
+def test_calc_iterations_bad():
+    with pytest.raises(ValueError):
+        calc_iterations(100, "bad_mode")  # type: ignore
 
 
 @pytest.mark.parametrize(
