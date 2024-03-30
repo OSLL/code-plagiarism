@@ -1,8 +1,9 @@
 from enum import Enum
 from functools import partial
-from typing import List, Optional
+from typing import Final, List, Optional
 
 import pandas as pd
+from typing_extensions import Self
 
 from codeplag.types import ASTFeatures, CompareInfo, NodeCodePlace
 
@@ -133,32 +134,69 @@ def print_compare_result(
     print("+" * 40)
 
 
-def calc_and_print_progress(
-    iteration: int,
-    iterations: int,
-    internal_iteration: int = 0,
-    internal_iterations: int = 0,
-) -> None:
-    progress = _calc_progress(
-        iteration, iterations, internal_iteration, internal_iterations
-    )
-    print(f"Check progress: {progress:.2%}.", end="\r")
+class Progress:
+    def __init__(self, iterations: int) -> None:
+        self.__iterations: Final[int] = iterations
+        self.__iteration: int = -1
+
+    @property
+    def progress(self) -> float:
+        if self.iterations == 0:
+            return 1.0
+        if self.__iteration <= 0:
+            return 0.0
+        return self.__iteration / self.iterations
+
+    @property
+    def iterations(self) -> int:
+        return self.__iterations if self.__iterations > 0 else 0
+
+    def __iter__(self) -> Self:
+        return self
+
+    def __next__(self) -> float:
+        if self.progress == 1.0:
+            raise StopIteration("The progress has already been completed.")
+        self.__iteration += 1
+        return self.progress
+
+    def __str__(self) -> str:
+        return f"Progress: {self.progress:.2%}"
 
 
-def _calc_progress(
-    iteration: int,
-    iterations: int,
-    internal_iteration: int = 0,
-    internal_iterations: int = 0,
-) -> float:
-    if iterations == 0:
-        return 0.0
+class ComplexProgress(Progress):
+    def __init__(self, iterations: int) -> None:
+        super(ComplexProgress, self).__init__(iterations)
+        self.__internal_progresses: list[Progress] = []
 
-    progress = iteration / iterations
-    if internal_iterations == 0:
-        return progress
+    def add_internal_progress(self, internal_iterations: int) -> None:
+        if len(self.__internal_progresses) == self.iterations:
+            raise IndexError("The internal iteration count limit was exceeded.")
+        self.__internal_progresses.append(Progress(internal_iterations))
 
-    if internal_iteration * internal_iterations:
-        progress += internal_iteration / (internal_iterations * iterations)
+    @property
+    def progress(self) -> float:
+        if self.iterations == 0:
+            return 1.0
+        return float(
+            sum(
+                internal_progress.progress / self.iterations
+                for internal_progress in self.__internal_progresses
+            )
+        )
 
-    return progress
+    def __next__(self) -> float:
+        if self.progress == 1.0:
+            raise StopIteration("The progress has already been completed.")
+        for internal_progress in self.__internal_progresses:
+            if internal_progress.progress == 1.0:
+                continue
+            if next(internal_progress) == 1.0:
+                continue
+            break
+        return self.progress
+
+
+def print_progress_and_increase(progress: Progress) -> None:
+    print(f"{progress}.", end="\r")
+    next(progress)
