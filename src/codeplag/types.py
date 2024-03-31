@@ -1,4 +1,5 @@
 from collections import defaultdict
+from concurrent.futures import Future
 from dataclasses import dataclass, field
 from functools import total_ordering
 from pathlib import Path
@@ -48,6 +49,14 @@ class NodeStructurePlace(NamedTuple):
     uid: int
 
 
+def __return_zero() -> Literal[0]:
+    return 0
+
+
+def _create_a_defaultdict_returning_zero_by_default() -> DefaultDict[str, int]:
+    return defaultdict(__return_zero)
+
+
 @total_ordering
 @dataclass
 class ASTFeatures:
@@ -59,13 +68,13 @@ class ASTFeatures:
     count_of_nodes: int = 0
     head_nodes: List[str] = field(default_factory=list)
     operators: DefaultDict[str, int] = field(
-        default_factory=lambda: defaultdict(lambda: 0)
+        default_factory=_create_a_defaultdict_returning_zero_by_default
     )
     keywords: DefaultDict[str, int] = field(
-        default_factory=lambda: defaultdict(lambda: 0)
+        default_factory=_create_a_defaultdict_returning_zero_by_default
     )
     literals: DefaultDict[str, int] = field(
-        default_factory=lambda: defaultdict(lambda: 0)
+        default_factory=_create_a_defaultdict_returning_zero_by_default
     )
 
     # unique nodes
@@ -134,6 +143,7 @@ class Settings(TypedDict):
     reports_extension: ReportsExtension
     show_progress: Flag
     threshold: Threshold
+    workers: int
 
 
 class SameHead(NamedTuple):
@@ -141,4 +151,27 @@ class SameHead(NamedTuple):
     percent: float
 
 
+class ProcessingWorksInfo(NamedTuple):
+    work1: ASTFeatures
+    work2: ASTFeatures
+    compare_future: Future
+
+
 SameFuncs = Dict[str, List[SameHead]]
+
+
+# Problem title: Pickling of a namedtuple instance succeeds normally,
+# but fails when module is Cythonized.
+# -----
+# In order for pickle to work, the attribute __module__ of the some type must
+# be set and should be correct.
+# namedtuple uses a trick/heuristic (i.e lookup in sys._getframe(1).f_globals)
+# to get this information. The problem with the Cython- or C-extensions is that,
+# this heuristic will not work and _sys._getframe(1).f_globals.get('__name__', '__main__')
+# will yield importlib._bootstrap and not correct module.
+# To fix that you need to pass right module-name to namedtuple-factory
+NodeCodePlace.__module__ = __name__
+NodeStructurePlace.__module__ = __name__
+FastMetrics.__module__ = __name__
+StructuresInfo.__module__ = __name__
+CompareInfo.__module__ = __name__

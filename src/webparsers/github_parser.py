@@ -201,7 +201,7 @@ class GitHubParser:
     ) -> Iterator[WorkInfo]:
         api_url = f"/repos/{owner}/{repo}/git/trees/{sha}"
         jresponse: Dict[str, Any] = self.send_get_request(api_url).json()
-        tree: list[Dict[str, Any]] = jresponse["tree"]
+        tree: List[Dict[str, Any]] = jresponse["tree"]
         for node in tree:
             current_path = f"{path}/{node['path']}"
             full_link = f"{_GH_URL}{owner}/{repo}/blob/{branch.name}{current_path}"

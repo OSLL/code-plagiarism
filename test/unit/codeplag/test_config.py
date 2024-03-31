@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from pathlib import Path
 from typing import Optional
 from unittest.mock import MagicMock
@@ -115,6 +116,7 @@ def test_read_default_settings_conf(settings_config: Optional[Settings]):
                 "show_progress": 0,
                 "reports_extension": "csv",
                 "language": "en",
+                "workers": os.cpu_count() or 1,
             },
         ],
         [
@@ -124,6 +126,7 @@ def test_read_default_settings_conf(settings_config: Optional[Settings]):
                 "show_progress": 1,
                 "reports_extension": "json",
                 "language": "ru",
+                "workers": 128,
             },
             {
                 "threshold": 99,
@@ -131,6 +134,7 @@ def test_read_default_settings_conf(settings_config: Optional[Settings]):
                 "show_progress": 1,
                 "reports_extension": "json",
                 "language": "ru",
+                "workers": 128,
             },
         ],
         [
@@ -141,6 +145,7 @@ def test_read_default_settings_conf(settings_config: Optional[Settings]):
                 "show_progress": 0,
                 "reports_extension": "csv",
                 "language": "en",
+                "workers": os.cpu_count() or 1,
             },
         ],
     ],

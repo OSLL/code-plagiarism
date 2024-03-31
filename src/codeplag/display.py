@@ -1,10 +1,14 @@
 from enum import Enum
 from functools import partial
-from typing import List, Optional
+from typing import Final, List, Optional
 
 import pandas as pd
+from typing_extensions import Self
 
 from codeplag.types import ASTFeatures, CompareInfo, NodeCodePlace
+
+CHARS_CNT: Final[int] = 40
+USEFUL_CHARS: Final[int] = 100
 
 
 class Color(Enum):
@@ -22,6 +26,7 @@ class Color(Enum):
 def colorize(
     text: str, color: Color, bold: bool = False, underline: bool = False
 ) -> str:
+    """Wraps provided text to change color, bold, or underline it for printing."""
     if bold:
         text = f"{Color.BOLD.value}{text}"
     if underline:
@@ -76,22 +81,27 @@ def print_code_and_highlight_suspect(
         column += 1
 
 
+def clear_line() -> None:
+    print(" " * USEFUL_CHARS, end="\r")
+
+
 def print_compare_result(
     features1: ASTFeatures,
     features2: ASTFeatures,
     compare_info: CompareInfo,
     compliance_matrix_df: Optional[pd.DataFrame] = None,
 ) -> None:
-    """The function prints the result of comparing two files
+    """Prints the pretty result of comparing two files.
 
-    @features1 - the features of the first  source file
-    @features2 - the features of the second  source file
-    @compare_info - structure consist compare metrics of two works
-    @threshold - threshold of plagiarism searcher alarm
+    Args:
+        features1: The features of the first  source file.
+        features2: The features of the second  source file.
+        compare_info: The compare metrics of two works.
+        threshold: Threshold of plagiarism searcher alarm.
     """
 
-    print(" " * 40)
-    print("+" * 40)
+    clear_line()
+    print("+" * CHARS_CNT)
     if features1.modify_date is not None and features2.modify_date is not None:
         message = (
             "-----\n"
@@ -128,4 +138,67 @@ def print_compare_result(
     if compliance_matrix_df is not None:
         print(compliance_matrix_df, "\n")
 
-    print("+" * 40)
+    print("+" * CHARS_CNT)
+
+
+class Progress:
+    def __init__(self, iterations: int) -> None:
+        self.__iterations: Final[int] = iterations
+        self.__iteration: int = -1
+
+    @property
+    def progress(self) -> float:
+        if self.iterations == 0:
+            return 1.0
+        if self.__iteration <= 0:
+            return 0.0
+        return self.__iteration / self.iterations
+
+    @property
+    def iterations(self) -> int:
+        return self.__iterations if self.__iterations > 0 else 0
+
+    def __iter__(self) -> Self:
+        return self
+
+    def __next__(self) -> float:
+        if self.progress == 1.0:
+            raise StopIteration("The progress has already been completed.")
+        self.__iteration += 1
+        return self.progress
+
+    def __str__(self) -> str:
+        return f"Progress: {self.progress:.2%}"
+
+
+class ComplexProgress(Progress):
+    def __init__(self, iterations: int) -> None:
+        super(ComplexProgress, self).__init__(iterations)
+        self.__internal_progresses: List[Progress] = []
+
+    def add_internal_progress(self, internal_iterations: int) -> None:
+        if len(self.__internal_progresses) == self.iterations:
+            raise IndexError("The internal iteration count limit was exceeded.")
+        self.__internal_progresses.append(Progress(internal_iterations))
+
+    @property
+    def progress(self) -> float:
+        if self.iterations == 0:
+            return 1.0
+        return float(
+            sum(
+                internal_progress.progress / self.iterations
+                for internal_progress in self.__internal_progresses
+            )
+        )
+
+    def __next__(self) -> float:
+        if self.progress == 1.0:
+            raise StopIteration("The progress has already been completed.")
+        for internal_progress in self.__internal_progresses:
+            if internal_progress.progress == 1.0:
+                continue
+            if next(internal_progress) == 1.0:
+                continue
+            break
+        return self.progress

@@ -3,7 +3,7 @@ import os
 import re
 
 import pytest
-from codeplag.consts import UTIL_NAME, UTIL_VERSION
+from codeplag.consts import CONFIG_PATH, UTIL_NAME, UTIL_VERSION
 from codeplag.types import WorksReport
 from const import REPORTS_FOLDER
 from utils import modify_settings, run_check, run_util
@@ -34,6 +34,10 @@ def setup_module():
     second_cond = os.environ.get("ACCESS_TOKEN", "") != ""
 
     assert first_cond or second_cond
+
+    yield
+
+    CONFIG_PATH.write_text("{}")
 
 
 def test_check_util_version():
@@ -106,7 +110,7 @@ def test_compare_py_files(cmd, out):
 
 
 def test_save_reports(create_reports_folder: None):
-    modify_settings(REPORTS_FOLDER, reports_extension="json").assert_success()
+    modify_settings(reports=REPORTS_FOLDER, reports_extension="json").assert_success()
     run_check(
         [
             "--directories",

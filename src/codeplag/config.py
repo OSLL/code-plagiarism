@@ -9,6 +9,7 @@ from codeplag.consts import (
     DEFAULT_LANGUAGE,
     DEFAULT_REPORT_EXTENSION,
     DEFAULT_THRESHOLD,
+    DEFAULT_WORKERS,
 )
 from codeplag.logger import codeplag_logger as logger
 from codeplag.types import Settings
@@ -85,4 +86,5 @@ DefaultSettingsConfig = Settings(
     show_progress=0,
     reports_extension=DEFAULT_REPORT_EXTENSION,
     language=DEFAULT_LANGUAGE,
+    workers=DEFAULT_WORKERS,
 )

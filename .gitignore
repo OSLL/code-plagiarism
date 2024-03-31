@@ -6,6 +6,7 @@
 
 # Developmnt environmemt
 .vscode
+.python-version
 docs/notebooks/.ipynb_checkpoints/
 
 # Build

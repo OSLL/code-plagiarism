@@ -1,9 +1,9 @@
 import subprocess
 from pathlib import Path
-from typing import List, Literal, Optional, Union
+from typing import Any, List, Literal, Optional, Union
 
 from codeplag.consts import UTIL_NAME
-from codeplag.types import Flag, Language, ReportsExtension
+from codeplag.types import Flag, Language, ReportsExtension, Threshold
 
 
 class CmdResult:
@@ -11,10 +11,10 @@ class CmdResult:
         self.cmd_res = cmd_res
 
     def assert_success(self) -> None:
-        assert not self.cmd_res.returncode
+        assert not self.cmd_res.returncode, str(self.cmd_res)
 
     def assert_failed(self) -> None:
-        assert self.cmd_res.returncode
+        assert self.cmd_res.returncode, str(self.cmd_res)
 
 
 def run_cmd(cmd: List[str]) -> CmdResult:
@@ -45,28 +45,24 @@ def create_report(path: Path) -> CmdResult:
 def modify_settings(
     reports: Optional[Union[Path, str]] = None,
     environment: Optional[Union[Path, str]] = None,
-    threshold: Optional[int] = None,
+    threshold: Optional[Threshold] = None,
     show_progress: Optional[Flag] = None,
     reports_extension: Optional[ReportsExtension] = None,
     language: Optional[Language] = None,
+    workers: Optional[int] = None,
 ) -> CmdResult:
-    reports_opt = ["--reports", str(reports)] if reports else []
-    environment_opt = ["--environment", str(environment)] if environment else []
-    threshold_opt = ["--threshold", str(threshold)] if threshold else []
-    show_progress_opt = ["--show_progress", str(show_progress)] if show_progress else []
-    reports_extension_opt = (
-        ["--reports_extension", reports_extension] if reports_extension else []
-    )
-    language_opt = ["--language", language] if language else []
+    def create_opt(key: str, value: Optional[Any]) -> List[str]:
+        return [f"--{key}", str(value)] if value is not None else []
 
     return run_util(
         ["modify"]
-        + reports_opt
-        + environment_opt
-        + threshold_opt
-        + show_progress_opt
-        + reports_extension_opt
-        + language_opt,
+        + create_opt("reports", reports)
+        + create_opt("environment", environment)
+        + create_opt("threshold", threshold)
+        + create_opt("show_progress", show_progress)
+        + create_opt("reports_extension", reports_extension)
+        + create_opt("language", language)
+        + create_opt("workers", workers),
         root="settings",
     )
 
