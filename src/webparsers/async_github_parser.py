@@ -253,7 +253,7 @@ class AsyncGithubParser:
         response: Dict[str, Any] = await self.send_get_request(
             self.GIT_TREE, {"username": owner, "repo": repo, "sha": sha}
         )
-        tree: list[Dict[str, Any]] = response["tree"]
+        tree: List[Dict[str, Any]] = response["tree"]
         for node in tree:
             current_path = f"{path}/{node['path']}"
             full_link = f"{_GH_URL}{owner}/{repo}/blob/{branch.name}{current_path}"

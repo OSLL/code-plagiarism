@@ -143,6 +143,7 @@ class Settings(TypedDict):
     reports_extension: ReportsExtension
     show_progress: Flag
     threshold: Threshold
+    workers: int
 
 
 class SameHead(NamedTuple):

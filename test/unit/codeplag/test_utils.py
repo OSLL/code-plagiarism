@@ -286,6 +286,7 @@ def test_save_result_to_csv(
         show_progress=0,
         threshold=65,
         language="en",
+        workers=1,
     )
     code_engine = CodeplagEngine(mock_default_logger, parsed_args)
 

@@ -2,6 +2,7 @@
 This module consist the CLI of the codeplag util and
 necessary internal classes for it.
 """
+
 import argparse
 from pathlib import Path
 from typing import List, Optional
@@ -16,6 +17,7 @@ from codeplag.consts import (
     REPORTS_EXTENSION_CHOICE,
     UTIL_NAME,
     UTIL_VERSION,
+    WORKERS_CHOICE,
 )
 
 
@@ -133,6 +135,13 @@ class CodeplagCLI(argparse.ArgumentParser):
             help="The language of help messages, generated reports, errors.",
             type=str,
             choices=LANGUAGE_CHOICE,
+        )
+        settings_modify.add_argument(
+            "-w",
+            "--workers",
+            help="The maximum number of processes that can be used to compare works.",
+            type=int,
+            choices=WORKERS_CHOICE,
         )
 
         # settings show

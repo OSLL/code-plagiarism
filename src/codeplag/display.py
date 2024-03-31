@@ -167,7 +167,7 @@ class Progress:
 class ComplexProgress(Progress):
     def __init__(self, iterations: int) -> None:
         super(ComplexProgress, self).__init__(iterations)
-        self.__internal_progresses: list[Progress] = []
+        self.__internal_progresses: List[Progress] = []
 
     def add_internal_progress(self, internal_iterations: int) -> None:
         if len(self.__internal_progresses) == self.iterations:
@@ -195,8 +195,3 @@ class ComplexProgress(Progress):
                 continue
             break
         return self.progress
-
-
-def print_progress_and_increase(progress: Progress) -> None:
-    print(f"{progress}.", end="\r")
-    next(progress)

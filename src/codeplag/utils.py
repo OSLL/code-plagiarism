@@ -4,7 +4,7 @@ import math
 import os
 import uuid
 from concurrent.futures import Future, ProcessPoolExecutor
-from datetime import datetime
+from datetime import datetime, timedelta
 from itertools import combinations
 from pathlib import Path
 from time import monotonic, perf_counter
@@ -37,7 +37,6 @@ from codeplag.display import (
     ComplexProgress,
     Progress,
     print_compare_result,
-    print_progress_and_increase,
 )
 from codeplag.getfeatures import AbstractGetter
 from codeplag.pyplag.utils import PyFeaturesGetter
@@ -321,6 +320,7 @@ def read_df(path: Path) -> pd.DataFrame:
     return pd.read_csv(path, sep=";", index_col=0, dtype=object)
 
 
+# TODO: Split this disaster class into smaller class and functions
 class CodeplagEngine:
     def __init__(self, logger: logging.Logger, parsed_args: Dict[str, Any]) -> None:
         self.root: str = parsed_args.pop("root")
@@ -341,15 +341,18 @@ class CodeplagEngine:
                 "reports_extension"
             )
             self.language: Language = parsed_args.pop("language")
+            self.workers: int = parsed_args.pop("workers")
         elif self.root == "report":
             self.path: Path = parsed_args.pop("path")
         else:
             settings_conf = read_settings_conf()
             self._set_features_getter(parsed_args)
 
+            self.progress: Optional[Progress] = None
             self.mode: Mode = parsed_args.pop("mode", "many_to_many")
             self.show_progress: Flag = settings_conf["show_progress"]
             self.threshold: int = settings_conf["threshold"]
+            self.workers: int = settings_conf["workers"]
 
             self.reports: Optional[Path] = settings_conf.get("reports")
             self.__reports_extension: ReportsExtension = settings_conf[
@@ -531,17 +534,37 @@ class CodeplagEngine:
     ) -> Future:
         return executor.submit(compare_works, work1, work2, self.threshold)
 
+    def __print_pretty_progress_and_increase(self) -> None:
+        if self.progress is None:
+            return
+        time_spent_seconds = monotonic() - self.begin_time
+        time_spent = timedelta(seconds=int(time_spent_seconds))
+        current_progress = self.progress.progress
+        if current_progress != 0.0:
+            predicated_time_left = timedelta(
+                seconds=int(
+                    (1.0 - current_progress) / current_progress * time_spent_seconds
+                )
+            )
+        else:
+            predicated_time_left = "N/A"
+        print(
+            f"{self.progress}, "
+            f"{time_spent} time spent [predicted time left {predicated_time_left}], "
+            f"{self.workers} workers",
+            end="\r",
+        )
+        next(self.progress)
+
     def _do_step(
         self,
         executor: ProcessPoolExecutor,
         processing: List[ProcessingWorksInfo],
         work1: ASTFeatures,
         work2: ASTFeatures,
-        progress: Optional[Progress],
     ) -> None:
         if work1.filepath == work2.filepath:
-            if progress is not None:
-                print_progress_and_increase(progress)
+            self.__print_pretty_progress_and_increase()
             return
 
         work1, work2 = sorted([work1, work2])
@@ -554,8 +577,7 @@ class CodeplagEngine:
             )
             return
         self._handle_compare_result(work1, work2, metrics)
-        if progress is not None:
-            print_progress_and_increase(progress)
+        self.__print_pretty_progress_and_increase()
 
     def _handle_compare_result(
         self,
@@ -586,15 +608,13 @@ class CodeplagEngine:
     def _handle_completed_futures(
         self,
         processing: List[ProcessingWorksInfo],
-        progress: Optional[Progress],
     ):
         for proc_works_info in processing:
             metrics: CompareInfo = proc_works_info.compare_future.result()
             self._handle_compare_result(
                 proc_works_info.work1, proc_works_info.work2, metrics, save=True
             )
-            if progress is not None:
-                print_progress_and_increase(progress)
+            self.__print_pretty_progress_and_increase()
 
     def _settings_show(self) -> None:
         settings_config = read_settings_conf()
@@ -633,19 +653,17 @@ class CodeplagEngine:
         )
         works.extend(self.features_getter.get_from_users_repos(self.github_user))
 
-        progress = None
         if self.show_progress:
             count_works = len(works)
-            progress = Progress(calc_iterations(count_works))
-
-        with ProcessPoolExecutor() as executor:
+            self.progress = Progress(calc_iterations(count_works))
+        with ProcessPoolExecutor(max_workers=self.workers) as executor:
             processed: List[ProcessingWorksInfo] = []
             for i, work1 in enumerate(works):
                 for j, work2 in enumerate(works):
                     if i <= j:
                         continue
-                    self._do_step(executor, processed, work1, work2, progress)
-            self._handle_completed_futures(processed, progress)
+                    self._do_step(executor, processed, work1, work2)
+            self._handle_completed_futures(processed)
 
     def __one_to_one_check(
         self,
@@ -666,34 +684,30 @@ class CodeplagEngine:
                 ),
             ),
         )
-        complex_progress = None
         if self.show_progress:
             combined_elements = list(combined_elements)
             count_sequences = len(combined_elements)
-            complex_progress = ComplexProgress(
-                calc_iterations(count_sequences, self.mode)
-            )
+            self.progress = ComplexProgress(calc_iterations(count_sequences, self.mode))
         cases = combinations(combined_elements, r=2)
-        with ProcessPoolExecutor() as executor:
+        with ProcessPoolExecutor(max_workers=self.workers) as executor:
             processed: List[ProcessingWorksInfo] = []
             for case in cases:
                 first_sequence, second_sequence = case
-                if complex_progress is not None:
-                    complex_progress.add_internal_progress(
+                if self.progress is not None:
+                    assert isinstance(self.progress, ComplexProgress)
+                    self.progress.add_internal_progress(
                         len(first_sequence) * len(second_sequence)
                     )
                 for work1 in first_sequence:
                     for work2 in second_sequence:
-                        self._do_step(
-                            executor, processed, work1, work2, complex_progress
-                        )
-            self._handle_completed_futures(processed, complex_progress)
+                        self._do_step(executor, processed, work1, work2)
+            self._handle_completed_futures(processed)
 
     def __check(self) -> None:
         self.logger.debug(
             f"Mode: {self.mode}; Extension: {self.features_getter.extension}."
         )
-        begin_time = monotonic()
+        self.begin_time = monotonic()
         features_from_files = self.features_getter.get_from_files(self.files)
         features_from_gh_files = self.features_getter.get_from_github_files(
             self.github_files
@@ -704,7 +718,7 @@ class CodeplagEngine:
             self.__many_to_many_check(features_from_files, features_from_gh_files)
         elif self.mode == "one_to_one":
             self.__one_to_one_check(features_from_files, features_from_gh_files)
-        self.logger.debug(f"Time for all {monotonic() - begin_time:.2f}s")
+        self.logger.debug(f"Time for all {monotonic() - self.begin_time:.2f}s")
         self.logger.info("Ending searching for plagiarism ...")
 
     def _report_create(self) -> Literal[0, 1]:
