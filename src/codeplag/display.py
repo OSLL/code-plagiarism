@@ -7,6 +7,9 @@ from typing_extensions import Self
 
 from codeplag.types import ASTFeatures, CompareInfo, NodeCodePlace
 
+CHARS_CNT: Final[int] = 40
+USEFUL_CHARS: Final[int] = 100
+
 
 class Color(Enum):
     HEADER = "\033[95m"
@@ -78,6 +81,10 @@ def print_code_and_highlight_suspect(
         column += 1
 
 
+def clear_line() -> None:
+    print(" " * USEFUL_CHARS, end="\r")
+
+
 def print_compare_result(
     features1: ASTFeatures,
     features2: ASTFeatures,
@@ -93,8 +100,8 @@ def print_compare_result(
         threshold: Threshold of plagiarism searcher alarm.
     """
 
-    print(" " * 40)
-    print("+" * 40)
+    clear_line()
+    print("+" * CHARS_CNT)
     if features1.modify_date is not None and features2.modify_date is not None:
         message = (
             "-----\n"
@@ -131,7 +138,7 @@ def print_compare_result(
     if compliance_matrix_df is not None:
         print(compliance_matrix_df, "\n")
 
-    print("+" * 40)
+    print("+" * CHARS_CNT)
 
 
 class Progress:

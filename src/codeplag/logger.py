@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 from codeplag.consts import UTIL_NAME
-from codeplag.display import error, info, red_bold, warning
+from codeplag.display import clear_line, error, info, red_bold, warning
 
 
 class StreamFormatter(logging.Formatter):
@@ -27,6 +27,12 @@ class StreamFormatter(logging.Formatter):
         return super().format(record)
 
 
+class CustomStreamHandler(logging.StreamHandler):
+    def emit(self, record: logging.LogRecord):
+        clear_line()
+        super(CustomStreamHandler, self).emit(record)
+
+
 def get_file_handler(filename: Path) -> logging.FileHandler:
     log_format = (
         "%(asctime)s - [%(levelname)s] - %(name)s - "
@@ -44,20 +50,20 @@ def get_file_handler(filename: Path) -> logging.FileHandler:
     return file_handler
 
 
-def get_stderr_handler() -> logging.StreamHandler:
-    stderr_handler = logging.StreamHandler(stream=sys.stderr)
+def get_stderr_handler() -> CustomStreamHandler:
+    stderr_handler = CustomStreamHandler(stream=sys.stderr)
     stderr_handler.setLevel(logging.WARNING)
     stderr_handler.setFormatter(StreamFormatter())
 
     return stderr_handler
 
 
-def get_stdout_handler() -> logging.StreamHandler:
+def get_stdout_handler() -> CustomStreamHandler:
     class STDOutFilter(logging.Filter):
         def filter(self, record: logging.LogRecord) -> bool:
             return record.levelno in [logging.INFO, logging.DEBUG]
 
-    stdout_handler = logging.StreamHandler(stream=sys.stdout)
+    stdout_handler = CustomStreamHandler(stream=sys.stdout)
     stdout_handler.setLevel(logging.DEBUG)
     stdout_handler.addFilter(STDOutFilter())
     stdout_handler.setFormatter(StreamFormatter())
