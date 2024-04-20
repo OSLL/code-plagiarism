@@ -1,5 +1,7 @@
 from typing import Literal
 
+from codeplag.types import CLIException
+
 
 def main() -> Literal[0, 1, 2]:
     import argcomplete
@@ -23,6 +25,9 @@ def main() -> Literal[0, 1, 2]:
     codeplag_util = CodeplagEngine(logger, parsed_args)
     try:
         code = codeplag_util.run()
+    except CLIException as err:
+        logger.error(err)
+        return 1
     except KeyboardInterrupt:
         logger.warning("The util stopped by keyboard interrupt.")
         return 1

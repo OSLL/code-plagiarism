@@ -20,7 +20,7 @@ from webparsers.github_parser import GitHubParser
 
 from codeplag.algorithms.featurebased import counter_metric, struct_compare
 from codeplag.algorithms.tokenbased import value_jakkar_coef
-from codeplag.config import read_settings_conf, write_config, write_settings_conf
+from codeplag.config import read_settings_conf, write_config
 from codeplag.consts import (
     CSV_REPORT_COLUMNS,
     CSV_REPORT_FILENAME,
@@ -39,6 +39,7 @@ from codeplag.display import (
     print_compare_result,
 )
 from codeplag.getfeatures import AbstractGetter
+from codeplag.handlers.settings import settings_modify, settings_show
 from codeplag.pyplag.utils import PyFeaturesGetter
 from codeplag.types import (
     ASTFeatures,
@@ -125,17 +126,25 @@ def fast_compare(
 
 
 def compare_works(
-    features1: ASTFeatures, features2: ASTFeatures, threshold: int = 60
+    features1: ASTFeatures, features2: ASTFeatures, threshold: Optional[int] = None
 ) -> CompareInfo:
-    """The function returns the result of comparing two files
+    """The function returns the result of comparing two works.
 
-    @features1 - the features of the first  source file
-    @features2 - the features of the second  source file
-    @threshold - threshold of plagiarism searcher alarm
+    Args:
+        features1: The features of the first work.
+        features2: The features of the second work.
+        threshold: The threshold of plagiarism searcher alarm.
+
+    Returns:
+        CompareInfo, which is the result of comparing works.
+        This can consist of fast metrics and, if the threshold
+        value has been crossed, structure metric.
+        If the threshold value is not set, it returns the structure
+        metric anywhere.
     """
 
     fast_metrics = fast_compare(features1, features2)
-    if (fast_metrics.weighted_average * 100.0) < threshold:
+    if threshold and (fast_metrics.weighted_average * 100.0) < threshold:
         return CompareInfo(fast=fast_metrics)
 
     compliance_matrix = np.zeros(
@@ -332,16 +341,7 @@ class CodeplagEngine:
             if self.command == "show":
                 return
 
-            # Check if all None, print error
-            self.environment: Optional[Path] = parsed_args.pop("environment")
-            self.reports: Optional[Path] = parsed_args.pop("reports")
-            self.threshold: int = parsed_args.pop("threshold")
-            self.show_progress: Flag = parsed_args.pop("show_progress")
-            self.reports_extension: ReportsExtension = parsed_args.pop(
-                "reports_extension"
-            )
-            self.language: Language = parsed_args.pop("language")
-            self.workers: int = parsed_args.pop("workers")
+            self.parsed_args = parsed_args
         elif self.root == "report":
             self.path: Path = parsed_args.pop("path")
         else:
@@ -616,27 +616,6 @@ class CodeplagEngine:
             )
             self.__print_pretty_progress_and_increase()
 
-    def _settings_show(self) -> None:
-        settings_config = read_settings_conf()
-        table = pd.DataFrame(
-            list(settings_config.values()),
-            index=[k.capitalize() for k in settings_config],
-            columns=pd.Index(["Value"], name="Key"),
-        )
-        print(table)
-
-    def _settings_modify(self) -> None:
-        settings_config = read_settings_conf()
-        for key in Settings.__annotations__:
-            new_value = getattr(self, key, None)
-            if new_value is not None:
-                if isinstance(new_value, Path):
-                    settings_config[key] = new_value.absolute()
-                else:
-                    settings_config[key] = new_value
-
-            write_settings_conf(settings_config)
-
     def __many_to_many_check(
         self,
         features_from_files: List[ASTFeatures],
@@ -750,10 +729,10 @@ class CodeplagEngine:
 
         if self.root == "settings":
             if self.command == "show":
-                self._settings_show()
+                settings_show()
             elif self.command == "modify":
-                self._settings_modify()
-                self._settings_show()
+                settings_modify(self.parsed_args)
+                settings_show()
         elif self.root == "report":
             return self._report_create()
         else:

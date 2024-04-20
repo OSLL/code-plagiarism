@@ -133,7 +133,7 @@ def test_compare_works(
         [[5, 27], [8, 9]],
     ]
 
-    compare_info2 = compare_works(first_features, features3)
+    compare_info2 = compare_works(first_features, features3, 60)
 
     assert compare_info2.fast.jakkar == 0.24
     assert compare_info2.fast.operators == 0.0

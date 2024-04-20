@@ -1,6 +1,9 @@
 [project]
 requires-python = ">=3.8"
 
+[tool.black]
+max-line-length = 97
+
 [tool.ruff]
 line-length = 97
 select = [
@@ -15,8 +18,8 @@ select = [
     "C90",  # mccabe
 ]
 
-[tool.ruff.mccabe]
-max-complexity = 13
+[tool.ruff.lint.mccabe]
+max-complexity = 12
 
 [tool.pyright]
 pythonVersion = "3.8"

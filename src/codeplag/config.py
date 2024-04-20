@@ -47,7 +47,7 @@ def write_config(file: Path, config: Mapping[str, Any]) -> None:
             config_for_dump[key] = str(config_for_dump[key])
 
     with file.open(mode="w", encoding="utf-8") as f:
-        json.dump(config_for_dump, f)
+        json.dump(config_for_dump, f, indent=4)
 
 
 def read_settings_conf() -> Settings:
