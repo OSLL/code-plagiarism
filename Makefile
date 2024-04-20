@@ -177,6 +177,7 @@ help:
 	@echo "  uninstall              Remove installed util from system;"
 	@echo "  man                    Create man file."
 	@echo "                         Require argparse-manpage python library;"
+	@echo "  pre-commit             Runs all pre-commit hooks;"
 	@echo "  test                   Runs unit tests with pytest framework;"
 	@echo "  autotest               Runs auto tests."
 	@echo "                         Required installed '$(UTIL_NAME)' util and provided ACCESS_TOKEN;"

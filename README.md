@@ -94,6 +94,11 @@
   $ make pre-commit
   ```
 
+- Also, before committing, you need to install pre-commit hooks in the repository.
+  ```
+  $ pre-commit install
+  ```
+
 ### 2.2. Unit tests
 
 - Testing for analyzers with pytest lib (required preinstalled pytest framework).
