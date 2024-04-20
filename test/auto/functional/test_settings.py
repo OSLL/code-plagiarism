@@ -16,59 +16,63 @@ def teardown():
     CONFIG_PATH.write_text("{}")
 
 
-@pytest.mark.parametrize(
-    "env,reports,threshold,show_progress,reports_extension,language,workers",
-    [
-        (f"src/{UTIL_NAME}/types.py", "src", 83, 0, "json", "en", 1),
-        ("setup.py", "test", 67, 1, "csv", "ru", os.cpu_count() or 1),
-        (f"src/{UTIL_NAME}/utils.py", "debian", 93, 0, "json", "en", 1),
-    ],
-)
-def test_modify_settings(
-    env: str,
-    reports: str,
-    threshold: Threshold,
-    show_progress: Literal[0, 1],
-    reports_extension: ReportsExtension,
-    language: Language,
-    workers: int,
-):
-    result = modify_settings(
-        environment=env,
-        reports=reports,
-        threshold=threshold,
-        show_progress=show_progress,
-        reports_extension=reports_extension,
-        language=language,
-        workers=workers,
+class TestSettingsModify:
+    @pytest.mark.parametrize(
+        "env,reports,threshold,show_progress,reports_extension,language,workers",
+        [
+            (f"src/{UTIL_NAME}/types.py", "src", 83, 0, "json", "en", 1),
+            ("setup.py", "test", 67, 1, "csv", "ru", os.cpu_count() or 1),
+            (f"src/{UTIL_NAME}/utils.py", "debian", 93, 0, "json", "en", 1),
+        ],
     )
-    result.assert_success()
+    def test_modify_settings(
+        self,
+        env: str,
+        reports: str,
+        threshold: Threshold,
+        show_progress: Literal[0, 1],
+        reports_extension: ReportsExtension,
+        language: Language,
+        workers: int,
+    ):
+        result = modify_settings(
+            environment=env,
+            reports=reports,
+            threshold=threshold,
+            show_progress=show_progress,
+            reports_extension=reports_extension,
+            language=language,
+            workers=workers,
+        )
+        result.assert_success()
 
-    assert json.loads(CONFIG_PATH.read_text()) == {
-        "environment": Path(env).absolute().__str__(),
-        "reports": Path(reports).absolute().__str__(),
-        "threshold": threshold,
-        "show_progress": show_progress,
-        "workers": workers,
-        "language": language,
-        "reports_extension": reports_extension,
-    }
+        assert json.loads(CONFIG_PATH.read_text()) == {
+            "environment": Path(env).absolute().__str__(),
+            "reports": Path(reports).absolute().__str__(),
+            "threshold": threshold,
+            "show_progress": show_progress,
+            "workers": workers,
+            "language": language,
+            "reports_extension": reports_extension,
+        }
 
+    @pytest.mark.parametrize(
+        "env, reports, threshold",
+        [
+            (".env", "src", 101),
+            ("setup.py", "test983hskdfue", 67),
+            (f"src/{UTIL_NAME}/utils.pyjlsieuow0", "debian", 93),
+        ],
+        ids=[
+            "Incorrect threshold.",
+            "Path to reports doesn't exists.",
+            "Path to environment doesn't exists.",
+        ],
+    )
+    def test_modify_settings_with_invalid_arguments(self, env, reports, threshold):
+        modify_settings(
+            environment=env, reports=reports, threshold=threshold
+        ).assert_failed()
 
-@pytest.mark.parametrize(
-    "env, reports, threshold",
-    [
-        (".env", "src", 101),
-        ("setup.py", "test983hskdfue", 67),
-        (f"src/{UTIL_NAME}/utils.pyjlsieuow0", "debian", 93),
-    ],
-    ids=[
-        "Incorrect threshold.",
-        "Path to reports doesn't exists.",
-        "Path to environment doesn't exists.",
-    ],
-)
-def test_modify_settings_bad(env, reports, threshold):
-    modify_settings(
-        environment=env, reports=reports, threshold=threshold
-    ).assert_failed()
+    def test_modify_settings_with_no_arguments_failed(self):
+        modify_settings().assert_failed()

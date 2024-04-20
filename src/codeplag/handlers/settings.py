@@ -18,7 +18,12 @@ def settings_show() -> None:
 
 
 def settings_modify(parsed_args: Dict[str, Any]) -> None:
-    if not parsed_args:
+    # TODO: move this check into CLI level
+    if not any(
+        key in Settings.__annotations__
+        for key in parsed_args
+        if parsed_args.get(key) is not None
+    ):
         raise CLIException(
             "There is nothing to modify; please provide at least one argument."
         )
