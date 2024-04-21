@@ -1,19 +1,15 @@
-import ast
 import logging
-import os
 from pathlib import Path
-from typing import Dict, List
 from unittest.mock import MagicMock, call
 
 import numpy as np
 import pandas as pd
 import pytest
 from codeplag.consts import CSV_REPORT_COLUMNS, CSV_REPORT_FILENAME
-from codeplag.pyplag.utils import get_ast_from_filename, get_features_from_ast
+from codeplag.handlers.report import deserialize_compare_result
 from codeplag.types import (
     ASTFeatures,
     Mode,
-    SameHead,
     Settings,
     WorksReport,
 )
@@ -21,54 +17,11 @@ from codeplag.utils import (
     CodeplagEngine,
     calc_iterations,
     compare_works,
-    convert_similarity_matrix_to_percent_matrix,
-    deserialize_compare_result,
-    deserialize_head_nodes,
     fast_compare,
     get_compliance_matrix_df,
-    get_parsed_line,
-    get_same_funcs,
-    replace_minimal_value,
-    serialize_compare_result,
 )
 from pandas.testing import assert_frame_equal
 from pytest_mock import MockerFixture
-
-CWD = Path(os.path.dirname(os.path.abspath(__file__)))
-FILEPATH1 = CWD / "./data/test1.py"
-FILEPATH2 = CWD / "./data/test2.py"
-FILEPATH3 = CWD / "./data/test3.py"
-
-
-@pytest.fixture
-def first_tree() -> ast.Module:
-    tree = get_ast_from_filename(FILEPATH1)
-    assert tree is not None
-    return tree
-
-
-@pytest.fixture
-def second_tree() -> ast.Module:
-    tree = get_ast_from_filename(FILEPATH2)
-    assert tree is not None
-    return tree
-
-
-@pytest.fixture
-def third_tree() -> ast.Module:
-    tree = get_ast_from_filename(FILEPATH3)
-    assert tree is not None
-    return tree
-
-
-@pytest.fixture
-def first_features(first_tree: ast.Module) -> ASTFeatures:
-    return get_features_from_ast(first_tree, FILEPATH1)
-
-
-@pytest.fixture
-def second_features(second_tree: ast.Module) -> ASTFeatures:
-    return get_features_from_ast(second_tree, FILEPATH1)
 
 
 @pytest.fixture
@@ -92,12 +45,6 @@ def test_get_compliance_matrix_df():
     )
 
 
-def test_convert_similarity_matrix_to_percent_matrix():
-    assert convert_similarity_matrix_to_percent_matrix(
-        np.array([[[1, 2], [1, 3], [3, 4]], [[1, 8], [1, 4], [3, 5]]])
-    ).tolist() == [[50.0, 33.33, 75.0], [12.5, 25.0, 60.0]]
-
-
 def test_fast_compare_normal(first_features: ASTFeatures, second_features: ASTFeatures):
     metrics = fast_compare(first_features, second_features)
 
@@ -115,10 +62,10 @@ def test_fast_compare_normal(first_features: ASTFeatures, second_features: ASTFe
 
 
 def test_compare_works(
-    first_features: ASTFeatures, second_features: ASTFeatures, third_tree: ast.Module
+    first_features: ASTFeatures,
+    second_features: ASTFeatures,
+    third_features: ASTFeatures,
 ):
-    features3 = get_features_from_ast(third_tree, FILEPATH3)
-
     compare_info = compare_works(first_features, second_features)
 
     assert compare_info.fast.jakkar == pytest.approx(0.737, 0.001)
@@ -133,7 +80,7 @@ def test_compare_works(
         [[5, 27], [8, 9]],
     ]
 
-    compare_info2 = compare_works(first_features, features3, 60)
+    compare_info2 = compare_works(first_features, third_features, 60)
 
     assert compare_info2.fast.jakkar == 0.24
     assert compare_info2.fast.operators == 0.0
@@ -141,85 +88,6 @@ def test_compare_works(
     assert compare_info2.fast.literals == 0.0
     assert compare_info2.fast.weighted_average == pytest.approx(0.218, 0.001)
     assert compare_info2.structure is None
-
-
-@pytest.mark.parametrize(
-    "same_parts,new_key,new_value,expected",
-    [
-        ({"foo": 10.1, "bar": 20.5}, "foorbar", 30.5, {"bar": 20.5, "foorbar": 30.5}),
-        ({"foo": 30.1, "bar": 20.5}, "foobar", 5.5, {"foo": 30.1, "bar": 20.5}),
-    ],
-    ids=[
-        "'foo' replaced with 'foobar'",
-        "new value is smaller than provided and not inserted",
-    ],
-)
-def test_replace_minimal_value(
-    same_parts: Dict[str, float],
-    new_key: str,
-    new_value: float,
-    expected: Dict[str, float],
-):
-    replace_minimal_value(same_parts, new_key, new_value)
-
-    assert same_parts == expected
-
-
-def test_get_same_funcs():
-    first_heads = ["foo", "bar", "foobar", "barfoo"]
-    second_heads = ["func_name", "sum", "mult", "div", "sub"]
-    threshold = 70
-    n = 2
-    percent_matrix = np.array(
-        [
-            [10.0, 20.0, 30.0, 40.0, 50.0],
-            [72.0, 74.0, 3.0, 80.0, 5.0],
-            [70.0, 75.0, 80.0, 85.0, 90.0],
-            [40.0, 30.0, 20.0, 10.0, 10.0],
-        ]
-    )
-    expected = {
-        "foo": [SameHead("sub", 50.0)],
-        "bar": [SameHead("div", 80.0), SameHead("sum", 74.0)],
-        "foobar": [SameHead("sub", 90.0), SameHead("div", 85.0)],
-        "barfoo": [SameHead("func_name", 40.0)],
-    }
-
-    result = get_same_funcs(first_heads, second_heads, percent_matrix, threshold, n)
-    assert expected == result
-
-
-def test_get_parsed_line(first_features: ASTFeatures, second_features: ASTFeatures):
-    compare_info = compare_works(first_features, second_features)
-    assert compare_info.structure
-    compare_df = serialize_compare_result(first_features, second_features, compare_info)
-    compare_df.iloc[0].first_heads = str(compare_df.iloc[0].first_heads)
-    compare_df.iloc[0].second_heads = str(compare_df.iloc[0].second_heads)
-
-    result = list(get_parsed_line(compare_df))
-
-    assert result[0][1].fast == compare_info.fast
-    assert result[0][1].structure
-    assert result[0][1].structure.similarity == compare_info.structure.similarity
-    assert result[0][1].structure.similarity == compare_info.structure.similarity
-    assert np.array_equal(
-        result[0][1].structure.compliance_matrix,
-        compare_info.structure.compliance_matrix,
-    )
-    assert result[0][2] == {
-        "my_func[1]": [SameHead(name="my_func[1]", percent=79.17)],
-        "If[7]": [
-            SameHead(name="If[7]", percent=88.89),
-            SameHead(name="my_func[1]", percent=18.52),
-        ],
-    }
-    assert result[0][3] == {
-        "my_func[1]": [SameHead(name="my_func[1]", percent=79.17)],
-        "If[7]": [
-            SameHead(name="If[7]", percent=88.89),
-            SameHead(name="my_func[1]", percent=33.33),
-        ],
-    }
 
 
 # TODO: simplify it
@@ -351,20 +219,3 @@ def test_calc_iterations(count: int, mode: Mode, expected: int):
 def test_calc_iterations_bad():
     with pytest.raises(ValueError):
         calc_iterations(100, "bad_mode")  # type: ignore
-
-
-@pytest.mark.parametrize(
-    "str_head_nodes,list_head_nodes",
-    [
-        (
-            "['_GH_URL[23]', 'AsyncGithubParser[26]']",
-            ["_GH_URL[23]", "AsyncGithubParser[26]"],
-        ),
-        (
-            "['Expr[1]', 'Expr[14]', 'application[16]']",
-            ["Expr[1]", "Expr[14]", "application[16]"],
-        ),
-    ],
-)
-def test_deserialize_head_nodes(str_head_nodes: str, list_head_nodes: List[str]):
-    assert deserialize_head_nodes(str_head_nodes) == list_head_nodes

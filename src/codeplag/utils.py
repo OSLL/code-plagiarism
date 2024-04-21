@@ -1,4 +1,3 @@
-import json
 import logging
 import math
 import os
@@ -8,9 +7,8 @@ from datetime import datetime, timedelta
 from itertools import combinations
 from pathlib import Path
 from time import monotonic, perf_counter
-from typing import Any, Dict, Generator, List, Literal, Optional, Tuple
+from typing import Any, Dict, List, Literal, Optional, Tuple
 
-import jinja2
 import numpy as np
 import pandas as pd
 from decouple import Config, RepositoryEnv
@@ -25,12 +23,8 @@ from codeplag.consts import (
     CSV_REPORT_COLUMNS,
     CSV_REPORT_FILENAME,
     CSV_SAVE_TICK,
-    DEFAULT_GENERAL_REPORT_NAME,
-    DEFAULT_LANGUAGE,
-    DEFAULT_THRESHOLD,
     DEFAULT_WEIGHTS,
     SUPPORTED_EXTENSIONS,
-    TEMPLATE_PATH,
 )
 from codeplag.cplag.utils import CFeaturesGetter
 from codeplag.display import (
@@ -39,6 +33,12 @@ from codeplag.display import (
     print_compare_result,
 )
 from codeplag.getfeatures import AbstractGetter
+from codeplag.handlers.report import (
+    deserialize_compare_result,
+    html_report_create,
+    read_df,
+    serialize_compare_result,
+)
 from codeplag.handlers.settings import settings_modify, settings_show
 from codeplag.pyplag.utils import PyFeaturesGetter
 from codeplag.types import (
@@ -47,12 +47,9 @@ from codeplag.types import (
     Extension,
     FastMetrics,
     Flag,
-    Language,
     Mode,
     ProcessingWorksInfo,
     ReportsExtension,
-    SameFuncs,
-    SameHead,
     Settings,
     StructuresInfo,
     WorksReport,
@@ -80,15 +77,6 @@ def get_compliance_matrix_df(
         data=data, index=head_nodes1, columns=head_nodes2
     )
     return compliance_matrix_df
-
-
-def convert_similarity_matrix_to_percent_matrix(matrix: NDArray) -> NDArray:
-    """Convert compliance matrix of size N x M x 2 to percent 2 dimensional matrix."""
-    percent_matrix = np.zeros((matrix.shape[0], matrix.shape[1]), dtype=np.float64)
-    for i in range(matrix.shape[0]):
-        for j in range(matrix.shape[1]):
-            percent_matrix[i][j] = round(matrix[i][j][0] / matrix[i][j][1] * 100, 2)
-    return percent_matrix
 
 
 def fast_compare(
@@ -162,156 +150,6 @@ def compare_works(
     return CompareInfo(fast=fast_metrics, structure=structure_info)
 
 
-def serialize_compare_result(
-    first_work: ASTFeatures,
-    second_work: ASTFeatures,
-    compare_info: CompareInfo,
-) -> pd.DataFrame:
-    assert compare_info.structure is not None
-
-    return pd.DataFrame(
-        {
-            "date": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            "first_modify_date": first_work.modify_date,
-            "second_modify_date": second_work.modify_date,
-            "first_path": first_work.filepath.__str__(),
-            "second_path": second_work.filepath.__str__(),
-            "jakkar": compare_info.fast.jakkar,
-            "operators": compare_info.fast.operators,
-            "keywords": compare_info.fast.keywords,
-            "literals": compare_info.fast.literals,
-            "weighted_average": compare_info.fast.weighted_average,
-            "struct_similarity": compare_info.structure.similarity,
-            "first_heads": [first_work.head_nodes],
-            "second_heads": [second_work.head_nodes],
-            "compliance_matrix": [compare_info.structure.compliance_matrix.tolist()],
-        },
-        dtype=object,
-    )
-
-
-def deserialize_head_nodes(head_nodes: str) -> List[str]:
-    return [head[1:-1] for head in head_nodes[1:-1].split(", ")]
-
-
-def deserialize_compare_result(compare_result: pd.Series) -> CompareInfo:
-    if isinstance(compare_result.compliance_matrix, str):
-        similarity_matrix = np.array(json.loads(compare_result.compliance_matrix))
-    else:
-        similarity_matrix = np.array(compare_result.compliance_matrix)
-
-    compare_info = CompareInfo(
-        fast=FastMetrics(
-            jakkar=float(compare_result.jakkar),
-            operators=float(compare_result.operators),
-            keywords=float(compare_result.keywords),
-            literals=float(compare_result.literals),
-            weighted_average=float(compare_result.weighted_average),
-        ),
-        structure=StructuresInfo(
-            compliance_matrix=similarity_matrix,
-            similarity=float(compare_result.struct_similarity),
-        ),
-    )
-
-    return compare_info
-
-
-def replace_minimal_value(same_parts: dict, new_key: str, new_value: float) -> None:
-    min_key = next(iter(same_parts))
-    min_value = same_parts[min_key]
-    for key, value in same_parts.items():
-        if value >= min_value:
-            continue
-        min_value = value
-        min_key = key
-    if new_value <= min_value:
-        return
-    del same_parts[min_key]
-    same_parts[new_key] = new_value
-
-
-def get_same_funcs(
-    first_heads: List[str],
-    second_heads: List[str],
-    percent_matrix: NDArray,
-    threshold: int = DEFAULT_THRESHOLD,
-    n: int = 3,
-) -> SameFuncs:
-    result = {}
-    for i, first_head in enumerate(first_heads):
-        result[first_head] = {}
-        inner_result = result[first_head]
-        for j, second_head in enumerate(second_heads):
-            same_percent = percent_matrix[i][j]
-            cnt_items = len(inner_result)
-            if not cnt_items:
-                inner_result[second_head] = same_percent
-            elif same_percent < threshold:
-                if (
-                    cnt_items == 1
-                    and inner_result[(key := next(iter(inner_result)))] < same_percent
-                ):
-                    inner_result[second_head] = same_percent
-                    del inner_result[key]
-                continue
-            elif cnt_items < n:
-                inner_result[second_head] = same_percent
-            else:
-                replace_minimal_value(inner_result, second_head, same_percent)
-    for first_head in result:
-        result[first_head] = sorted(
-            (SameHead(key, value) for key, value in result[first_head].items()),
-            key=lambda element: element.percent,
-            reverse=True,
-        )
-    return result
-
-
-def get_parsed_line(
-    df: pd.DataFrame,
-) -> Generator[Tuple[pd.Series, CompareInfo, SameFuncs, SameFuncs], None, None]:
-    for _, line in df.iterrows():
-        cmp_res = deserialize_compare_result(line)
-        first_heads = deserialize_head_nodes(line.first_heads)
-        second_heads = deserialize_head_nodes(line.second_heads)
-        assert cmp_res.structure is not None
-        percent_matrix = convert_similarity_matrix_to_percent_matrix(
-            cmp_res.structure.compliance_matrix
-        )
-        same_parts_of_second = get_same_funcs(first_heads, second_heads, percent_matrix)
-        same_parts_of_first = get_same_funcs(
-            second_heads, first_heads, percent_matrix.T
-        )
-        if isinstance(line.first_modify_date, float):
-            line.first_modify_date = ""
-        if isinstance(line.second_modify_date, float):
-            line.second_modify_date = ""
-        yield line, cmp_res, same_parts_of_second, same_parts_of_first
-
-
-def create_report(
-    df_path: Path,
-    save_path: Path,
-    threshold: int = DEFAULT_THRESHOLD,
-    language: Language = DEFAULT_LANGUAGE,
-):
-    environment = jinja2.Environment()
-    # TODO: use JinJa2 i18n
-    template = environment.from_string(TEMPLATE_PATH[language].read_text())
-    if save_path.is_dir():
-        save_path = save_path / DEFAULT_GENERAL_REPORT_NAME
-    save_path.write_text(
-        template.render(
-            data=get_parsed_line(read_df(df_path)),
-            list=list,
-            len=len,
-            round=round,
-            threshold=threshold,
-        )
-    )
-
-
 def calc_iterations(count: int, mode: Mode = "many_to_many") -> int:
     """Calculates the required number of iterations for all checks."""
     if count <= 1:
@@ -323,10 +161,6 @@ def calc_iterations(count: int, mode: Mode = "many_to_many") -> int:
         return math.factorial(count) // 2 * math.factorial(count - 2)
     else:
         raise ValueError(f"The provided mode '{mode}' is invalid.")
-
-
-def read_df(path: Path) -> pd.DataFrame:
-    return pd.read_csv(path, sep=";", index_col=0, dtype=object)
 
 
 # TODO: Split this disaster class into smaller class and functions
@@ -700,30 +534,6 @@ class CodeplagEngine:
         self.logger.debug(f"Time for all {monotonic() - self.begin_time:.2f}s")
         self.logger.info("Ending searching for plagiarism ...")
 
-    def _report_create(self) -> Literal[0, 1]:
-        settings_config = read_settings_conf()
-        reports_path = settings_config.get("reports")
-        if not reports_path:
-            self.logger.error(
-                "Can't create general report without provided in settings 'report' path."
-            )
-            return 1
-        if settings_config["reports_extension"] == "json":
-            self.logger.error("Can create report only when 'reports_extension' is csv.")
-            return 1
-        if not reports_path.exists():
-            self.logger.error(
-                f"There is nothing in '{reports_path}' to create a basic html report from."
-            )
-            return 1
-        create_report(
-            reports_path / CSV_REPORT_FILENAME,
-            self.path,
-            threshold=settings_config["threshold"],
-            language=settings_config["language"],
-        )
-        return 0
-
     def run(self) -> Literal[0, 1]:
         self.logger.debug("Starting codeplag util ...")
 
@@ -734,7 +544,7 @@ class CodeplagEngine:
                 settings_modify(self.parsed_args)
                 settings_show()
         elif self.root == "report":
-            return self._report_create()
+            return html_report_create(self.path, self.logger)
         else:
             self.__check()
             self._write_df_to_fs()
