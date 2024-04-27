@@ -6,7 +6,7 @@ max-line-length = 97
 
 [tool.ruff]
 line-length = 97
-select = [
+lint.select = [
     "F",    # pyflakes
     "E",    # pycodestyle Error
     "W",    # pycodestyle Warning

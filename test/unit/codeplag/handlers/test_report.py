@@ -2,16 +2,16 @@ from typing import Dict, List
 
 import numpy as np
 import pytest
+from codeplag.algorithms.compare import compare_works
 from codeplag.handlers.report import (
     _convert_similarity_matrix_to_percent_matrix,
     _deserialize_head_nodes,
     _get_parsed_line,
     _get_same_funcs,
     _replace_minimal_value,
-    serialize_compare_result,
 )
+from codeplag.reporters import serialize_compare_result
 from codeplag.types import ASTFeatures, SameHead
-from codeplag.utils import compare_works
 
 
 @pytest.mark.parametrize(

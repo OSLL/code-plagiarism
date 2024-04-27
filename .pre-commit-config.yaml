@@ -9,6 +9,7 @@ repos:
     rev: v0.3.4
     hooks:
       - id: ruff
+        args: [ --fix ]
   - repo: local
     hooks:
       - id: pyright

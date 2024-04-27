@@ -1,6 +1,5 @@
-import json
-import logging
-from datetime import datetime
+"""This module contains handlers for the report command of the CLI."""
+
 from pathlib import Path
 from typing import Generator, List, Literal, Tuple
 
@@ -17,18 +16,17 @@ from codeplag.consts import (
     DEFAULT_THRESHOLD,
     TEMPLATE_PATH,
 )
+from codeplag.logger import codeplag_logger as logger
+from codeplag.reporters import deserialize_compare_result, read_df
 from codeplag.types import (
-    ASTFeatures,
     CompareInfo,
-    FastMetrics,
     Language,
     SameFuncs,
     SameHead,
-    StructuresInfo,
 )
 
 
-def html_report_create(report_path: Path, logger: logging.Logger) -> Literal[0, 1]:
+def html_report_create(report_path: Path) -> Literal[0, 1]:
     settings_config = read_settings_conf()
     reports_path = settings_config.get("reports")
     if not reports_path:
@@ -51,61 +49,6 @@ def html_report_create(report_path: Path, logger: logging.Logger) -> Literal[0, 
         language=settings_config["language"],
     )
     return 0
-
-
-def serialize_compare_result(
-    first_work: ASTFeatures,
-    second_work: ASTFeatures,
-    compare_info: CompareInfo,
-) -> pd.DataFrame:
-    assert compare_info.structure is not None
-
-    return pd.DataFrame(
-        {
-            "date": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            "first_modify_date": first_work.modify_date,
-            "second_modify_date": second_work.modify_date,
-            "first_path": first_work.filepath.__str__(),
-            "second_path": second_work.filepath.__str__(),
-            "jakkar": compare_info.fast.jakkar,
-            "operators": compare_info.fast.operators,
-            "keywords": compare_info.fast.keywords,
-            "literals": compare_info.fast.literals,
-            "weighted_average": compare_info.fast.weighted_average,
-            "struct_similarity": compare_info.structure.similarity,
-            "first_heads": [first_work.head_nodes],
-            "second_heads": [second_work.head_nodes],
-            "compliance_matrix": [compare_info.structure.compliance_matrix.tolist()],
-        },
-        dtype=object,
-    )
-
-
-def deserialize_compare_result(compare_result: pd.Series) -> CompareInfo:
-    if isinstance(compare_result.compliance_matrix, str):
-        similarity_matrix = np.array(json.loads(compare_result.compliance_matrix))
-    else:
-        similarity_matrix = np.array(compare_result.compliance_matrix)
-
-    compare_info = CompareInfo(
-        fast=FastMetrics(
-            jakkar=float(compare_result.jakkar),
-            operators=float(compare_result.operators),
-            keywords=float(compare_result.keywords),
-            literals=float(compare_result.literals),
-            weighted_average=float(compare_result.weighted_average),
-        ),
-        structure=StructuresInfo(
-            compliance_matrix=similarity_matrix,
-            similarity=float(compare_result.struct_similarity),
-        ),
-    )
-
-    return compare_info
-
-
-def read_df(path: Path) -> pd.DataFrame:
-    return pd.read_csv(path, sep=";", index_col=0, dtype=object)
 
 
 def _convert_similarity_matrix_to_percent_matrix(matrix: NDArray) -> NDArray:
