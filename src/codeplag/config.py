@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, Dict, Literal, Mapping, Optional, overload
+from typing import Any, Dict, ForwardRef, Literal, Mapping, Optional, overload
 
 from typing_extensions import NotRequired
 
@@ -65,7 +65,13 @@ def read_settings_conf() -> Settings:
                 loaded_settings_config[key] = DefaultSettingsConfig[key]
             continue
 
-        if key_type == Path or key_type == NotRequired[Path]:  # type: ignore
+        if key_type in [
+            Path,
+            NotRequired[Path],  # type: ignore
+            # Hook for proper work of the Cythonized version.
+            ForwardRef("Path"),
+            ForwardRef("NotRequired[Path]"),
+        ]:
             loaded_settings_config[key] = Path(loaded_settings_config[key])
 
     return Settings(

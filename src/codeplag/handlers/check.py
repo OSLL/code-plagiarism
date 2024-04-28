@@ -82,8 +82,8 @@ class WorksComparator:
         self.show_progress: Flag = settings_conf["show_progress"]
         self.threshold: Threshold = settings_conf["threshold"]
         self.workers: int = settings_conf["workers"]
-        reports: Optional[Path] = settings_conf.get("reports")
-        if reports:
+        reports = settings_conf.get("reports")
+        if reports is not None:
             reports_extension = settings_conf["reports_extension"]
             Reporter = CSVReporter if reports_extension == "csv" else JSONReporter
             self.reporter = Reporter(reports)

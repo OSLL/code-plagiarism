@@ -11,4 +11,5 @@ def test_create_report(create_reports_folder: None):
 
     # Main checks
     create_report(REPORTS_FOLDER).assert_success()
-    assert Path(REPORTS_FOLDER / DEFAULT_GENERAL_REPORT_NAME).exists()
+    REPORT_PATH = Path(REPORTS_FOLDER / DEFAULT_GENERAL_REPORT_NAME)
+    assert REPORT_PATH.exists()

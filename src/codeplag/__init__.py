@@ -22,8 +22,8 @@ def main() -> Literal[0, 1, 2]:
     verbose = bool(parsed_args["verbose"])
 
     set_handlers(logger, LOG_PATH, verbose)
-    codeplag_util = CodeplagEngine(parsed_args)
     try:
+        codeplag_util = CodeplagEngine(parsed_args)
         code = codeplag_util.run()
     except CLIException as err:
         logger.error(err)

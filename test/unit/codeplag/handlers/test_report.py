@@ -2,7 +2,6 @@ from typing import Dict, List
 
 import numpy as np
 import pytest
-from codeplag.algorithms.compare import compare_works
 from codeplag.handlers.report import (
     _convert_similarity_matrix_to_percent_matrix,
     _deserialize_head_nodes,
@@ -11,7 +10,7 @@ from codeplag.handlers.report import (
     _replace_minimal_value,
 )
 from codeplag.reporters import serialize_compare_result
-from codeplag.types import ASTFeatures, SameHead
+from codeplag.types import ASTFeatures, CompareInfo, SameHead
 
 
 @pytest.mark.parametrize(
@@ -60,22 +59,30 @@ def test__get_same_funcs():
     assert expected == result
 
 
-def test__get_parsed_line(first_features: ASTFeatures, second_features: ASTFeatures):
-    compare_info = compare_works(first_features, second_features)
-    assert compare_info.structure
-    compare_df = serialize_compare_result(first_features, second_features, compare_info)
+def test__get_parsed_line(
+    first_features: ASTFeatures,
+    second_features: ASTFeatures,
+    first_compare_result: CompareInfo,
+):
+    compare_df = serialize_compare_result(
+        first_features, second_features, first_compare_result
+    )
     compare_df.iloc[0].first_heads = str(compare_df.iloc[0].first_heads)
     compare_df.iloc[0].second_heads = str(compare_df.iloc[0].second_heads)
 
     result = list(_get_parsed_line(compare_df))
 
-    assert result[0][1].fast == compare_info.fast
+    assert result[0][1].fast == first_compare_result.fast
     assert result[0][1].structure
-    assert result[0][1].structure.similarity == compare_info.structure.similarity
-    assert result[0][1].structure.similarity == compare_info.structure.similarity
+    assert (
+        result[0][1].structure.similarity == first_compare_result.structure.similarity
+    )
+    assert (
+        result[0][1].structure.similarity == first_compare_result.structure.similarity
+    )
     assert np.array_equal(
         result[0][1].structure.compliance_matrix,
-        compare_info.structure.compliance_matrix,
+        first_compare_result.structure.compliance_matrix,
     )
     assert result[0][2] == {
         "my_func[1]": [SameHead(name="my_func[1]", percent=79.17)],

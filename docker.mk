@@ -20,16 +20,17 @@ docker-test: docker-test-image
 		--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
 		"$(TEST_DOCKER_TAG)"
 
-docker-autotest: docker-test-image
+docker-autotest: docker-test-image docker-build-package
 	@if [ $(shell find . -maxdepth 1 -type f -name .env | wc --lines) != 1 ]; then \
 		echo "Requires '.env' file with provided GitHub token for running autotests."; \
 		exit 200; \
 	else \
 		docker run --rm \
+			--volume $(PWD)/$(DEBIAN_PACKAGES_PATH):/usr/src/$(UTIL_NAME)/$(DEBIAN_PACKAGES_PATH) \
 			--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
 			--env-file .env \
 			"$(TEST_DOCKER_TAG)" bash -c \
-			"make && make autotest"; \
+			"apt-get install -y /usr/src/${UTIL_NAME}/${DEBIAN_PACKAGES_PATH}/${UTIL_NAME}-util_${UTIL_VERSION}-1${DEVEL_SUFFIX}_amd64.deb && make autotest"; \
 	fi
 
 docker-build-package: docker-test-image
