@@ -83,13 +83,33 @@
 
 ## 2. Tests
 
-- Testing for analyzers with pytest lib (required preinstalled pytest framework)
+### 2.1. Pre-commit
+
+- Check code with linters, format code, and check used types with pre-commit.
   ```
-  $ pip3 install pytest==7.1.2
+  # Before local checking, you need to install dependencies into your virtual environment.
+  $ python3 -m pip install --requirement docs/notebooks/requirements.txt
+  $ python3 -m pip install $(python3 -m setup.py --build-requirements)
+  $ python3 -m pip install $(python3 -m setup.py --install-requirements)
+  $ make pre-commit
+  ```
+
+- Also, before committing, you need to install pre-commit hooks in the repository.
+  ```
+  $ pre-commit install
+  ```
+
+### 2.2. Unit tests
+
+- Testing for analyzers with pytest lib (required preinstalled pytest framework).
+  ```
+  $ pip3 install pytest==7.4.0 pytest-mock==3.11.1
   $ make test
   ```
 
-- Testing work of the util with written autotests (required installed util and 'ACCESS_TOKEN' with empty accesses, look ahead)
+### 2.3. Auto tests
+
+- Testing work of the util with written autotests (required installed util and 'ACCESS_TOKEN' with empty accesses, look ahead).
   ```
   $ make autotest
   ```

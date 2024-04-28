@@ -132,6 +132,14 @@ class WorksReport(TypedDict):
     structure: dict  # dict from StructuresInfo
 
 
+# Exceptions
+# ----------------------------------------------------------------------------
+
+
+class CLIException(Exception):
+    """A common exception occurred while using CLI."""
+
+
 # Misc
 # ----------------------------------------------------------------------------
 

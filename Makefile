@@ -1,4 +1,4 @@
-UTIL_VERSION            := 0.4.3
+UTIL_VERSION            := 0.4.4
 UTIL_NAME               := codeplag
 PWD                     := $(shell pwd)
 
@@ -127,7 +127,7 @@ autotest:
 	make clean-cache
 
 pre-commit:
-	pre-commit run --all-files
+	python3 -m pre_commit run --all-files
 
 clean-cache:
 	find . -maxdepth 1 -type d | grep -E "pytest_cache" | (xargs rm -r 2> /dev/null || exit 0)
@@ -177,6 +177,7 @@ help:
 	@echo "  uninstall              Remove installed util from system;"
 	@echo "  man                    Create man file."
 	@echo "                         Require argparse-manpage python library;"
+	@echo "  pre-commit             Runs all pre-commit hooks;"
 	@echo "  test                   Runs unit tests with pytest framework;"
 	@echo "  autotest               Runs auto tests."
 	@echo "                         Required installed '$(UTIL_NAME)' util and provided ACCESS_TOKEN;"

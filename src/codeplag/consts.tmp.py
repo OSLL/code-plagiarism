@@ -32,13 +32,14 @@ DEFAULT_LANGUAGE: Final[Language] = "en"
 DEFAULT_REPORT_EXTENSION: Final[ReportsExtension] = "csv"
 DEFAULT_GENERAL_REPORT_NAME: Final[str] = "report.html"
 DEFAULT_WORKERS: Final[int] = os.cpu_count() or 1
+DEFAULT_MODE: Final[Mode] = "many_to_many"
 # =============
 
 GET_FRAZE: Final[str] = "Getting works features from"
 
 # CSV report
 CSV_REPORT_FILENAME: Final[str] = f"{UTIL_NAME}_report.csv"
-CSV_SAVE_TICK: Final[int] = 60
+CSV_SAVE_TICK_SEC: Final[int] = 60
 CSV_REPORT_COLUMNS: Final[Tuple[str, ...]] = (
     "date",
     "first_modify_date",

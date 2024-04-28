@@ -1,5 +1,7 @@
+from datetime import timedelta
 from enum import Enum
 from functools import partial
+from time import monotonic
 from typing import Final, List, Optional
 
 import pandas as pd
@@ -21,6 +23,74 @@ class Color(Enum):
     BOLD = "\033[1m"
     UNDERLINE = "\033[4m"
     END = "\033[0m"
+
+
+class Progress:
+    def __init__(self, iterations: int) -> None:
+        self.__iterations: Final[int] = iterations
+        self.__iteration: int = -1
+        self.__start_time_sec = monotonic()
+
+    @property
+    def progress(self) -> float:
+        if self.iterations == 0:
+            return 1.0
+        if self.__iteration <= 0:
+            return 0.0
+        return self.__iteration / self.iterations
+
+    @property
+    def start_time_sec(self) -> float:
+        return self.__start_time_sec
+
+    @property
+    def iterations(self) -> int:
+        return self.__iterations if self.__iterations > 0 else 0
+
+    def __iter__(self) -> Self:
+        return self
+
+    def __next__(self) -> float:
+        if self.progress == 1.0:
+            raise StopIteration("The progress has already been completed.")
+        self.__iteration += 1
+        return self.progress
+
+    def __str__(self) -> str:
+        return f"Progress: {self.progress:.2%}"
+
+
+class ComplexProgress(Progress):
+    def __init__(self, iterations: int) -> None:
+        super(ComplexProgress, self).__init__(iterations)
+        self.__internal_progresses: List[Progress] = []
+
+    def add_internal_progress(self, internal_iterations: int) -> None:
+        if len(self.__internal_progresses) == self.iterations:
+            raise IndexError("The internal iteration count limit was exceeded.")
+        self.__internal_progresses.append(Progress(internal_iterations))
+
+    @property
+    def progress(self) -> float:
+        if self.iterations == 0:
+            return 1.0
+        return float(
+            sum(
+                internal_progress.progress / self.iterations
+                for internal_progress in self.__internal_progresses
+            )
+        )
+
+    def __next__(self) -> float:
+        if self.progress == 1.0:
+            raise StopIteration("The progress has already been completed.")
+        for internal_progress in self.__internal_progresses:
+            if internal_progress.progress == 1.0:
+                continue
+            if next(internal_progress) == 1.0:
+                continue
+            break
+        return self.progress
 
 
 def colorize(
@@ -141,64 +211,21 @@ def print_compare_result(
     print("+" * CHARS_CNT)
 
 
-class Progress:
-    def __init__(self, iterations: int) -> None:
-        self.__iterations: Final[int] = iterations
-        self.__iteration: int = -1
-
-    @property
-    def progress(self) -> float:
-        if self.iterations == 0:
-            return 1.0
-        if self.__iteration <= 0:
-            return 0.0
-        return self.__iteration / self.iterations
-
-    @property
-    def iterations(self) -> int:
-        return self.__iterations if self.__iterations > 0 else 0
-
-    def __iter__(self) -> Self:
-        return self
-
-    def __next__(self) -> float:
-        if self.progress == 1.0:
-            raise StopIteration("The progress has already been completed.")
-        self.__iteration += 1
-        return self.progress
-
-    def __str__(self) -> str:
-        return f"Progress: {self.progress:.2%}"
-
-
-class ComplexProgress(Progress):
-    def __init__(self, iterations: int) -> None:
-        super(ComplexProgress, self).__init__(iterations)
-        self.__internal_progresses: List[Progress] = []
-
-    def add_internal_progress(self, internal_iterations: int) -> None:
-        if len(self.__internal_progresses) == self.iterations:
-            raise IndexError("The internal iteration count limit was exceeded.")
-        self.__internal_progresses.append(Progress(internal_iterations))
-
-    @property
-    def progress(self) -> float:
-        if self.iterations == 0:
-            return 1.0
-        return float(
-            sum(
-                internal_progress.progress / self.iterations
-                for internal_progress in self.__internal_progresses
+def print_pretty_progress(progress: Progress, workers: int) -> None:
+    time_spent_seconds = monotonic() - progress.start_time_sec
+    time_spent = timedelta(seconds=int(time_spent_seconds))
+    current_progress = progress.progress
+    if current_progress != 0.0:
+        predicated_time_left = timedelta(
+            seconds=int(
+                (1.0 - current_progress) / current_progress * time_spent_seconds
             )
         )
-
-    def __next__(self) -> float:
-        if self.progress == 1.0:
-            raise StopIteration("The progress has already been completed.")
-        for internal_progress in self.__internal_progresses:
-            if internal_progress.progress == 1.0:
-                continue
-            if next(internal_progress) == 1.0:
-                continue
-            break
-        return self.progress
+    else:
+        predicated_time_left = "N/A"
+    print(
+        f"{progress}, "
+        f"{time_spent} time spent [predicted time left {predicated_time_left}], "
+        f"{workers} workers",
+        end="\r",
+    )
