@@ -7,6 +7,7 @@ from setuptools import Extension, find_packages, setup
 
 BUILD_REQUIREMENTS: Tuple[str, ...] = (
     "argparse-manpage==3",
+    "Babel==2.15.0",
     "Cython~=3.0.8",
 )
 INSTALL_REQUIREMENTS: Tuple[str, ...] = (

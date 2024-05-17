@@ -1,4 +1,4 @@
-UTIL_VERSION            := 0.4.4
+UTIL_VERSION            := 0.4.5
 UTIL_NAME               := codeplag
 PWD                     := $(shell pwd)
 
@@ -82,7 +82,7 @@ man: substitute-sources
 					 --url "https://github.com/OSLL/code-plagiarism" \
 					 --output man/$(UTIL_NAME).1
 
-install: substitute-sources man
+install: substitute-sources man translate-update translate-compile
 	python3 -m pip install --root=/$(DESTDIR) .
 
 	@echo "Cleaning unnecessary files after Cython compilation"
@@ -97,8 +97,11 @@ install: substitute-sources man
 	install -D -m 0666 /dev/null $(DESTDIR)/$(CODEPLAG_LOG_PATH)
 	install -D -d -m 0755 $(DESTDIR)/$(LIB_PATH)
 
-	install -D -m 0666 src/templates/report_ru.templ $(DESTDIR)/$(LIB_PATH)/report_ru.templ
-	install -D -m 0666 src/templates/report_en.templ $(DESTDIR)/$(LIB_PATH)/report_en.templ
+	install -D -m 0666 src/templates/general.templ $(DESTDIR)/$(LIB_PATH)/general.templ
+	install -D -m 0666 src/templates/sources.templ $(DESTDIR)/$(LIB_PATH)/sources.templ
+
+	cp --recursive locales/translations/ $(DESTDIR)/$(LIB_PATH)/
+	find "$(DESTDIR)/$(LIB_PATH)/translations/" -type f -name '*.po' -exec rm --force {} +
 
 	if [ ! -f $(DESTDIR)/$(CONFIG_PATH) ]; then \
 		install -D -d -m 0755 $(DESTDIR)/etc/$(UTIL_NAME); \
@@ -202,3 +205,4 @@ help:
 .PHONY: all test man
 
 include docker.mk
+include locales/i18n.mk

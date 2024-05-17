@@ -1,0 +1,125 @@
+# English translations for codeplag.
+# Copyright (C) 2024 ORGANIZATION
+# This file is distributed under the same license as the codeplag project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: codeplag 0.4.5\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2024-05-16 19:46+0300\n"
+"PO-Revision-Date: 2024-05-16 19:15+0300\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.12.1\n"
+
+#: src/templates/general.templ:5 src/templates/sources.templ:5
+msgid "Comparative report"
+msgstr "Comparative report"
+
+#: src/templates/general.templ:40
+msgid "Check results"
+msgstr "Check results"
+
+#: src/templates/general.templ:44 src/templates/sources.templ:45
+msgid "General information"
+msgstr "General information"
+
+#: src/templates/general.templ:46
+msgid "Path"
+msgstr "Path"
+
+#: src/templates/general.templ:47
+msgid "Last modification date"
+msgstr "Last modification date"
+
+#: src/templates/general.templ:48
+msgid "Check date"
+msgstr "Check date"
+
+#: src/templates/general.templ:61
+msgid "Metrics information"
+msgstr "Metrics information"
+
+#: src/templates/general.templ:63
+msgid "Metric"
+msgstr "Metric"
+
+#: src/templates/general.templ:64
+msgid "Value"
+msgstr "Value"
+
+#: src/templates/general.templ:67
+msgid "Jaccard Coefficient"
+msgstr "Jaccard Coefficient"
+
+#: src/templates/general.templ:71
+msgid "Similarity of operators"
+msgstr "Similarity of operators"
+
+#: src/templates/general.templ:75
+msgid "Similarity of keywords"
+msgstr "Similarity of keywords"
+
+#: src/templates/general.templ:79
+msgid "Similarity of literals"
+msgstr "Similarity of literals"
+
+#: src/templates/general.templ:82
+msgid "Weighted average by fast metrics"
+msgstr "Weighted average by fast metrics"
+
+#: src/templates/general.templ:85
+msgid "Similarity of structures"
+msgstr "Similarity of structures"
+
+#: src/templates/general.templ:91
+msgid "Similar parts of the second program relative to the first"
+msgstr "Similar parts of the second program relative to the first"
+
+#: src/templates/general.templ:93 src/templates/general.templ:125
+msgid "Part of the first program"
+msgstr "Part of the first program"
+
+#: src/templates/general.templ:94 src/templates/general.templ:124
+msgid "Part of the second program"
+msgstr "Part of the second program"
+
+#: src/templates/general.templ:95 src/templates/general.templ:126
+#: src/templates/sources.templ:60
+msgid "Similarity"
+msgstr "Similarity"
+
+#: src/templates/general.templ:122
+msgid "Similar parts of the first program relative to the second"
+msgstr "Similar parts of the first program relative to the second"
+
+#: src/templates/sources.templ:41
+msgid "Verification results"
+msgstr "Verification results"
+
+#: src/templates/sources.templ:47
+msgid "The path to the file being checked"
+msgstr "The path to the file being checked"
+
+#: src/templates/sources.templ:55
+msgid "Similar parts of the programs"
+msgstr "Similar parts of the programs"
+
+#: src/templates/sources.templ:57
+msgid "The name of a similar file"
+msgstr "The name of a similar file"
+
+#: src/templates/sources.templ:58
+msgid "Part of the file that is being checked"
+msgstr "Part of the file that is being checked"
+
+#: src/templates/sources.templ:59
+msgid "Part of a similar file"
+msgstr "Part of a similar file"
+

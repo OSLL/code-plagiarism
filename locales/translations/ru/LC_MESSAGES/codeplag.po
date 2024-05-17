@@ -1,0 +1,126 @@
+# Russian translations for codeplag.
+# Copyright (C) 2024 ORGANIZATION
+# This file is distributed under the same license as the codeplag project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2024-05-16 19:46+0300\n"
+"PO-Revision-Date: 2024-05-11 12:05+0300\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.12.1\n"
+
+#: src/templates/general.templ:5 src/templates/sources.templ:5
+msgid "Comparative report"
+msgstr "Сравнительный отчёт"
+
+#: src/templates/general.templ:40
+msgid "Check results"
+msgstr "Результаты проверки"
+
+#: src/templates/general.templ:44 src/templates/sources.templ:45
+msgid "General information"
+msgstr "Общая информация"
+
+#: src/templates/general.templ:46
+msgid "Path"
+msgstr "Путь"
+
+#: src/templates/general.templ:47
+msgid "Last modification date"
+msgstr "Дата последней модификации"
+
+#: src/templates/general.templ:48
+msgid "Check date"
+msgstr "Дата проверки"
+
+#: src/templates/general.templ:61
+msgid "Metrics information"
+msgstr "Информация по метрикам"
+
+#: src/templates/general.templ:63
+msgid "Metric"
+msgstr "Метрика"
+
+#: src/templates/general.templ:64
+msgid "Value"
+msgstr "Значение"
+
+#: src/templates/general.templ:67
+msgid "Jaccard Coefficient"
+msgstr "Коэффициент Жаккара"
+
+#: src/templates/general.templ:71
+msgid "Similarity of operators"
+msgstr "Схожеть операторов"
+
+#: src/templates/general.templ:75
+msgid "Similarity of keywords"
+msgstr "Схожеть ключевых слов"
+
+#: src/templates/general.templ:79
+msgid "Similarity of literals"
+msgstr "Схожеть литералов"
+
+#: src/templates/general.templ:82
+msgid "Weighted average by fast metrics"
+msgstr "Средневзвешенное по быстрым метрикам"
+
+#: src/templates/general.templ:85
+msgid "Similarity of structures"
+msgstr "Схожесть структур"
+
+#: src/templates/general.templ:91
+msgid "Similar parts of the second program relative to the first"
+msgstr "Схожие части второй программы относительно первой"
+
+#: src/templates/general.templ:93 src/templates/general.templ:125
+msgid "Part of the first program"
+msgstr "Часть первой программ"
+
+#: src/templates/general.templ:94 src/templates/general.templ:124
+msgid "Part of the second program"
+msgstr "Часть второй программы"
+
+#: src/templates/general.templ:95 src/templates/general.templ:126
+#: src/templates/sources.templ:60
+msgid "Similarity"
+msgstr "Схожесть"
+
+#: src/templates/general.templ:122
+msgid "Similar parts of the first program relative to the second"
+msgstr "Схожие части первой программы относительно второй"
+
+#: src/templates/sources.templ:41
+msgid "Verification results"
+msgstr "Результаты проверки"
+
+#: src/templates/sources.templ:47
+msgid "The path to the file being checked"
+msgstr "Путь до проверяемого файла"
+
+#: src/templates/sources.templ:55
+msgid "Similar parts of the programs"
+msgstr "Схожие части программ"
+
+#: src/templates/sources.templ:57
+msgid "The name of a similar file"
+msgstr "Имя схожего файла"
+
+#: src/templates/sources.templ:58
+msgid "Part of the file that is being checked"
+msgstr "Часть проверяемого файла"
+
+#: src/templates/sources.templ:59
+msgid "Part of a similar file"
+msgstr "Часть схожего файла"
+

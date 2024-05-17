@@ -24,6 +24,7 @@ Extensions = Tuple[Pattern, ...]
 Flag = Literal[0, 1]
 Mode = Literal["many_to_many", "one_to_one"]
 ReportsExtension = Literal["json", "csv"]
+ReportType = Literal["general", "sources"]
 Language = Literal["en", "ru"]
 # fmt: off
 Threshold = Literal[

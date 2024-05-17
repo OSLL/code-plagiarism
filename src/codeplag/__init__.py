@@ -1,7 +1,5 @@
 from typing import Literal
 
-from codeplag.types import CLIException
-
 
 def main() -> Literal[0, 1, 2]:
     import argcomplete
@@ -11,23 +9,22 @@ def main() -> Literal[0, 1, 2]:
     from codeplag.consts import LOG_PATH
     from codeplag.logger import codeplag_logger as logger
     from codeplag.logger import set_handlers
+    from codeplag.translate import get_translations
     from codeplag.utils import CodeplagEngine
 
     pd.set_option("display.float_format", "{:,.2%}".format)
     pd.set_option("display.max_colwidth", None)
 
+    translations = get_translations()
+    translations.install()
+
     cli = CodeplagCLI()
     argcomplete.autocomplete(cli)
     parsed_args = vars(cli.parse_args())
-    verbose = bool(parsed_args["verbose"])
-
-    set_handlers(logger, LOG_PATH, verbose)
+    set_handlers(logger, LOG_PATH, bool(parsed_args["verbose"]))
     try:
         codeplag_util = CodeplagEngine(parsed_args)
         code = codeplag_util.run()
-    except CLIException as err:
-        logger.error(err)
-        return 1
     except KeyboardInterrupt:
         logger.warning("The util stopped by keyboard interrupt.")
         return 1

@@ -12,6 +12,7 @@ ADD src/ /usr/src/@UTIL_NAME@/src
 ADD README.md /usr/src/@UTIL_NAME@/README.md
 ADD LICENSE /usr/src/@UTIL_NAME@/LICENSE
 ADD Makefile /usr/src/@UTIL_NAME@/Makefile
+ADD locales/ /usr/src/@UTIL_NAME@/locales
 ADD docker.mk /usr/src/@UTIL_NAME@/docker.mk
 ADD debian/ /usr/src/@UTIL_NAME@/debian
 

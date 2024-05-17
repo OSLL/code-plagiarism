@@ -20,12 +20,13 @@ def fast_compare(
     all of this  in 'FastMetrics' structure.
 
     Args:
+    ----
         features_f: The features of the first  source file.
         features_s: The features of the second  source file.
         weights: Weights of fast metrics that participate in
           counting total similarity coefficient.
-    """
 
+    """
     jakkar_coef = value_jakkar_coef(features_f.tokens, features_s.tokens)
     ops_res = counter_metric(features_f.operators, features_s.operators)
     kw_res = counter_metric(features_f.keywords, features_s.keywords)
@@ -51,18 +52,20 @@ def compare_works(
     """The function returns the complex result of comparing two works.
 
     Args:
+    ----
         features1: The features of the first work.
         features2: The features of the second work.
         threshold: The threshold of plagiarism searcher alarm.
 
     Returns:
+    -------
         CompareInfo, which is the result of comparing works.
         This can consist of fast metrics and, if the threshold
         value has been crossed, structure metric.
         If the threshold value is not set, it returns the structure
         metric anywhere.
-    """
 
+    """
     fast_metrics = fast_compare(features1, features2)
     if threshold and (fast_metrics.weighted_average * 100.0) < threshold:
         return CompareInfo(fast=fast_metrics)

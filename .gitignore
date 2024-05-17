@@ -33,3 +33,6 @@ src/codeplag/consts.py
 docker/base_ubuntu2004.dockerfile
 docker/test_ubuntu2004.dockerfile
 docker/ubuntu2004.dockerfile
+
+# Translation
+locales/**/*.mo

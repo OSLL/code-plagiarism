@@ -7,6 +7,7 @@ max-line-length = 97
 [tool.ruff]
 line-length = 97
 lint.select = [
+    "D", # pydocstyle
     "F",    # pyflakes
     "E",    # pycodestyle Error
     "W",    # pycodestyle Warning
@@ -14,9 +15,29 @@ lint.select = [
     "B",    # flake8-bugbear
     "C4",   # flake8-comprehensions
     "SIM",  # flake8-simplify
-    # "ERA",  # eradicate
+    "ERA",  # eradicate
     "C90",  # mccabe
 ]
+lint.ignore = [
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "D105",
+    "D107",
+    "D203",
+    "D205",
+    "D213",
+    "D400",
+    "D401",
+    "D404",
+    "D407",
+    "D417",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
 [tool.ruff.lint.mccabe]
 max-complexity = 12

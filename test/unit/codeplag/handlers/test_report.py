@@ -1,4 +1,4 @@
-from typing import Dict, List
+from __future__ import annotations
 
 import numpy as np
 import pytest
@@ -25,21 +25,59 @@ from codeplag.types import ASTFeatures, CompareInfo, SameHead
     ],
 )
 def test__replace_minimal_value(
-    same_parts: Dict[str, float],
+    same_parts: dict[str, float],
     new_key: str,
     new_value: float,
-    expected: Dict[str, float],
+    expected: dict[str, float],
 ):
     _replace_minimal_value(same_parts, new_key, new_value)
 
     assert same_parts == expected
 
 
-def test__get_same_funcs():
-    first_heads = ["foo", "bar", "foobar", "barfoo"]
-    second_heads = ["func_name", "sum", "mult", "div", "sub"]
-    threshold = 70
-    n = 2
+@pytest.mark.parametrize(
+    "first_heads,second_heads,threshold,include_funcs_less_threshold,n,expected",
+    [
+        (
+            ["foo", "bar", "foobar", "barfoo"],
+            ["func_name", "sum", "mult", "div", "sub"],
+            70,
+            True,
+            2,
+            {
+                "foo": [SameHead("sub", 50.0)],
+                "bar": [SameHead("div", 80.0), SameHead("sum", 74.0)],
+                "foobar": [SameHead("sub", 90.0), SameHead("div", 85.0)],
+                "barfoo": [SameHead("func_name", 40.0)],
+            },
+        ),
+        (
+            ["foo", "bar", "foobar", "barfoo"],
+            ["func_name", "sum", "mult", "div", "sub"],
+            70,
+            False,
+            2,
+            {
+                "foo": [],
+                "bar": [SameHead("div", 80.0), SameHead("sum", 74.0)],
+                "foobar": [SameHead("sub", 90.0), SameHead("div", 85.0)],
+                "barfoo": [],
+            },
+        ),
+    ],
+    ids=[
+        "Same functions with less threshold.",
+        "Same functions without less threshold.",
+    ],
+)
+def test__get_same_funcs(
+    first_heads: list[str],
+    second_heads: list[str],
+    threshold: int,
+    include_funcs_less_threshold: bool,
+    n: int,
+    expected: dict[str, list[SameHead]],
+):
     percent_matrix = np.array(
         [
             [10.0, 20.0, 30.0, 40.0, 50.0],
@@ -48,14 +86,15 @@ def test__get_same_funcs():
             [40.0, 30.0, 20.0, 10.0, 10.0],
         ]
     )
-    expected = {
-        "foo": [SameHead("sub", 50.0)],
-        "bar": [SameHead("div", 80.0), SameHead("sum", 74.0)],
-        "foobar": [SameHead("sub", 90.0), SameHead("div", 85.0)],
-        "barfoo": [SameHead("func_name", 40.0)],
-    }
 
-    result = _get_same_funcs(first_heads, second_heads, percent_matrix, threshold, n)
+    result = _get_same_funcs(
+        first_heads,
+        second_heads,
+        percent_matrix,
+        threshold,
+        include_funcs_less_threshold,
+        n,
+    )
     assert expected == result
 
 
@@ -113,7 +152,7 @@ def test__get_parsed_line(
         ),
     ],
 )
-def test__deserialize_head_nodes(str_head_nodes: str, list_head_nodes: List[str]):
+def test__deserialize_head_nodes(str_head_nodes: str, list_head_nodes: list[str]):
     assert _deserialize_head_nodes(str_head_nodes) == list_head_nodes
 
 

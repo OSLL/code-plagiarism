@@ -25,14 +25,16 @@ def get_files_path_from_directory(
     """Recursive gets file paths from provided directory.
 
     Args:
+    ----
         directory: Root directory for getting paths.
         extensions: Available extensions for filtering.
         path_regexp: Provided regular expression for filtering file paths.
 
     Returns:
+    -------
         Paths to all files in the directory and its subdirectories.
-    """
 
+    """
     if extensions is None:
         extensions = ALL_EXTENSIONS
 

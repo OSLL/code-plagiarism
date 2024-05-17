@@ -8,6 +8,7 @@ from webparsers.types import WorkInfo
 from codeplag.consts import GET_FRAZE, SUPPORTED_EXTENSIONS
 from codeplag.display import red_bold
 from codeplag.getfeatures import AbstractGetter, get_files_path_from_directory
+from codeplag.logger import codeplag_logger as logger
 from codeplag.logger import log_err
 from codeplag.pyplag.astwalkers import ASTWalker
 from codeplag.types import ASTFeatures
@@ -59,10 +60,15 @@ def get_ast_from_filename(filepath: Path) -> Optional[ast.Module]:
     """Function return ast which has type ast.Module.
 
     Args:
+    ----
         filename - full path to file with code which will have analyzed
+
     """
     if not filepath.is_file():
         log_err(f"'{filepath}' is not a file or doesn't exist.")
+        return None
+    if filepath.stat().st_size == 0:
+        logger.debug(f"The file '{filepath}' is empty; there is nothing to get.")
         return None
 
     tree = None

@@ -8,8 +8,7 @@ from codeplag.types import ASTFeatures, NodeStructurePlace
 
 
 def get_not_ignored(tree: Cursor, src: Union[Path, str]) -> List[Cursor]:
-    "Function helps to discard unnecessary nodes such as imports."
-
+    """Function helps to discard unnecessary nodes such as imports."""
     parsed_nodes = []
     for child in tree.get_children():
         loc = child.location.file

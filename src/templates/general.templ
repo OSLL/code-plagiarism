@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ language }}">
 <head>
     <meta charset="UTF-8">
-    <title>Comparative report</title>
+    <title>{{ _("Comparative report") }}</title>
     <style>
         table {
             border-spacing: 0;
@@ -37,15 +37,15 @@
     </style>
 </head>
 <body>
-    <h1 align="center">Check results</h1>
+    <h1 align="center">{{ _("Check results") }}</h1>
     {% for line, cmp_res, same_parts_of_second, same_parts_of_first in data %}
         <div style="border: 0.2rem solid black; padding: 1rem; margin: 0.5rem;">
             <table align="center">
-                <caption>General information</caption>
+                <caption>{{ _("General information") }}</caption>
                 <tr class="table__header">
-                    <th>Path</th>
-                    <th>Last modification date</th>
-                    <th>Check date</th>
+                    <th>{{ _("Path") }}</th>
+                    <th>{{ _("Last modification date") }}</th>
+                    <th>{{ _("Check date") }}</th>
                 </tr>
                 <tr class="table__row">
                     <td>{{ line.first_path }}</td>
@@ -58,41 +58,41 @@
                 </tr>
             </table>
             <table align="center">
-                <caption>Metrics information</caption>
+                <caption>{{ _("Metrics information") }}</caption>
                 <tr class="table__header">
-                    <th>Metric</th>
-                    <th>Value, %</th>
+                    <th>{{ _("Metric") }}</th>
+                    <th>{{ _("Value") }}, %</th>
                 </tr>
                 <tr class="table__row">
-                    <td>Jaccard Coefficient</td>
+                    <td>{{ _("Jaccard Coefficient") }}</td>
                     <td>{{ round(cmp_res.fast.jakkar * 100, 2) }}</td>
                 </tr>
                 <tr class="table__row">
-                    <td>Similarity of operators</td>
+                    <td>{{ _("Similarity of operators") }}</td>
                     <td>{{ round(cmp_res.fast.operators * 100, 2) }}</td>
                 </tr>
                 <tr class="table__row">
-                    <td>Similarity of keywords</td>
+                    <td>{{ _("Similarity of keywords") }}</td>
                     <td>{{ round(cmp_res.fast.keywords * 100, 2) }}</td>
                 </tr>
                 <tr class="table__row">
-                    <td>Similarity of literals</td>
+                    <td>{{ _("Similarity of literals") }}</td>
                     <td>{{ round(cmp_res.fast.literals * 100, 2) }}</td>
                 </tr class="table__row">
-                    <td>Weighted average by fast metrics</td>
+                    <td>{{ _("Weighted average by fast metrics") }}</td>
                     <td>{{ round(cmp_res.fast.weighted_average * 100, 2) }}</td>
                 <tr class="table__row">
-                    <td>Similarity of structures</td>
+                    <td>{{ _("Similarity of structures") }}</td>
                     <td>{{ round(cmp_res.structure.similarity * 100, 2) }}</td>
                 <tr>
             </table>
             <div align="center">
             <table align="center" style="display: inline-table;">
-                <caption>Similar parts of the second program relative to the first</caption>
+                <caption>{{ _("Similar parts of the second program relative to the first") }}</caption>
                 <tr class="table__header">
-                    <th>Part of the first program</th>
-                    <th>Part of the second program</th>
-                    <th>Similarity, %</th>
+                    <th>{{ _("Part of the first program") }}</th>
+                    <th>{{ _("Part of the second program") }}</th>
+                    <th>{{ _("Similarity") }}, %</th>
                 </tr>
                 {% for first_head in same_parts_of_second %}
                 {% set second_head = same_parts_of_second[first_head][0].name %}
@@ -119,11 +119,11 @@
                 {% endfor %}
             </table>
             <table align="center" style="display: inline-table;">
-                <caption>Similar parts of the first program relative to the second</caption>
+                <caption>{{ _("Similar parts of the first program relative to the second") }}</caption>
                 <tr class="table__header">
-                    <th>Part of the second program</th>
-                    <th>Part of the first program</th>
-                    <th>Similarity, %</th>
+                    <th>{{ _("Part of the second program") }}</th>
+                    <th>{{ _("Part of the first program") }}</th>
+                    <th>{{ _("Similarity") }}, %</th>
                 </tr>
                 {% for first_head in same_parts_of_first %}
                 {% set second_head = same_parts_of_first[first_head][0].name %}

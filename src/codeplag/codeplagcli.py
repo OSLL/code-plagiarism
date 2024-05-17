@@ -1,35 +1,38 @@
-"""
-This module consist the CLI of the codeplag util and
+"""This module consist the CLI of the codeplag util and
 necessary internal classes for it.
 """
 
+from __future__ import annotations
+
 import argparse
 from pathlib import Path
-from typing import List, Optional
 
 from webparsers.types import GitHubContentUrl
 
 from codeplag.consts import (
-    DEFAULT_GENERAL_REPORT_NAME,
+    DEFAULT_MODE,
+    DEFAULT_REPORT_TYPE,
     EXTENSION_CHOICE,
     LANGUAGE_CHOICE,
     MODE_CHOICE,
+    REPORT_TYPE_CHOICE,
     REPORTS_EXTENSION_CHOICE,
     UTIL_NAME,
     UTIL_VERSION,
     WORKERS_CHOICE,
 )
+from codeplag.types import Settings
 
 
 class CheckUniqueStore(argparse.Action):
-    """Checks that the list of arguments contains no duplicates, then stores"""
+    """Checks that the list of arguments contains no duplicates, then stores."""
 
     def __call__(
         self,
         _parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
-        values: List[str],
-        _option_string: Optional[str] = None,
+        values: list[str],
+        _option_string: str | None = None,
     ):
         if len(values) > len(set(values)):
             raise argparse.ArgumentError(
@@ -178,15 +181,19 @@ class CodeplagCLI(argparse.ArgumentParser):
             "The 'many_to_many' mode may require more free memory.",
             type=str,
             choices=MODE_CHOICE,
-            default="many_to_many",
+            default=DEFAULT_MODE,
         )
         check.add_argument(
             "-pe",
             "--path-regexp",
-            # TODO: Check that it used with listed below options
             help="A regular expression for filtering checked works by name. "
             "Used with options 'directories', 'github-user' and 'github-project-folders'.",
             type=str,
+        )
+        check.add_argument(
+            "--ignore-threshold",
+            action="store_true",
+            help="Ignore the threshold when checking of works.",
         )
 
         check_required = check.add_argument_group("required options")
@@ -223,7 +230,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             default=[],
         )
         check_github.add_argument(
-            "-gu", "--github-user", type=str, help="GitHub organisation/user name."
+            "-gu", "--github-user", type=str, help="GitHub organization/user name."
         )
         check_github.add_argument(
             "-gp",
@@ -258,11 +265,18 @@ class CodeplagCLI(argparse.ArgumentParser):
         report_create.add_argument(
             "-p",
             "--path",
-            help="Path to save generated general report. "
-            "If it's directory, than creates file in it with "
-            f"name '{DEFAULT_GENERAL_REPORT_NAME}'.",
+            help="Path to save generated report. "
+            "If it's a directory, then create a file in it.",
             required=True,
             type=Path,
+        )
+        report_create.add_argument(
+            "-t",
+            "--type",
+            help="Type of the created report file.",
+            type=str,
+            choices=REPORT_TYPE_CHOICE,
+            default=DEFAULT_REPORT_TYPE,
         )
 
     def __init__(self):
@@ -296,3 +310,43 @@ class CodeplagCLI(argparse.ArgumentParser):
         self.__add_settings_path(subparsers)
         self.__add_check_path(subparsers)
         self.__add_report_path(subparsers)
+
+    def validate_args(self, parsed_args: argparse.Namespace) -> None:
+        parsed_args_dict = vars(parsed_args)
+        root = parsed_args_dict.get("root")
+        if root is None:
+            self.error(
+                "No command is provided; please choose one from the available (--help)."
+            )
+        command = parsed_args_dict.get(root)
+        if (
+            root == "settings"
+            and command == "modify"
+            and not any(
+                key in Settings.__annotations__
+                for key in parsed_args_dict
+                if parsed_args_dict.get(key) is not None
+            )
+        ):
+            self.error(
+                "There is nothing to modify; please provide at least one argument."
+            )
+        elif root == "check":
+            if parsed_args.repo_regexp and not parsed_args.github_user:
+                self.error(
+                    "The'repo-regexp' option requires the provided 'github-user' option."
+                )
+            elif parsed_args.path_regexp and not (
+                parsed_args.directories
+                or parsed_args.github_user
+                or parsed_args.github_project_folders
+            ):
+                self.error(
+                    "The'path-regexp' option requires the provided 'directories', "
+                    "'github-user', or 'github-project-folder' options."
+                )
+
+    def parse_args(self, args: list[str] | None = None) -> argparse.Namespace:
+        parsed_args = super(CodeplagCLI, self).parse_args(args)
+        self.validate_args(parsed_args)
+        return parsed_args

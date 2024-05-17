@@ -9,6 +9,7 @@ from codeplag.types import (
     Language,
     Mode,
     ReportsExtension,
+    ReportType,
     Threshold,
 )
 
@@ -19,10 +20,10 @@ UTIL_VERSION: Final[str] = "@UTIL_VERSION@"
 CONFIG_PATH: Final[Path] = Path("@CONFIG_PATH@")
 FILE_DOWNLOAD_PATH: Final[Path] = Path(f"/tmp/{UTIL_NAME}_download.out")
 LOG_PATH: Final[Path] = Path("@CODEPLAG_LOG_PATH@")
-TEMPLATE_PATH: Final[Dict[Language, Path]] = {
-    "ru": Path("@LIB_PATH@/report_ru.templ"),
-    "en": Path("@LIB_PATH@/report_en.templ"),
-}
+LIB_PATH: Final[Path] = Path("@LIB_PATH@")
+GENERAL_TEMPLATE_PATH: Final[Path] = LIB_PATH / "general.templ"
+SOURCES_TEMPLATE_PATH: Final[Path] = LIB_PATH / "sources.templ"
+TRANSLATIONS_PATH: Final[Path] = LIB_PATH / "translations"
 # =====
 
 # Default values
@@ -31,8 +32,10 @@ DEFAULT_WEIGHTS: Final[Tuple[float, float, float, float]] = (1.0, 0.4, 0.4, 0.4)
 DEFAULT_LANGUAGE: Final[Language] = "en"
 DEFAULT_REPORT_EXTENSION: Final[ReportsExtension] = "csv"
 DEFAULT_GENERAL_REPORT_NAME: Final[str] = "report.html"
+DEFAULT_SOURCES_REPORT_NAME: Final[str] = "sources.html"
 DEFAULT_WORKERS: Final[int] = os.cpu_count() or 1
 DEFAULT_MODE: Final[Mode] = "many_to_many"
+DEFAULT_REPORT_TYPE: Final[ReportType] = "general"
 # =============
 
 GET_FRAZE: Final[str] = "Getting works features from"
@@ -65,6 +68,7 @@ REPORTS_EXTENSION_CHOICE: Final[Tuple[ReportsExtension, ...]] = get_args(
 EXTENSION_CHOICE: Final[Tuple[Extension, ...]] = get_args(Extension)
 LANGUAGE_CHOICE: Final[Tuple[Language, ...]] = get_args(Language)
 WORKERS_CHOICE: Final[List[int]] = list(range(1, DEFAULT_WORKERS + 1))
+REPORT_TYPE_CHOICE: Final[Tuple[ReportType, ...]] = get_args(ReportType)
 # =======
 
 ALL_EXTENSIONS: Final[Tuple[re.Pattern]] = (re.compile(r"\..*$"),)

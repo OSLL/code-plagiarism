@@ -164,12 +164,13 @@ def print_compare_result(
     """Prints the pretty result of comparing two files.
 
     Args:
+    ----
         features1: The features of the first  source file.
         features2: The features of the second  source file.
         compare_info: The compare metrics of two works.
         threshold: Threshold of plagiarism searcher alarm.
-    """
 
+    """
     clear_line()
     print("+" * CHARS_CNT)
     if features1.modify_date is not None and features2.modify_date is not None:

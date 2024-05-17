@@ -127,7 +127,6 @@ def plot_and_save_result(
         mean_times.append(summ / count)
 
     plt.figure(figsize=(12, 12), dpi=80)
-    # plt.plot(unique_count_lines, mean_times, label='Среднее')
 
     if trend == "linear":
         z = np.polyfit(unique_count_lines, mean_times, 1)
