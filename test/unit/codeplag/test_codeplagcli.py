@@ -1,7 +1,15 @@
 import argparse
+import builtins
 
 import pytest
 from codeplag.codeplagcli import CodeplagCLI, DirPath, FilePath
+
+
+@pytest.fixture(scope="module", autouse=True)
+def setup():
+    builtins.__dict__["_"] = str
+
+    yield
 
 
 @pytest.mark.parametrize(

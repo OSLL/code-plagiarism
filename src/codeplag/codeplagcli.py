@@ -5,6 +5,7 @@ necessary internal classes for it.
 from __future__ import annotations
 
 import argparse
+import builtins
 from pathlib import Path
 
 from webparsers.types import GitHubContentUrl
@@ -23,6 +24,9 @@ from codeplag.consts import (
 )
 from codeplag.types import Settings
 
+# FIXME: dirty hook for using logic without translations
+builtins.__dict__["_"] = builtins.__dict__.get("_", str)
+
 
 class CheckUniqueStore(argparse.Action):
     """Checks that the list of arguments contains no duplicates, then stores."""
@@ -37,8 +41,10 @@ class CheckUniqueStore(argparse.Action):
         if len(values) > len(set(values)):
             raise argparse.ArgumentError(
                 self,
-                "You cannot specify the same value multiple times. "
-                f"You provided {values}",
+                _(
+                    "You cannot specify the same value multiple times. "
+                    "You provided '{values}'."
+                ).format(values=values),
             )
         setattr(namespace, self.dest, values)
 
@@ -52,7 +58,7 @@ class DirPath(Path):
         path = Path(*args, **kwargs)
         if not path.is_dir():
             raise argparse.ArgumentTypeError(
-                f"Directory '{path}' not found or not a directory."
+                _("Directory '{path}' not found or not a directory.").format(path=path)
             )
 
         return Path.__new__(Path, *args, **kwargs)
@@ -66,7 +72,9 @@ class FilePath(Path):
     def __new__(cls, *args, **kwargs):
         path = Path(*args, **kwargs)
         if not path.is_file():
-            raise argparse.ArgumentTypeError(f"File '{path}' not found or not a file.")
+            raise argparse.ArgumentTypeError(
+                _("File '{path}' not found or not a file.").format(path=path)
+            )
 
         return Path.__new__(Path, *args, **kwargs)
 
@@ -77,11 +85,15 @@ class CodeplagCLI(argparse.ArgumentParser):
     def __add_settings_path(self, subparsers: argparse._SubParsersAction) -> None:
         settings = subparsers.add_parser(
             "settings",
-            help=f"Modifies and shows static settings of the '{UTIL_NAME}' util.",
+            help=_(
+                "Modifies and shows static settings of the '{util_name}' util."
+            ).format(util_name=UTIL_NAME),
         )
 
         settings_commands = settings.add_subparsers(
-            help=f"Settings commands of the '{UTIL_NAME}' util.",
+            help=_("Settings commands of the '{util_name}' util.").format(
+                util_name=UTIL_NAME
+            ),
             required=True,
             metavar="COMMAND",
             dest="settings",
@@ -90,44 +102,49 @@ class CodeplagCLI(argparse.ArgumentParser):
         # settings modify
         settings_modify = settings_commands.add_parser(
             "modify",
-            help=f"Manage the '{UTIL_NAME}' util settings.",
+            help=_("Manage the '{util_name}' util settings.").format(
+                util_name=UTIL_NAME
+            ),
         )
         settings_modify.add_argument(
             "-env",
             "--environment",
-            help="Path to the environment file with GitHub access token.",
+            help=_("Path to the environment file with GitHub access token."),
             type=FilePath,
         )
         settings_modify.add_argument(
             "-r",
             "--reports",
-            help="If defined, then saves reports about suspect works "
-            "into provided path.",
+            help=_(
+                "If defined, then saves reports about suspect works into provided path."
+            ),
             metavar="DIRECTORY",
             type=DirPath,
         )
         settings_modify.add_argument(
             "-re",
             "--reports_extension",
-            help="Extension of saved report files.",
+            help=_("Extension of saved report files."),
             type=str,
             choices=REPORTS_EXTENSION_CHOICE,
         )
         settings_modify.add_argument(
             "-sp",
             "--show_progress",
-            help="Show progress of searching plagiarism.",
+            help=_("Show progress of searching plagiarism."),
             type=int,
             choices=[0, 1],
         )
         settings_modify.add_argument(
             "-t",
             "--threshold",
-            help="Threshold of analyzer which classifies two work as same. "
-            "If this number is too large, such as 99, "
-            "then completely matching jobs will be found. "
-            "Otherwise, if this number is small, such as 50, "
-            "then all work with minimal similarity will be found.",
+            help=_(
+                "Threshold of analyzer which classifies two work as same. "
+                "If this number is too large, such as 99, "
+                "then completely matching jobs will be found. "
+                "Otherwise, if this number is small, such as 50, "
+                "then all work with minimal similarity will be found."
+            ),
             type=int,
             choices=range(50, 100),
             metavar="{50, 51, ..., 99}",
@@ -135,14 +152,16 @@ class CodeplagCLI(argparse.ArgumentParser):
         settings_modify.add_argument(
             "-l",
             "--language",
-            help="The language of help messages, generated reports, errors.",
+            help=_("The language of help messages, generated reports, errors."),
             type=str,
             choices=LANGUAGE_CHOICE,
         )
         settings_modify.add_argument(
             "-w",
             "--workers",
-            help="The maximum number of processes that can be used to compare works.",
+            help=_(
+                "The maximum number of processes that can be used to compare works."
+            ),
             type=int,
             choices=WORKERS_CHOICE,
         )
@@ -150,17 +169,19 @@ class CodeplagCLI(argparse.ArgumentParser):
         # settings show
         settings_commands.add_parser(
             "show",
-            help=f"Show the '{UTIL_NAME}' util settings.",
+            help=_("Show the '{util_name}' util settings.").format(util_name=UTIL_NAME),
         )
 
     def __add_check_path(self, subparsers: argparse._SubParsersAction) -> None:
-        check = subparsers.add_parser("check", help="Start searching similar works.")
+        check = subparsers.add_parser("check", help=_("Start searching similar works."))
         check.add_argument(
             "-d",
             "--directories",
             metavar="DIRECTORY",
             type=DirPath,
-            help="Absolute or relative path to a local directories with project files.",
+            help=_(
+                "Absolute or relative path to a local directories with project files."
+            ),
             nargs="+",
             action=CheckUniqueStore,
             default=[],
@@ -170,15 +191,17 @@ class CodeplagCLI(argparse.ArgumentParser):
             "--files",
             metavar="FILE",
             type=FilePath,
-            help="Absolute or relative path to files on a computer.",
+            help=_("Absolute or relative path to files on a computer."),
             nargs="+",
             action=CheckUniqueStore,
             default=[],
         )
         check.add_argument(
             "--mode",
-            help="Choose one of the following modes of searching plagiarism. "
-            "The 'many_to_many' mode may require more free memory.",
+            help=_(
+                "Choose one of the following modes of searching plagiarism. "
+                "The 'many_to_many' mode may require more free memory."
+            ),
             type=str,
             choices=MODE_CHOICE,
             default=DEFAULT_MODE,
@@ -186,21 +209,23 @@ class CodeplagCLI(argparse.ArgumentParser):
         check.add_argument(
             "-pe",
             "--path-regexp",
-            help="A regular expression for filtering checked works by name. "
-            "Used with options 'directories', 'github-user' and 'github-project-folders'.",
+            help=_(
+                "A regular expression for filtering checked works by name. "
+                "Used with options 'directories', 'github-user' and 'github-project-folders'."
+            ),
             type=str,
         )
         check.add_argument(
             "--ignore-threshold",
             action="store_true",
-            help="Ignore the threshold when checking of works.",
+            help=_("Ignore the threshold when checking of works."),
         )
 
         check_required = check.add_argument_group("required options")
         check_required.add_argument(
             "-ext",
             "--extension",
-            help="Extension responsible for the analyzed programming language.",
+            help=_("Extension responsible for the analyzed programming language."),
             type=str,
             choices=EXTENSION_CHOICE,
             required=True,
@@ -210,34 +235,34 @@ class CodeplagCLI(argparse.ArgumentParser):
         check_github.add_argument(
             "-ab",
             "--all-branches",
-            help="Searching in all branches.",
+            help=_("Searching in all branches."),
             action="store_true",
         )
         check_github.add_argument(
             "-re",
             "--repo-regexp",
             type=str,
-            help="A regular expression to filter searching repositories on GitHub.",
+            help=_("A regular expression to filter searching repositories on GitHub."),
         )
         check_github.add_argument(
             "-gf",
             "--github-files",
             metavar="GITHUB_FILE",
             type=GitHubContentUrl,
-            help="URL to file in a GitHub repository.",
+            help=_("URL to file in a GitHub repository."),
             nargs="+",
             action=CheckUniqueStore,
             default=[],
         )
         check_github.add_argument(
-            "-gu", "--github-user", type=str, help="GitHub organization/user name."
+            "-gu", "--github-user", type=str, help=_("GitHub organization/user name.")
         )
         check_github.add_argument(
             "-gp",
             "--github-project-folders",
             metavar="GITHUB_PROJECT_FOLDER",
             type=GitHubContentUrl,
-            help="URL to a GitHub project folder.",
+            help=_("URL to a GitHub project folder."),
             nargs="+",
             action=CheckUniqueStore,
             default=[],
@@ -246,12 +271,18 @@ class CodeplagCLI(argparse.ArgumentParser):
     def __add_report_path(self, subparsers: argparse._SubParsersAction) -> None:
         report = subparsers.add_parser(
             "report",
-            help=f"Handling generated by the {UTIL_NAME} reports as creating html "
-            "report file or show it on console.",
+            help=_(
+                _(
+                    "Handling generated by the {util_name} reports as "
+                    "creating html report file or show it on console."
+                ).format(util_name=UTIL_NAME)
+            ),
         )
 
         report_commands = report.add_subparsers(
-            help=f"Report commands of the '{UTIL_NAME}' util.",
+            help=_("Report commands of the '{util_name}' util.").format(
+                util_name={UTIL_NAME}
+            ),
             required=True,
             metavar="COMMAND",
             dest="report",
@@ -260,20 +291,22 @@ class CodeplagCLI(argparse.ArgumentParser):
         # report create
         report_create = report_commands.add_parser(
             "create",
-            help="Generate general report from created some time ago report files.",
+            help=_("Generate general report from created some time ago report files."),
         )
         report_create.add_argument(
             "-p",
             "--path",
-            help="Path to save generated report. "
-            "If it's a directory, then create a file in it.",
+            help=_(
+                "Path to save generated report. "
+                "If it's a directory, then create a file in it."
+            ),
             required=True,
             type=Path,
         )
         report_create.add_argument(
             "-t",
             "--type",
-            help="Type of the created report file.",
+            help=_("Type of the created report file."),
             type=str,
             choices=REPORT_TYPE_CHOICE,
             default=DEFAULT_REPORT_TYPE,
@@ -283,24 +316,26 @@ class CodeplagCLI(argparse.ArgumentParser):
         super(CodeplagCLI, self).__init__(
             prog=UTIL_NAME,
             formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-            description="Program help to find similar parts of source "
-            "codes for the different languages.",
+            description=_(
+                "Program help to find similar parts of source "
+                "codes for the different languages."
+            ),
         )
         self.add_argument(
             "-v",
             "--version",
-            help="Print current version number and exit.",
+            help=_("Print current version number and exit."),
             action="version",
             version=f"{UTIL_NAME} {UTIL_VERSION}",
         )
         self.add_argument(
             "--verbose",
-            help="Show debug messages.",
+            help=_("Show debug messages."),
             action="store_true",
         )
 
         subparsers = self.add_subparsers(
-            help="Commands help.",
+            help=_("Commands help."),
             parser_class=argparse.ArgumentParser,
             required=True,
             metavar="COMMAND",
@@ -316,7 +351,9 @@ class CodeplagCLI(argparse.ArgumentParser):
         root = parsed_args_dict.get("root")
         if root is None:
             self.error(
-                "No command is provided; please choose one from the available (--help)."
+                _(
+                    "No command is provided; please choose one from the available (--help)."
+                )
             )
         command = parsed_args_dict.get(root)
         if (
@@ -329,12 +366,14 @@ class CodeplagCLI(argparse.ArgumentParser):
             )
         ):
             self.error(
-                "There is nothing to modify; please provide at least one argument."
+                _("There is nothing to modify; please provide at least one argument.")
             )
         elif root == "check":
             if parsed_args.repo_regexp and not parsed_args.github_user:
                 self.error(
-                    "The'repo-regexp' option requires the provided 'github-user' option."
+                    _(
+                        "The'repo-regexp' option requires the provided 'github-user' option."
+                    )
                 )
             elif parsed_args.path_regexp and not (
                 parsed_args.directories
@@ -342,8 +381,10 @@ class CodeplagCLI(argparse.ArgumentParser):
                 or parsed_args.github_project_folders
             ):
                 self.error(
-                    "The'path-regexp' option requires the provided 'directories', "
-                    "'github-user', or 'github-project-folder' options."
+                    _(
+                        "The'path-regexp' option requires the provided 'directories', "
+                        "'github-user', or 'github-project-folder' options."
+                    )
                 )
 
     def parse_args(self, args: list[str] | None = None) -> argparse.Namespace:

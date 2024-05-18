@@ -5,6 +5,7 @@ requires-python = ">=3.8"
 max-line-length = 97
 
 [tool.ruff]
+builtins = ["_"]
 line-length = 97
 lint.select = [
     "D", # pydocstyle
