@@ -2,6 +2,7 @@ FROM @BASE_DOCKER_TAG@
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+RUN apt-get update
 RUN apt-get install -y debhelper
 RUN pip3 install pytest==7.4.0 pytest-mock==3.11.1 @PYTHON_BUILD_LIBS@
 RUN mkdir -p @LOGS_PATH@
