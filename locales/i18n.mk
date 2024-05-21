@@ -6,6 +6,8 @@ translate-extract:
 		--keywords _ \
 		--version ${UTIL_VERSION} \
 		--project ${UTIL_NAME} \
+		--charset "utf-8" \
+		--last-translator "Artyom Semidolin" \
 		--output-file ${LOCALES_DIR}/${UTIL_NAME}.pot .
 
 translate-update: translate-extract
@@ -28,3 +30,12 @@ translate-init:
 		echo "You should provide the 'LANGUAGE' variable for initializing translation."; \
 		exit 1; \
 	fi
+
+help-translate:
+	@echo "Translate:"
+	@echo "  transalte-extract      Extracts all lines that need to be translated;"
+	@echo "  transalte-update       Updates all po files with new code changes;"
+	@echo "  transalte-compile      Compile message catalogs to MO files;"
+	@echo "  transalte-init         Initializing a new language for translation."
+	@echo "      LANGUAGE=..."
+	@echo

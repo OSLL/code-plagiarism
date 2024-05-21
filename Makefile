@@ -171,7 +171,9 @@ reinstall: uninstall install
 todo-list: clean-all
 	@grep --color=auto -r -n 'TODO' ./* --exclude=Makefile --exclude-dir=docs
 
-help:
+help: help-general help-translate
+
+help-general:
 	@echo "Usage:"
 	@echo "  make [targets] [arguments]"
 	@echo
