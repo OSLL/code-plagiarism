@@ -7,6 +7,7 @@ translate-extract:
 		--version ${UTIL_VERSION} \
 		--project ${UTIL_NAME} \
 		--charset "utf-8" \
+		--copyright-holder "Codeplag Development Team" \
 		--last-translator "Artyom Semidolin" \
 		--output-file ${LOCALES_DIR}/${UTIL_NAME}.pot .
 
@@ -14,6 +15,7 @@ translate-update: translate-extract
 	pybabel update --input-file ${LOCALES_DIR}/${UTIL_NAME}.pot \
 		--update-header-comment \
 		--domain ${UTIL_NAME} \
+		--ignore-pot-creation-date \
 		--output-dir ${LOCALES_DIR}/translations
 
 translate-compile:
@@ -33,9 +35,9 @@ translate-init:
 
 help-translate:
 	@echo "Translate:"
-	@echo "  transalte-extract      Extracts all lines that need to be translated;"
-	@echo "  transalte-update       Updates all po files with new code changes;"
-	@echo "  transalte-compile      Compile message catalogs to MO files;"
-	@echo "  transalte-init         Initializing a new language for translation."
+	@echo "  translate-extract      Extracts all lines that need to be translated;"
+	@echo "  translate-update       Updates all po files with new code changes;"
+	@echo "  translate-compile      Compile message catalogs to MO files;"
+	@echo "  translate-init         Initializing a new language for translation."
 	@echo "      LANGUAGE=..."
 	@echo

@@ -82,7 +82,7 @@ man: substitute-sources
 					 --url "https://github.com/OSLL/code-plagiarism" \
 					 --output man/$(UTIL_NAME).1
 
-install: substitute-sources man translate-update translate-compile
+install: substitute-sources man translate-compile
 	python3 -m pip install --root=/$(DESTDIR) .
 
 	@echo "Cleaning unnecessary files after Cython compilation"

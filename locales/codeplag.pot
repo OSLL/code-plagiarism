@@ -1,5 +1,5 @@
 # Translations template for codeplag.
-# Copyright (C) 2024 ORGANIZATION
+# Copyright (C) 2024 Codeplag Development Team
 # This file is distributed under the same license as the codeplag project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
 #
@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: codeplag 0.4.5\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-05-21 09:28+0300\n"
+"POT-Creation-Date: 2024-05-22 23:10+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Artyom Semidolin\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"

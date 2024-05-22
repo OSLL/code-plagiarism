@@ -1,7 +1,7 @@
 # Russian translations for codeplag.
-# Copyright (C) 2024 ORGANIZATION
+# Copyright (C) 2024 Codeplag Development Team
 # This file is distributed under the same license as the codeplag project.
-# Artyom Semidolin, 2024.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
 #
 msgid ""
 msgstr ""
@@ -323,3 +323,4 @@ msgstr "Часть проверяемого файла"
 #: src/templates/sources.templ:59
 msgid "Part of a similar file"
 msgstr "Часть схожего файла"
+
