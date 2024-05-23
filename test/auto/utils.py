@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any, List, Literal, Optional, Union
 
 from codeplag.consts import UTIL_NAME
-from codeplag.types import Flag, Language, ReportsExtension, Threshold
+from codeplag.types import Flag, Language, ReportsExtension, ReportType, Threshold
 
 
 class CmdResult:
@@ -38,8 +38,10 @@ def run_check(cmd: List[str], extension: str = "py", verbose: bool = True) -> Cm
     return run_util(["--extension", extension] + cmd, root="check", verbose=verbose)
 
 
-def create_report(path: Path) -> CmdResult:
-    return run_util(["create", "--path", str(path)], root="report")
+def create_report(path: Path, report_type: ReportType) -> CmdResult:
+    return run_util(
+        ["create", "--path", str(path), "--type", report_type], root="report"
+    )
 
 
 def modify_settings(

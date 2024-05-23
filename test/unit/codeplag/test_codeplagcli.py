@@ -24,7 +24,7 @@ def test_dir_path(path, out):
     assert DirPath(path).__str__() == out
 
 
-@pytest.mark.parametrize("path", [("bad_dirpath"), ("Makefile")])
+@pytest.mark.parametrize("path", ["bad_dirpath", "Makefile"])
 def test_dir_path_bad(path):
     with pytest.raises(argparse.ArgumentTypeError):
         DirPath(path)
