@@ -69,9 +69,12 @@ def html_report_create(report_path: Path, report_type: ReportType) -> Literal[0,
         create_report_function = _create_report
     else:
         create_report_function = _create_sources_report
+    environment = jinja2.Environment(extensions=["jinja2.ext.i18n"])
+    environment.install_gettext_translations(get_translations())  # type: ignore
     create_report_function(
         reports_path / CSV_REPORT_FILENAME,
         report_path,
+        environment,
         settings_config["threshold"],
         settings_config["language"],
     )
@@ -229,11 +232,10 @@ def _search_sources(
 def _create_report(
     df_path: Path,
     save_path: Path,
+    environment: jinja2.Environment,
     threshold: int = DEFAULT_THRESHOLD,
     language: Language = DEFAULT_LANGUAGE,
 ):
-    environment = jinja2.Environment(extensions=["jinja2.ext.i18n"])
-    environment.install_gettext_translations(get_translations())  # type: ignore
     template = environment.from_string(GENERAL_TEMPLATE_PATH.read_text())
     if save_path.is_dir():
         save_path = save_path / DEFAULT_GENERAL_REPORT_NAME
@@ -252,12 +254,11 @@ def _create_report(
 def _create_sources_report(
     df_path: Path,
     save_path: Path,
+    environment: jinja2.Environment,
     threshold: int = DEFAULT_THRESHOLD,
     language: Language = DEFAULT_LANGUAGE,
 ) -> None:
     data = _search_sources(read_df(df_path), threshold)
-    environment = jinja2.Environment(extensions=["jinja2.ext.i18n"])
-    environment.install_gettext_translations(get_translations())  # type: ignore
     template = environment.from_string(SOURCES_TEMPLATE_PATH.read_text())
     if save_path.is_dir():
         save_path = save_path / DEFAULT_SOURCES_REPORT_NAME
