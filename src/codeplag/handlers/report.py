@@ -46,7 +46,7 @@ def html_report_create(report_path: Path, report_type: ReportType) -> Literal[0,
 
     Example usage:
         >>> from pathlib import Path
-        >>> html_report_create(Path('/path/to/report'))
+        >>> html_report_create(Path('/path/to/report'), 'general')
         0
 
     """
