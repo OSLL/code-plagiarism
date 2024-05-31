@@ -1,4 +1,4 @@
-"""Token based algorithms for getting more information about two sequences
+"""Token based algorithms for getting more information about two sequences.
 
 This module provides obtaining N-grams, fingerprints from a sequence of tokens,
 a quantitative assessment of the similarity of two sequences of tokens.
@@ -52,12 +52,13 @@ def generate_ngrams(
     of ngrams and may use to generate shingles.
 
     Args:
+    ----
         tokens - list of tokens
         n - count of elements in ngrams
         hashit - If is True, then the function returns a list or set of hashes of N-grams
         unique - If is True, then the function returns a set of N-grams or hashes of N-grams
-    """
 
+    """
     count_tokens = len(tokens)
     if hashit:
         if unique:
@@ -74,12 +75,14 @@ def get_imprints_from_hashes(hashes: Sequence[int]) -> List[int]:
     """The function return imprints of the given hashes.
 
     Args:
+    ----
         hashes - list of hashes
 
-    Return:
+    Returns:
+    -------
         List of each k element in hashes, where k equal log(len(hashes))
-    """
 
+    """
     count_hashes = len(hashes)
     k = math.floor(math.log(count_hashes, 2))
 
@@ -92,8 +95,10 @@ def value_jakkar_coef(
     """The function returns the value of the Jakkar coefficient.
 
     Args:
+    ----
         tokens_first - list of tokens of the first program
         tokens_second - list of tokens of the second program
+
     """
     ngrams_first: Set[Tuple[int, ...]] = generate_ngrams(
         tokens_first, ngrams_length, hashit=False, unique=True
@@ -117,8 +122,10 @@ def lcs(X: Sequence[int], Y: Sequence[int]) -> int:
     of two sequences X and Y.
 
     Args:
+    ----
         X - list of tokens of the first program
         Y - list of tokens of the second program
+
     """
     m = len(X)
     n = len(Y)
@@ -147,10 +154,11 @@ def lcs_based_coeff(subseq1: Sequence[int], subseq2: Sequence[int]) -> float:
     common subsequence. This coefficient describes how same two sequences.
 
     Args:
+    ----
         subseq1 - the first sequence
         subseq2 - the second sequnce
-    """
 
+    """
     count_elem1 = len(subseq1)
     count_elem2 = len(subseq2)
 

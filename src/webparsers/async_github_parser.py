@@ -27,6 +27,7 @@ class AsyncGithubParser:
     """Asynchronous parser which works with GitHub REST API.
 
     Example:
+    -------
         >>> import asyncio
         >>> async def request():
         ...     async with aiohttp.ClientSession() as session:
@@ -42,6 +43,7 @@ class AsyncGithubParser:
         ...         ...
         ...
         >>> asynio.run(loop())
+
     """
 
     USER_INFO = "/users/{username}"

@@ -129,7 +129,7 @@ class JSONReporter(AbstractReporter):
 
 
 def read_df(path: Path) -> pd.DataFrame:
-    return pd.read_csv(path, sep=";", index_col=0, dtype=object)
+    return pd.read_csv(path, sep=";", index_col=0, dtype=object)  # type: ignore
 
 
 def serialize_compare_result(

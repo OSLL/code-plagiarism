@@ -9,12 +9,13 @@ def counter_metric(counter1: Mapping[str, int], counter2: Mapping[str, int]) -> 
     """Return how same operators or keywords or literals in two trees.
 
     Args:
+    ----
         counter1 - dict object with counts of operators or keywords
           or literals
         counter2 - dict object with counts of operators or keywords
           or literals
-    """
 
+    """
     if len(counter1) == 0 and len(counter2) == 0:
         return 1.0
 
@@ -40,10 +41,11 @@ def op_shift_metric(ops1: List[str], ops2: List[str]) -> Tuple[int, float]:
     """Return the maximum value of the operator match and the shift under this condition.
 
     Args:
+    ----
         ops1 - sequence of operators of tree1
         ops2 - sequence of operators of tree2
-    """
 
+    """
     count_el_f = len(ops1)
     count_el_s = len(ops2)
     if count_el_f == 0 and count_el_s == 0:
@@ -87,13 +89,14 @@ def get_children_indexes(
     """Return indexes of her children and their count.
 
     Args:
+    ----
         tree - a simple structure of the AST.
         count_of_nodes - count of elements in the tree
 
     Complexity:
         O(len(tree))
-    """
 
+    """
     indexes = []
     count_of_children = 0
     if count_of_nodes == 0:
@@ -112,14 +115,15 @@ def find_max_index(array: np.ndarray) -> np.ndarray:
     """The function for finding index of max element in matrix.
 
     Args:
+    ----
         array - matrix of compliance (np.ndarray object)
 
     Complexity:
         rows = array.shape[0]
         columns = array.shape[1]
         O(rows * columns)
-    """
 
+    """
     maximum = 0
     index = np.array([0, 0], dtype=np.int64)
     for i in np.arange(0, array.shape[0], 1):
@@ -139,12 +143,14 @@ def matrix_value(array: np.ndarray) -> Tuple[list, list]:
     """The function returns the value of the similarity of nodes from the compliance matrix.
 
     Args:
+    ----
         array - matrix of compliance (np.ndarray object)
 
     Complexity:
         rows = array.shape[0]
         columns = array.shpe[1]
         O(min(rows, columns) * rows * columns)
+
     """
     same_struct_metric = [1, 1]
     minimal = min(array.shape[0], array.shape[1])
@@ -175,6 +181,7 @@ def add_not_counted(
     """The function return the count of nodes that didn't account in the previous step.
 
     Args:
+    ----
         tree - part of structure
         count_of_children - count of top-level nodes in the tree
         key_indexes - indexes of top-level nodes in the tree
@@ -183,8 +190,8 @@ def add_not_counted(
 
     Complexity:
         O(count_of_children * len(tree))
-    """
 
+    """
     count = 0
     added = [index[axis] for index in indexes]
     for k in np.arange(0, count_of_children, 1):
@@ -205,10 +212,11 @@ def struct_compare(
     """Function for compare structure of two trees.
 
     Args:
+    ----
         tree1 - a simple structure of the first AST.
         tree2 - a simple structure of the second AST.
-    """
 
+    """
     if matrix is None:
         matrix = np.array([[[]]], dtype=np.int64)
 

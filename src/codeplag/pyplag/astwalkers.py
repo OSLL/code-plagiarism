@@ -55,7 +55,9 @@ class ASTWalker(ast.NodeVisitor):
         and save sequence of operators.
 
         Args:
+        ----
             node - current node
+
         """
         type_name = type(node).__name__
         if type_name in TO_TOKEN:
@@ -103,7 +105,9 @@ class Visitor(ast.NodeVisitor):
         """Function for traverse tree and print it in console.
 
         Args:
+        ----
             node - current node
+
         """
         type_node = type(node).__name__
         if type_node not in IGNORE_NODES:
@@ -126,7 +130,9 @@ class NodeGetter(ast.NodeVisitor):
         """Function for visiting node's children.
 
         Args:
+        ----
             node - current node
+
         """
         if self.depth > 1:
             return
@@ -136,7 +142,9 @@ class NodeGetter(ast.NodeVisitor):
         """Function for traverse and print in console names of all node's children.
 
         Args:
+        ----
             node - current node
+
         """
         type_node = type(node).__name__
         if type_node not in IGNORE_NODES:

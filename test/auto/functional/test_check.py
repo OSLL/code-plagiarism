@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import os
 import re
@@ -69,7 +71,7 @@ def test_check_util_version():
         ),
     ],
 )
-def test_compare_cpp_files(cmd, out):
+def test_compare_cpp_files(cmd: list[str], out: bytes):
     result = run_check(cmd, extension="cpp")
 
     result.assert_success()
@@ -102,11 +104,45 @@ def test_compare_cpp_files(cmd, out):
         ),
     ],
 )
-def test_compare_py_files(cmd, out):
+def test_compare_py_files(cmd: list[str], out: bytes):
     result = run_check(cmd)
 
     result.assert_success()
     assert out in result.cmd_res.stdout
+
+
+@pytest.mark.parametrize(
+    "cmd",
+    [
+        ["--files", *PY_FILES],
+        ["--github-files", *PY_GITHUB_FILES],
+        ["--directories", *PY_DIRS],
+        ["--github-project-folders", PY_GITHUB_DIR],
+    ],
+)
+def test_check_failed_when_repo_regexp_provided_without_required_args(
+    cmd: list[str],
+):
+    result = run_check(cmd + ["--repo-regexp", "something"])
+
+    result.assert_failed()
+    assert result.cmd_res.returncode == 2
+
+
+@pytest.mark.parametrize(
+    "cmd",
+    [
+        ["--files", *PY_FILES],
+        ["--github-files", *PY_GITHUB_FILES],
+    ],
+)
+def test_check_failed_when_path_regexp_provided_without_required_args(
+    cmd: list[str],
+):
+    result = run_check(cmd + ["--path-regexp", "something"])
+
+    result.assert_failed()
+    assert result.cmd_res.returncode == 2
 
 
 def test_save_reports(create_reports_folder: None):

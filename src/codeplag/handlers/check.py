@@ -55,6 +55,7 @@ class WorksComparator:
         settings from the settings config file.
 
         Args:
+        ----
             extension (Extension): The extension of the checked works.
             repo_regexp (Optional[str]): Regular expression for filtering GitHub repositories.
             path_regexp (Optional[str]): Regular expression for filtering local files.
@@ -62,6 +63,7 @@ class WorksComparator:
             set_github_parser (bool): When True sets GithubParser for search in the GitHub.
             all_branches (bool): When True and the `set_github` option was set,
               searches on all branches of the repository.
+
         """
         if extension == "py":
             FeaturesGetter = PyFeaturesGetter
@@ -80,7 +82,7 @@ class WorksComparator:
 
         settings_conf = read_settings_conf()
         self.show_progress: Flag = settings_conf["show_progress"]
-        self.threshold: Threshold = settings_conf["threshold"]
+        self.threshold: Optional[Threshold] = settings_conf["threshold"]
         self.workers: int = settings_conf["workers"]
         reports = settings_conf.get("reports")
         if reports is not None:
@@ -99,9 +101,11 @@ class WorksComparator:
         """Sets a GitHubParser object for getting works information from GitHub.
 
         Args:
+        ----
             all_branches (bool): Searching in all branches.
             environment (Optional[Path], optional): Path to the environment file
               with GitHub access token. Defaults to None.
+
         """
         if not environment:
             logger.warning(
@@ -281,7 +285,7 @@ class WorksComparator:
         if self.reporter and save:
             self.reporter.save_result(work1, work2, metrics)
 
-        if (metrics.structure.similarity * 100) <= self.threshold:
+        if self.threshold and (metrics.structure.similarity * 100) <= self.threshold:
             print_compare_result(work1, work2, metrics)
         else:
             print_compare_result(
@@ -313,6 +317,22 @@ class WorksComparator:
         work2: ASTFeatures,
     ) -> Future:
         return executor.submit(compare_works, work1, work2, self.threshold)
+
+
+class IgnoreThresholdWorksComparator(WorksComparator):
+    def __init__(
+        self,
+        extension: Extension,
+        repo_regexp: Optional[str] = None,
+        path_regexp: Optional[str] = None,
+        mode: Mode = DEFAULT_MODE,
+        set_github_parser: bool = False,
+        all_branches: bool = False,
+    ) -> None:
+        super().__init__(
+            extension, repo_regexp, path_regexp, mode, set_github_parser, all_branches
+        )
+        self.threshold = None
 
 
 def compliance_matrix_to_df(

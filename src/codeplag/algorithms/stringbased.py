@@ -23,7 +23,6 @@ class LevenshteinDistance:
         in the distance atribute minimal count of operations
         needed for converting the first sequence to the second.
         """
-
         for i in range(self.s1_length + 1):
             self.distance_matrix[i][0] = i
         for j in range(self.s2_length + 1):
@@ -44,10 +43,7 @@ class LevenshteinDistance:
         self.distance = self.distance_matrix[self.s1_length][self.s2_length]
 
     def get_similarity_value(self) -> float:
-        """If the distance attribute had been calculated in the calculate
-        method then the function returns similarity of two sequences
-        else returns -1
-        """
+        """The function returns the resulting fraction of similarity between two sequences."""
         if self.distance == -1:
             self.calculate_distance_matrix()
 
@@ -58,11 +54,12 @@ def is_marked_match(marked_string_list: List[int], begin: int, length: int) -> b
     """The function returns true if the match consists in the marked list, else false.
 
     Args:
+    ----
         marked_string_list - list with marked indexes
         begin - start index of match
         length - length of match
-    """
 
+    """
     condition = (
         begin in marked_string_list or (begin + length - 1) in marked_string_list
     )
@@ -76,11 +73,12 @@ def gst(
     """The Greedy String Tiling algorithm.
 
     Args:
+    ----
         sequence1 - the first string/sequence
         sequence2 - the second string/sequence
         min_match_len - minimal searching length of match
-    """
 
+    """
     matches = []
     max_match = min_match_len + 1
     source_marked = []

@@ -20,10 +20,11 @@ def get_cursor_from_file(
     """Returns clang.cindex.Cursor object or None if file is undefined.
 
     Args:
+    ----
         filename - full path to source file
         args - list of arguments for clang.cindex.Index.parse() method
-    """
 
+    """
     if args is None:
         args = COMPILE_ARGS
 

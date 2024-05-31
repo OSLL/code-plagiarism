@@ -1,7 +1,15 @@
 import argparse
+import builtins
 
 import pytest
 from codeplag.codeplagcli import CodeplagCLI, DirPath, FilePath
+
+
+@pytest.fixture(scope="module", autouse=True)
+def setup():
+    builtins.__dict__["_"] = str
+
+    yield
 
 
 @pytest.mark.parametrize(
@@ -16,7 +24,7 @@ def test_dir_path(path, out):
     assert DirPath(path).__str__() == out
 
 
-@pytest.mark.parametrize("path", [("bad_dirpath"), ("Makefile")])
+@pytest.mark.parametrize("path", ["bad_dirpath", "Makefile"])
 def test_dir_path_bad(path):
     with pytest.raises(argparse.ArgumentTypeError):
         DirPath(path)
