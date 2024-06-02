@@ -66,6 +66,7 @@ jobs:
 
       - name: Run autotests
         run: |
+          export $(cat .env | xargs)
           make docker-autotest
 
       - name: Save created deb package

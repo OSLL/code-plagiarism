@@ -30,6 +30,7 @@
         td {
             border: 0.03rem dotted #999;
             vertical-align: top;
+            word-break: break-all;
         }
 
         caption {
@@ -61,9 +62,7 @@
                 </tr>
                     {% for second_work_path, second_same_parts in same_parts_of_other.items() %}
                         <tr class="table__row">
-                        <td rowspan="{{ second_same_parts['cnt_elements'] }}">
-                            <a href="{{ second_work_path }}">{{ Path(second_work_path).name }}</a>
-                        </td>
+                        <td rowspan="{{ second_same_parts['cnt_elements'] }}">{{ second_work_path }}</td>
                         {% for i, function in enumerate(second_same_parts["same_parts"]) %}
                             {% if i > 0 %}
                             <tr class="table__row">
