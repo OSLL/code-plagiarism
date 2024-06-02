@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: codeplag 0.4.5\n"
+"Project-Id-Version: codeplag 0.4.6\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-05-22 23:10+0300\n"
+"POT-Creation-Date: 2024-06-02 20:54+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Artyom Semidolin\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -197,7 +197,7 @@ msgstr ""
 msgid "Check results"
 msgstr ""
 
-#: src/templates/general.templ:44 src/templates/sources.templ:45
+#: src/templates/general.templ:44 src/templates/sources.templ:46
 msgid "General information"
 msgstr ""
 
@@ -262,7 +262,7 @@ msgid "Part of the second program"
 msgstr ""
 
 #: src/templates/general.templ:95 src/templates/general.templ:126
-#: src/templates/sources.templ:60
+#: src/templates/sources.templ:61
 msgid "Similarity"
 msgstr ""
 
@@ -270,27 +270,27 @@ msgstr ""
 msgid "Similar parts of the first program relative to the second"
 msgstr ""
 
-#: src/templates/sources.templ:41
+#: src/templates/sources.templ:42
 msgid "Verification results"
 msgstr ""
 
-#: src/templates/sources.templ:47
+#: src/templates/sources.templ:48
 msgid "The path to the file being checked"
 msgstr ""
 
-#: src/templates/sources.templ:55
+#: src/templates/sources.templ:56
 msgid "Similar parts of the programs"
 msgstr ""
 
-#: src/templates/sources.templ:57
+#: src/templates/sources.templ:58
 msgid "The name of a similar file"
 msgstr ""
 
-#: src/templates/sources.templ:58
+#: src/templates/sources.templ:59
 msgid "Part of the file that is being checked"
 msgstr ""
 
-#: src/templates/sources.templ:59
+#: src/templates/sources.templ:60
 msgid "Part of a similar file"
 msgstr ""
 

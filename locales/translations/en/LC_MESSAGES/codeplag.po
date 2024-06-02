@@ -214,7 +214,7 @@ msgstr "Comparative report"
 msgid "Check results"
 msgstr "Check results"
 
-#: src/templates/general.templ:44 src/templates/sources.templ:45
+#: src/templates/general.templ:44 src/templates/sources.templ:46
 msgid "General information"
 msgstr "General information"
 
@@ -279,7 +279,7 @@ msgid "Part of the second program"
 msgstr "Part of the second program"
 
 #: src/templates/general.templ:95 src/templates/general.templ:126
-#: src/templates/sources.templ:60
+#: src/templates/sources.templ:61
 msgid "Similarity"
 msgstr "Similarity"
 
@@ -287,27 +287,27 @@ msgstr "Similarity"
 msgid "Similar parts of the first program relative to the second"
 msgstr "Similar parts of the first program relative to the second"
 
-#: src/templates/sources.templ:41
+#: src/templates/sources.templ:42
 msgid "Verification results"
 msgstr "Verification results"
 
-#: src/templates/sources.templ:47
+#: src/templates/sources.templ:48
 msgid "The path to the file being checked"
 msgstr "The path to the file being checked"
 
-#: src/templates/sources.templ:55
+#: src/templates/sources.templ:56
 msgid "Similar parts of the programs"
 msgstr "Similar parts of the programs"
 
-#: src/templates/sources.templ:57
+#: src/templates/sources.templ:58
 msgid "The name of a similar file"
 msgstr "The name of a similar file"
 
-#: src/templates/sources.templ:58
+#: src/templates/sources.templ:59
 msgid "Part of the file that is being checked"
 msgstr "Part of the file that is being checked"
 
-#: src/templates/sources.templ:59
+#: src/templates/sources.templ:60
 msgid "Part of a similar file"
 msgstr "Part of a similar file"
 
