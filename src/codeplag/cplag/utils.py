@@ -1,7 +1,7 @@
 import logging
 import os
 from pathlib import Path
-from typing import Final, List, Optional
+from typing import Final
 
 from clang.cindex import Config, Cursor, Index, TranslationUnit
 from webparsers.types import WorkInfo
@@ -19,8 +19,8 @@ Config.set_library_file(LIBCLANG_SO_FILE_PATH)
 
 
 def get_cursor_from_file(
-    filepath: Path, args: Optional[List[str]] = None
-) -> Optional[Cursor]:
+    filepath: Path, args: list[str] | None = None
+) -> Cursor | None:
     """Returns clang.cindex.Cursor object or None if file is undefined.
 
     Args:
@@ -51,8 +51,8 @@ def get_cursor_from_file(
 
 
 def _get_works_from_filepaths(
-    filepaths: List[Path], compile_args: List[str]
-) -> List[ASTFeatures]:
+    filepaths: list[Path], compile_args: list[str]
+) -> list[ASTFeatures]:
     if not filepaths:
         return []
 
@@ -72,9 +72,9 @@ def _get_works_from_filepaths(
 class CFeaturesGetter(AbstractGetter):
     def __init__(
         self,
-        logger: Optional[logging.Logger] = None,
-        repo_regexp: Optional[str] = None,
-        path_regexp: Optional[str] = None,
+        logger: logging.Logger | None = None,
+        repo_regexp: str | None = None,
+        path_regexp: str | None = None,
     ):
         super().__init__(
             extension="cpp",
@@ -83,7 +83,7 @@ class CFeaturesGetter(AbstractGetter):
             path_regexp=path_regexp,
         )
 
-    def get_from_content(self, work_info: WorkInfo) -> Optional[ASTFeatures]:
+    def get_from_content(self, work_info: WorkInfo) -> ASTFeatures | None:
         with open(FILE_DOWNLOAD_PATH, "w", encoding="utf-8") as out_file:
             out_file.write(work_info.code)
         cursor = get_cursor_from_file(FILE_DOWNLOAD_PATH, COMPILE_ARGS)
@@ -101,14 +101,14 @@ class CFeaturesGetter(AbstractGetter):
 
         return features
 
-    def get_from_files(self, files: List[Path]) -> List[ASTFeatures]:
+    def get_from_files(self, files: list[Path]) -> list[ASTFeatures]:
         if not files:
             return []
 
         self.logger.debug(f"{GET_FRAZE} files")
         return _get_works_from_filepaths(files, COMPILE_ARGS)
 
-    def get_works_from_dir(self, directory: Path) -> List[ASTFeatures]:
+    def get_works_from_dir(self, directory: Path) -> list[ASTFeatures]:
         filepaths = get_files_path_from_directory(
             directory,
             extensions=SUPPORTED_EXTENSIONS[self.extension],

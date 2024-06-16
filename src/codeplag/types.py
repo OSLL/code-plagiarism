@@ -5,22 +5,17 @@ from functools import total_ordering
 from pathlib import Path
 from typing import (
     DefaultDict,
-    Dict,
-    List,
     Literal,
     NamedTuple,
-    Optional,
     Pattern,
-    Tuple,
     TypedDict,
-    Union,
 )
 
 import numpy.typing as npt
 from typing_extensions import NotRequired
 
 Extension = Literal["py", "cpp"]
-Extensions = Tuple[Pattern, ...]
+Extensions = tuple[Pattern, ...]
 Flag = Literal[0, 1]
 Mode = Literal["many_to_many", "one_to_one"]
 ReportsExtension = Literal["json", "csv"]
@@ -63,11 +58,11 @@ def _create_a_defaultdict_returning_zero_by_default() -> DefaultDict[str, int]:
 class ASTFeatures:
     """Class contains the source code metadata."""
 
-    filepath: Union[Path, str]
-    modify_date: Optional[str] = None
+    filepath: Path | str
+    modify_date: str | None = None
 
     count_of_nodes: int = 0
-    head_nodes: List[str] = field(default_factory=list)
+    head_nodes: list[str] = field(default_factory=list)
     operators: DefaultDict[str, int] = field(
         default_factory=_create_a_defaultdict_returning_zero_by_default
     )
@@ -79,13 +74,13 @@ class ASTFeatures:
     )
 
     # unique nodes
-    unodes: Dict[str, int] = field(default_factory=dict)
-    from_num: Dict[int, str] = field(default_factory=dict)
+    unodes: dict[str, int] = field(default_factory=dict)
+    from_num: dict[int, str] = field(default_factory=dict)
     count_unodes: int = 0
 
-    structure: List[NodeStructurePlace] = field(default_factory=list)
-    tokens: List[int] = field(default_factory=list)
-    tokens_pos: List[NodeCodePlace] = field(default_factory=list)
+    structure: list[NodeStructurePlace] = field(default_factory=list)
+    tokens: list[int] = field(default_factory=list)
+    tokens_pos: list[NodeCodePlace] = field(default_factory=list)
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
@@ -117,7 +112,7 @@ class StructuresInfo(NamedTuple):
 
 class CompareInfo(NamedTuple):
     fast: FastMetrics
-    structure: Optional[StructuresInfo] = None
+    structure: StructuresInfo | None = None
 
 
 # TODO: Rework it structure
@@ -127,9 +122,9 @@ class WorksReport(TypedDict):
     second_path: str
     first_modify_date: NotRequired[str]
     second_modify_date: NotRequired[str]
-    first_heads: List[str]
-    second_heads: List[str]
-    fast: Dict[str, int]  # dict from FastMetrics
+    first_heads: list[str]
+    second_heads: list[str]
+    fast: dict[str, int]  # dict from FastMetrics
     structure: dict  # dict from StructuresInfo
 
 
@@ -166,7 +161,7 @@ class ProcessingWorksInfo(NamedTuple):
     compare_future: Future
 
 
-SameFuncs = Dict[str, List[SameHead]]
+SameFuncs = dict[str, list[SameHead]]
 
 
 # Problem title: Pickling of a namedtuple instance succeeds normally,

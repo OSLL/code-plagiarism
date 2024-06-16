@@ -6,7 +6,6 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
 from time import monotonic
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -81,7 +80,7 @@ class CSVReporter(AbstractReporter):
 
     def get_compare_result_from_cache(
         self, work1: ASTFeatures, work2: ASTFeatures
-    ) -> Optional[CompareInfo]:
+    ) -> CompareInfo | None:
         cache_val = self.__df_report[
             (self.__df_report.first_path == str(work1.filepath))
             & (self.__df_report.second_path == str(work2.filepath))

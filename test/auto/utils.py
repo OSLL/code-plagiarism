@@ -1,6 +1,6 @@
 import subprocess
 from pathlib import Path
-from typing import Any, List, Literal, Optional, Union
+from typing import Any, Literal
 
 from codeplag.consts import UTIL_NAME
 from codeplag.types import Flag, Language, ReportsExtension, ReportType, Threshold
@@ -17,15 +17,15 @@ class CmdResult:
         assert self.cmd_res.returncode, str(self.cmd_res)
 
 
-def run_cmd(cmd: List[str]) -> CmdResult:
+def run_cmd(cmd: list[str]) -> CmdResult:
     return CmdResult(
         subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     )
 
 
 def run_util(
-    cmd: List[str],
-    root: Optional[Literal["check", "settings", "report"]] = None,
+    cmd: list[str],
+    root: Literal["check", "settings", "report"] | None = None,
     verbose: bool = True,
 ) -> CmdResult:
     verbose_opt = ["--verbose"] if verbose else []
@@ -34,7 +34,7 @@ def run_util(
     return run_cmd([UTIL_NAME] + verbose_opt + root_cmd + cmd)
 
 
-def run_check(cmd: List[str], extension: str = "py", verbose: bool = True) -> CmdResult:
+def run_check(cmd: list[str], extension: str = "py", verbose: bool = True) -> CmdResult:
     return run_util(["--extension", extension] + cmd, root="check", verbose=verbose)
 
 
@@ -45,15 +45,15 @@ def create_report(path: Path, report_type: ReportType) -> CmdResult:
 
 
 def modify_settings(
-    reports: Optional[Union[Path, str]] = None,
-    environment: Optional[Union[Path, str]] = None,
-    threshold: Optional[Threshold] = None,
-    show_progress: Optional[Flag] = None,
-    reports_extension: Optional[ReportsExtension] = None,
-    language: Optional[Language] = None,
-    workers: Optional[int] = None,
+    reports: Path | str | None = None,
+    environment: Path | str | None = None,
+    threshold: Threshold | None = None,
+    show_progress: Flag | None = None,
+    reports_extension: ReportsExtension | None = None,
+    language: Language | None = None,
+    workers: int | None = None,
 ) -> CmdResult:
-    def create_opt(key: str, value: Optional[Any]) -> List[str]:
+    def create_opt(key: str, value: Any | None) -> list[str]:
         return [f"--{key}", str(value)] if value is not None else []
 
     return run_util(

@@ -7,7 +7,7 @@ from concurrent.futures import Future, ProcessPoolExecutor
 from itertools import combinations
 from pathlib import Path
 from time import monotonic
-from typing import List, Optional
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -130,10 +130,10 @@ class WorksComparator:
 
     def check(
         self,
-        files: Optional[List[Path]] = None,
-        directories: Optional[List[Path]] = None,
-        github_files: Optional[List[str]] = None,
-        github_project_folders: Optional[List[str]] = None,
+        files: Optional[list[Path]] = None,
+        directories: Optional[list[Path]] = None,
+        github_files: Optional[list[str]] = None,
+        github_project_folders: Optional[list[str]] = None,
         github_user: str = "",
     ) -> None:
         if files is None:
@@ -178,13 +178,13 @@ class WorksComparator:
 
     def __many_to_many_check(
         self,
-        features_from_files: List[ASTFeatures],
-        directories: List[Path],
-        features_from_gh_files: List[ASTFeatures],
-        github_project_folders: List[str],
+        features_from_files: list[ASTFeatures],
+        directories: list[Path],
+        features_from_gh_files: list[ASTFeatures],
+        github_project_folders: list[str],
         github_user: str,
     ):
-        works: List[ASTFeatures] = []
+        works: list[ASTFeatures] = []
         works.extend(features_from_files)
         works.extend(self.features_getter.get_from_dirs(directories))
         works.extend(features_from_gh_files)
@@ -197,7 +197,7 @@ class WorksComparator:
             count_works = len(works)
             self.progress = Progress(_calc_iterations(count_works))
         with ProcessPoolExecutor(max_workers=self.workers) as executor:
-            processed: List[ProcessingWorksInfo] = []
+            processed: list[ProcessingWorksInfo] = []
             for i, work1 in enumerate(works):
                 for j, work2 in enumerate(works):
                     if i <= j:
@@ -207,10 +207,10 @@ class WorksComparator:
 
     def __one_to_one_check(
         self,
-        features_from_files: List[ASTFeatures],
-        directories: List[Path],
-        features_from_gh_files: List[ASTFeatures],
-        github_project_folders: List[str],
+        features_from_files: list[ASTFeatures],
+        directories: list[Path],
+        features_from_gh_files: list[ASTFeatures],
+        github_project_folders: list[str],
         github_user: str,
     ):
         combined_elements = filter(
@@ -235,7 +235,7 @@ class WorksComparator:
             )
         cases = combinations(combined_elements, r=2)
         with ProcessPoolExecutor(max_workers=self.workers) as executor:
-            processed: List[ProcessingWorksInfo] = []
+            processed: list[ProcessingWorksInfo] = []
             for case in cases:
                 first_sequence, second_sequence = case
                 if self.progress is not None:
@@ -251,7 +251,7 @@ class WorksComparator:
     def _do_step(
         self,
         executor: ProcessPoolExecutor,
-        processing: List[ProcessingWorksInfo],
+        processing: list[ProcessingWorksInfo],
         work1: ASTFeatures,
         work2: ASTFeatures,
     ) -> None:
@@ -301,7 +301,7 @@ class WorksComparator:
 
     def _handle_completed_futures(
         self,
-        processing: List[ProcessingWorksInfo],
+        processing: list[ProcessingWorksInfo],
     ):
         for proc_works_info in processing:
             metrics: CompareInfo = proc_works_info.compare_future.result()
@@ -337,8 +337,8 @@ class IgnoreThresholdWorksComparator(WorksComparator):
 
 def compliance_matrix_to_df(
     compliance_matrix: NDArray,
-    head_nodes1: List[str],
-    head_nodes2: List[str],
+    head_nodes1: list[str],
+    head_nodes2: list[str],
 ) -> pd.DataFrame:
     data = np.zeros(
         (

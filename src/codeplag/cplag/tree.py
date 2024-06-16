@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import List, Union
 
 from clang.cindex import Cursor, TokenKind
 
@@ -7,7 +6,7 @@ from codeplag.cplag.const import IGNORE, OPERATORS
 from codeplag.types import ASTFeatures, NodeStructurePlace
 
 
-def get_not_ignored(tree: Cursor, src: Union[Path, str]) -> List[Cursor]:
+def get_not_ignored(tree: Cursor, src: Path | str) -> list[Cursor]:
     """Function helps to discard unnecessary nodes such as imports."""
     parsed_nodes = []
     for child in tree.get_children():
@@ -57,7 +56,7 @@ def generic_visit(node, features: ASTFeatures, curr_depth: int = 0) -> None:
             generic_visit(child, features, curr_depth + 1)
 
 
-def get_features(tree: Cursor, filepath: Union[Path, str] = "") -> ASTFeatures:
+def get_features(tree: Cursor, filepath: Path | str = "") -> ASTFeatures:
     features = ASTFeatures(filepath or tree.displayname)
     for token in tree.get_tokens():
         if token.kind == TokenKind.PUNCTUATION and token.spelling in OPERATORS:

@@ -2,7 +2,7 @@ import base64
 import logging
 import re
 import sys
-from typing import Any, Dict, Final, Iterator, List, Optional
+from typing import Any, Final, Iterator
 
 import requests
 
@@ -24,11 +24,11 @@ _GH_URL: Final[str] = "https://github.com/"
 class GitHubParser:
     def __init__(
         self,
-        file_extensions: Optional[Extensions] = None,
+        file_extensions: Extensions | None = None,
         check_all: bool = False,
         access_token: str = "",
-        logger: Optional[logging.Logger] = None,
-        session: Optional[requests.Session] = None,
+        logger: logging.Logger | None = None,
+        session: requests.Session | None = None,
     ) -> None:
         if logger is None:
             self.logger = logging.getLogger(__name__)
@@ -57,7 +57,7 @@ class GitHubParser:
             self.__session = None
 
     def send_get_request(
-        self, api_url: str, params: Optional[dict] = None, address: str = _API_URL
+        self, api_url: str, params: dict | None = None, address: str = _API_URL
     ) -> requests.Response:
         if params is None:
             params = {}
@@ -96,9 +96,9 @@ class GitHubParser:
         return response
 
     def get_list_of_repos(
-        self, owner: str, reg_exp: Optional[re.Pattern] = None
-    ) -> List[Repository]:
-        repos: List[Repository] = []
+        self, owner: str, reg_exp: re.Pattern | None = None
+    ) -> list[Repository]:
+        repos: list[Repository] = []
         response_json = self.send_get_request(f"/users/{owner}").json()
         user_type = response_json.get("type", "").lower()
         # TODO: classify yourself /user/repos
@@ -128,10 +128,10 @@ class GitHubParser:
 
         return repos
 
-    def get_pulls_info(self, owner: str, repo: str) -> List[PullRequest]:
-        pulls: List[PullRequest] = []
+    def get_pulls_info(self, owner: str, repo: str) -> list[PullRequest]:
+        pulls: list[PullRequest] = []
         api_url = f"/repos/{owner}/{repo}/pulls"
-        params: Dict[str, int] = {"per_page": 100, "page": 1}
+        params: dict[str, int] = {"per_page": 100, "page": 1}
         while True:
             response_json = self.send_get_request(api_url, params=params).json()
 
@@ -159,7 +159,7 @@ class GitHubParser:
 
     def get_name_default_branch(self, owner: str, repo: str) -> str:
         api_url = f"/repos/{owner}/{repo}"
-        response: Dict[str, Any] = self.send_get_request(api_url).json()
+        response: dict[str, Any] = self.send_get_request(api_url).json()
 
         return response["default_branch"]
 
@@ -167,7 +167,7 @@ class GitHubParser:
         self, owner: str, repo: str, branch: str = "main"
     ) -> dict:
         api_url = f"/repos/{owner}/{repo}/branches/{branch}"
-        response: Dict[str, Any] = self.send_get_request(api_url).json()
+        response: dict[str, Any] = self.send_get_request(api_url).json()
 
         return response["commit"]
 
@@ -175,7 +175,7 @@ class GitHubParser:
         self, owner: str, repo: str, blob_sha: str, commit_info: Commit, file_path: str
     ) -> WorkInfo:
         api_url = f"/repos/{owner}/{repo}/git/blobs/{blob_sha}"
-        response: Dict[str, Any] = self.send_get_request(api_url).json()
+        response: dict[str, Any] = self.send_get_request(api_url).json()
 
         file_in_bytes: bytearray = bytearray(base64.b64decode(response["content"]))
         code = file_in_bytes.decode("utf-8", errors="ignore")
@@ -183,7 +183,7 @@ class GitHubParser:
         return WorkInfo(code, file_path, commit_info)
 
     def _get_commit_info(self, owner: str, repo: str, branch: str, path: str) -> Commit:
-        commit_info: Dict[str, Any] = self.send_get_request(
+        commit_info: dict[str, Any] = self.send_get_request(
             api_url=f"/repos/{owner}/{repo}/commits",
             params={"path": path, "page": 1, "per_page": 1, "sha": branch},
         ).json()[0]
@@ -197,11 +197,11 @@ class GitHubParser:
         branch: Branch,
         sha: str,
         path: str = "",
-        path_regexp: Optional[re.Pattern] = None,
+        path_regexp: re.Pattern | None = None,
     ) -> Iterator[WorkInfo]:
         api_url = f"/repos/{owner}/{repo}/git/trees/{sha}"
-        jresponse: Dict[str, Any] = self.send_get_request(api_url).json()
-        tree: List[Dict[str, Any]] = jresponse["tree"]
+        jresponse: dict[str, Any] = self.send_get_request(api_url).json()
+        tree: list[dict[str, Any]] = jresponse["tree"]
         for node in tree:
             current_path = f"{path}/{node['path']}"
             full_link = f"{_GH_URL}{owner}/{repo}/blob/{branch.name}{current_path}"
@@ -232,10 +232,10 @@ class GitHubParser:
                 owner, repo, node["sha"], commit_info, full_link
             )
 
-    def get_list_repo_branches(self, owner: str, repo: str) -> List[Branch]:
-        branches: List[Branch] = []
+    def get_list_repo_branches(self, owner: str, repo: str) -> list[Branch]:
+        branches: list[Branch] = []
         api_url: str = f"/repos/{owner}/{repo}/branches"
-        params: Dict[str, int] = {"per_page": 100, "page": 1}
+        params: dict[str, int] = {"per_page": 100, "page": 1}
         while True:
             response_json = self.send_get_request(api_url, params=params).json()
 
@@ -260,7 +260,7 @@ class GitHubParser:
         return branches
 
     def get_files_generator_from_repo_url(
-        self, repo_url: str, path_regexp: Optional[re.Pattern] = None
+        self, repo_url: str, path_regexp: re.Pattern | None = None
     ) -> Iterator[WorkInfo]:
         try:
             repo_url = GitHubRepoUrl(repo_url)
@@ -318,7 +318,7 @@ class GitHubParser:
         )
 
     def get_files_generator_from_dir_url(
-        self, dir_url: str, path_regexp: Optional[re.Pattern] = None
+        self, dir_url: str, path_regexp: re.Pattern | None = None
     ) -> Iterator[WorkInfo]:
         try:
             dir_url = GitHubContentUrl(dir_url)

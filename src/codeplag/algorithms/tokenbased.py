@@ -7,47 +7,47 @@ of two token sequences.
 """
 
 import math
-from typing import List, Literal, Sequence, Set, Tuple, Union, overload
+from typing import Literal, Sequence, overload
 
 
 @overload
 def generate_ngrams(
     tokens: Sequence[int], n: int, hashit: Literal[False], unique: Literal[False]
-) -> List[Tuple[int, ...]]:
+) -> list[tuple[int, ...]]:
     ...
 
 
 @overload
 def generate_ngrams(
     tokens: Sequence[int], n: int, hashit: Literal[False], unique: Literal[True]
-) -> Set[Tuple[int, ...]]:
+) -> set[tuple[int, ...]]:
     ...
 
 
 @overload
 def generate_ngrams(
     tokens: Sequence[int], n: int, hashit: Literal[True], unique: Literal[False]
-) -> List[int]:
+) -> list[int]:
     ...
 
 
 @overload
 def generate_ngrams(
     tokens: Sequence[int], n: int, hashit: Literal[True], unique: Literal[True]
-) -> Set[int]:
+) -> set[int]:
     ...
 
 
 @overload
 def generate_ngrams(
     tokens: Sequence[int], n: int = 3, hashit: bool = False, unique: bool = False
-) -> Union[Set[int], List[int], Set[Tuple[int, ...]], List[Tuple[int, ...]]]:
+) -> set[int] | list[int] | set[tuple[int, ...]] | list[tuple[int, ...]]:
     ...
 
 
 def generate_ngrams(
     tokens: Sequence[int], n: int = 3, hashit: bool = False, unique: bool = False
-) -> Union[Set[int], List[int], Set[Tuple[int, ...]], List[Tuple[int, ...]]]:
+) -> set[int] | list[int] | set[tuple[int, ...]] | list[tuple[int, ...]]:
     """The function returns a list or set of N-grams or list or set of hashes
     of ngrams and may use to generate shingles.
 
@@ -71,7 +71,7 @@ def generate_ngrams(
     return [tuple(tokens[i : i + n]) for i in range(count_tokens - n + 1)]
 
 
-def get_imprints_from_hashes(hashes: Sequence[int]) -> List[int]:
+def get_imprints_from_hashes(hashes: Sequence[int]) -> list[int]:
     """The function return imprints of the given hashes.
 
     Args:
@@ -100,10 +100,10 @@ def value_jakkar_coef(
         tokens_second - list of tokens of the second program
 
     """
-    ngrams_first: Set[Tuple[int, ...]] = generate_ngrams(
+    ngrams_first: set[tuple[int, ...]] = generate_ngrams(
         tokens_first, ngrams_length, hashit=False, unique=True
     )
-    ngrams_second: Set[Tuple[int, ...]] = generate_ngrams(
+    ngrams_second: set[tuple[int, ...]] = generate_ngrams(
         tokens_second, ngrams_length, hashit=False, unique=True
     )
 

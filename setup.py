@@ -1,16 +1,15 @@
 import os
 import sys
 from pathlib import Path
-from typing import Tuple
 
 from setuptools import Extension, find_packages, setup
 
-BUILD_REQUIREMENTS: Tuple[str, ...] = (
+BUILD_REQUIREMENTS: tuple[str, ...] = (
     "argparse-manpage==3",
     "Babel==2.15.0",
     "Cython~=3.0.8",
 )
-INSTALL_REQUIREMENTS: Tuple[str, ...] = (
+INSTALL_REQUIREMENTS: tuple[str, ...] = (
     "argcomplete~=2.0.0",
     "numpy~=1.23.5",
     "pandas~=1.4.3",

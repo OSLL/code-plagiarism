@@ -2,7 +2,6 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Optional
 from unittest.mock import MagicMock
 
 import pytest
@@ -32,7 +31,7 @@ def path(mocker: MockerFixture) -> MagicMock:
 
 
 @pytest.fixture
-def settings_config(request, mocker: MockerFixture) -> Optional[Settings]:
+def settings_config(request, mocker: MockerFixture) -> Settings | None:
     mocker.patch.object(config, "read_config", return_value=request.param)
     return request.param
 
@@ -98,7 +97,7 @@ def test_write_config(
 
 
 @pytest.mark.parametrize("settings_config", [None], indirect=True)
-def test_read_default_settings_conf(settings_config: Optional[Settings]):
+def test_read_default_settings_conf(settings_config: Settings | None):
     assert config.read_settings_conf() == config.DefaultSettingsConfig
     config.logger.warning.assert_called_once()
     config.logger.reset_mock()

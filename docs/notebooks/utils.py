@@ -2,7 +2,7 @@ import os
 import re
 from datetime import datetime
 from time import perf_counter
-from typing import Literal, Optional
+from typing import Literal
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -34,7 +34,7 @@ def remove_unnecessary_blank_lines(source_code: str) -> str:
 
 
 def get_data_from_dir(
-    path: str = "./data", max_count_lines: Optional[int] = None
+    path: str = "./data", max_count_lines: int | None = None
 ) -> pd.DataFrame:
     df = pd.DataFrame()
     for filename in os.listdir(path):

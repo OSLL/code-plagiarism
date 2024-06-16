@@ -1,7 +1,5 @@
 """This module consists of complex algorithms for comparing two works."""
 
-from typing import Optional, Tuple
-
 import numpy as np
 
 from codeplag.algorithms.featurebased import counter_metric, struct_compare
@@ -13,7 +11,7 @@ from codeplag.types import ASTFeatures, CompareInfo, FastMetrics, StructuresInfo
 def fast_compare(
     features_f: ASTFeatures,
     features_s: ASTFeatures,
-    weights: Tuple[float, float, float, float] = DEFAULT_WEIGHTS,
+    weights: tuple[float, float, float, float] = DEFAULT_WEIGHTS,
 ) -> FastMetrics:
     """The function calculates the similarity of features of two programs
     using four algorithms, calculates their weighted average, and returns
@@ -47,7 +45,7 @@ def fast_compare(
 
 
 def compare_works(
-    features1: ASTFeatures, features2: ASTFeatures, threshold: Optional[int] = None
+    features1: ASTFeatures, features2: ASTFeatures, threshold: int | None = None
 ) -> CompareInfo:
     """The function returns the complex result of comparing two works.
 

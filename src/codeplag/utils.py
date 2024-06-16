@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 from codeplag.consts import (
     DEFAULT_MODE,
@@ -14,9 +14,9 @@ from codeplag.types import ReportType
 
 
 class CodeplagEngine:
-    def __init__(self, parsed_args: Dict[str, Any]) -> None:
+    def __init__(self, parsed_args: dict[str, Any]) -> None:
         self.root: str = parsed_args.pop("root")
-        self.command: Optional[str] = None
+        self.command: str | None = None
         # TODO: tmp
         if self.root == "settings":
             self.command = parsed_args.pop(self.root)
@@ -28,8 +28,8 @@ class CodeplagEngine:
             self.path: Path = parsed_args.pop("path")
             self.report_type: ReportType = parsed_args.pop("type")
         else:
-            self.github_files: List[str] = parsed_args.pop("github_files", [])
-            self.github_project_folders: List[str] = parsed_args.pop(
+            self.github_files: list[str] = parsed_args.pop("github_files", [])
+            self.github_project_folders: list[str] = parsed_args.pop(
                 "github_project_folders", []
             )
             self.github_user: str = parsed_args.pop("github_user", "") or ""
@@ -49,8 +49,8 @@ class CodeplagEngine:
                 all_branches=parsed_args.pop("all_branches", False),
             )
 
-            self.files: List[Path] = parsed_args.pop("files", [])
-            self.directories: List[Path] = parsed_args.pop("directories", [])
+            self.files: list[Path] = parsed_args.pop("files", [])
+            self.directories: list[Path] = parsed_args.pop("directories", [])
 
     def run(self) -> Literal[0, 1]:
         logger.debug("Starting codeplag util ...")

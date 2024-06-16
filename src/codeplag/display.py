@@ -2,7 +2,7 @@ from datetime import timedelta
 from enum import Enum
 from functools import partial
 from time import monotonic
-from typing import Final, List, Optional
+from typing import Final
 
 import pandas as pd
 from typing_extensions import Self
@@ -63,7 +63,7 @@ class Progress:
 class ComplexProgress(Progress):
     def __init__(self, iterations: int) -> None:
         super(ComplexProgress, self).__init__(iterations)
-        self.__internal_progresses: List[Progress] = []
+        self.__internal_progresses: list[Progress] = []
 
     def add_internal_progress(self, internal_iterations: int) -> None:
         if len(self.__internal_progresses) == self.iterations:
@@ -112,7 +112,7 @@ red_bold = partial(colorize, color=Color.FAIL, bold=True)
 
 
 def print_suspect_parts(
-    source_code: str, marked_tokens: List[int], tokens_pos: List[NodeCodePlace]
+    source_code: str, marked_tokens: list[int], tokens_pos: list[NodeCodePlace]
 ) -> None:
     ROWS = {row for (row, _column) in [tokens_pos[index] for index in marked_tokens]}
 
@@ -131,7 +131,7 @@ def print_suspect_parts(
 
 
 def print_code_and_highlight_suspect(
-    source_code: str, marked_tokens: List[int], tokens_pos: List[NodeCodePlace]
+    source_code: str, marked_tokens: list[int], tokens_pos: list[NodeCodePlace]
 ) -> None:
     ROWS = {row for (row, column) in [tokens_pos[index] for index in marked_tokens]}
 
@@ -159,7 +159,7 @@ def print_compare_result(
     features1: ASTFeatures,
     features2: ASTFeatures,
     compare_info: CompareInfo,
-    compliance_matrix_df: Optional[pd.DataFrame] = None,
+    compliance_matrix_df: pd.DataFrame | None = None,
 ) -> None:
     """Prints the pretty result of comparing two files.
 

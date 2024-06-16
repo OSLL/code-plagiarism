@@ -3,7 +3,7 @@ import io
 import re
 import unittest
 from contextlib import redirect_stdout
-from typing import Final, List, Optional, Union
+from typing import Final
 from unittest.mock import call, patch
 
 from webparsers.github_parser import GitHubParser
@@ -21,7 +21,7 @@ _COMMIT2_RESP = [{"sha": _COMMIT2.sha, "commit": {"author": {"date": _COMMIT2.da
 _BRANCH1: Final[Branch] = Branch("iss76", _COMMIT1)
 _BRANCH2: Final[Branch] = Branch("iss78", _COMMIT2)
 
-_GET_FILE_CONTENT_RES: Final[List[WorkInfo]] = [
+_GET_FILE_CONTENT_RES: Final[list[WorkInfo]] = [
     WorkInfo(
         "Some code 2",
         "https://github.com/OSLL/aido-auto-feedback/blob/iss76/src/utils.py",
@@ -43,9 +43,9 @@ _GET_FILE_CONTENT_RES: Final[List[WorkInfo]] = [
 class Response:
     def __init__(
         self,
-        response_json: Optional[Union[list, dict]] = None,
+        response_json: list | dict | None = None,
         status_code: int = 200,
-        message: Optional[str] = None,
+        message: str | None = None,
     ):
         self.status_code = status_code
         self.message = message

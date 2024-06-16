@@ -1,6 +1,5 @@
 import ast
 from contextlib import suppress
-from typing import Optional
 
 from codeplag.pyplag.const import IGNORE_NODES, KEYWORDS, LITERALS, OPERATORS, TO_TOKEN
 from codeplag.types import ASTFeatures, NodeCodePlace, NodeStructurePlace
@@ -16,7 +15,7 @@ class ASTWalker(ast.NodeVisitor):
         self.features.from_num[self.features.count_unodes] = node_name
         self.features.count_unodes += 1
 
-    def __get_actual_name_from_node(self, node: ast.AST) -> Optional[str]:
+    def __get_actual_name_from_node(self, node: ast.AST) -> str | None:
         # TODO: Also handle ast.Expr
         if isinstance(node, (ast.AnnAssign, ast.AugAssign)):
             if isinstance(node.target, ast.Name):
