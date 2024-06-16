@@ -459,7 +459,9 @@ class TestGitHubParser(unittest.TestCase):
                     test_case["send_calls"]
                 )
                 for actual_call, expected_call in zip(
-                    mock_send_get_request.mock_calls, test_case["send_calls"]
+                    mock_send_get_request.mock_calls,
+                    test_case["send_calls"],
+                    strict=True,
                 ):
                     assert actual_call == expected_call
 

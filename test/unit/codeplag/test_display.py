@@ -29,7 +29,7 @@ class TestProgress:
         iterations = 5
         progress = Progress(iterations)
         for real_percent, expect_percent in zip(
-            progress, [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+            progress, [0.0, 0.2, 0.4, 0.6, 0.8, 1.0], strict=False
         ):
             assert real_percent == expect_percent
             assert str(progress) == f"Progress: {expect_percent:.2%}"
@@ -120,6 +120,7 @@ class TestComplexProgress:
                 0.8,
                 1.0,
             ],
+            strict=False,
         ):
             assert real_percent == pytest.approx(expect_percent)
             assert str(progress) == f"Progress: {expect_percent:.2%}"

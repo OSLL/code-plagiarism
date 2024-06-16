@@ -120,7 +120,7 @@ def plot_and_save_result(
     for i in range(unique_count_lines.shape[0]):
         summ = 0
         count = 0
-        for count_line, time in zip(df.count_lines, df.times):
+        for count_line, time in zip(df.count_lines, df.times, strict=True):
             if unique_count_lines[i] == count_line:
                 summ += time
                 count += 1

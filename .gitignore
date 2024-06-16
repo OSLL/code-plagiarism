@@ -30,9 +30,9 @@ debian/copyright
 
 # Substituting
 src/codeplag/consts.py
-docker/base_ubuntu2004.dockerfile
-docker/test_ubuntu2004.dockerfile
-docker/ubuntu2004.dockerfile
+docker/base_ubuntu2204.dockerfile
+docker/test_ubuntu2204.dockerfile
+docker/ubuntu2204.dockerfile
 
 # Translation
 locales/**/*.mo

@@ -1,14 +1,14 @@
-UTIL_VERSION            := 0.4.6
+UTIL_VERSION            := 0.4.7
 UTIL_NAME               := codeplag
 PWD                     := $(shell pwd)
 
 USER_UID                ?= $(shell id --user)
 USER_GID                ?= $(shell id --group)
 
-BASE_DOCKER_VERSION     := 1.4
-BASE_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-base-ubuntu20.04:$(BASE_DOCKER_VERSION) | tr A-Z a-z)
-TEST_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-test-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
-DOCKER_TAG              ?= $(shell echo $(UTIL_NAME)-ubuntu20.04:$(UTIL_VERSION) | tr A-Z a-z)
+BASE_DOCKER_VERSION     := 1.0
+BASE_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-base-ubuntu22.04:$(BASE_DOCKER_VERSION) | tr A-Z a-z)
+TEST_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-test-ubuntu22.04:$(UTIL_VERSION) | tr A-Z a-z)
+DOCKER_TAG              ?= $(shell echo $(UTIL_NAME)-ubuntu22.04:$(UTIL_VERSION) | tr A-Z a-z)
 
 PYTHONDONTWRITEBYTECODE := "1"
 PYTHONPATH              := $(PWD)/src/:$(PWD)/test/auto
@@ -27,9 +27,9 @@ DEBIAN_SUB_FILES        := debian/changelog \
                            debian/control \
                            debian/preinst \
                            debian/copyright
-DOCKER_SUB_FILES        := docker/base_ubuntu2004.dockerfile \
-                           docker/test_ubuntu2004.dockerfile \
-                           docker/ubuntu2004.dockerfile
+DOCKER_SUB_FILES        := docker/base_ubuntu2204.dockerfile \
+                           docker/test_ubuntu2204.dockerfile \
+                           docker/ubuntu2204.dockerfile
 
 PYTHON_REQUIRED_LIBS    := $(shell python3 setup.py --install-requirements)
 PYTHON_BUILD_LIBS       := $(shell python3 setup.py --build-requirements)
@@ -38,6 +38,8 @@ PYTHON_BUILD_LIBS       := $(shell python3 setup.py --build-requirements)
 ifeq ($(IS_DEVELOPED), 1)
 DEVEL_SUFFIX            := .devel
 endif
+
+DEB_PKG_NAME            := ${UTIL_NAME}-util_${UTIL_VERSION}-1${DEVEL_SUFFIX}_amd64
 
 
 substitute = @sed \
@@ -52,6 +54,7 @@ substitute = @sed \
 		-e "s|@CONFIG_PATH@|${CONFIG_PATH}|g" \
 		-e "s|@BASE_DOCKER_TAG@|${BASE_DOCKER_TAG}|g" \
 		-e "s|@DEBIAN_PACKAGES_PATH@|${DEBIAN_PACKAGES_PATH}|g" \
+		-e "s|@DEB_PKG_NAME@|${DEB_PKG_NAME}|g" \
 		$(1) > $(2) \
 		&& echo "Substituted from '$(1)' to '$(2)'."
 
@@ -115,7 +118,9 @@ package: substitute-debian
 	find $(DEBIAN_PACKAGES_PATH)/$(UTIL_NAME)* > /dev/null 2>&1 || ( \
 		dpkg-buildpackage -jauto -b \
 			--buildinfo-option="-u$(CURDIR)/$(DEBIAN_PACKAGES_PATH)" \
+			--buildinfo-file="$(CURDIR)/$(DEBIAN_PACKAGES_PATH)/$(DEB_PKG_NAME).buildinfo" \
 			--changes-option="-u$(CURDIR)/$(DEBIAN_PACKAGES_PATH)" \
+			--changes-file="$(CURDIR)/$(DEBIAN_PACKAGES_PATH)/$(DEB_PKG_NAME).changes" \
 			--no-sign && \
 		cp $(DEBIAN_PACKAGES_PATH)/usr/share/man/man1/$(UTIL_NAME).1 $(DEBIAN_PACKAGES_PATH)/$(UTIL_NAME).1 && \
 		chown --recursive ${USER_UID}:${USER_GID} $(DEBIAN_PACKAGES_PATH) \
@@ -152,9 +157,9 @@ clean: clean-cache
 clean-all: clean
 	rm --force src/$(UTIL_NAME)/consts.py
 
-	rm --force docker/base_ubuntu2004.dockerfile
-	rm --force docker/test_ubuntu2004.dockerfile
-	rm --force docker/ubuntu2004.dockerfile
+	rm --force docker/base_ubuntu2204.dockerfile
+	rm --force docker/test_ubuntu2204.dockerfile
+	rm --force docker/ubuntu2204.dockerfile
 
 	rm --force --recursive $(DEBIAN_PACKAGES_PATH)
 	rm --force debian/changelog
