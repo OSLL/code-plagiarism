@@ -2,7 +2,7 @@ import base64
 import logging
 import re
 import sys
-from typing import Any, AsyncGenerator, Dict, Final, List, Optional
+from typing import Any, AsyncGenerator, Final
 
 import aiohttp
 import aiohttp.client_exceptions
@@ -68,10 +68,10 @@ class AsyncGithubParser:
     def __init__(
         self,
         session: aiohttp.ClientSession,
-        file_extensions: Optional[str] = None,
+        file_extensions: str | None = None,
         check_all: bool = False,
-        logger: Optional[logging.Logger] = None,
-        token: Optional[str] = None,
+        logger: logging.Logger | None = None,
+        token: str | None = None,
     ):
         if logger is None:
             self.logger = logging.getLogger(__name__)
@@ -96,7 +96,7 @@ class AsyncGithubParser:
     async def send_get_request(
         self,
         api_url: str,
-        url_vars: Optional[variable.VariableValueDict] = None,
+        url_vars: variable.VariableValueDict | None = None,
     ) -> Any:
         try:
             return await self.__api.getitem(api_url, url_vars)
@@ -106,13 +106,13 @@ class AsyncGithubParser:
             sys.exit(1)
 
     async def get_list_of_repos(
-        self, owner: str, reg_exp: Optional[re.Pattern] = None
-    ) -> List[Repository]:
-        repos: List[Repository] = []
+        self, owner: str, reg_exp: re.Pattern | None = None
+    ) -> list[Repository]:
+        repos: list[Repository] = []
         response = await self.send_get_request(self.USER_INFO, {"username": owner})
         user_type = response.get("type", "").lower()
         # TODO: classify yourself /user/repos
-        url_vars: Dict[str, Any] = {"per_page": 100, "page": 1}
+        url_vars: dict[str, Any] = {"per_page": 100, "page": 1}
         if user_type == "user":
             api_url = self.USER_REPOS
             url_vars["username"] = owner
@@ -136,8 +136,8 @@ class AsyncGithubParser:
 
         return repos
 
-    async def get_pulls_info(self, owner: str, repo: str) -> List[PullRequest]:
-        pulls: List[PullRequest] = []
+    async def get_pulls_info(self, owner: str, repo: str) -> list[PullRequest]:
+        pulls: list[PullRequest] = []
         url_vars = {"username": owner, "repo": repo, "page": 1, "per_page": 100}
         while True:
             response = await self.send_get_request(self.PULLS, url_vars)
@@ -185,8 +185,8 @@ class AsyncGithubParser:
 
         return response["commit"]
 
-    async def get_list_repo_branches(self, owner: str, repo: str) -> List[Branch]:
-        branches: List[Branch] = []
+    async def get_list_repo_branches(self, owner: str, repo: str) -> list[Branch]:
+        branches: list[Branch] = []
         url_vars = {"per_page": 100, "page": 1, "username": owner, "repo": repo}
         while True:
             response = await self.send_get_request(self.BRANCH_GET, url_vars)
@@ -228,7 +228,7 @@ class AsyncGithubParser:
     async def _get_commit_info(
         self, owner: str, repo: str, branch: str, path: str
     ) -> Commit:
-        response: List[dict] = await self.send_get_request(
+        response: list[dict] = await self.send_get_request(
             self.COMMITS_INFO,
             url_vars={
                 "page": 1,
@@ -239,7 +239,7 @@ class AsyncGithubParser:
                 "sha": branch,
             },
         )
-        commit_info: Dict[str, Any] = response[0]
+        commit_info: dict[str, Any] = response[0]
 
         return Commit(commit_info["sha"], commit_info["commit"]["author"]["date"])
 
@@ -250,12 +250,12 @@ class AsyncGithubParser:
         branch: Branch,
         sha: str,
         path: str = "",
-        path_regexp: Optional[re.Pattern] = None,
+        path_regexp: re.Pattern | None = None,
     ) -> AsyncGenerator[WorkInfo, None]:
-        response: Dict[str, Any] = await self.send_get_request(
+        response: dict[str, Any] = await self.send_get_request(
             self.GIT_TREE, {"username": owner, "repo": repo, "sha": sha}
         )
-        tree: List[Dict[str, Any]] = response["tree"]
+        tree: list[dict[str, Any]] = response["tree"]
         for node in tree:
             current_path = f"{path}/{node['path']}"
             full_link = f"{_GH_URL}{owner}/{repo}/blob/{branch.name}{current_path}"
@@ -294,7 +294,7 @@ class AsyncGithubParser:
             yield WorkInfo(file_content, full_link, commit_info)
 
     async def get_files_generator_from_repo_url(
-        self, repo_url: str, path_regexp: Optional[re.Pattern] = None
+        self, repo_url: str, path_regexp: re.Pattern | None = None
     ) -> AsyncGenerator[WorkInfo, None]:
         try:
             repo_url = GitHubRepoUrl(repo_url)
@@ -361,7 +361,7 @@ class AsyncGithubParser:
         )
 
     async def get_files_generator_from_dir_url(
-        self, dir_url: str, path_regexp: Optional[re.Pattern] = None
+        self, dir_url: str, path_regexp: re.Pattern | None = None
     ) -> AsyncGenerator[WorkInfo, None]:
         try:
             dir_url = GitHubContentUrl(dir_url)

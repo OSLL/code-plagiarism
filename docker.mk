@@ -4,7 +4,7 @@ docker-base-image: substitute-sources substitute-docker
 		export DOCKER_BUILDKIT=1 && \
 		docker image build \
 			--tag "$(BASE_DOCKER_TAG)" \
-			--file docker/base_ubuntu2004.dockerfile \
+			--file docker/base_ubuntu2204.dockerfile \
 			. \
 	)
 
@@ -12,7 +12,7 @@ docker-test-image: docker-base-image
 	@docker image inspect $(TEST_DOCKER_TAG) > /dev/null 2>&1 || \
 	docker image build \
 		--tag  "$(TEST_DOCKER_TAG)" \
-		--file docker/test_ubuntu2004.dockerfile \
+		--file docker/test_ubuntu2204.dockerfile \
 		.
 
 docker-test: docker-test-image
@@ -30,7 +30,7 @@ docker-autotest: docker-test-image docker-build-package
 			--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
 			--env-file .env \
 			"$(TEST_DOCKER_TAG)" bash -c \
-			"apt-get install -y /usr/src/${UTIL_NAME}/${DEBIAN_PACKAGES_PATH}/${UTIL_NAME}-util_${UTIL_VERSION}-1${DEVEL_SUFFIX}_amd64.deb && make autotest"; \
+			"apt-get install -y /usr/src/${UTIL_NAME}/${DEBIAN_PACKAGES_PATH}/${DEB_PKG_NAME}.deb && make autotest"; \
 	fi
 
 docker-build-package: docker-test-image
@@ -53,7 +53,7 @@ docker-image: docker-base-image docker-test-image
 		make docker-build-package && \
 		docker image build \
 			--tag  "$(DOCKER_TAG)" \
-			--file docker/ubuntu2004.dockerfile \
+			--file docker/ubuntu2204.dockerfile \
 			. \
 	)
 

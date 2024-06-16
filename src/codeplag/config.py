@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, Dict, ForwardRef, Literal, Mapping, Optional, overload
+from typing import Any, ForwardRef, Literal, Mapping, overload
 
 from typing_extensions import NotRequired
 
@@ -14,7 +14,7 @@ from codeplag.consts import (
 from codeplag.logger import codeplag_logger as logger
 from codeplag.types import Settings
 
-Config = Dict[str, Any]
+Config = dict[str, Any]
 
 
 @overload
@@ -23,11 +23,11 @@ def read_config(file: Path, safe: Literal[False] = False) -> Config:
 
 
 @overload
-def read_config(file: Path, safe: bool = False) -> Optional[Config]:
+def read_config(file: Path, safe: bool = False) -> Config | None:
     ...
 
 
-def read_config(file: Path, safe: bool = False) -> Optional[Config]:
+def read_config(file: Path, safe: bool = False) -> Config | None:
     config = None
     try:
         with file.open(mode="r") as f:

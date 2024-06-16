@@ -1,4 +1,4 @@
-from typing import List, Mapping, Optional, Tuple
+from typing import Mapping
 
 import numpy as np
 
@@ -37,7 +37,7 @@ def counter_metric(counter1: Mapping[str, int], counter2: Mapping[str, int]) -> 
     return percent_of_same[0] / percent_of_same[1]
 
 
-def op_shift_metric(ops1: List[str], ops2: List[str]) -> Tuple[int, float]:
+def op_shift_metric(ops1: list[str], ops2: list[str]) -> tuple[int, float]:
     """Return the maximum value of the operator match and the shift under this condition.
 
     Args:
@@ -84,8 +84,8 @@ def op_shift_metric(ops1: List[str], ops2: List[str]) -> Tuple[int, float]:
 
 
 def get_children_indexes(
-    tree: List[NodeStructurePlace], count_of_nodes: int
-) -> Tuple[List[int], int]:
+    tree: list[NodeStructurePlace], count_of_nodes: int
+) -> tuple[list[int], int]:
     """Return indexes of her children and their count.
 
     Args:
@@ -139,7 +139,7 @@ def find_max_index(array: np.ndarray) -> np.ndarray:
     return index
 
 
-def matrix_value(array: np.ndarray) -> Tuple[list, list]:
+def matrix_value(array: np.ndarray) -> tuple[list, list]:
     """The function returns the value of the similarity of nodes from the compliance matrix.
 
     Args:
@@ -172,10 +172,10 @@ def matrix_value(array: np.ndarray) -> Tuple[list, list]:
 
 
 def add_not_counted(
-    tree: List[NodeStructurePlace],
+    tree: list[NodeStructurePlace],
     count_of_children: int,
-    key_indexes: List[int],
-    indexes: List[np.ndarray],
+    key_indexes: list[int],
+    indexes: list[np.ndarray],
     axis: int,
 ) -> int:
     """The function return the count of nodes that didn't account in the previous step.
@@ -205,9 +205,9 @@ def add_not_counted(
 
 
 def struct_compare(
-    tree1: List[NodeStructurePlace],
-    tree2: List[NodeStructurePlace],
-    matrix: Optional[np.ndarray] = None,
+    tree1: list[NodeStructurePlace],
+    tree2: list[NodeStructurePlace],
+    matrix: np.ndarray | None = None,
 ) -> list:
     """Function for compare structure of two trees.
 

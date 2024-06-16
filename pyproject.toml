@@ -1,5 +1,5 @@
 [project]
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 
 [tool.black]
 max-line-length = 97
@@ -44,7 +44,7 @@ convention = "google"
 max-complexity = 12
 
 [tool.pyright]
-pythonVersion = "3.8"
+pythonVersion = "3.10"
 
 include = [
     "src",

@@ -12,9 +12,9 @@
   cd code-plagiarism/
   ```
 
-- OS Ubuntu Linux >= 20.04
+- OS Ubuntu Linux == 22.04
 
-- Python version >= 3.8
+- Python version == 3.10
 
 - Run these commands:
 
@@ -64,13 +64,13 @@
 
 - Pull an image from Docker Hub
   ```
-  $ docker pull artanias/codeplag-ubuntu20.04:latest
+  $ docker pull artanias/codeplag-ubuntu22.04:latest
   ```
 
 - Run container based on pulled image and connect volume with your data
   > The docker image has volume '/usr/src/works' which is the directory with your data.
   ```
-  $ docker run --rm --tty --interactive --volume <absolute_local_path_with_data>:/usr/src/works "artanias/codeplag-ubuntu20.04:latest" /bin/bash
+  $ docker run --rm --tty --interactive --volume <absolute_local_path_with_data>:/usr/src/works "artanias/codeplag-ubuntu22.04:latest" /bin/bash
   ```
 
 ### 1.4 Install with package manager apt-get

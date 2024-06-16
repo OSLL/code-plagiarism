@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import pandas as pd
 
@@ -17,7 +17,7 @@ def settings_show() -> None:
     print(table)
 
 
-def settings_modify(parsed_args: Dict[str, Any]) -> None:
+def settings_modify(parsed_args: dict[str, Any]) -> None:
     settings_config = read_settings_conf()
     for key in Settings.__annotations__:
         new_value = parsed_args.get(key)

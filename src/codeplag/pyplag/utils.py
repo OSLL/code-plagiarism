@@ -1,7 +1,6 @@
 import ast
 import logging
 from pathlib import Path
-from typing import List, Optional, Union
 
 from webparsers.types import WorkInfo
 
@@ -14,7 +13,7 @@ from codeplag.pyplag.astwalkers import ASTWalker
 from codeplag.types import ASTFeatures
 
 
-def get_ast_from_content(code: str, path: Union[Path, str]) -> Optional[ast.Module]:
+def get_ast_from_content(code: str, path: Path | str) -> ast.Module | None:
     tree = None
     try:
         tree = ast.parse(code)
@@ -56,7 +55,7 @@ def get_ast_from_content(code: str, path: Union[Path, str]) -> Optional[ast.Modu
     return tree
 
 
-def get_ast_from_filename(filepath: Path) -> Optional[ast.Module]:
+def get_ast_from_filename(filepath: Path) -> ast.Module | None:
     """Function return ast which has type ast.Module.
 
     Args:
@@ -86,7 +85,7 @@ def get_ast_from_filename(filepath: Path) -> Optional[ast.Module]:
     return tree
 
 
-def get_features_from_ast(tree: ast.Module, filepath: Union[Path, str]) -> ASTFeatures:
+def get_features_from_ast(tree: ast.Module, filepath: Path | str) -> ASTFeatures:
     features = ASTFeatures(filepath)
     walker = ASTWalker(features)
     walker.visit(tree)
@@ -94,7 +93,7 @@ def get_features_from_ast(tree: ast.Module, filepath: Union[Path, str]) -> ASTFe
     return features
 
 
-def _get_works_from_filepaths(filenames: List[Path]) -> List[ASTFeatures]:
+def _get_works_from_filepaths(filenames: list[Path]) -> list[ASTFeatures]:
     if not filenames:
         return []
 
@@ -113,9 +112,9 @@ def _get_works_from_filepaths(filenames: List[Path]) -> List[ASTFeatures]:
 class PyFeaturesGetter(AbstractGetter):
     def __init__(
         self,
-        logger: Optional[logging.Logger] = None,
-        repo_regexp: Optional[str] = None,
-        path_regexp: Optional[str] = None,
+        logger: logging.Logger | None = None,
+        repo_regexp: str | None = None,
+        path_regexp: str | None = None,
     ):
         super().__init__(
             extension="py",
@@ -124,7 +123,7 @@ class PyFeaturesGetter(AbstractGetter):
             path_regexp=path_regexp,
         )
 
-    def get_from_content(self, work_info: WorkInfo) -> Optional[ASTFeatures]:
+    def get_from_content(self, work_info: WorkInfo) -> ASTFeatures | None:
         tree = get_ast_from_content(work_info.code, work_info.link)
         if tree is not None:
             features = get_features_from_ast(tree, work_info.link)
@@ -135,14 +134,14 @@ class PyFeaturesGetter(AbstractGetter):
             "Unsuccessfully attempt to get AST from the file %s.", work_info.link
         )
 
-    def get_from_files(self, files: List[Path]) -> List[ASTFeatures]:
+    def get_from_files(self, files: list[Path]) -> list[ASTFeatures]:
         if not files:
             return []
 
         self.logger.debug(f"{GET_FRAZE} files")
         return _get_works_from_filepaths(files)
 
-    def get_works_from_dir(self, directory: Path) -> List[ASTFeatures]:
+    def get_works_from_dir(self, directory: Path) -> list[ASTFeatures]:
         filepaths = get_files_path_from_directory(
             directory,
             extensions=SUPPORTED_EXTENSIONS[self.extension],

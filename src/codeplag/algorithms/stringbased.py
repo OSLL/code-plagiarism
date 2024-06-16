@@ -1,4 +1,4 @@
-from typing import List, Literal, Sequence, Tuple
+from typing import Literal, Sequence
 
 import numpy as np
 
@@ -50,7 +50,7 @@ class LevenshteinDistance:
         return 1.0 - self.distance / max(self.s1_length, self.s2_length)
 
 
-def is_marked_match(marked_string_list: List[int], begin: int, length: int) -> bool:
+def is_marked_match(marked_string_list: list[int], begin: int, length: int) -> bool:
     """The function returns true if the match consists in the marked list, else false.
 
     Args:
@@ -69,7 +69,7 @@ def is_marked_match(marked_string_list: List[int], begin: int, length: int) -> b
 
 def gst(
     sequence1: Sequence, sequence2: Sequence, min_match_len: int = 6
-) -> Tuple[List[int], List[int]]:
+) -> tuple[list[int], list[int]]:
     """The Greedy String Tiling algorithm.
 
     Args:

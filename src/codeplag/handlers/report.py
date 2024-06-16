@@ -3,7 +3,7 @@
 from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
-from typing import Dict, Generator, List, Literal, Tuple, TypedDict
+from typing import Generator, Literal, TypedDict
 
 import jinja2
 import numpy as np
@@ -90,7 +90,7 @@ def _convert_similarity_matrix_to_percent_matrix(matrix: NDArray) -> NDArray:
     return percent_matrix
 
 
-def _deserialize_head_nodes(head_nodes: str) -> List[str]:
+def _deserialize_head_nodes(head_nodes: str) -> list[str]:
     return [head[1:-1] for head in head_nodes[1:-1].split(", ")]
 
 
@@ -109,8 +109,8 @@ def _replace_minimal_value(same_parts: dict, new_key: str, new_value: float) -> 
 
 
 def _get_same_funcs(
-    first_heads: List[str],
-    second_heads: List[str],
+    first_heads: list[str],
+    second_heads: list[str],
     percent_matrix: NDArray,
     threshold: int = DEFAULT_THRESHOLD,
     include_funcs_less_threshold: bool = True,
@@ -150,7 +150,7 @@ def _get_parsed_line(
     df: pd.DataFrame,
     threshold: int = DEFAULT_THRESHOLD,
     include_funcs_less_threshold: bool = True,
-) -> Generator[Tuple[pd.Series, CompareInfo, SameFuncs, SameFuncs], None, None]:
+) -> Generator[tuple[pd.Series, CompareInfo, SameFuncs, SameFuncs], None, None]:
     for _, line in df.iterrows():
         cmp_res = deserialize_compare_result(line)
         first_heads = _deserialize_head_nodes(line.first_heads)
@@ -185,7 +185,7 @@ class Elements(TypedDict):
     same_parts: SameFuncs
 
 
-SamePartsOfAll = Dict[str, Dict[str, Elements]]
+SamePartsOfAll = dict[str, dict[str, Elements]]
 
 
 def _search_sources(
