@@ -5,7 +5,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: codeplag 0.4.5\n"
+"Project-Id-Version: codeplag 0.4.8\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2024-05-21 09:28+0300\n"
 "PO-Revision-Date: 2024-05-16 19:15+0300\n"
@@ -16,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.14.0\n"
+"Generated-By: Babel 2.15.0\n"
 
 #: src/codeplag/codeplagcli.py:44
 msgid "You cannot specify the same value multiple times. You provided '{values}'."
@@ -310,4 +310,3 @@ msgstr "Part of the file that is being checked"
 #: src/templates/sources.templ:60
 msgid "Part of a similar file"
 msgstr "Part of a similar file"
-

@@ -1,8 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, ForwardRef, Literal, Mapping, overload
-
-from typing_extensions import NotRequired
+from typing import Any, Literal, Mapping, overload
 
 from codeplag.consts import (
     CONFIG_PATH,
@@ -59,19 +57,13 @@ def read_settings_conf() -> Settings:
         )
         return DefaultSettingsConfig
 
-    for key, key_type in Settings.__annotations__.items():
+    for key in Settings.__annotations__:
         if key not in loaded_settings_config:
             if key in DefaultSettingsConfig:
                 loaded_settings_config[key] = DefaultSettingsConfig[key]
             continue
 
-        if key_type in [
-            Path,
-            NotRequired[Path],  # type: ignore
-            # Hook for proper work of the Cythonized version.
-            ForwardRef("Path"),
-            ForwardRef("NotRequired[Path]"),
-        ]:
+        if key in ["environment", "reports"]:
             loaded_settings_config[key] = Path(loaded_settings_config[key])
 
     return Settings(
