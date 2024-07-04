@@ -1,4 +1,4 @@
-UTIL_VERSION            := 0.4.7
+UTIL_VERSION            := 0.4.8
 UTIL_NAME               := codeplag
 PWD                     := $(shell pwd)
 

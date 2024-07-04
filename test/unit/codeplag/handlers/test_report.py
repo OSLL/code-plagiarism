@@ -3,9 +3,11 @@ from __future__ import annotations
 import numpy as np
 import pytest
 from codeplag.handlers.report import (
+    SamePartsOfAll,
     _convert_similarity_matrix_to_percent_matrix,
     _deserialize_head_nodes,
     _get_parsed_line,
+    _get_resulting_same_percentages,
     _get_same_funcs,
     _replace_minimal_value,
 )
@@ -137,6 +139,70 @@ def test__get_parsed_line(
             SameHead(name="my_func[1]", percent=33.33),
         ],
     }
+
+
+@pytest.mark.parametrize(
+    "same_parts_of_all,expected",
+    [
+        (
+            {
+                "marshal.py": {
+                    "config.py": {
+                        "cnt_elements": 1,
+                        "max_funcs_same_percentages": {"FEATURES_GETTERS[9]": 80.0},
+                    }
+                },
+                "featurebased.py": {
+                    "featurebased_ob.py": {
+                        "cnt_elements": 7,
+                        "max_funcs_same_percentages": {
+                            "add_not_counted[166]": 95.0,
+                            "counter_metric[4]": 88.0,
+                            "find_max_index[112]": 75.0,
+                            "get_children_indexes[87]": 84.0,
+                            "matrix_value[137]": 100.0,
+                            "op_shift_metric[37]": 90.0,
+                            "struct_compare[191]": 87.0,
+                        },
+                    },
+                    "featurebased_rn.py": {
+                        "cnt_elements": 7,
+                        "max_funcs_same_percentages": {
+                            "add_not_counted[166]": 80.0,
+                            "counter_metric[4]": 86.0,
+                            "find_max_index[112]": 78.0,
+                            "get_children_indexes[87]": 95.0,
+                            "matrix_value[137]": 100.0,
+                            "op_shift_metric[37]": 77.0,
+                            "struct_compare[191]": 86.0,
+                        },
+                    },
+                    "featurebased_rn_ob.py": {
+                        "cnt_elements": 7,
+                        "max_funcs_same_percentages": {
+                            "add_not_counted[166]": 95.0,
+                            "counter_metric[4]": 100.0,
+                            "find_max_index[112]": 73.0,
+                            "get_children_indexes[87]": 100.0,
+                            "matrix_value[137]": 64.0,
+                            "op_shift_metric[37]": 70.0,
+                            "struct_compare[191]": 80.0,
+                        },
+                    },
+                    "marshal.py": {
+                        "cnt_elements": 0,
+                        "max_funcs_same_percentages": {},
+                    },
+                },
+            },
+            {"marshal.py": 80.0, "featurebased.py": 92.86},
+        )
+    ],
+)
+def test__get_resulting_same_percentages(
+    same_parts_of_all: SamePartsOfAll, expected: dict[str, float]
+):
+    assert _get_resulting_same_percentages(same_parts_of_all) == expected
 
 
 @pytest.mark.parametrize(

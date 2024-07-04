@@ -5,7 +5,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: codeplag 0.4.5\n"
+"Project-Id-Version: codeplag 0.4.8\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2024-05-21 09:28+0300\n"
 "PO-Revision-Date: 2024-05-16 19:15+0300\n"
@@ -16,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.14.0\n"
+"Generated-By: Babel 2.15.0\n"
 
 #: src/codeplag/codeplagcli.py:44
 msgid "You cannot specify the same value multiple times. You provided '{values}'."
@@ -279,7 +279,7 @@ msgid "Part of the second program"
 msgstr "Part of the second program"
 
 #: src/templates/general.templ:95 src/templates/general.templ:126
-#: src/templates/sources.templ:61
+#: src/templates/sources.templ:63
 msgid "Similarity"
 msgstr "Similarity"
 
@@ -295,19 +295,22 @@ msgstr "Verification results"
 msgid "The path to the file being checked"
 msgstr "The path to the file being checked"
 
-#: src/templates/sources.templ:56
+#: src/templates/sources.templ:49
+msgid "Total maximum compliance, %"
+msgstr "Total maximum compliance, %"
+
+#: src/templates/sources.templ:58
 msgid "Similar parts of the programs"
 msgstr "Similar parts of the programs"
 
-#: src/templates/sources.templ:58
+#: src/templates/sources.templ:60
 msgid "The name of a similar file"
 msgstr "The name of a similar file"
 
-#: src/templates/sources.templ:59
+#: src/templates/sources.templ:61
 msgid "Part of the file that is being checked"
 msgstr "Part of the file that is being checked"
 
-#: src/templates/sources.templ:60
+#: src/templates/sources.templ:62
 msgid "Part of a similar file"
 msgstr "Part of a similar file"
-

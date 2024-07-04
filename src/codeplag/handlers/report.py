@@ -183,9 +183,33 @@ def _get_parsed_line(
 class Elements(TypedDict):
     cnt_elements: int
     same_parts: SameFuncs
+    max_funcs_same_percentages: dict[str, float]
 
 
 SamePartsOfAll = dict[str, dict[str, Elements]]
+
+
+def _get_resulting_same_percentages(
+    same_parts_of_all: SamePartsOfAll,
+) -> dict[str, float]:
+    resulting_same_percentages: dict[str, float] = {}
+    for first_path, same_works in same_parts_of_all.items():
+        max_funcs_same_percentages = {}
+        for second_work in same_works.values():
+            for function, same_percentage in second_work[
+                "max_funcs_same_percentages"
+            ].items():
+                if same_percentage <= max_funcs_same_percentages.get(function, 0):
+                    continue
+                max_funcs_same_percentages[function] = same_percentage
+        if not (cnt_functions := len(max_funcs_same_percentages)):
+            continue
+        resulting_percentage = round(
+            sum(max_funcs_same_percentages.values()) / cnt_functions,
+            2,
+        )
+        resulting_same_percentages[first_path] = resulting_percentage
+    return resulting_same_percentages
 
 
 def _search_sources(
@@ -195,38 +219,27 @@ def _search_sources(
     for line, _, same_parts_of_second, same_parts_of_first in _get_parsed_line(
         df, threshold, include_funcs_less_threshold=False
     ):
-        same_parts_of_all[line.first_path][line.second_path] = Elements(
-            cnt_elements=0, same_parts=deepcopy(same_parts_of_second)
-        )
-        same_parts_of_all[line.second_path][line.first_path] = Elements(
-            cnt_elements=0, same_parts=deepcopy(same_parts_of_first)
-        )
-        for function, same_functions in same_parts_of_second.items():
-            cnt_same_functions = len(same_functions)
-            if cnt_same_functions == 0:
-                same_parts_of_all[line.first_path][line.second_path]["same_parts"].pop(
-                    function
+        for first_path, second_path, same_parts in (
+            (line.first_path, line.second_path, same_parts_of_second),
+            (line.second_path, line.first_path, same_parts_of_first),
+        ):
+            element = same_parts_of_all[first_path][second_path] = Elements(
+                cnt_elements=0,
+                same_parts=deepcopy(same_parts),
+                max_funcs_same_percentages={},
+            )
+            for function, same_functions in same_parts.items():
+                if (cnt_same_functions := len(same_functions)) == 0:
+                    element["same_parts"].pop(function)
+                    continue
+                element["max_funcs_same_percentages"][function] = max(
+                    same_function.percent for same_function in same_functions
                 )
-                continue
-            same_parts_of_all[line.first_path][line.second_path][
-                "cnt_elements"
-            ] += cnt_same_functions
-        for function, same_functions in same_parts_of_first.items():
-            cnt_same_functions = len(same_functions)
-            if cnt_same_functions == 0:
-                same_parts_of_all[line.second_path][line.first_path]["same_parts"].pop(
-                    function
-                )
-                continue
-            same_parts_of_all[line.second_path][line.first_path][
-                "cnt_elements"
-            ] += cnt_same_functions
-        if same_parts_of_all[line.first_path][line.second_path]["cnt_elements"] == 0:
-            del same_parts_of_all[line.first_path][line.second_path]
-        if same_parts_of_all[line.second_path][line.first_path]["cnt_elements"] == 0:
-            del same_parts_of_all[line.second_path][line.first_path]
-    same_parts_of_all = {k: v for k, v in same_parts_of_all.items() if v}
-    return same_parts_of_all
+                element["cnt_elements"] += cnt_same_functions
+            if element["cnt_elements"] == 0:
+                del same_parts_of_all[first_path][second_path]
+
+    return {k: v for k, v in same_parts_of_all.items() if v}
 
 
 def _create_report(
@@ -259,12 +272,14 @@ def _create_sources_report(
     language: Language = DEFAULT_LANGUAGE,
 ) -> None:
     data = _search_sources(read_df(df_path), threshold)
+    same_percentages = _get_resulting_same_percentages(data)
     template = environment.from_string(SOURCES_TEMPLATE_PATH.read_text())
     if save_path.is_dir():
         save_path = save_path / DEFAULT_SOURCES_REPORT_NAME
     save_path.write_text(
         template.render(
             data=data,
+            same_percentages=same_percentages,
             language=language,
             enumerate=enumerate,
             Path=Path,

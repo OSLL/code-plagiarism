@@ -46,9 +46,11 @@
                 <caption>{{ _("General information") }}</caption>
                 <tr class="table__header">
                     <th>{{ _("The path to the file being checked") }}</th>
+                    <th>{{ _("Total maximum compliance, %") }}</th>
                 </tr>
                 <tr class="table__row">
                     <td>{{ work_path }}</td>
+                    <th>{{ same_percentages[work_path] }}</th>
                 </tr>
             </table>
             <div align="center">
