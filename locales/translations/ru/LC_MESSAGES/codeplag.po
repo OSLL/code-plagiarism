@@ -261,15 +261,15 @@ msgstr "Коэффициент Жаккара"
 
 #: src/templates/general.templ:71
 msgid "Similarity of operators"
-msgstr "Схожеть операторов"
+msgstr "Схожесть операторов"
 
 #: src/templates/general.templ:75
 msgid "Similarity of keywords"
-msgstr "Схожеть ключевых слов"
+msgstr "Схожесть ключевых слов"
 
 #: src/templates/general.templ:79
 msgid "Similarity of literals"
-msgstr "Схожеть литералов"
+msgstr "Схожеcть литералов"
 
 #: src/templates/general.templ:82
 msgid "Weighted average by fast metrics"
@@ -292,7 +292,7 @@ msgid "Part of the second program"
 msgstr "Часть второй программы"
 
 #: src/templates/general.templ:95 src/templates/general.templ:126
-#: src/templates/sources.templ:61
+#: src/templates/sources.templ:63
 msgid "Similarity"
 msgstr "Схожесть"
 
@@ -308,18 +308,22 @@ msgstr "Результаты проверки"
 msgid "The path to the file being checked"
 msgstr "Путь до проверяемого файла"
 
-#: src/templates/sources.templ:56
+#: src/templates/sources.templ:49
+msgid "Total maximum compliance, %"
+msgstr "Суммарное максимальное соответствие, %"
+
+#: src/templates/sources.templ:58
 msgid "Similar parts of the programs"
 msgstr "Схожие части программ"
 
-#: src/templates/sources.templ:58
+#: src/templates/sources.templ:60
 msgid "The name of a similar file"
 msgstr "Имя схожего файла"
 
-#: src/templates/sources.templ:59
+#: src/templates/sources.templ:61
 msgid "Part of the file that is being checked"
 msgstr "Часть проверяемого файла"
 
-#: src/templates/sources.templ:60
+#: src/templates/sources.templ:62
 msgid "Part of a similar file"
 msgstr "Часть схожего файла"

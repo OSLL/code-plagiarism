@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: codeplag 0.4.8\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-06-16 19:12+0300\n"
+"POT-Creation-Date: 2024-06-30 12:31+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Artyom Semidolin\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -262,7 +262,7 @@ msgid "Part of the second program"
 msgstr ""
 
 #: src/templates/general.templ:95 src/templates/general.templ:126
-#: src/templates/sources.templ:61
+#: src/templates/sources.templ:63
 msgid "Similarity"
 msgstr ""
 
@@ -278,19 +278,23 @@ msgstr ""
 msgid "The path to the file being checked"
 msgstr ""
 
-#: src/templates/sources.templ:56
-msgid "Similar parts of the programs"
+#: src/templates/sources.templ:49
+msgid "Total maximum compliance, %"
 msgstr ""
 
 #: src/templates/sources.templ:58
-msgid "The name of a similar file"
-msgstr ""
-
-#: src/templates/sources.templ:59
-msgid "Part of the file that is being checked"
+msgid "Similar parts of the programs"
 msgstr ""
 
 #: src/templates/sources.templ:60
+msgid "The name of a similar file"
+msgstr ""
+
+#: src/templates/sources.templ:61
+msgid "Part of the file that is being checked"
+msgstr ""
+
+#: src/templates/sources.templ:62
 msgid "Part of a similar file"
 msgstr ""
 
