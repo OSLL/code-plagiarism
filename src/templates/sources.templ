@@ -50,7 +50,13 @@
                 </tr>
                 <tr class="table__row">
                     <td>{{ work_path }}</td>
-                    <th>{{ same_percentages[work_path] }}</th>
+                    {% if same_percentages[work_path] > threshold %}
+                        <td style="background-color: rgb(255, 200, 200); font-weight: bold;">
+                            {{ same_percentages[work_path] }}
+                        </td>
+                    {% else %}
+                        <td>{{ same_percentages[work_path] }}</td>
+                    {% endif %}
                 </tr>
             </table>
             <div align="center">

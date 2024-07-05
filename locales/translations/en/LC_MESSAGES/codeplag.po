@@ -279,7 +279,7 @@ msgid "Part of the second program"
 msgstr "Part of the second program"
 
 #: src/templates/general.templ:95 src/templates/general.templ:126
-#: src/templates/sources.templ:63
+#: src/templates/sources.templ:69
 msgid "Similarity"
 msgstr "Similarity"
 
@@ -299,18 +299,19 @@ msgstr "The path to the file being checked"
 msgid "Total maximum compliance, %"
 msgstr "Total maximum compliance, %"
 
-#: src/templates/sources.templ:58
+#: src/templates/sources.templ:64
 msgid "Similar parts of the programs"
 msgstr "Similar parts of the programs"
 
-#: src/templates/sources.templ:60
+#: src/templates/sources.templ:66
 msgid "The name of a similar file"
 msgstr "The name of a similar file"
 
-#: src/templates/sources.templ:61
+#: src/templates/sources.templ:67
 msgid "Part of the file that is being checked"
 msgstr "Part of the file that is being checked"
 
-#: src/templates/sources.templ:62
+#: src/templates/sources.templ:68
 msgid "Part of a similar file"
 msgstr "Part of a similar file"
+
