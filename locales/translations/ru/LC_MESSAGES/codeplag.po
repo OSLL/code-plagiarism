@@ -292,7 +292,7 @@ msgid "Part of the second program"
 msgstr "Часть второй программы"
 
 #: src/templates/general.templ:95 src/templates/general.templ:126
-#: src/templates/sources.templ:63
+#: src/templates/sources.templ:69
 msgid "Similarity"
 msgstr "Схожесть"
 
@@ -312,18 +312,19 @@ msgstr "Путь до проверяемого файла"
 msgid "Total maximum compliance, %"
 msgstr "Суммарное максимальное соответствие, %"
 
-#: src/templates/sources.templ:58
+#: src/templates/sources.templ:64
 msgid "Similar parts of the programs"
 msgstr "Схожие части программ"
 
-#: src/templates/sources.templ:60
+#: src/templates/sources.templ:66
 msgid "The name of a similar file"
 msgstr "Имя схожего файла"
 
-#: src/templates/sources.templ:61
+#: src/templates/sources.templ:67
 msgid "Part of the file that is being checked"
 msgstr "Часть проверяемого файла"
 
-#: src/templates/sources.templ:62
+#: src/templates/sources.templ:68
 msgid "Part of a similar file"
 msgstr "Часть схожего файла"
+

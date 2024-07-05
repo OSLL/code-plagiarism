@@ -3,6 +3,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 from codeplag.handlers.report import (
+    CntHeadNodes,
+    ResultingSamePercentages,
     SamePartsOfAll,
     _convert_similarity_matrix_to_percent_matrix,
     _deserialize_head_nodes,
@@ -142,7 +144,7 @@ def test__get_parsed_line(
 
 
 @pytest.mark.parametrize(
-    "same_parts_of_all,expected",
+    "same_parts_of_all,cnt_head_nodes,expected",
     [
         (
             {
@@ -195,14 +197,22 @@ def test__get_parsed_line(
                     },
                 },
             },
-            {"marshal.py": 80.0, "featurebased.py": 92.86},
+            {
+                "marshal.py": 1,
+                "featurebased.py": 8,
+            },
+            {"marshal.py": 80.0, "featurebased.py": 81.25},
         )
     ],
 )
 def test__get_resulting_same_percentages(
-    same_parts_of_all: SamePartsOfAll, expected: dict[str, float]
+    same_parts_of_all: SamePartsOfAll,
+    cnt_head_nodes: CntHeadNodes,
+    expected: ResultingSamePercentages,
 ):
-    assert _get_resulting_same_percentages(same_parts_of_all) == expected
+    assert (
+        _get_resulting_same_percentages(same_parts_of_all, cnt_head_nodes) == expected
+    )
 
 
 @pytest.mark.parametrize(

@@ -187,12 +187,14 @@ class Elements(TypedDict):
 
 
 SamePartsOfAll = dict[str, dict[str, Elements]]
+CntHeadNodes = dict[str, int]
+ResultingSamePercentages = dict[str, float]
 
 
 def _get_resulting_same_percentages(
-    same_parts_of_all: SamePartsOfAll,
-) -> dict[str, float]:
-    resulting_same_percentages: dict[str, float] = {}
+    same_parts_of_all: SamePartsOfAll, cnt_head_nodes: CntHeadNodes
+) -> ResultingSamePercentages:
+    resulting_same_percentages: ResultingSamePercentages = {}
     for first_path, same_works in same_parts_of_all.items():
         max_funcs_same_percentages = {}
         for second_work in same_works.values():
@@ -202,10 +204,8 @@ def _get_resulting_same_percentages(
                 if same_percentage <= max_funcs_same_percentages.get(function, 0):
                     continue
                 max_funcs_same_percentages[function] = same_percentage
-        if not (cnt_functions := len(max_funcs_same_percentages)):
-            continue
         resulting_percentage = round(
-            sum(max_funcs_same_percentages.values()) / cnt_functions,
+            sum(max_funcs_same_percentages.values()) / cnt_head_nodes[first_path],
             2,
         )
         resulting_same_percentages[first_path] = resulting_percentage
@@ -214,11 +214,20 @@ def _get_resulting_same_percentages(
 
 def _search_sources(
     df: pd.DataFrame, threshold: int = DEFAULT_THRESHOLD
-) -> SamePartsOfAll:
+) -> tuple[SamePartsOfAll, CntHeadNodes]:
     same_parts_of_all: SamePartsOfAll = defaultdict(lambda: {})
+    cnt_head_nodes: CntHeadNodes = {}
     for line, _, same_parts_of_second, same_parts_of_first in _get_parsed_line(
         df, threshold, include_funcs_less_threshold=False
     ):
+        for path, heads in zip(
+            (line.first_path, line.second_path),
+            (line.first_heads, line.second_heads),
+            strict=True,
+        ):
+            if path in cnt_head_nodes:
+                continue
+            cnt_head_nodes[path] = len(_deserialize_head_nodes(heads))
         for first_path, second_path, same_parts in (
             (line.first_path, line.second_path, same_parts_of_second),
             (line.second_path, line.first_path, same_parts_of_first),
@@ -239,7 +248,7 @@ def _search_sources(
             if element["cnt_elements"] == 0:
                 del same_parts_of_all[first_path][second_path]
 
-    return {k: v for k, v in same_parts_of_all.items() if v}
+    return {k: v for k, v in same_parts_of_all.items() if v}, cnt_head_nodes
 
 
 def _create_report(
@@ -271,8 +280,8 @@ def _create_sources_report(
     threshold: int = DEFAULT_THRESHOLD,
     language: Language = DEFAULT_LANGUAGE,
 ) -> None:
-    data = _search_sources(read_df(df_path), threshold)
-    same_percentages = _get_resulting_same_percentages(data)
+    data, cnt_head_nodes = _search_sources(read_df(df_path), threshold)
+    same_percentages = _get_resulting_same_percentages(data, cnt_head_nodes)
     template = environment.from_string(SOURCES_TEMPLATE_PATH.read_text())
     if save_path.is_dir():
         save_path = save_path / DEFAULT_SOURCES_REPORT_NAME
@@ -280,6 +289,7 @@ def _create_sources_report(
         template.render(
             data=data,
             same_percentages=same_percentages,
+            threshold=threshold,
             language=language,
             enumerate=enumerate,
             Path=Path,
