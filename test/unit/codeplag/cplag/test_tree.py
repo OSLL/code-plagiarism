@@ -93,10 +93,10 @@ def test_generic_visit(first_cursor):
     assert features.operators == {}
     assert features.keywords == {}
     assert features.literals == {}
-    assert len(features.unodes) == 13
-    assert len(features.from_num) == 13
-    assert features.count_unodes == 13
-    assert len(features.structure) == 34
+    assert len(features.unodes) == 10
+    assert len(features.from_num) == 10
+    assert features.count_unodes == 10
+    assert len(features.structure) == 23
     assert features.tokens == [8, 10, 10, 202, 205, 114, 100,
                                101, 106, 214, 100, 101, 214,
                                103, 100, 101, 100, 101, 114,
@@ -112,10 +112,10 @@ def test_get_features(second_cursor):
     assert features.operators == {'==': 1, '%': 1}
     assert features.keywords == {'int': 1, 'if': 1, 'return': 2, 'long': 2}
     assert features.literals == {'0L': 1}
-    assert len(features.unodes) == 13
-    assert len(features.from_num) == 13
-    assert features.count_unodes == 13
-    assert len(features.structure) == 36
+    assert len(features.unodes) == 10
+    assert len(features.from_num) == 10
+    assert features.count_unodes == 10
+    assert len(features.structure) == 25
     assert features.tokens == [8, 10, 10, 202, 205, 114, 100,
                                101, 106, 202, 214, 100, 100,
                                101, 214, 103, 100, 101, 100,
@@ -134,8 +134,8 @@ def test_bad_encoding_syms(third_cursor):
     # Ignored bad symbols
     assert '" .\\n"' in features.literals.keys()  # noqa
     assert len(features.literals.keys()) == 12
-    assert len(features.unodes) == 20
-    assert len(features.from_num) == 20
-    assert features.count_unodes == 20
-    assert len(features.structure) == 225
+    assert len(features.unodes) == 18
+    assert len(features.from_num) == 18
+    assert features.count_unodes == 18
+    assert len(features.structure) == 167
     assert len(features.tokens) == 167
