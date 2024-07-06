@@ -19,37 +19,20 @@ def get_not_ignored(tree: Cursor, src: Path | str) -> list[Cursor]:
     return parsed_nodes
 
 
-def generic_visit(node, features: ASTFeatures, curr_depth: int = 0) -> None:
+def generic_visit(node: Cursor, features: ASTFeatures, curr_depth: int = 0) -> None:
     if curr_depth == 0:
         children = get_not_ignored(node, features.filepath)
     else:
-        node_name = repr(node.kind)
-        if node_name not in features.unodes:
-            features.unodes[node_name] = features.count_unodes
-            features.from_num[features.count_unodes] = node_name
-            features.count_unodes += 1
-        features.structure.append(
-            NodeStructurePlace(curr_depth, features.unodes[node_name])
-        )
+        __add_node_to_structure(features, repr(node.kind), curr_depth)
         children = list(node.get_children())
-
         if curr_depth == 1:
             features.head_nodes.append(node.spelling)
 
-    if len(children) == 0:
+    if len(children) == 0 and curr_depth == 1:
         for token in node.get_tokens():
             token_name = repr(token.kind)
-            if token_name not in features.unodes:
-                features.unodes[token_name] = features.count_unodes
-                features.from_num[features.count_unodes] = token_name
-                features.count_unodes += 1
-            features.structure.append(
-                NodeStructurePlace(curr_depth, features.unodes[token_name])
-            )
-
-            if curr_depth == 1:
-                features.head_nodes.append(token_name)
-
+            __add_node_to_structure(features, token_name, curr_depth)
+            features.head_nodes.append(token_name)
     else:
         for child in children:
             features.tokens.append(child.kind.value)
@@ -69,3 +52,15 @@ def get_features(tree: Cursor, filepath: Path | str = "") -> ASTFeatures:
     generic_visit(tree, features)
 
     return features
+
+
+def __add_node_to_structure(
+    features: ASTFeatures, node_name: str, curr_depth: int
+) -> None:
+    if node_name not in features.unodes:
+        features.unodes[node_name] = features.count_unodes
+        features.from_num[features.count_unodes] = node_name
+        features.count_unodes += 1
+    features.structure.append(
+        NodeStructurePlace(curr_depth, features.unodes[node_name])
+    )
