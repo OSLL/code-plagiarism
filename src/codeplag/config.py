@@ -5,6 +5,7 @@ from typing import Any, Literal, Mapping, overload
 from codeplag.consts import (
     CONFIG_PATH,
     DEFAULT_LANGUAGE,
+    DEFAULT_LOG_LEVEL,
     DEFAULT_REPORT_EXTENSION,
     DEFAULT_THRESHOLD,
     DEFAULT_WORKERS,
@@ -84,5 +85,6 @@ DefaultSettingsConfig = Settings(
     show_progress=0,
     reports_extension=DEFAULT_REPORT_EXTENSION,
     language=DEFAULT_LANGUAGE,
+    log_level=DEFAULT_LOG_LEVEL,
     workers=DEFAULT_WORKERS,
 )

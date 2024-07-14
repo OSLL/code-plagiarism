@@ -6,6 +6,7 @@ def main() -> Literal[0, 1, 2]:
     import pandas as pd
 
     from codeplag.codeplagcli import CodeplagCLI
+    from codeplag.config import read_settings_conf
     from codeplag.consts import LOG_PATH
     from codeplag.logger import codeplag_logger as logger
     from codeplag.logger import set_handlers
@@ -21,7 +22,8 @@ def main() -> Literal[0, 1, 2]:
     cli = CodeplagCLI()
     argcomplete.autocomplete(cli)
     parsed_args = vars(cli.parse_args())
-    set_handlers(logger, LOG_PATH, bool(parsed_args["verbose"]))
+    settings_conf = read_settings_conf()
+    set_handlers(logger, LOG_PATH, settings_conf["log_level"])
     try:
         codeplag_util = CodeplagEngine(parsed_args)
         code = codeplag_util.run()

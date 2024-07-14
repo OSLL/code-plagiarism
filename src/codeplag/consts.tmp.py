@@ -7,6 +7,7 @@ from codeplag.types import (
     Extension,
     Extensions,
     Language,
+    LogLevel,
     Mode,
     ReportsExtension,
     ReportType,
@@ -30,6 +31,7 @@ TRANSLATIONS_PATH: Final[Path] = LIB_PATH / "translations"
 DEFAULT_THRESHOLD: Final[Threshold] = 65
 DEFAULT_WEIGHTS: Final[tuple[float, float, float, float]] = (1.0, 0.4, 0.4, 0.4)
 DEFAULT_LANGUAGE: Final[Language] = "en"
+DEFAULT_LOG_LEVEL: Final[LogLevel] = "info"
 DEFAULT_REPORT_EXTENSION: Final[ReportsExtension] = "csv"
 DEFAULT_GENERAL_REPORT_NAME: Final[str] = "report.html"
 DEFAULT_SOURCES_REPORT_NAME: Final[str] = "sources.html"
@@ -67,6 +69,7 @@ REPORTS_EXTENSION_CHOICE: Final[tuple[ReportsExtension, ...]] = get_args(
 )
 EXTENSION_CHOICE: Final[tuple[Extension, ...]] = get_args(Extension)
 LANGUAGE_CHOICE: Final[tuple[Language, ...]] = get_args(Language)
+LOG_LEVEL_CHOICE: Final[tuple[LogLevel, ...]] = get_args(LogLevel)
 WORKERS_CHOICE: Final[list[int]] = list(range(1, DEFAULT_WORKERS + 1))
 REPORT_TYPE_CHOICE: Final[tuple[ReportType, ...]] = get_args(ReportType)
 # =======

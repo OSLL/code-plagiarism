@@ -15,6 +15,7 @@ from codeplag.consts import (
     DEFAULT_REPORT_TYPE,
     EXTENSION_CHOICE,
     LANGUAGE_CHOICE,
+    LOG_LEVEL_CHOICE,
     MODE_CHOICE,
     REPORT_TYPE_CHOICE,
     REPORTS_EXTENSION_CHOICE,
@@ -155,6 +156,15 @@ class CodeplagCLI(argparse.ArgumentParser):
             help=_("The language of help messages, generated reports, errors."),
             type=str,
             choices=LANGUAGE_CHOICE,
+        )
+        settings_modify.add_argument(
+            "--log-level",
+            help=_(
+                "Sets the threshold for the '{util_name}' util loggers'. "
+                "Logging messages that are less severe than the level will be ignored."
+            ).format(util_name=UTIL_NAME),
+            type=str,
+            choices=LOG_LEVEL_CHOICE,
         )
         settings_modify.add_argument(
             "-w",
@@ -327,11 +337,6 @@ class CodeplagCLI(argparse.ArgumentParser):
             help=_("Print current version number and exit."),
             action="version",
             version=f"{UTIL_NAME} {UTIL_VERSION}",
-        )
-        self.add_argument(
-            "--verbose",
-            help=_("Show debug messages."),
-            action="store_true",
         )
 
         subparsers = self.add_subparsers(

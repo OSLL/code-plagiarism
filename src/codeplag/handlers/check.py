@@ -146,7 +146,7 @@ class WorksComparator:
             github_project_folders = []
 
         logger.debug(
-            f"Mode: {self.mode}; " f"Extension: {self.features_getter.extension}."
+            "Mode: %s; Extension: %s.", self.mode, self.features_getter.extension
         )
         begin_time = monotonic()
         features_from_files = self.features_getter.get_from_files(files)
@@ -171,7 +171,7 @@ class WorksComparator:
                 github_project_folders,
                 github_user,
             )
-        logger.debug(f"Time for all {monotonic() - begin_time:.2f}s")
+        logger.debug("Time for all %.2fs.", monotonic() - begin_time)
         logger.info("Ending searching for plagiarism ...")
         if isinstance(self.reporter, CSVReporter):
             self.reporter._write_df_to_fs()
@@ -195,7 +195,13 @@ class WorksComparator:
 
         if self.show_progress:
             count_works = len(works)
-            self.progress = Progress(_calc_iterations(count_works))
+            iterations = _calc_iterations(count_works)
+            logger.info(
+                "Works to be checked: %s; Number of checks: %s.",
+                count_works,
+                iterations,
+            )
+            self.progress = Progress(iterations)
         with ProcessPoolExecutor(max_workers=self.workers) as executor:
             processed: list[ProcessingWorksInfo] = []
             for i, work1 in enumerate(works):
@@ -230,19 +236,27 @@ class WorksComparator:
         if self.show_progress:
             combined_elements = list(combined_elements)
             count_sequences = len(combined_elements)
-            self.progress = ComplexProgress(
-                _calc_iterations(count_sequences, self.mode)
+            iterations = _calc_iterations(count_sequences, self.mode)
+            logger.info(
+                "Work sequences to check: %s; Number of external checks: %s.",
+                count_sequences,
+                iterations,
             )
+            self.progress = ComplexProgress(iterations)
         cases = combinations(combined_elements, r=2)
         with ProcessPoolExecutor(max_workers=self.workers) as executor:
             processed: list[ProcessingWorksInfo] = []
-            for case in cases:
+            for internal_iteration, case in enumerate(cases, start=1):
                 first_sequence, second_sequence = case
                 if self.progress is not None:
                     assert isinstance(self.progress, ComplexProgress)
-                    self.progress.add_internal_progress(
-                        len(first_sequence) * len(second_sequence)
+                    internal_iterations = len(first_sequence) * len(second_sequence)
+                    logger.debug(
+                        "Internal iteration: %s; Number of internal checks: %s.",
+                        internal_iteration,
+                        internal_iterations,
                     )
+                    self.progress.add_internal_progress(internal_iterations)
                 for work1 in first_sequence:
                     for work2 in second_sequence:
                         self._do_step(executor, processed, work1, work2)

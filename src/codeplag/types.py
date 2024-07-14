@@ -21,6 +21,7 @@ Mode = Literal["many_to_many", "one_to_one"]
 ReportsExtension = Literal["json", "csv"]
 ReportType = Literal["general", "sources"]
 Language = Literal["en", "ru"]
+LogLevel = Literal["debug", "info", "warning", "error"]
 # fmt: off
 Threshold = Literal[
     50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
@@ -143,6 +144,7 @@ class CLIException(Exception):
 class Settings(TypedDict):
     environment: NotRequired[Path]
     language: Language
+    log_level: LogLevel
     reports: NotRequired[Path]
     reports_extension: ReportsExtension
     show_progress: Flag

@@ -3,7 +3,14 @@ from pathlib import Path
 from typing import Any, Literal
 
 from codeplag.consts import UTIL_NAME
-from codeplag.types import Flag, Language, ReportsExtension, ReportType, Threshold
+from codeplag.types import (
+    Flag,
+    Language,
+    LogLevel,
+    ReportsExtension,
+    ReportType,
+    Threshold,
+)
 
 
 class CmdResult:
@@ -26,16 +33,14 @@ def run_cmd(cmd: list[str]) -> CmdResult:
 def run_util(
     cmd: list[str],
     root: Literal["check", "settings", "report"] | None = None,
-    verbose: bool = True,
 ) -> CmdResult:
-    verbose_opt = ["--verbose"] if verbose else []
     root_cmd = [] if root is None else [root]
 
-    return run_cmd([UTIL_NAME] + verbose_opt + root_cmd + cmd)
+    return run_cmd([UTIL_NAME] + root_cmd + cmd)
 
 
-def run_check(cmd: list[str], extension: str = "py", verbose: bool = True) -> CmdResult:
-    return run_util(["--extension", extension] + cmd, root="check", verbose=verbose)
+def run_check(cmd: list[str], extension: str = "py") -> CmdResult:
+    return run_util(["--extension", extension] + cmd, root="check")
 
 
 def create_report(path: Path, report_type: ReportType) -> CmdResult:
@@ -51,6 +56,7 @@ def modify_settings(
     show_progress: Flag | None = None,
     reports_extension: ReportsExtension | None = None,
     language: Language | None = None,
+    log_level: LogLevel | None = None,
     workers: int | None = None,
 ) -> CmdResult:
     def create_opt(key: str, value: Any | None) -> list[str]:
@@ -64,6 +70,7 @@ def modify_settings(
         + create_opt("show_progress", show_progress)
         + create_opt("reports_extension", reports_extension)
         + create_opt("language", language)
+        + create_opt("log-level", log_level)
         + create_opt("workers", workers),
         root="settings",
     )
