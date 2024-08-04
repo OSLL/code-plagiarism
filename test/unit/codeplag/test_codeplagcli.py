@@ -1,8 +1,13 @@
 import argparse
 import builtins
+import os
+from pathlib import Path
+from typing import Final
 
 import pytest
 from codeplag.codeplagcli import CodeplagCLI, DirPath, FilePath
+
+CWD: Final[Path] = Path(os.getcwd())
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -13,15 +18,15 @@ def setup():
 
 
 @pytest.mark.parametrize(
-    "path, out",
+    "path, expected",
     [
-        ("./src", "src"),
-        ("./src/codeplag", "src/codeplag"),
-        ("src/codeplag", "src/codeplag"),
+        ("./src", CWD / "src"),
+        ("./src/codeplag", CWD / "src/codeplag"),
+        ("src/codeplag", CWD / "src/codeplag"),
     ],
 )
-def test_dir_path(path, out):
-    assert DirPath(path).__str__() == out
+def test_dir_path(path: str, expected: Path):
+    assert DirPath(path) == expected
 
 
 @pytest.mark.parametrize("path", ["bad_dirpath", "Makefile"])
@@ -31,10 +36,10 @@ def test_dir_path_bad(path):
 
 
 @pytest.mark.parametrize(
-    "path, out", [("Makefile", "Makefile"), ("./LICENSE", "LICENSE")]
+    "path, expected", [("Makefile", CWD / "Makefile"), ("./LICENSE", CWD / "LICENSE")]
 )
-def test_file_path(path, out):
-    assert FilePath(path).__str__() == out
+def test_file_path(path: str, expected: Path):
+    assert FilePath(path) == expected
 
 
 @pytest.mark.parametrize(

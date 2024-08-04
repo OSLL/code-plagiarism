@@ -40,12 +40,11 @@ class CSVReporter(AbstractReporter):
     def __init__(self, reports: Path) -> None:
         super().__init__(reports)
         self.reports_path = self.reports / CSV_REPORT_FILENAME
+        self.__need_update: bool = False
         if self.reports_path.is_file():
             self.__df_report = read_df(self.reports_path)
-            self.__start_report_lines = self.__df_report.shape[0]
         else:
             self.__df_report = pd.DataFrame(columns=CSV_REPORT_COLUMNS, dtype=object)
-            self.__start_report_lines = 0
         self.__csv_last_save = monotonic()
 
     def save_result(
@@ -54,9 +53,23 @@ class CSVReporter(AbstractReporter):
         second_work: ASTFeatures,
         compare_info: CompareInfo,
     ) -> None:
+        """Updates the cache with new comparisons and writes the cache to the
+          filesystem periodically.
+
+        Args:
+            first_work (ASTFeatures): Contains the first work metadata.
+            second_work (ASTFeatures): Contains the second work metadata.
+            compare_info (CompareInfo): Contains information about comparisons
+              between the first and second works.
+        """
         if not self.reports.is_dir():
             logger.error("The folder for reports isn't exists.")
             return
+        cache_val = self.__df_report[
+            (self.__df_report.first_path == str(first_work.filepath))
+            & (self.__df_report.second_path == str(second_work.filepath))
+        ]
+        self.__df_report.drop(cache_val.index, inplace=True)
         self.__df_report = pd.concat(
             [
                 self.__df_report,
@@ -64,19 +77,20 @@ class CSVReporter(AbstractReporter):
             ],
             ignore_index=True,
         )
+        self.__need_update = True
         if monotonic() - self.__csv_last_save > CSV_SAVE_TICK_SEC:
             self._write_df_to_fs()
             # Time to write can be long
             self.__csv_last_save = monotonic()
 
     def _write_df_to_fs(self) -> None:
-        if self.__start_report_lines == self.__df_report.shape[0]:
+        if not self.__need_update:
             logger.debug("Nothing new to save to the csv report.")
             return
 
         logger.debug(f"Saving report to the file '{self.reports_path}'")
         self.__df_report.to_csv(self.reports_path, sep=";")
-        self.__start_report_lines = self.__df_report.shape[0]
+        self.__need_update = False
 
     def get_compare_result_from_cache(
         self, work1: ASTFeatures, work2: ASTFeatures
@@ -86,10 +100,15 @@ class CSVReporter(AbstractReporter):
             & (self.__df_report.second_path == str(work2.filepath))
         ]
         assert cache_val is not None
-        if cache_val.shape[0]:
+        if (
+            cache_val.shape[0]
+            and cache_val.iloc[0].first_sha256 == work1.sha256
+            and cache_val.iloc[0].second_sha256 == work2.sha256
+        ):
             return deserialize_compare_result(cache_val.iloc[0])
 
 
+# DEPRECATED
 class JSONReporter(AbstractReporter):
     def save_result(
         self,
@@ -107,18 +126,16 @@ class JSONReporter(AbstractReporter):
             "compliance_matrix"
         ].tolist()
         report = WorksReport(
-            date=datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            date=_get_current_date(),
             first_path=first_work.filepath.__str__(),
+            first_modify_date=first_work.modify_date,
             second_path=second_work.filepath.__str__(),
+            second_modify_date=second_work.modify_date,
             first_heads=first_work.head_nodes,
             second_heads=second_work.head_nodes,
             fast=compare_info.fast._asdict(),
             structure=struct_info_dict,
         )
-        if first_work.modify_date:
-            report["first_modify_date"] = first_work.modify_date
-        if second_work.modify_date:
-            report["second_modify_date"] = second_work.modify_date
 
         try:
             report_file = self.reports / f"{uuid.uuid4().hex}.json"
@@ -140,9 +157,11 @@ def serialize_compare_result(
 
     return pd.DataFrame(
         {
-            "date": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            "date": _get_current_date(),
             "first_modify_date": first_work.modify_date,
+            "first_sha256": first_work.sha256,
             "second_modify_date": second_work.modify_date,
+            "second_sha256": second_work.sha256,
             "first_path": first_work.filepath.__str__(),
             "second_path": second_work.filepath.__str__(),
             "jakkar": compare_info.fast.jakkar,
@@ -180,3 +199,7 @@ def deserialize_compare_result(compare_result: pd.Series) -> CompareInfo:
     )
 
     return compare_info
+
+
+def _get_current_date() -> str:
+    return datetime.now().strftime("%d/%m/%Y %H:%M:%S")

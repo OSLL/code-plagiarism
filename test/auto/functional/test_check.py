@@ -10,6 +10,7 @@ from codeplag.types import WorksReport
 from const import REPORTS_FOLDER
 from utils import modify_settings, run_check, run_util
 
+CWD = os.getcwd()
 CPP_FILES = [
     "test/unit/codeplag/cplag/data/sample1.cpp",
     "test/unit/codeplag/cplag/data/sample2.cpp",
@@ -55,7 +56,7 @@ def test_check_util_version():
         (["--files", *CPP_FILES], b"Getting works features from files"),
         (
             ["--directories", CPP_DIR],
-            f"Getting works features from {CPP_DIR}".encode("utf-8"),
+            f"Getting works features from {CWD}/{CPP_DIR}".encode("utf-8"),
         ),
         (
             ["--github-files", *CPP_GITHUB_FILES],
@@ -84,7 +85,7 @@ def test_compare_cpp_files(cmd: list[str], out: bytes):
         (["--files", *PY_FILES], b"Getting works features from files"),
         (
             ["--directories", *PY_DIRS],
-            f"Getting works features from {PY_DIRS[0]}".encode("utf-8"),
+            f"Getting works features from {CWD}/{PY_DIRS[0]}".encode("utf-8"),
         ),
         (
             ["--github-files", *PY_GITHUB_FILES],
@@ -100,7 +101,7 @@ def test_compare_cpp_files(cmd: list[str], out: bytes):
         ),
         (
             ["--directories", *PY_DIRS, "--mode", "one_to_one"],
-            f"Getting works features from {PY_DIRS[0]}".encode("utf-8"),
+            f"Getting works features from {CWD}/{PY_DIRS[0]}".encode("utf-8"),
         ),
     ],
 )
@@ -161,8 +162,5 @@ def test_save_reports(create_reports_folder: None):
         filepath = f"{REPORTS_FOLDER}/{file}"
         with open(filepath, "r") as f:
             report = json.loads(f.read())
-            for key in set(
-                WorksReport.__annotations__.keys()
-                - ["first_modify_date", "second_modify_date"]
-            ):
+            for key in set(WorksReport.__annotations__.keys()):
                 assert key in report

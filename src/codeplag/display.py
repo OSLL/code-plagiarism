@@ -173,16 +173,13 @@ def print_compare_result(
     """
     clear_line()
     print("+" * CHARS_CNT)
-    if features1.modify_date is not None and features2.modify_date is not None:
-        message = (
-            "-----\n"
-            f"{features1.filepath}\n{features1.modify_date}\n"
-            "-----\n"
-            f"{features2.filepath}\n{features2.modify_date}\n"
-            "-----\n"
-        )
-    else:
-        message = f"{features1.filepath}\n{features2.filepath}\n"
+    message = (
+        "-----\n"
+        f"{features1.filepath}\n{features1.modify_date}\n"
+        "-----\n"
+        f"{features2.filepath}\n{features2.modify_date}\n"
+        "-----\n"
+    )
 
     print("May be similar:", message, end="\n\n", sep="\n")
     main_metrics_df = pd.DataFrame(

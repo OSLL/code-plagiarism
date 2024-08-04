@@ -6,7 +6,11 @@ from webparsers.types import WorkInfo
 
 from codeplag.consts import GET_FRAZE, SUPPORTED_EXTENSIONS
 from codeplag.display import red_bold
-from codeplag.getfeatures import AbstractGetter, get_files_path_from_directory
+from codeplag.getfeatures import (
+    AbstractGetter,
+    get_files_path_from_directory,
+    set_sha256,
+)
 from codeplag.logger import codeplag_logger as logger
 from codeplag.logger import log_err
 from codeplag.pyplag.astwalkers import ASTWalker
@@ -85,6 +89,7 @@ def get_ast_from_filename(filepath: Path) -> ast.Module | None:
     return tree
 
 
+@set_sha256
 def get_features_from_ast(tree: ast.Module, filepath: Path | str) -> ASTFeatures:
     features = ASTFeatures(filepath)
     walker = ASTWalker(features)
