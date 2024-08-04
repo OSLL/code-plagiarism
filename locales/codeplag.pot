@@ -6,7 +6,7 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: codeplag 0.4.12\n"
+"Project-Id-Version: codeplag 0.5.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2024-08-04 12:33+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
@@ -299,4 +299,3 @@ msgstr ""
 #: src/templates/sources.templ:68
 msgid "Part of a similar file"
 msgstr ""
-
