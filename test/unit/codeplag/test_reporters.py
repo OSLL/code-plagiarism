@@ -56,22 +56,6 @@ class TestJSONReporter:
             "Not enough rights to write reports to the folder."
         )
 
-    def test_save_result_without_modify_date(
-        self,
-        mock_write_config: MagicMock,
-        first_features: ASTFeatures,
-        second_features: ASTFeatures,
-        first_compare_result: CompareInfo,
-    ):
-        mock_write_config.reset_mock()
-        self.REPORTER.reports = Path("./src")
-        self.REPORTER.save_result(first_features, second_features, first_compare_result)
-        mock_write_config.assert_called_once()
-        assert set(mock_write_config.call_args[0][1].keys()) == set(
-            WorksReport.__annotations__.keys()
-            - ["first_modify_date", "second_modify_date"]
-        )
-
     def test_save_result_with_modify_date(
         self,
         mock_write_config: MagicMock,
@@ -80,8 +64,6 @@ class TestJSONReporter:
         first_compare_result: CompareInfo,
     ):
         mock_write_config.reset_mock()
-        first_features.modify_date = "2023-07-14T11:22:30Z"
-        second_features.modify_date = "2023-07-09T14:35:07Z"
         self.REPORTER.save_result(first_features, second_features, first_compare_result)
         mock_write_config.assert_called_once()
         assert (
@@ -100,9 +82,6 @@ class TestCSVReporter:
         second_features: ASTFeatures,
         first_compare_result: CompareInfo,
     ):
-        first_features.modify_date = "2023-07-14T11:22:30Z"
-        second_features.modify_date = "2023-07-09T14:35:07Z"
-
         # First ok test
         self.REPORTER.save_result(first_features, second_features, first_compare_result)
         self.REPORTER._write_df_to_fs()
@@ -117,23 +96,26 @@ class TestCSVReporter:
         report_path = self.REPORTER.reports / CSV_REPORT_FILENAME
         df = pd.read_csv(report_path, sep=";", index_col=0)
         report_path.unlink()
-        assert df.shape[0] == 2
-        assert tuple(df.columns) == CSV_REPORT_COLUMNS
 
         # Check deserialization
-        for i in range(df.shape[0]):
-            assert df.iloc[i].first_path == str(first_features.filepath)
-            assert df.iloc[i].second_path == str(second_features.filepath)
-            assert df.iloc[i].first_modify_date == first_features.modify_date
-            assert df.iloc[i].second_modify_date == second_features.modify_date
-            deser_compare_info = deserialize_compare_result(df.iloc[i])
-            assert deser_compare_info.fast == first_compare_result.fast
-            assert deser_compare_info.structure is not None
-            assert (
-                deser_compare_info.structure.similarity
-                == first_compare_result.structure.similarity
-            )
-            assert (
-                deser_compare_info.structure.compliance_matrix.tolist()
-                == first_compare_result.structure.compliance_matrix.tolist()
-            )
+        assert df.shape[0] == 1
+        assert tuple(df.columns) == CSV_REPORT_COLUMNS
+        assert df.iloc[0].first_path == str(first_features.filepath)
+        assert df.iloc[0].second_path == str(second_features.filepath)
+        assert first_features.modify_date and (
+            df.iloc[0].first_modify_date == first_features.modify_date
+        )
+        assert second_features.modify_date and (
+            df.iloc[0].second_modify_date == second_features.modify_date
+        )
+        deser_compare_info = deserialize_compare_result(df.iloc[0])
+        assert deser_compare_info.fast == first_compare_result.fast
+        assert deser_compare_info.structure is not None
+        assert (
+            deser_compare_info.structure.similarity
+            == first_compare_result.structure.similarity
+        )
+        assert (
+            deser_compare_info.structure.compliance_matrix.tolist()
+            == first_compare_result.structure.compliance_matrix.tolist()
+        )

@@ -173,10 +173,6 @@ def _get_parsed_line(
             threshold,
             include_funcs_less_threshold,
         )
-        if isinstance(line.first_modify_date, float):
-            line.first_modify_date = ""
-        if isinstance(line.second_modify_date, float):
-            line.second_modify_date = ""
         yield line, cmp_res, same_parts_of_second, same_parts_of_first
 
 

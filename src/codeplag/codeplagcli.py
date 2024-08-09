@@ -40,12 +40,13 @@ class CheckUniqueStore(argparse.Action):
         _option_string: str | None = None,
     ):
         if len(values) > len(set(values)):
+            str_values = ", ".join(str(path) for path in values)
             raise argparse.ArgumentError(
                 self,
                 _(
                     "You cannot specify the same value multiple times. "
                     "You provided '{values}'."
-                ).format(values=values),
+                ).format(values=str_values),
             )
         setattr(namespace, self.dest, values)
 
@@ -56,13 +57,13 @@ class DirPath(Path):
     """
 
     def __new__(cls, *args, **kwargs):
-        path = Path(*args, **kwargs)
+        path = Path(*args, **kwargs).resolve()
         if not path.is_dir():
             raise argparse.ArgumentTypeError(
                 _("Directory '{path}' not found or not a directory.").format(path=path)
             )
 
-        return Path.__new__(Path, *args, **kwargs)
+        return Path.__new__(Path, *args, **kwargs).resolve()
 
 
 class FilePath(Path):
@@ -71,13 +72,13 @@ class FilePath(Path):
     """
 
     def __new__(cls, *args, **kwargs):
-        path = Path(*args, **kwargs)
+        path = Path(*args, **kwargs).resolve()
         if not path.is_file():
             raise argparse.ArgumentTypeError(
                 _("File '{path}' not found or not a file.").format(path=path)
             )
 
-        return Path.__new__(Path, *args, **kwargs)
+        return Path.__new__(Path, *args, **kwargs).resolve()
 
 
 class CodeplagCLI(argparse.ArgumentParser):

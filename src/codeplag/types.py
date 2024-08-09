@@ -1,6 +1,8 @@
+import hashlib
 from collections import defaultdict
 from concurrent.futures import Future
 from dataclasses import dataclass, field
+from datetime import datetime
 from functools import total_ordering
 from pathlib import Path
 from typing import (
@@ -60,7 +62,7 @@ class ASTFeatures:
     """Class contains the source code metadata."""
 
     filepath: Path | str
-    modify_date: str | None = None
+    sha256: str = ""
 
     count_of_nodes: int = 0
     head_nodes: list[str] = field(default_factory=list)
@@ -83,15 +85,26 @@ class ASTFeatures:
     tokens: list[int] = field(default_factory=list)
     tokens_pos: list[NodeCodePlace] = field(default_factory=list)
 
-    def __eq__(self, other):
+    def __post_init__(self) -> None:
+        if isinstance(self.filepath, Path) and self.filepath.exists():
+            self.modify_date = datetime.fromtimestamp(
+                self.filepath.stat().st_mtime
+            ).strftime("%Y-%m-%d %H:%M:%S")
+        else:
+            self.modify_date = ""
+
+    def __eq__(self, other) -> bool:
         if not isinstance(other, self.__class__):
-            return NotImplemented
+            raise NotImplementedError
         return str(self.filepath) == str(other.filepath)
 
-    def __lt__(self, other):
+    def __lt__(self, other) -> bool:
         if not isinstance(other, self.__class__):
-            return NotImplemented
+            raise NotImplementedError
         return str(self.filepath) < str(other.filepath)
+
+    def get_sha256(self) -> str:
+        return hashlib.sha256(str(self.tokens).encode("utf-8")).hexdigest()
 
 
 # ----------------------------------------------------------------------------
@@ -121,8 +134,8 @@ class WorksReport(TypedDict):
     date: str
     first_path: str
     second_path: str
-    first_modify_date: NotRequired[str]
-    second_modify_date: NotRequired[str]
+    first_modify_date: str
+    second_modify_date: str
     first_heads: list[str]
     second_heads: list[str]
     fast: dict[str, int]  # dict from FastMetrics

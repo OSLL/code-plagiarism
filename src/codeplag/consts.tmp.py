@@ -48,7 +48,9 @@ CSV_SAVE_TICK_SEC: Final[int] = 60
 CSV_REPORT_COLUMNS: Final[tuple[str, ...]] = (
     "date",
     "first_modify_date",
+    "first_sha256",
     "second_modify_date",
+    "second_sha256",
     "first_path",
     "second_path",
     "first_heads",

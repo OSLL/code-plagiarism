@@ -24,7 +24,7 @@ def settings_modify(parsed_args: dict[str, Any]) -> None:
         if new_value is None:
             continue
         if isinstance(new_value, Path):
-            settings_config[key] = new_value.absolute()
+            settings_config[key] = new_value.resolve()
         else:
             settings_config[key] = new_value
 

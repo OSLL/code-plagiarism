@@ -8,7 +8,7 @@ from codeplag.cplag.tree import generic_visit, get_features, get_not_ignored
 from codeplag.cplag.utils import get_cursor_from_file
 from codeplag.types import ASTFeatures
 
-_DATA_PATH: Final[Path] = Path("test/unit/codeplag/cplag/data").absolute()
+_DATA_PATH: Final[Path] = Path("test/unit/codeplag/cplag/data").resolve()
 _SAMPLE1_PATH: Final[Path] = _DATA_PATH / "sample1.cpp"
 _SAMPLE2_PATH: Final[Path] = _DATA_PATH / "sample2.cpp"
 _SAMPLE3_PATH: Final[Path] = _DATA_PATH / "sample3.cpp"
@@ -120,6 +120,7 @@ def test_get_features(second_cursor):
                                101, 106, 202, 214, 100, 100,
                                101, 214, 103, 100, 101, 100,
                                101, 114, 100, 101, 100, 101]
+    assert features.sha256 == "957da24c9f9340954aaa9df303922a0fbdcea69b6d3556c2bd462d195ab89052"
 
 
 def test_bad_encoding_syms(third_cursor):
@@ -139,3 +140,4 @@ def test_bad_encoding_syms(third_cursor):
     assert features.count_unodes == 18
     assert len(features.structure) == 167
     assert len(features.tokens) == 167
+    assert features.sha256 == "40f5feba75390d171f3e719be450989150aa232878ed4d10e0736221bad29b91"

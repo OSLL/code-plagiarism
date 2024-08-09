@@ -4,7 +4,7 @@ import re
 import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Literal, overload
+from typing import Callable, Literal, ParamSpec, overload
 
 from webparsers.github_parser import GitHubParser
 from webparsers.types import WorkInfo
@@ -54,6 +54,33 @@ def get_files_path_from_directory(
                 allowed_files.append(path_to_file)
 
     return allowed_files
+
+
+P = ParamSpec("P")
+
+
+def set_sha256(get_features_func: Callable[P, ASTFeatures]) -> Callable[P, ASTFeatures]:
+    """Decorator for setting up 'sha256' attribute after getting work features.
+
+    Args:
+        get_features_func (Callable[..., ASTFeatures]): Getting features function.
+
+    Returns:
+        Callable[..., ASTFeatures]: Function that sets up 'sha256' attribute
+          after getting features.
+    """
+
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> ASTFeatures:
+        """Adds 'sha256' attribute to the ASTFeatures class instance.
+
+        Returns:
+            ASTFeatures: The ASTFeatures class instance with set 'sha256' attribute.
+        """
+        features = get_features_func(*args, **kwargs)
+        features.sha256 = features.get_sha256()
+        return features
+
+    return wrapper
 
 
 class AbstractGetter(ABC):

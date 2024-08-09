@@ -3,6 +3,7 @@ from pathlib import Path
 from clang.cindex import Cursor, TokenKind
 
 from codeplag.cplag.const import IGNORE, OPERATORS
+from codeplag.getfeatures import set_sha256
 from codeplag.types import ASTFeatures, NodeStructurePlace
 
 
@@ -39,6 +40,7 @@ def generic_visit(node: Cursor, features: ASTFeatures, curr_depth: int = 0) -> N
             generic_visit(child, features, curr_depth + 1)
 
 
+@set_sha256
 def get_features(tree: Cursor, filepath: Path | str = "") -> ASTFeatures:
     features = ASTFeatures(filepath or tree.displayname)
     for token in tree.get_tokens():

@@ -1,3 +1,4 @@
+import os
 import re
 
 from utils import run_check, run_cmd
@@ -7,7 +8,7 @@ def test_log_once():
     dir = "src/codeplag"
     result = run_check(["--directories", dir], extension="cpp")
 
-    pattern = f"Getting works features from {dir}"
+    pattern = f"Getting works features from {os.getcwd()}/{dir}"
     output_result = result.cmd_res.stdout.decode("utf-8")
 
     result.assert_success()

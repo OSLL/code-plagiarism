@@ -50,8 +50,8 @@ class TestSettingsModify:
         result.assert_success()
 
         assert json.loads(CONFIG_PATH.read_text()) == {
-            "environment": Path(env).absolute().__str__(),
-            "reports": Path(reports).absolute().__str__(),
+            "environment": Path(env).resolve().__str__(),
+            "reports": Path(reports).resolve().__str__(),
             "threshold": threshold,
             "show_progress": show_progress,
             "workers": workers,

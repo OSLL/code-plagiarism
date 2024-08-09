@@ -2,7 +2,8 @@ import re
 from pathlib import Path
 
 import pytest
-from codeplag.getfeatures import get_files_path_from_directory
+from codeplag.getfeatures import get_files_path_from_directory, set_sha256
+from codeplag.types import ASTFeatures
 from pytest_mock import MockerFixture
 
 
@@ -58,3 +59,14 @@ def test_get_files_path_from_directory(os_walk, extensions, path_regexp, expecte
     os_walk.assert_called()
 
     assert files == expected
+
+
+def test_set_sha256():
+    features = ASTFeatures("foo/bar")
+    features.tokens = [1, 2, 3, 4, 5]
+    features = set_sha256(lambda: features)()
+
+    assert (
+        features.sha256
+        == "0c049903ce2330190375d4c1f2e489888c9ebe39daf75b2564e591e8bc1afe72"
+    )
