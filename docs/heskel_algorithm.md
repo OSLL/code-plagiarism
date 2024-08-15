@@ -16,21 +16,16 @@
     - A = {(INT_TYPE, ID), (ID, ASSIGN), (ASSIGN, ID), (ID, MATH_OP), (MATH_OP, ID)}
 
     - B = {(INT_TYPE, ID), (ID, ASSIGN), (ASSIGN, NUMERIC), (NUMERIC, MATH_OP), (MATH_OP, NUMERIC)}
-Вычисляем значение коэффициента Жаккара:
-    J(A, B) = |{(INT_TYPE, ID), (ID, ASSIGN)}| 
-                              / 
-              |{(INT_TYPE, ID), (ID, ASSIGN), (ASSIGN, ID),
-                (ID, MATH_OP), (MATH_OP, ID), (ASSIGN, NUMERIC),
-                (NUMERIC, MATH_OP), (MATH_OP, NUMERIC)}|
-            = 2 / 8 = 0.25
 
-$$\frac{
-    |\{(INT\_TYPE,\ ID), (ID,\ ASSIGN)\}|
+Вычисляем значение коэффициента Жаккара:
+
+$$J(A, B) = \frac{
+    |\\{(INT\\_TYPE,\ ID), (ID,\ ASSIGN)\\}|
 }{
-    |\{(INT\_TYPE,\ ID), (ID,\ ASSIGN), (ASSIGN,\ ID),
-       (ID,\ MATH\_OP), (MATH\_OP,\ ID), (ASSIGN, NUMERIC),
-       (NUMERIC,\ MATH\_OP), (MATH\_OP,\ NUMERIC)\}|
-}$$
+    |\\{(INT\\_TYPE,\ ID), (ID,\ ASSIGN), (ASSIGN,\ ID),
+       (ID,\ MATH\\_OP), (MATH\\_OP,\ ID), (ASSIGN, NUMERIC),
+       (NUMERIC,\ MATH\\_OP), (MATH\\_OP,\ NUMERIC)\\}|
+} = \frac{2}{8} = 0.25$$
 
 ### Список литературы
 
