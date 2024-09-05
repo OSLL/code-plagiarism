@@ -50,12 +50,11 @@ class ASTWalker(ast.NodeVisitor):
             self.features.head_nodes.append(f"{actual_node_name}[{node.lineno}]")
 
     def generic_visit(self, node: ast.AST) -> None:
-        """Function for traverse, counting operators, keywords, literals
-        and save sequence of operators.
+        """Traverses, counts operators, keywords, and literals, and saves sequence of operators.
 
         Args:
         ----
-            node - current node
+            node (ast.AST): current node.
 
         """
         type_name = type(node).__name__
@@ -91,65 +90,3 @@ class ASTWalker(ast.NodeVisitor):
             self.curr_depth += 1
             ast.NodeVisitor.generic_visit(self, node)
             self.curr_depth -= 1
-
-
-# YAGNI
-class Visitor(ast.NodeVisitor):
-    def __init__(self, write_tree=False):
-        self.depth = 0
-        self.count_of_nodes = 0
-        self.write_tree = write_tree
-
-    def generic_visit(self, node):
-        """Function for traverse tree and print it in console.
-
-        Args:
-        ----
-            node - current node
-
-        """
-        type_node = type(node).__name__
-        if type_node not in IGNORE_NODES:
-            if self.depth != 0:
-                self.count_of_nodes += 1
-            if self.write_tree:
-                print("-" * self.depth + type(node).__name__, self.count_of_nodes)
-            self.depth += 1
-            ast.NodeVisitor.generic_visit(self, node)
-            self.depth -= 1
-
-
-# YAGNI
-class NodeGetter(ast.NodeVisitor):
-    def __init__(self):
-        self.depth = 0
-        self.nodes = []
-
-    def visit(self, node):
-        """Function for visiting node's children.
-
-        Args:
-        ----
-            node - current node
-
-        """
-        if self.depth > 1:
-            return
-        self.generic_visit(node)
-
-    def generic_visit(self, node):
-        """Function for traverse and print in console names of all node's children.
-
-        Args:
-        ----
-            node - current node
-
-        """
-        type_node = type(node).__name__
-        if type_node not in IGNORE_NODES:
-            if self.depth == 1:
-                self.nodes.append(node)
-
-            self.depth += 1
-            ast.NodeVisitor.generic_visit(self, node)
-            self.depth -= 1

@@ -53,8 +53,7 @@ class CSVReporter(AbstractReporter):
         second_work: ASTFeatures,
         compare_info: CompareInfo,
     ) -> None:
-        """Updates the cache with new comparisons and writes the cache to the
-          filesystem periodically.
+        """Updates the cache with new comparisons and writes it to the filesystem periodically.
 
         Args:
             first_work (ASTFeatures): Contains the first work metadata.

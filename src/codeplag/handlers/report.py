@@ -65,10 +65,9 @@ def html_report_create(report_path: Path, report_type: ReportType) -> Literal[0,
             f"There is nothing in '{reports_path}' to create a basic html report from."
         )
         return 1
-    if report_type == "general":
-        create_report_function = _create_report
-    else:
-        create_report_function = _create_sources_report
+    create_report_function = (
+        _create_report if report_type == "general" else _create_sources_report
+    )
     environment = jinja2.Environment(extensions=["jinja2.ext.i18n"])
     environment.install_gettext_translations(get_translations())  # type: ignore
     create_report_function(

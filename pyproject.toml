@@ -2,11 +2,11 @@
 requires-python = ">=3.10"
 
 [tool.black]
-max-line-length = 97
+max-line-length = 99
 
 [tool.ruff]
 builtins = ["_"]
-line-length = 97
+line-length = 99
 lint.select = [
     "D", # pydocstyle
     "F",    # pyflakes
@@ -27,14 +27,6 @@ lint.ignore = [
     "D104",
     "D105",
     "D107",
-    "D203",
-    "D205",
-    "D213",
-    "D400",
-    "D401",
-    "D404",
-    "D407",
-    "D417",
 ]
 
 [tool.ruff.lint.pydocstyle]

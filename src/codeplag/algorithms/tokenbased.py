@@ -48,15 +48,18 @@ def generate_ngrams(
 def generate_ngrams(
     tokens: Sequence[int], n: int = 3, hashit: bool = False, unique: bool = False
 ) -> set[int] | list[int] | set[tuple[int, ...]] | list[tuple[int, ...]]:
-    """The function returns a list or set of N-grams or list or set of hashes
-    of ngrams and may use to generate shingles.
+    """The function returns a list or set of N-grams or list or set of hashes of ngrams.
+
+    This function can be used to generate shingles.
 
     Args:
     ----
-        tokens - list of tokens
-        n - count of elements in ngrams
-        hashit - If is True, then the function returns a list or set of hashes of N-grams
-        unique - If is True, then the function returns a set of N-grams or hashes of N-grams
+        tokens (Sequence[int]): list of tokens.
+        n (int): count of elements in ngrams.
+        hashit (bool): If is True, then the function returns a list or set of
+          hashes of N-grams.
+        unique (bool): If is True, then the function returns a set of N-grams or
+          hashes of N-grams.
 
     """
     count_tokens = len(tokens)
@@ -76,7 +79,7 @@ def get_imprints_from_hashes(hashes: Sequence[int]) -> list[int]:
 
     Args:
     ----
-        hashes - list of hashes
+        hashes (Sequence[int]): list of hashes.
 
     Returns:
     -------
@@ -96,8 +99,9 @@ def value_jakkar_coef(
 
     Args:
     ----
-        tokens_first - list of tokens of the first program
-        tokens_second - list of tokens of the second program
+        tokens_first (Sequence[int]): list of tokens of the first program.
+        tokens_second (Sequence[int]): list of tokens of the second program.
+        ngrams_length (int): N-grams length.
 
     """
     ngrams_first: set[tuple[int, ...]] = generate_ngrams(
@@ -118,13 +122,12 @@ def value_jakkar_coef(
 
 # equal to the Levenshtein length
 def lcs(X: Sequence[int], Y: Sequence[int]) -> int:
-    """The function returns the length of the longest common subsequence
-    of two sequences X and Y.
+    """The function returns the length of the longest common subsequence of two sequences X and Y.
 
     Args:
     ----
-        X - list of tokens of the first program
-        Y - list of tokens of the second program
+        X (Sequence[int]): list of tokens of the first program.
+        Y (Sequence[int]): list of tokens of the second program.
 
     """
     m = len(X)
@@ -150,13 +153,14 @@ def lcs(X: Sequence[int], Y: Sequence[int]) -> int:
 
 
 def lcs_based_coeff(subseq1: Sequence[int], subseq2: Sequence[int]) -> float:
-    """The function returns coefficient based on the length of the longest
-    common subsequence. This coefficient describes how same two sequences.
+    """Returns coefficient based on the length of the longest common subsequence.
+
+    Returned coefficient describes how same two sequences.
 
     Args:
     ----
-        subseq1 - the first sequence
-        subseq2 - the second sequnce
+        subseq1 (Sequence[int]): the first sequence.
+        subseq2 (Sequence[int]): the second sequnce.
 
     """
     count_elem1 = len(subseq1)
