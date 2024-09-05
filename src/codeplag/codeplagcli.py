@@ -42,8 +42,7 @@ class CheckUniqueStore(argparse.Action):
             raise argparse.ArgumentError(
                 self,
                 _(
-                    "You cannot specify the same value multiple times. "
-                    "You provided '{values}'."
+                    "You cannot specify the same value multiple times. " "You provided '{values}'."
                 ).format(values=str_values),
             )
         setattr(namespace, self.dest, values)
@@ -81,15 +80,13 @@ class CodeplagCLI(argparse.ArgumentParser):
     def __add_settings_path(self, subparsers: argparse._SubParsersAction) -> None:
         settings = subparsers.add_parser(
             "settings",
-            help=_(
-                "Modifies and shows static settings of the '{util_name}' util."
-            ).format(util_name=UTIL_NAME),
+            help=_("Modifies and shows static settings of the '{util_name}' util.").format(
+                util_name=UTIL_NAME
+            ),
         )
 
         settings_commands = settings.add_subparsers(
-            help=_("Settings commands of the '{util_name}' util.").format(
-                util_name=UTIL_NAME
-            ),
+            help=_("Settings commands of the '{util_name}' util.").format(util_name=UTIL_NAME),
             required=True,
             metavar="COMMAND",
             dest="settings",
@@ -98,9 +95,7 @@ class CodeplagCLI(argparse.ArgumentParser):
         # settings modify
         settings_modify = settings_commands.add_parser(
             "modify",
-            help=_("Manage the '{util_name}' util settings.").format(
-                util_name=UTIL_NAME
-            ),
+            help=_("Manage the '{util_name}' util settings.").format(util_name=UTIL_NAME),
         )
         settings_modify.add_argument(
             "-env",
@@ -111,9 +106,7 @@ class CodeplagCLI(argparse.ArgumentParser):
         settings_modify.add_argument(
             "-r",
             "--reports",
-            help=_(
-                "If defined, then saves reports about suspect works into provided path."
-            ),
+            help=_("If defined, then saves reports about suspect works into provided path."),
             metavar="DIRECTORY",
             type=DirPath,
         )
@@ -164,9 +157,7 @@ class CodeplagCLI(argparse.ArgumentParser):
         settings_modify.add_argument(
             "-w",
             "--workers",
-            help=_(
-                "The maximum number of processes that can be used to compare works."
-            ),
+            help=_("The maximum number of processes that can be used to compare works."),
             type=int,
             choices=WORKERS_CHOICE,
         )
@@ -184,9 +175,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             "--directories",
             metavar="DIRECTORY",
             type=DirPath,
-            help=_(
-                "Absolute or relative path to a local directories with project files."
-            ),
+            help=_("Absolute or relative path to a local directories with project files."),
             nargs="+",
             action=CheckUniqueStore,
             default=[],
@@ -285,9 +274,7 @@ class CodeplagCLI(argparse.ArgumentParser):
         )
 
         report_commands = report.add_subparsers(
-            help=_("Report commands of the '{util_name}' util.").format(
-                util_name={UTIL_NAME}
-            ),
+            help=_("Report commands of the '{util_name}' util.").format(util_name={UTIL_NAME}),
             required=True,
             metavar="COMMAND",
             dest="report",
@@ -302,8 +289,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             "-p",
             "--path",
             help=_(
-                "Path to save generated report. "
-                "If it's a directory, then create a file in it."
+                "Path to save generated report. " "If it's a directory, then create a file in it."
             ),
             required=True,
             type=Path,
@@ -350,11 +336,7 @@ class CodeplagCLI(argparse.ArgumentParser):
         parsed_args_dict = vars(parsed_args)
         root = parsed_args_dict.get("root")
         if root is None:
-            self.error(
-                _(
-                    "No command is provided; please choose one from the available (--help)."
-                )
-            )
+            self.error(_("No command is provided; please choose one from the available (--help)."))
         command = parsed_args_dict.get(root)
         if (
             root == "settings"
@@ -365,15 +347,11 @@ class CodeplagCLI(argparse.ArgumentParser):
                 if parsed_args_dict.get(key) is not None
             )
         ):
-            self.error(
-                _("There is nothing to modify; please provide at least one argument.")
-            )
+            self.error(_("There is nothing to modify; please provide at least one argument."))
         elif root == "check":
             if parsed_args.repo_regexp and not parsed_args.github_user:
                 self.error(
-                    _(
-                        "The'repo-regexp' option requires the provided 'github-user' option."
-                    )
+                    _("The'repo-regexp' option requires the provided 'github-user' option.")
                 )
             elif parsed_args.path_regexp and not (
                 parsed_args.directories

@@ -36,9 +36,7 @@ class TestJSONReporter:
     ):
         self.REPORTER.reports = Path("/bad_directory")
         self.REPORTER.save_result(first_features, second_features, first_compare_result)
-        assert mock_default_logger.error.call_args == call(
-            "The folder for reports isn't exists."
-        )
+        assert mock_default_logger.error.call_args == call("The folder for reports isn't exists.")
 
     def test_save_result_not_occurred_due_permission_error(
         self,
@@ -66,10 +64,7 @@ class TestJSONReporter:
         mock_write_config.reset_mock()
         self.REPORTER.save_result(first_features, second_features, first_compare_result)
         mock_write_config.assert_called_once()
-        assert (
-            mock_write_config.call_args[0][1].keys()
-            == WorksReport.__annotations__.keys()
-        )
+        assert mock_write_config.call_args[0][1].keys() == WorksReport.__annotations__.keys()
 
 
 class TestCSVReporter:
@@ -111,10 +106,7 @@ class TestCSVReporter:
         deser_compare_info = deserialize_compare_result(df.iloc[0])
         assert deser_compare_info.fast == first_compare_result.fast
         assert deser_compare_info.structure is not None
-        assert (
-            deser_compare_info.structure.similarity
-            == first_compare_result.structure.similarity
-        )
+        assert deser_compare_info.structure.similarity == first_compare_result.structure.similarity
         assert (
             deser_compare_info.structure.compliance_matrix.tolist()
             == first_compare_result.structure.compliance_matrix.tolist()

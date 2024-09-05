@@ -47,8 +47,6 @@ class TestFastCompare:
     def test_fast_compare_with_different_weights(
         self, first_features: ASTFeatures, second_features: ASTFeatures
     ):
-        metrics = fast_compare(
-            first_features, second_features, weights=(0.5, 0.6, 0.7, 0.8)
-        )
+        metrics = fast_compare(first_features, second_features, weights=(0.5, 0.6, 0.7, 0.8))
 
         assert metrics.weighted_average == pytest.approx(0.796, 0.001)

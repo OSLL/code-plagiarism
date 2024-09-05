@@ -38,7 +38,4 @@ def test_get_features_from_ast():
         "my_func[6]",
         "If[12]",
     ]
-    assert (
-        features.sha256
-        == "f231b049ada761d534bb611cc7e92efdf8fd985d8092a72a132e79becff338d0"
-    )
+    assert features.sha256 == "f231b049ada761d534bb611cc7e92efdf8fd985d8092a72a132e79becff338d0"

@@ -66,9 +66,7 @@ CSV_REPORT_COLUMNS: Final[tuple[str, ...]] = (
 
 # Choices
 MODE_CHOICE: Final[tuple[Mode, ...]] = get_args(Mode)
-REPORTS_EXTENSION_CHOICE: Final[tuple[ReportsExtension, ...]] = get_args(
-    ReportsExtension
-)
+REPORTS_EXTENSION_CHOICE: Final[tuple[ReportsExtension, ...]] = get_args(ReportsExtension)
 EXTENSION_CHOICE: Final[tuple[Extension, ...]] = get_args(Extension)
 LANGUAGE_CHOICE: Final[tuple[Language, ...]] = get_args(Language)
 LOG_LEVEL_CHOICE: Final[tuple[LogLevel, ...]] = get_args(LogLevel)

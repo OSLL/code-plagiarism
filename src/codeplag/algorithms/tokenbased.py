@@ -13,36 +13,31 @@ from typing import Literal, Sequence, overload
 @overload
 def generate_ngrams(
     tokens: Sequence[int], n: int, hashit: Literal[False], unique: Literal[False]
-) -> list[tuple[int, ...]]:
-    ...
+) -> list[tuple[int, ...]]: ...
 
 
 @overload
 def generate_ngrams(
     tokens: Sequence[int], n: int, hashit: Literal[False], unique: Literal[True]
-) -> set[tuple[int, ...]]:
-    ...
+) -> set[tuple[int, ...]]: ...
 
 
 @overload
 def generate_ngrams(
     tokens: Sequence[int], n: int, hashit: Literal[True], unique: Literal[False]
-) -> list[int]:
-    ...
+) -> list[int]: ...
 
 
 @overload
 def generate_ngrams(
     tokens: Sequence[int], n: int, hashit: Literal[True], unique: Literal[True]
-) -> set[int]:
-    ...
+) -> set[int]: ...
 
 
 @overload
 def generate_ngrams(
     tokens: Sequence[int], n: int = 3, hashit: bool = False, unique: bool = False
-) -> set[int] | list[int] | set[tuple[int, ...]] | list[tuple[int, ...]]:
-    ...
+) -> set[int] | list[int] | set[tuple[int, ...]] | list[tuple[int, ...]]: ...
 
 
 def generate_ngrams(

@@ -21,9 +21,7 @@ class StreamFormatter(logging.Formatter):
         super().__init__(datefmt="%H:%M")
 
     def format(self, record: logging.LogRecord) -> str:
-        self._style._fmt = (
-            self.FORMATS.get(record.levelno, info)(self._level_fmt) + self._log_fmt
-        )
+        self._style._fmt = self.FORMATS.get(record.levelno, info)(self._level_fmt) + self._log_fmt
 
         return super().format(record)
 

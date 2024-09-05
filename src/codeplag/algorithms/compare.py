@@ -72,13 +72,9 @@ def compare_works(
     compliance_matrix = np.zeros(
         (len(features1.head_nodes), len(features2.head_nodes), 2), dtype=np.int64
     )
-    struct_res = struct_compare(
-        features1.structure, features2.structure, compliance_matrix
-    )
+    struct_res = struct_compare(features1.structure, features2.structure, compliance_matrix)
     struct_res = struct_res[0] / struct_res[1]
 
-    structure_info = StructuresInfo(
-        similarity=struct_res, compliance_matrix=compliance_matrix
-    )
+    structure_info = StructuresInfo(similarity=struct_res, compliance_matrix=compliance_matrix)
 
     return CompareInfo(fast=fast_metrics, structure=structure_info)

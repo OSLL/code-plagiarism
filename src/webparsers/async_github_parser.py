@@ -170,9 +170,7 @@ class AsyncGithubParser:
         return pulls
 
     async def get_name_default_branch(self, owner: str, repo: str) -> str:
-        response = await self.send_get_request(
-            self.REPO_GET, {"username": owner, "repo": repo}
-        )
+        response = await self.send_get_request(self.REPO_GET, {"username": owner, "repo": repo})
 
         return response["default_branch"]
 
@@ -225,9 +223,7 @@ class AsyncGithubParser:
         file_in_bytes = bytearray(base64.b64decode(response["content"]))
         return file_in_bytes.decode("utf-8", errors="ignore")
 
-    async def _get_commit_info(
-        self, owner: str, repo: str, branch: str, path: str
-    ) -> Commit:
+    async def _get_commit_info(self, owner: str, repo: str, branch: str, path: str) -> Commit:
         response: list[dict] = await self.send_get_request(
             self.COMMITS_INFO,
             url_vars={
@@ -261,9 +257,7 @@ class AsyncGithubParser:
             full_link = f"{_GH_URL}{owner}/{repo}/blob/{branch.name}{current_path}"
             node_type = node["type"]
             if node_type == "tree":
-                commit_info = await self._get_commit_info(
-                    owner, repo, branch.name, current_path
-                )
+                commit_info = await self._get_commit_info(owner, repo, branch.name, current_path)
                 async for file_gen in self.get_files_generator_from_sha_commit(
                     owner=owner,
                     repo=repo,
@@ -281,9 +275,7 @@ class AsyncGithubParser:
             ):
                 continue
 
-            commit_info = await self._get_commit_info(
-                owner, repo, branch.name, current_path
-            )
+            commit_info = await self._get_commit_info(owner, repo, branch.name, current_path)
 
             file_content = await self.get_file_content_by_sha(
                 owner,
@@ -305,9 +297,7 @@ class AsyncGithubParser:
         if self.__check_all_branches:
             branches = await self.get_list_repo_branches(repo_url.owner, repo_url.repo)
         else:
-            default_branch = await self.get_name_default_branch(
-                repo_url.owner, repo_url.repo
-            )
+            default_branch = await self.get_name_default_branch(repo_url.owner, repo_url.repo)
             commit_info = await self._get_branch_last_commit_info(
                 repo_url.owner, repo_url.repo, default_branch
             )
@@ -335,9 +325,7 @@ class AsyncGithubParser:
         try:
             file_url = GitHubContentUrl(file_url)
         except ValueError as error:
-            self.logger.error(
-                f"{file_url} is incorrect link to content of GitHub repository"
-            )
+            self.logger.error(f"{file_url} is incorrect link to content of GitHub repository")
             raise error
 
         response = await self.send_get_request(
@@ -351,9 +339,7 @@ class AsyncGithubParser:
         )
 
         return WorkInfo(
-            await self.get_file_content_by_sha(
-                file_url.owner, file_url.repo, response["sha"]
-            ),
+            await self.get_file_content_by_sha(file_url.owner, file_url.repo, response["sha"]),
             file_url,
             await self._get_commit_info(
                 file_url.owner, file_url.repo, file_url.branch, file_url.path
@@ -366,9 +352,7 @@ class AsyncGithubParser:
         try:
             dir_url = GitHubContentUrl(dir_url)
         except ValueError as error:
-            self.logger.error(
-                f"{dir_url} is incorrect link to content of GitHub repository"
-            )
+            self.logger.error(f"{dir_url} is incorrect link to content of GitHub repository")
             raise error
 
         response = await self.send_get_request(

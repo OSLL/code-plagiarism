@@ -70,9 +70,7 @@ class GitHubParser:
         # Check Ethernet connection and requests limit
         try:
             if self.__session is not None:
-                response = self.__session.get(
-                    url, headers=self.__headers, params=params
-                )
+                response = self.__session.get(url, headers=self.__headers, params=params)
             else:
                 response = requests.get(url, headers=self.__headers, params=params)
         except requests.exceptions.ConnectionError as err:
@@ -81,9 +79,7 @@ class GitHubParser:
             sys.exit(1)
 
         if response.status_code in [400, 403, 404]:
-            self.logger.error(
-                f"GitHub error: '{response.json()['message']}' for url '{url}'."
-            )
+            self.logger.error(f"GitHub error: '{response.json()['message']}' for url '{url}'.")
             sys.exit(1)
 
         try:
@@ -95,9 +91,7 @@ class GitHubParser:
 
         return response
 
-    def get_list_of_repos(
-        self, owner: str, reg_exp: re.Pattern | None = None
-    ) -> list[Repository]:
+    def get_list_of_repos(self, owner: str, reg_exp: re.Pattern | None = None) -> list[Repository]:
         repos: list[Repository] = []
         response_json = self.send_get_request(f"/users/{owner}").json()
         user_type = response_json.get("type", "").lower()
@@ -118,9 +112,7 @@ class GitHubParser:
             for repo in response_json:
                 cnt += 1
                 if (reg_exp is None) or re.search(reg_exp, repo["name"]) is not None:
-                    repos.append(
-                        Repository(name=repo["name"], html_url=repo["html_url"])
-                    )
+                    repos.append(Repository(name=repo["name"], html_url=repo["html_url"]))
             if cnt < params["per_page"]:
                 break
 
@@ -163,9 +155,7 @@ class GitHubParser:
 
         return response["default_branch"]
 
-    def _get_branch_last_commit_info(
-        self, owner: str, repo: str, branch: str = "main"
-    ) -> dict:
+    def _get_branch_last_commit_info(self, owner: str, repo: str, branch: str = "main") -> dict:
         api_url = f"/repos/{owner}/{repo}/branches/{branch}"
         response: dict[str, Any] = self.send_get_request(api_url).json()
 
@@ -207,9 +197,7 @@ class GitHubParser:
             full_link = f"{_GH_URL}{owner}/{repo}/blob/{branch.name}{current_path}"
             node_type = node["type"]
             if node_type == "tree":
-                commit_info = self._get_commit_info(
-                    owner, repo, branch.name, current_path
-                )
+                commit_info = self._get_commit_info(owner, repo, branch.name, current_path)
                 yield from self.get_files_generator_from_sha_commit(
                     owner=owner,
                     repo=repo,
@@ -228,9 +216,7 @@ class GitHubParser:
 
             commit_info = self._get_commit_info(owner, repo, branch.name, current_path)
 
-            yield self.get_file_content_by_sha(
-                owner, repo, node["sha"], commit_info, full_link
-            )
+            yield self.get_file_content_by_sha(owner, repo, node["sha"], commit_info, full_link)
 
     def get_list_repo_branches(self, owner: str, repo: str) -> list[Branch]:
         branches: list[Branch] = []
@@ -298,9 +284,7 @@ class GitHubParser:
         try:
             file_url = GitHubContentUrl(file_url)
         except ValueError as error:
-            self.logger.error(
-                f"{file_url} is incorrect link to content of GitHub repository"
-            )
+            self.logger.error(f"{file_url} is incorrect link to content of GitHub repository")
             raise error
 
         api_url = f"/repos/{file_url.owner}/{file_url.repo}/contents/{file_url.path}"
@@ -311,9 +295,7 @@ class GitHubParser:
             file_url.owner,
             file_url.repo,
             response_json["sha"],
-            self._get_commit_info(
-                file_url.owner, file_url.repo, file_url.branch, file_url.path
-            ),
+            self._get_commit_info(file_url.owner, file_url.repo, file_url.branch, file_url.path),
             file_url,
         )
 
@@ -323,9 +305,7 @@ class GitHubParser:
         try:
             dir_url = GitHubContentUrl(dir_url)
         except ValueError as error:
-            self.logger.error(
-                f"{dir_url} is incorrect link to content of GitHub repository"
-            )
+            self.logger.error(f"{dir_url} is incorrect link to content of GitHub repository")
             raise error
 
         api_url = f"/repos/{dir_url.owner}/{dir_url.repo}/contents/{dir_url.path}"

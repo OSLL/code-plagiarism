@@ -66,7 +66,4 @@ def test_set_sha256():
     features.tokens = [1, 2, 3, 4, 5]
     features = set_sha256(lambda: features)()
 
-    assert (
-        features.sha256
-        == "0c049903ce2330190375d4c1f2e489888c9ebe39daf75b2564e591e8bc1afe72"
-    )
+    assert features.sha256 == "0c049903ce2330190375d4c1f2e489888c9ebe39daf75b2564e591e8bc1afe72"

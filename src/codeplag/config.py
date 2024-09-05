@@ -17,13 +17,11 @@ Config = dict[str, Any]
 
 
 @overload
-def read_config(file: Path, safe: Literal[False] = False) -> Config:
-    ...
+def read_config(file: Path, safe: Literal[False] = False) -> Config: ...
 
 
 @overload
-def read_config(file: Path, safe: bool = False) -> Config | None:
-    ...
+def read_config(file: Path, safe: bool = False) -> Config | None: ...
 
 
 def read_config(file: Path, safe: bool = False) -> Config | None:

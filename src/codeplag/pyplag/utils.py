@@ -135,9 +135,7 @@ class PyFeaturesGetter(AbstractGetter):
             features.modify_date = work_info.commit.date
             return features
 
-        self.logger.error(
-            "Unsuccessfully attempt to get AST from the file %s.", work_info.link
-        )
+        self.logger.error("Unsuccessfully attempt to get AST from the file %s.", work_info.link)
 
     def get_from_files(self, files: list[Path]) -> list[ASTFeatures]:
         if not files:

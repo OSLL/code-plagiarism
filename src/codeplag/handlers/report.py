@@ -53,21 +53,15 @@ def html_report_create(report_path: Path, report_type: ReportType) -> Literal[0,
     settings_config = read_settings_conf()
     reports_path = settings_config.get("reports")
     if not reports_path:
-        logger.error(
-            "Can't create general report without provided in settings 'report' path."
-        )
+        logger.error("Can't create general report without provided in settings 'report' path.")
         return 1
     if settings_config["reports_extension"] != "csv":
         logger.error("Can create report only when 'reports_extension' is csv.")
         return 1
     if not reports_path.exists():
-        logger.error(
-            f"There is nothing in '{reports_path}' to create a basic html report from."
-        )
+        logger.error(f"There is nothing in '{reports_path}' to create a basic html report from.")
         return 1
-    create_report_function = (
-        _create_report if report_type == "general" else _create_sources_report
-    )
+    create_report_function = _create_report if report_type == "general" else _create_sources_report
     environment = jinja2.Environment(extensions=["jinja2.ext.i18n"])
     environment.install_gettext_translations(get_translations())  # type: ignore
     create_report_function(
@@ -193,9 +187,7 @@ def _get_resulting_same_percentages(
     for first_path, same_works in same_parts_of_all.items():
         max_funcs_same_percentages = {}
         for second_work in same_works.values():
-            for function, same_percentage in second_work[
-                "max_funcs_same_percentages"
-            ].items():
+            for function, same_percentage in second_work["max_funcs_same_percentages"].items():
                 if same_percentage <= max_funcs_same_percentages.get(function, 0):
                     continue
                 max_funcs_same_percentages[function] = same_percentage

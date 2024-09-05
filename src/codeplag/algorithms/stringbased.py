@@ -10,9 +10,7 @@ class LevenshteinDistance:
         self.s1_length = len(sequence1)
         self.s2_length = len(sequence2)
         self.distance = -1
-        self.distance_matrix = np.zeros(
-            (self.s1_length + 1, self.s2_length + 1), dtype=np.int64
-        )
+        self.distance_matrix = np.zeros((self.s1_length + 1, self.s2_length + 1), dtype=np.int64)
 
     @staticmethod
     def m(symbol1: str, symbol2: str) -> Literal[0, 1]:
@@ -36,8 +34,7 @@ class LevenshteinDistance:
                 minimum = min(
                     self.distance_matrix[row - 1][column] + 1,
                     self.distance_matrix[row][column - 1] + 1,
-                    self.distance_matrix[row - 1][column - 1]
-                    + self.m(symbol1, symbol2),
+                    self.distance_matrix[row - 1][column - 1] + self.m(symbol1, symbol2),
                 )
                 self.distance_matrix[row][column] = minimum
 
@@ -61,9 +58,7 @@ def is_marked_match(marked_string_list: list[int], begin: int, length: int) -> b
         length (int): length of match.
 
     """
-    condition = (
-        begin in marked_string_list or (begin + length - 1) in marked_string_list
-    )
+    condition = begin in marked_string_list or (begin + length - 1) in marked_string_list
 
     return condition
 
@@ -107,9 +102,9 @@ def gst(
                     max_match = j
 
         for match in matches:
-            if not is_marked_match(
-                source_marked, match["p"], match["j"]
-            ) and not is_marked_match(search_marked, match["t"], match["j"]):
+            if not is_marked_match(source_marked, match["p"], match["j"]) and not is_marked_match(
+                search_marked, match["t"], match["j"]
+            ):
                 for k in range(match["j"]):
                     source_marked.append(match["p"] + k)
                     search_marked.append(match["t"] + k)

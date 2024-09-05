@@ -25,9 +25,7 @@ class CmdResult:
 
 
 def run_cmd(cmd: list[str]) -> CmdResult:
-    return CmdResult(
-        subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    )
+    return CmdResult(subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE))
 
 
 def run_util(
@@ -44,9 +42,7 @@ def run_check(cmd: list[str], extension: str = "py") -> CmdResult:
 
 
 def create_report(path: Path, report_type: ReportType) -> CmdResult:
-    return run_util(
-        ["create", "--path", str(path), "--type", report_type], root="report"
-    )
+    return run_util(["create", "--path", str(path), "--type", report_type], root="report")
 
 
 def modify_settings(
