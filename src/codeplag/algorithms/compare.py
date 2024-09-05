@@ -13,9 +13,10 @@ def fast_compare(
     features_s: ASTFeatures,
     weights: tuple[float, float, float, float] = DEFAULT_WEIGHTS,
 ) -> FastMetrics:
-    """The function calculates the similarity of features of two programs
-    using four algorithms, calculates their weighted average, and returns
-    all of this  in 'FastMetrics' structure.
+    """Returns comparison result of two works compared by fast algorithms.
+
+    Calculates the similarity of features of two programs using four algorithms, calculates their
+    weighted average, and returns all of this  in 'FastMetrics' structure.
 
     Args:
     ----

@@ -7,7 +7,6 @@ from concurrent.futures import Future, ProcessPoolExecutor
 from itertools import combinations
 from pathlib import Path
 from time import monotonic
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -45,20 +44,20 @@ class WorksComparator:
     def __init__(
         self,
         extension: Extension,
-        repo_regexp: Optional[str] = None,
-        path_regexp: Optional[str] = None,
+        repo_regexp: str | None = None,
+        path_regexp: str | None = None,
         mode: Mode = DEFAULT_MODE,
         set_github_parser: bool = False,
         all_branches: bool = False,
     ) -> None:
-        """Initializes a feature getter for further comparison. Sets the needed
-        settings from the settings config file.
+        """Initializes a `FeaturesGetter` and sets settings from the settings config file.
 
         Args:
         ----
             extension (Extension): The extension of the checked works.
-            repo_regexp (Optional[str]): Regular expression for filtering GitHub repositories.
-            path_regexp (Optional[str]): Regular expression for filtering local files.
+            repo_regexp (str | None, optional): Regular expression for filtering GitHub
+              repositories.
+            path_regexp (str | None, optional): Regular expression for filtering local files.
             mode (Mode): Mode of searching plagiarism.
             set_github_parser (bool): When True sets GithubParser for search in the GitHub.
             all_branches (bool): When True and the `set_github` option was set,
@@ -78,11 +77,11 @@ class WorksComparator:
             path_regexp=path_regexp,
         )
         self.mode: Mode = mode
-        self.progress: Optional[Progress] = None
+        self.progress: Progress | None = None
 
         settings_conf = read_settings_conf()
         self.show_progress: Flag = settings_conf["show_progress"]
-        self.threshold: Optional[Threshold] = settings_conf["threshold"]
+        self.threshold: Threshold | None = settings_conf["threshold"]
         self.workers: int = settings_conf["workers"]
         reports = settings_conf.get("reports")
         if reports is not None:
@@ -96,14 +95,14 @@ class WorksComparator:
             self.set_github_parser(all_branches, settings_conf.get("environment"))
 
     def set_github_parser(
-        self, all_branches: bool, environment: Optional[Path] = None
+        self, all_branches: bool, environment: Path | None = None
     ) -> None:
         """Sets a GitHubParser object for getting works information from GitHub.
 
         Args:
         ----
             all_branches (bool): Searching in all branches.
-            environment (Optional[Path], optional): Path to the environment file
+            environment (Path | None, optional): Path to the environment file
               with GitHub access token. Defaults to None.
 
         """
@@ -130,10 +129,10 @@ class WorksComparator:
 
     def check(
         self,
-        files: Optional[list[Path]] = None,
-        directories: Optional[list[Path]] = None,
-        github_files: Optional[list[str]] = None,
-        github_project_folders: Optional[list[str]] = None,
+        files: list[Path] | None = None,
+        directories: list[Path] | None = None,
+        github_files: list[str] | None = None,
+        github_project_folders: list[str] | None = None,
         github_user: str = "",
     ) -> None:
         if files is None:
@@ -337,8 +336,8 @@ class IgnoreThresholdWorksComparator(WorksComparator):
     def __init__(
         self,
         extension: Extension,
-        repo_regexp: Optional[str] = None,
-        path_regexp: Optional[str] = None,
+        repo_regexp: str | None = None,
+        path_regexp: str | None = None,
         mode: Mode = DEFAULT_MODE,
         set_github_parser: bool = False,
         all_branches: bool = False,
@@ -386,7 +385,7 @@ def _calc_iterations(count: int, mode: Mode = DEFAULT_MODE) -> int:
 
 
 def _print_pretty_progress_if_need_and_increase(
-    progress: Optional[Progress], workers: int
+    progress: Progress | None, workers: int
 ) -> None:
     if progress is None:
         return

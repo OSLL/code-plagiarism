@@ -10,10 +10,10 @@ def counter_metric(counter1: Mapping[str, int], counter2: Mapping[str, int]) -> 
 
     Args:
     ----
-        counter1 - dict object with counts of operators or keywords
-          or literals
-        counter2 - dict object with counts of operators or keywords
-          or literals
+        counter1 (Mapping[str, int]): dict object with counts of operators or keywords
+          or literals.
+        counter2 (Mapping[str, int]): dict object with counts of operators or keywords
+          or literals.
 
     """
     if len(counter1) == 0 and len(counter2) == 0:
@@ -42,8 +42,8 @@ def op_shift_metric(ops1: list[str], ops2: list[str]) -> tuple[int, float]:
 
     Args:
     ----
-        ops1 - sequence of operators of tree1
-        ops2 - sequence of operators of tree2
+        ops1 (list[str]): sequence of operators of tree1.
+        ops2 (list[str]): sequence of operators of tree2.
 
     """
     count_el_f = len(ops1)
@@ -89,13 +89,11 @@ def get_children_indexes(
     """Return indexes of her children and their count.
 
     Args:
-    ----
-        tree - a simple structure of the AST.
-        count_of_nodes - count of elements in the tree
+        tree (list[NodeStructurePlace]): a simple structure of the AST.
+        count_of_nodes (int): count of elements in the tree.
 
     Complexity:
         O(len(tree))
-
     """
     indexes = []
     count_of_children = 0
@@ -116,7 +114,7 @@ def find_max_index(array: np.ndarray) -> np.ndarray:
 
     Args:
     ----
-        array - matrix of compliance (np.ndarray object)
+        array (np.ndarray): matrix of compliance (np.ndarray object).
 
     Complexity:
         rows = array.shape[0]
@@ -144,7 +142,7 @@ def matrix_value(array: np.ndarray) -> tuple[list, list]:
 
     Args:
     ----
-        array - matrix of compliance (np.ndarray object)
+        array (np.ndarray): matrix of compliance.
 
     Complexity:
         rows = array.shape[0]
@@ -181,12 +179,11 @@ def add_not_counted(
     """The function return the count of nodes that didn't account in the previous step.
 
     Args:
-    ----
-        tree - part of structure
-        count_of_children - count of top-level nodes in the tree
-        key_indexes - indexes of top-level nodes in the tree
-        indexes - indexes of selected nodes which accounted in the metric
-        axis - 0 - row, 1 - column
+        tree (list[NodeStructurePlace]): part of structure.
+        count_of_children (int): count of top-level nodes in the tree.
+        key_indexes (list[int]): indexes of top-level nodes in the tree.
+        indexes (list[np.ndarray]): indexes of selected nodes which accounted in the metric.
+        axis (int): 0 - row, 1 - column.
 
     Complexity:
         O(count_of_children * len(tree))
@@ -213,8 +210,9 @@ def struct_compare(
 
     Args:
     ----
-        tree1 - a simple structure of the first AST.
-        tree2 - a simple structure of the second AST.
+        tree1 (list[NodeStructurePlace]): a simple structure of the first AST.
+        tree2 (list[NodeStructurePlace]): a simple structure of the second AST.
+        matrix (np.ndarray | None): compliance matrix of comparing trees.
 
     """
     if matrix is None:

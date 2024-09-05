@@ -1,6 +1,4 @@
-"""This module consist the CLI of the codeplag util and
-necessary internal classes for it.
-"""
+"""This module consist the CLI of the codeplag util and necessary internal classes for it."""
 
 from __future__ import annotations
 
@@ -52,9 +50,7 @@ class CheckUniqueStore(argparse.Action):
 
 
 class DirPath(Path):
-    """Path that raising argparse.ArgumentTypeError when parsing CLI
-    arguments if directory is not exists.
-    """
+    """Raises `argparse.ArgumentTypeError` if the directory doesn't exist."""
 
     def __new__(cls, *args, **kwargs):
         path = Path(*args, **kwargs).resolve()
@@ -67,9 +63,7 @@ class DirPath(Path):
 
 
 class FilePath(Path):
-    """Path that raising argparse.ArgumentTypeError when parsing CLI
-    arguments if file is not exists.
-    """
+    """Raises `argparse.ArgumentTypeError` if the file doesn't exist."""
 
     def __new__(cls, *args, **kwargs):
         path = Path(*args, **kwargs).resolve()

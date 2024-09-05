@@ -63,7 +63,7 @@ def set_sha256(get_features_func: Callable[P, ASTFeatures]) -> Callable[P, ASTFe
     """Decorator for setting up 'sha256' attribute after getting work features.
 
     Args:
-        get_features_func (Callable[..., ASTFeatures]): Getting features function.
+        get_features_func (Callable[P, ASTFeatures]): Getting features function.
 
     Returns:
         Callable[..., ASTFeatures]: Function that sets up 'sha256' attribute

@@ -19,9 +19,10 @@ class LevenshteinDistance:
         return 0 if symbol1 == symbol2 else 1
 
     def calculate_distance_matrix(self) -> None:
-        """The function calculates the Levenshtein matrix and sets
-        in the distance atribute minimal count of operations
-        needed for converting the first sequence to the second.
+        """Calculates the Levenshtein distance.
+
+        The function calculates the Levenshtein matrix and sets in the distance attribute minimal
+        count of operations needed for converting the first sequence to the second.
         """
         for i in range(self.s1_length + 1):
             self.distance_matrix[i][0] = i
@@ -55,9 +56,9 @@ def is_marked_match(marked_string_list: list[int], begin: int, length: int) -> b
 
     Args:
     ----
-        marked_string_list - list with marked indexes
-        begin - start index of match
-        length - length of match
+        marked_string_list (list[int]): list with marked indexes.
+        begin (int): start index of match.
+        length (int): length of match.
 
     """
     condition = (
@@ -74,9 +75,9 @@ def gst(
 
     Args:
     ----
-        sequence1 - the first string/sequence
-        sequence2 - the second string/sequence
-        min_match_len - minimal searching length of match
+        sequence1 (Sequence): the first string/sequence.
+        sequence2 (Sequence): the second string/sequence.
+        min_match_len (int): minimal searching length of match.
 
     """
     matches = []

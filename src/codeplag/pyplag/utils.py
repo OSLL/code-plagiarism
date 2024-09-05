@@ -64,7 +64,7 @@ def get_ast_from_filename(filepath: Path) -> ast.Module | None:
 
     Args:
     ----
-        filename - full path to file with code which will have analyzed
+        filepath (Path): full path to file with code which will have analyzed.
 
     """
     if not filepath.is_file():

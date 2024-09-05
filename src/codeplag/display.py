@@ -165,10 +165,11 @@ def print_compare_result(
 
     Args:
     ----
-        features1: The features of the first  source file.
-        features2: The features of the second  source file.
-        compare_info: The compare metrics of two works.
-        threshold: Threshold of plagiarism searcher alarm.
+        features1 (ASTFeatures): The features of the first  source file.
+        features2 (ASTFeatures): The features of the second  source file.
+        compare_info (CompareInfo): The compare metrics of two works.
+        compliance_matrix_df (pd.DataFrame | None, optional): DataFrame consisting
+          structures similarity information of two works.
 
     """
     clear_line()

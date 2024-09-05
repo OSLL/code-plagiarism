@@ -25,8 +25,8 @@ def get_cursor_from_file(
 
     Args:
     ----
-        filename - full path to source file
-        args - list of arguments for clang.cindex.Index.parse() method
+        filepath (Path): full path to source file.
+        args (list[str]): list of arguments for clang.cindex.Index.parse() method.
 
     """
     if args is None:
