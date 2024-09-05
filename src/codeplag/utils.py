@@ -29,9 +29,7 @@ class CodeplagEngine:
             self.report_type: ReportType = parsed_args.pop("type")
         else:
             self.github_files: list[str] = parsed_args.pop("github_files", [])
-            self.github_project_folders: list[str] = parsed_args.pop(
-                "github_project_folders", []
-            )
+            self.github_project_folders: list[str] = parsed_args.pop("github_project_folders", [])
             self.github_user: str = parsed_args.pop("github_user", "") or ""
             ignore_threshold: bool = parsed_args.pop("ignore_threshold")
             if ignore_threshold:

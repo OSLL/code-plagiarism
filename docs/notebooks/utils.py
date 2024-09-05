@@ -33,9 +33,7 @@ def remove_unnecessary_blank_lines(source_code: str) -> str:
     return re.sub(pattern, "\n", source_code)
 
 
-def get_data_from_dir(
-    path: str = "./data", max_count_lines: int | None = None
-) -> pd.DataFrame:
+def get_data_from_dir(path: str = "./data", max_count_lines: int | None = None) -> pd.DataFrame:
     df = pd.DataFrame()
     for filename in os.listdir(path):
         if not re.search(r".csv$", filename):
@@ -84,9 +82,7 @@ def save_works_from_repo_url(url: str, check_policy: bool = True) -> None:
 def get_time_to_meta(df: pd.DataFrame, iterations: int = 10) -> pd.DataFrame:
     count_lines = []
     to_meta_time = []
-    for index, content in df[
-        ["content", "link", "count_lines_without_blank_lines"]
-    ].iterrows():
+    for index, content in df[["content", "link", "count_lines_without_blank_lines"]].iterrows():
         print(index, " " * 20, end="\r")
         for _ in range(iterations):
             tree = get_ast_from_content(content[0], content[1])
@@ -131,9 +127,7 @@ def plot_and_save_result(
     if trend == "linear":
         z = np.polyfit(unique_count_lines, mean_times, 1)
         p = np.poly1d(z)
-        plt.plot(
-            unique_count_lines, p(unique_count_lines), "r--", label="Линейный тренд."
-        )
+        plt.plot(unique_count_lines, p(unique_count_lines), "r--", label="Линейный тренд.")
     elif trend == "n^2":
         popt_cons, _ = curve_fit(
             square_func,
@@ -159,9 +153,7 @@ def plot_and_save_result(
             ),
         )
         p = np.poly1d(popt_cons)
-        plt.plot(
-            unique_count_lines, p(unique_count_lines), "r--", label="Кубический тренд."
-        )
+        plt.plot(unique_count_lines, p(unique_count_lines), "r--", label="Кубический тренд.")
     elif trend == "n^4":
         popt_cons, _ = curve_fit(
             quart_func,
@@ -177,9 +169,7 @@ def plot_and_save_result(
     else:
         raise Exception(f"Incorrect tred '{trend}'.")
 
-    rolling = pd.DataFrame(
-        {"unique_count_lines": unique_count_lines, "mean_times": mean_times}
-    )
+    rolling = pd.DataFrame({"unique_count_lines": unique_count_lines, "mean_times": mean_times})
     num_window = 20
     plt.plot(
         rolling.unique_count_lines,
@@ -192,9 +182,7 @@ def plot_and_save_result(
     plt.title(title, fontsize=17)
     plt.legend(loc="upper left")
     plt.savefig(
-        "./graphics/need_time_{}_{}.png".format(
-            what, datetime.now().strftime("%d%m%Y_%H%M%S")
-        )
+        "./graphics/need_time_{}_{}.png".format(what, datetime.now().strftime("%d%m%Y_%H%M%S"))
     )
 
 
@@ -211,9 +199,7 @@ def get_time_algorithms(
         raise Exception("Unexpected error when parsing first work.")
 
     features1 = get_features_from_ast(tree1, work.link)
-    for index, content in df[
-        ["content", "link", "count_lines_without_blank_lines"]
-    ].iterrows():
+    for index, content in df[["content", "link", "count_lines_without_blank_lines"]].iterrows():
         for _ in range(iterations):
             print(index, " " * 20, end="\r")
             tree2 = get_ast_from_content(content[0], content[1])

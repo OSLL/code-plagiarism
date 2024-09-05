@@ -87,9 +87,9 @@ class ASTFeatures:
 
     def __post_init__(self) -> None:
         if isinstance(self.filepath, Path) and self.filepath.exists():
-            self.modify_date = datetime.fromtimestamp(
-                self.filepath.stat().st_mtime
-            ).strftime("%Y-%m-%d %H:%M:%S")
+            self.modify_date = datetime.fromtimestamp(self.filepath.stat().st_mtime).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
         else:
             self.modify_date = ""
 

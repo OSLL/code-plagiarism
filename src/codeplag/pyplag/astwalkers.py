@@ -39,9 +39,7 @@ class ASTWalker(ast.NodeVisitor):
 
     def add_node_to_structure(self, node: ast.AST, node_name: str) -> None:
         self.features.structure.append(
-            NodeStructurePlace(
-                depth=self.curr_depth, uid=self.features.unodes[node_name]
-            )
+            NodeStructurePlace(depth=self.curr_depth, uid=self.features.unodes[node_name])
         )
         if self.curr_depth == 1:
             actual_node_name = self.__get_actual_name_from_node(node)

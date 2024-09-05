@@ -35,7 +35,5 @@ def test_compliance_matrix_to_df():
 
     assert_frame_equal(
         compliance_matrix_to_df(compliance_matrix, heads1, heads2),
-        pd.DataFrame(
-            data=[[0.5, 0.1, 0.75], [0.125, 0.25, 0.6]], index=heads1, columns=heads2
-        ),
+        pd.DataFrame(data=[[0.5, 0.1, 0.75], [0.125, 0.25, 0.6]], index=heads1, columns=heads2),
     )

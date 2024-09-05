@@ -93,9 +93,7 @@ class ComplexProgress(Progress):
         return self.progress
 
 
-def colorize(
-    text: str, color: Color, bold: bool = False, underline: bool = False
-) -> str:
+def colorize(text: str, color: Color, bold: bool = False, underline: bool = False) -> str:
     """Wraps provided text to change color, bold, or underline it for printing."""
     if bold:
         text = f"{Color.BOLD.value}{text}"
@@ -216,9 +214,7 @@ def print_pretty_progress(progress: Progress, workers: int) -> None:
     current_progress = progress.progress
     if current_progress != 0.0:
         predicated_time_left = timedelta(
-            seconds=int(
-                (1.0 - current_progress) / current_progress * time_spent_seconds
-            )
+            seconds=int((1.0 - current_progress) / current_progress * time_spent_seconds)
         )
     else:
         predicated_time_left = "N/A"

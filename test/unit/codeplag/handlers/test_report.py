@@ -107,9 +107,7 @@ def test__get_parsed_line(
     second_features: ASTFeatures,
     first_compare_result: CompareInfo,
 ):
-    compare_df = serialize_compare_result(
-        first_features, second_features, first_compare_result
-    )
+    compare_df = serialize_compare_result(first_features, second_features, first_compare_result)
     compare_df.iloc[0].first_heads = str(compare_df.iloc[0].first_heads)
     compare_df.iloc[0].second_heads = str(compare_df.iloc[0].second_heads)
 
@@ -117,12 +115,8 @@ def test__get_parsed_line(
 
     assert result[0][1].fast == first_compare_result.fast
     assert result[0][1].structure
-    assert (
-        result[0][1].structure.similarity == first_compare_result.structure.similarity
-    )
-    assert (
-        result[0][1].structure.similarity == first_compare_result.structure.similarity
-    )
+    assert result[0][1].structure.similarity == first_compare_result.structure.similarity
+    assert result[0][1].structure.similarity == first_compare_result.structure.similarity
     assert np.array_equal(
         result[0][1].structure.compliance_matrix,
         first_compare_result.structure.compliance_matrix,
@@ -210,9 +204,7 @@ def test__get_resulting_same_percentages(
     cnt_head_nodes: CntHeadNodes,
     expected: ResultingSamePercentages,
 ):
-    assert (
-        _get_resulting_same_percentages(same_parts_of_all, cnt_head_nodes) == expected
-    )
+    assert _get_resulting_same_percentages(same_parts_of_all, cnt_head_nodes) == expected
 
 
 @pytest.mark.parametrize(

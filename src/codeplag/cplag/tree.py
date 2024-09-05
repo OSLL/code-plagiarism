@@ -56,13 +56,9 @@ def get_features(tree: Cursor, filepath: Path | str = "") -> ASTFeatures:
     return features
 
 
-def __add_node_to_structure(
-    features: ASTFeatures, node_name: str, curr_depth: int
-) -> None:
+def __add_node_to_structure(features: ASTFeatures, node_name: str, curr_depth: int) -> None:
     if node_name not in features.unodes:
         features.unodes[node_name] = features.count_unodes
         features.from_num[features.count_unodes] = node_name
         features.count_unodes += 1
-    features.structure.append(
-        NodeStructurePlace(curr_depth, features.unodes[node_name])
-    )
+    features.structure.append(NodeStructurePlace(curr_depth, features.unodes[node_name]))

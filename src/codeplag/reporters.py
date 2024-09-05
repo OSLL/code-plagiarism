@@ -32,8 +32,7 @@ class AbstractReporter(ABC):
         first_work: ASTFeatures,
         second_work: ASTFeatures,
         compare_info: CompareInfo,
-    ) -> None:
-        ...
+    ) -> None: ...
 
 
 class CSVReporter(AbstractReporter):
@@ -121,9 +120,7 @@ class JSONReporter(AbstractReporter):
         assert compare_info.structure is not None
 
         struct_info_dict = compare_info.structure._asdict()
-        struct_info_dict["compliance_matrix"] = struct_info_dict[
-            "compliance_matrix"
-        ].tolist()
+        struct_info_dict["compliance_matrix"] = struct_info_dict["compliance_matrix"].tolist()
         report = WorksReport(
             date=_get_current_date(),
             first_path=first_work.filepath.__str__(),

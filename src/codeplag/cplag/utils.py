@@ -18,9 +18,7 @@ LIBCLANG_SO_FILE_PATH: Final[Path] = Path("/usr/lib/llvm-14/lib/libclang-14.so.1
 Config.set_library_file(LIBCLANG_SO_FILE_PATH)
 
 
-def get_cursor_from_file(
-    filepath: Path, args: list[str] | None = None
-) -> Cursor | None:
+def get_cursor_from_file(filepath: Path, args: list[str] | None = None) -> Cursor | None:
     """Returns clang.cindex.Cursor object or None if file is undefined.
 
     Args:
@@ -50,9 +48,7 @@ def get_cursor_from_file(
     return file_obj.cursor
 
 
-def _get_works_from_filepaths(
-    filepaths: list[Path], compile_args: list[str]
-) -> list[ASTFeatures]:
+def _get_works_from_filepaths(filepaths: list[Path], compile_args: list[str]) -> list[ASTFeatures]:
     if not filepaths:
         return []
 

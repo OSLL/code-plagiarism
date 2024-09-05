@@ -94,9 +94,7 @@ class WorksComparator:
         if set_github_parser:
             self.set_github_parser(all_branches, settings_conf.get("environment"))
 
-    def set_github_parser(
-        self, all_branches: bool, environment: Path | None = None
-    ) -> None:
+    def set_github_parser(self, all_branches: bool, environment: Path | None = None) -> None:
         """Sets a GitHubParser object for getting works information from GitHub.
 
         Args:
@@ -108,8 +106,7 @@ class WorksComparator:
         """
         if not environment:
             logger.warning(
-                "Env file not found or not a file. "
-                "Trying to get token from environment."
+                "Env file not found or not a file. " "Trying to get token from environment."
             )
             access_token: str = os.environ.get("ACCESS_TOKEN", "")
         else:
@@ -144,14 +141,10 @@ class WorksComparator:
         if github_project_folders is None:
             github_project_folders = []
 
-        logger.debug(
-            "Mode: %s; Extension: %s.", self.mode, self.features_getter.extension
-        )
+        logger.debug("Mode: %s; Extension: %s.", self.mode, self.features_getter.extension)
         begin_time = monotonic()
         features_from_files = self.features_getter.get_from_files(files)
-        features_from_gh_files = self.features_getter.get_from_github_files(
-            github_files
-        )
+        features_from_gh_files = self.features_getter.get_from_github_files(github_files)
 
         logger.info("Starting searching for plagiarism ...")
         if self.mode == "many_to_many":
@@ -187,9 +180,7 @@ class WorksComparator:
         works.extend(features_from_files)
         works.extend(self.features_getter.get_from_dirs(directories))
         works.extend(features_from_gh_files)
-        works.extend(
-            self.features_getter.get_from_github_project_folders(github_project_folders)
-        )
+        works.extend(self.features_getter.get_from_github_project_folders(github_project_folders))
         works.extend(self.features_getter.get_from_users_repos(github_user))
 
         if self.show_progress:
@@ -227,9 +218,7 @@ class WorksComparator:
                 *self.features_getter.get_from_github_project_folders(
                     github_project_folders, independent=True
                 ),
-                *self.features_getter.get_from_users_repos(
-                    github_user, independent=True
-                ),
+                *self.features_getter.get_from_users_repos(github_user, independent=True),
             ),
         )
         if self.show_progress:
@@ -362,12 +351,8 @@ def compliance_matrix_to_df(
     )
     for row in range(compliance_matrix.shape[0]):
         for col in range(compliance_matrix.shape[1]):
-            data[row][col] = (
-                compliance_matrix[row][col][0] / compliance_matrix[row][col][1]
-            )
-    compliance_matrix_df = pd.DataFrame(
-        data=data, index=head_nodes1, columns=head_nodes2
-    )
+            data[row][col] = compliance_matrix[row][col][0] / compliance_matrix[row][col][1]
+    compliance_matrix_df = pd.DataFrame(data=data, index=head_nodes1, columns=head_nodes2)
     return compliance_matrix_df
 
 
@@ -384,9 +369,7 @@ def _calc_iterations(count: int, mode: Mode = DEFAULT_MODE) -> int:
         raise ValueError(f"The provided mode '{mode}' is invalid.")
 
 
-def _print_pretty_progress_if_need_and_increase(
-    progress: Progress | None, workers: int
-) -> None:
+def _print_pretty_progress_if_need_and_increase(progress: Progress | None, workers: int) -> None:
     if progress is None:
         return
     print_pretty_progress(progress, workers)

@@ -106,9 +106,7 @@ class TestGitHubParser(unittest.TestCase):
 
         for test_case in test_cases:
             with self.subTest(test_case=test_case):
-                rv = test_case["parser"]._is_accepted_extension(
-                    **test_case["arguments"]
-                )
+                rv = test_case["parser"]._is_accepted_extension(**test_case["arguments"])
                 self.assertEqual(rv, test_case["expected_result"])
 
     @patch("webparsers.github_parser.requests.get")
@@ -247,19 +245,13 @@ class TestGitHubParser(unittest.TestCase):
                     ),
                 ],
                 "expected_result": [
-                    Repository(
-                        "asm_web_debug", "https://github.com/OSLL/asm_web_debug"
-                    ),
+                    Repository("asm_web_debug", "https://github.com/OSLL/asm_web_debug"),
                     Repository(
                         "aido-auto-feedback",
                         "https://github.com/OSLL/aido-auto-feedback",
                     ),
-                    Repository(
-                        "MD-Code_generator", "https://github.com/OSLL/MD-Code_generator"
-                    ),
-                    Repository(
-                        "code-plagiarism", "https://github.com/OSLL/code-plagiarism"
-                    ),
+                    Repository("MD-Code_generator", "https://github.com/OSLL/MD-Code_generator"),
+                    Repository("code-plagiarism", "https://github.com/OSLL/code-plagiarism"),
                 ],
             },
             {
@@ -292,9 +284,7 @@ class TestGitHubParser(unittest.TestCase):
                     ),
                 ],
                 "expected_result": [
-                    Repository(
-                        "asm_web_debug", "https://github.com/OSLL/asm_web_debug"
-                    ),
+                    Repository("asm_web_debug", "https://github.com/OSLL/asm_web_debug"),
                     Repository(
                         "aido-auto-feedback",
                         "https://github.com/OSLL/aido-auto-feedback",
@@ -312,9 +302,7 @@ class TestGitHubParser(unittest.TestCase):
                 rv = parser.get_list_of_repos(**test_case["arguments"])
                 self.assertEqual(rv, test_case["expected_result"])
 
-                self.assertEqual(
-                    mock_send_get_request.mock_calls, test_case["send_calls"]
-                )
+                self.assertEqual(mock_send_get_request.mock_calls, test_case["send_calls"])
 
     @patch("webparsers.github_parser.GitHubParser.send_get_request")
     def test_get_list_of_repos_bad(self, mock_send_get_request):
@@ -336,9 +324,7 @@ class TestGitHubParser(unittest.TestCase):
                 with self.assertRaises(test_case["raised"]):
                     parser.get_list_of_repos(**test_case["arguments"])
 
-                self.assertEqual(
-                    mock_send_get_request.mock_calls, test_case["send_calls"]
-                )
+                self.assertEqual(mock_send_get_request.mock_calls, test_case["send_calls"])
 
     @patch("webparsers.github_parser.GitHubParser.send_get_request")
     def test_get_pulls_info(self, mock_send_get_request):
@@ -455,9 +441,7 @@ class TestGitHubParser(unittest.TestCase):
                 rv = parser.get_pulls_info(**test_case["arguments"])
                 self.assertEqual(rv, test_case["expected_result"])
 
-                assert len(mock_send_get_request.mock_calls) == len(
-                    test_case["send_calls"]
-                )
+                assert len(mock_send_get_request.mock_calls) == len(test_case["send_calls"])
                 for actual_call, expected_call in zip(
                     mock_send_get_request.mock_calls,
                     test_case["send_calls"],
@@ -491,9 +475,7 @@ class TestGitHubParser(unittest.TestCase):
                 rv = parser.get_name_default_branch(**test_case["arguments"])
                 self.assertEqual(rv, test_case["expected_result"])
 
-                self.assertEqual(
-                    mock_send_get_request.mock_calls, test_case["send_calls"]
-                )
+                self.assertEqual(mock_send_get_request.mock_calls, test_case["send_calls"])
 
     @patch("webparsers.github_parser.GitHubParser.send_get_request")
     def test__get_branch_last_commit_info(self, mock_send_get_request):
@@ -534,9 +516,7 @@ class TestGitHubParser(unittest.TestCase):
                 rv = parser._get_branch_last_commit_info(**test_case["arguments"])
                 self.assertEqual(rv, test_case["expected_result"])
 
-                self.assertEqual(
-                    mock_send_get_request.mock_calls, test_case["send_calls"]
-                )
+                self.assertEqual(mock_send_get_request.mock_calls, test_case["send_calls"])
 
     @patch("webparsers.github_parser.GitHubParser.send_get_request")
     def test_get_file_content_by_sha(self, mock_send_get_request):
@@ -549,9 +529,7 @@ class TestGitHubParser(unittest.TestCase):
                     "commit_info": _COMMIT1,
                     "file_path": "http://api.github.com/repos",
                 },
-                "send_calls": [
-                    call("/repos/OSLL/aido-auto-feedback/git/blobs/kljsdfkiwe0341")
-                ],
+                "send_calls": [call("/repos/OSLL/aido-auto-feedback/git/blobs/kljsdfkiwe0341")],
                 "send_rv": Response({"content": base64.b64encode(b"Good message")}),
                 "expected_result": WorkInfo(
                     "Good message", "http://api.github.com/repos", _COMMIT1
@@ -565,15 +543,9 @@ class TestGitHubParser(unittest.TestCase):
                     "commit_info": _COMMIT2,
                     "file_path": "http://api.github.com/test",
                 },
-                "send_calls": [
-                    call("/repos/moevm/asm_web_debug/git/blobs/jsadlkf3904")
-                ],
-                "send_rv": Response(
-                    {"content": base64.b64encode(b"Bad\xee\xeemessage")}
-                ),
-                "expected_result": WorkInfo(
-                    "Badmessage", "http://api.github.com/test", _COMMIT2
-                ),
+                "send_calls": [call("/repos/moevm/asm_web_debug/git/blobs/jsadlkf3904")],
+                "send_rv": Response({"content": base64.b64encode(b"Bad\xee\xeemessage")}),
+                "expected_result": WorkInfo("Badmessage", "http://api.github.com/test", _COMMIT2),
             },
         ]
 
@@ -587,9 +559,7 @@ class TestGitHubParser(unittest.TestCase):
                 rv = parser.get_file_content_by_sha(**test_case["arguments"])
                 self.assertEqual(rv, test_case["expected_result"])
 
-                self.assertEqual(
-                    mock_send_get_request.mock_calls, test_case["send_calls"]
-                )
+                self.assertEqual(mock_send_get_request.mock_calls, test_case["send_calls"])
 
     @patch("webparsers.github_parser.GitHubParser.get_file_content_by_sha")
     @patch("webparsers.github_parser.GitHubParser.send_get_request")
@@ -814,15 +784,12 @@ class TestGitHubParser(unittest.TestCase):
             mock_get_file_content_by_sha.side_effect = test_case["get_file_content_se"]
 
             with self.subTest(test_case=test_case):
-                rv = list(
-                    parser.get_files_generator_from_sha_commit(**test_case["arguments"])
-                )
+                rv = list(parser.get_files_generator_from_sha_commit(**test_case["arguments"]))
                 self.assertEqual(rv, test_case["expected_result"])
 
                 assert mock_send_get_request.mock_calls == test_case["send_calls"]
                 assert (
-                    mock_get_file_content_by_sha.mock_calls
-                    == test_case["get_file_content_calls"]
+                    mock_get_file_content_by_sha.mock_calls == test_case["get_file_content_calls"]
                 )
 
     @patch("webparsers.github_parser.GitHubParser.send_get_request")
@@ -863,9 +830,7 @@ class TestGitHubParser(unittest.TestCase):
                     "repo": "asm_web_debug",
                 },
                 "send_calls": [
-                    call(
-                        "/repos/moevm/asm_web_debug/branches", params=_REQUEST_PARAMS_1
-                    ),
+                    call("/repos/moevm/asm_web_debug/branches", params=_REQUEST_PARAMS_1),
                 ],
                 "send_se": [
                     Response([_BRANCH_INFO1, _BRANCH_INFO2]),
@@ -887,9 +852,7 @@ class TestGitHubParser(unittest.TestCase):
                 rv = parser.get_list_repo_branches(**test_case["arguments"])
                 self.assertEqual(rv, test_case["expected_result"])
 
-                self.assertEqual(
-                    mock_send_get_request.mock_calls, test_case["send_calls"]
-                )
+                self.assertEqual(mock_send_get_request.mock_calls, test_case["send_calls"])
 
     @patch("webparsers.github_parser.GitHubParser.get_name_default_branch")
     @patch("webparsers.github_parser.GitHubParser.get_list_repo_branches")
@@ -938,23 +901,17 @@ class TestGitHubParser(unittest.TestCase):
             mock_get_name_default_branch.reset_mock()
 
             mock_get_name_default_branch.return_value = test_case["name_default_branch"]
-            mock_get_sha_last_branch_commit.return_value = test_case[
-                "last_branch_commit"
-            ]
+            mock_get_sha_last_branch_commit.return_value = test_case["last_branch_commit"]
             mock_get_files_generator_from_sha_commit.return_value = test_case["files"]
             mock_get_list_repo_branches.return_value = test_case["branches"]
 
             with self.subTest(test_case=test_case):
-                rv = list(
-                    parser.get_files_generator_from_repo_url(**test_case["arguments"])
-                )
+                rv = list(parser.get_files_generator_from_repo_url(**test_case["arguments"]))
                 self.assertEqual(rv, test_case["expected_result"])
 
     @patch("webparsers.github_parser.GitHubParser.get_file_content_by_sha")
     @patch("webparsers.github_parser.GitHubParser.send_get_request")
-    def test_get_file_from_url(
-        self, mock_send_get_request, mock_get_file_content_by_sha
-    ):
+    def test_get_file_from_url(self, mock_send_get_request, mock_get_file_content_by_sha):
         test_cases = [
             {
                 "arguments": {
@@ -989,9 +946,7 @@ class TestGitHubParser(unittest.TestCase):
     ):
         test_cases = [
             {
-                "arguments": {
-                    "dir_url": "https://github.com/OSLL/code-plagiarism/tree/main/src"
-                },
+                "arguments": {"dir_url": "https://github.com/OSLL/code-plagiarism/tree/main/src"},
                 "send_se": [
                     Response(
                         [
@@ -1016,15 +971,11 @@ class TestGitHubParser(unittest.TestCase):
         parser = GitHubParser()
         for test_case in test_cases:
             mock_send_get_request.side_effect = test_case["send_se"]
-            mock_get_files_generator_from_sha_commit.return_value = test_case[
-                "files_gen"
-            ]
+            mock_get_files_generator_from_sha_commit.return_value = test_case["files_gen"]
             mock_get_file_content_by_sha.return_value = test_case["file_gen"]
 
             with self.subTest(test_case=test_case):
-                rv = list(
-                    parser.get_files_generator_from_dir_url(**test_case["arguments"])
-                )
+                rv = list(parser.get_files_generator_from_dir_url(**test_case["arguments"]))
                 self.assertEqual(rv, test_case["expected_result"])
 
 
