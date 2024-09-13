@@ -164,7 +164,7 @@ class WorksComparator:
                 github_project_folders,
                 github_user,
             )
-        logger.debug("Time for all %s.", timedelta(monotonic() - begin_time))
+        logger.debug("Time for all %s.", timedelta(seconds=monotonic() - begin_time))
         logger.info("Ending searching for plagiarism ...")
         if isinstance(self.reporter, CSVReporter):
             self.reporter._write_df_to_fs()

@@ -23,10 +23,10 @@ def test_github_url(url: str, expected: list[str]) -> None:
 @pytest.mark.parametrize(
     "url",
     [
-        ("ttps://github.com/OSLL",),
-        ("https:/j/github.com/OSLL",),
-        ("https://githUb.com/OSLL",),
-        ("https:/",),
+        "ttps://github.com/OSLL",
+        "https:/j/github.com/OSLL",
+        "https://githUb.com/OSLL",
+        "https:/",
     ],
 )
 def test_github_url_bad(url: str) -> None:
@@ -59,11 +59,11 @@ def test_github_repo_url(url: str, expected: list[str]) -> None:
 @pytest.mark.parametrize(
     "url",
     [
-        ("https://github.com/OSLL",),
-        ("ttps://github.com/OSLL",),
-        ("https:/j/github.com/OSLL",),
-        ("https://githUb.com/OSLL",),
-        ("https:/",),
+        "https://github.com/OSLL",
+        "ttps://github.com/OSLL",
+        "https:/j/github.com/OSLL",
+        "https://githUb.com/OSLL",
+        "https:/",
     ],
 )
 def test_github_repo_url_bad(url: str) -> None:
@@ -101,12 +101,12 @@ def test_github_content_url(url: str, expected: list[str], path: str) -> None:
 @pytest.mark.parametrize(
     "url",
     [
-        ("https://github.com/OSLL",),
-        ("http://github.com/OSLL/code-plagiarism/",),
-        ("ttps://github.com/OSLL",),
-        ("https:/j/github.com/OSLL",),
-        ("https://githUb.com/OSLL",),
-        ("https:/",),
+        "https://github.com/OSLL",
+        "http://github.com/OSLL/code-plagiarism/",
+        "ttps://github.com/OSLL",
+        "https:/j/github.com/OSLL",
+        "https://githUb.com/OSLL",
+        "https:/",
     ],
 )
 def test_github_content_url_bad(url: str) -> None:
