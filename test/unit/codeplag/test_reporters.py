@@ -3,6 +3,8 @@ from unittest.mock import MagicMock, call
 
 import pandas as pd
 import pytest
+from pytest_mock import MockerFixture
+
 from codeplag.consts import CSV_REPORT_COLUMNS, CSV_REPORT_FILENAME
 from codeplag.handlers.report import deserialize_compare_result
 from codeplag.reporters import CSVReporter, JSONReporter
@@ -11,7 +13,6 @@ from codeplag.types import (
     CompareInfo,
     WorksReport,
 )
-from pytest_mock import MockerFixture
 
 
 @pytest.fixture

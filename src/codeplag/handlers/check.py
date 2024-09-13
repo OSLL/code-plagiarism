@@ -4,6 +4,7 @@ import logging
 import math
 import os
 from concurrent.futures import Future, ProcessPoolExecutor
+from datetime import timedelta
 from itertools import combinations
 from pathlib import Path
 from time import monotonic
@@ -13,7 +14,6 @@ import pandas as pd
 from decouple import Config, RepositoryEnv
 from numpy.typing import NDArray
 from requests import Session
-from webparsers.github_parser import GitHubParser
 
 from codeplag.algorithms.compare import compare_works
 from codeplag.config import read_settings_conf
@@ -38,6 +38,7 @@ from codeplag.types import (
     ProcessingWorksInfo,
     Threshold,
 )
+from webparsers.github_parser import GitHubParser
 
 
 class WorksComparator:
@@ -163,7 +164,7 @@ class WorksComparator:
                 github_project_folders,
                 github_user,
             )
-        logger.debug("Time for all %.2fs.", monotonic() - begin_time)
+        logger.debug("Time for all %s.", timedelta(seconds=monotonic() - begin_time))
         logger.info("Ending searching for plagiarism ...")
         if isinstance(self.reporter, CSVReporter):
             self.reporter._write_df_to_fs()
@@ -175,7 +176,7 @@ class WorksComparator:
         features_from_gh_files: list[ASTFeatures],
         github_project_folders: list[str],
         github_user: str,
-    ):
+    ) -> None:
         works: list[ASTFeatures] = []
         works.extend(features_from_files)
         works.extend(self.features_getter.get_from_dirs(directories))
@@ -208,7 +209,7 @@ class WorksComparator:
         features_from_gh_files: list[ASTFeatures],
         github_project_folders: list[str],
         github_user: str,
-    ):
+    ) -> None:
         combined_elements = filter(
             bool,
             (
@@ -304,7 +305,7 @@ class WorksComparator:
     def _handle_completed_futures(
         self,
         processing: list[ProcessingWorksInfo],
-    ):
+    ) -> None:
         for proc_works_info in processing:
             metrics: CompareInfo = proc_works_info.compare_future.result()
             self._handle_compare_result(

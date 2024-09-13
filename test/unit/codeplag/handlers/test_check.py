@@ -1,12 +1,13 @@
 import numpy as np
 import pandas as pd
 import pytest
+from pandas.testing import assert_frame_equal
+
 from codeplag.handlers.check import (
     _calc_iterations,
     compliance_matrix_to_df,
 )
 from codeplag.types import Mode
-from pandas.testing import assert_frame_equal
 
 
 @pytest.mark.parametrize(

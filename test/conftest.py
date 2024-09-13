@@ -1,8 +1,9 @@
 import logging
 
 import pytest
-from codeplag.consts import UTIL_NAME
 from pytest_mock import MockerFixture
+
+from codeplag.consts import UTIL_NAME
 
 
 @pytest.fixture

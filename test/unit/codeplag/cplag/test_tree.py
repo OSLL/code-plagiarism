@@ -3,7 +3,8 @@ from pathlib import Path
 from typing import Final
 
 import pytest
-from clang.cindex import CursorKind
+from clang.cindex import Cursor, CursorKind
+
 from codeplag.cplag.tree import generic_visit, get_features, get_not_ignored
 from codeplag.cplag.utils import get_cursor_from_file
 from codeplag.types import ASTFeatures
@@ -16,13 +17,13 @@ _SAMPLE4_PATH: Final[Path] = _DATA_PATH / "sample4.cpp"
 
 
 @pytest.fixture(scope='module', autouse=True)
-def setup():
+def setup() -> None:
     assert _SAMPLE1_PATH.exists() and _SAMPLE2_PATH.exists()
     assert _SAMPLE3_PATH.exists() and _SAMPLE4_PATH.exists()
 
 
 @pytest.fixture()
-def first_cursor():
+def first_cursor() -> Cursor:
     cursor = get_cursor_from_file(_SAMPLE1_PATH)
     assert cursor is not None
 
@@ -30,7 +31,7 @@ def first_cursor():
 
 
 @pytest.fixture()
-def second_cursor():
+def second_cursor() -> Cursor:
     cursor = get_cursor_from_file(_SAMPLE2_PATH)
     assert cursor is not None
 
@@ -38,14 +39,14 @@ def second_cursor():
 
 
 @pytest.fixture()
-def third_cursor():
+def third_cursor() -> Cursor:
     cursor = get_cursor_from_file(_SAMPLE3_PATH)
     assert cursor is not None
 
     return cursor
 
 
-def test_get_not_ignored_normal(first_cursor, second_cursor):
+def test_get_not_ignored_normal(first_cursor: Cursor, second_cursor: Cursor) -> None:
     res1 = get_not_ignored(first_cursor, _SAMPLE1_PATH)
     res2 = get_not_ignored(second_cursor, _SAMPLE2_PATH)
 
@@ -83,7 +84,7 @@ def test_get_not_ignored_normal(first_cursor, second_cursor):
     assert len(res2) == 1
 
 
-def test_generic_visit(first_cursor):
+def test_generic_visit(first_cursor: Cursor) -> None:
     features = ASTFeatures(_SAMPLE1_PATH)
     generic_visit(first_cursor, features)
 
@@ -103,7 +104,7 @@ def test_generic_visit(first_cursor):
                                100, 101, 100, 101]
 
 
-def test_get_features(second_cursor):
+def test_get_features(second_cursor: Cursor) -> None:
     features = get_features(second_cursor, _SAMPLE2_PATH)
 
     assert features.filepath == _SAMPLE2_PATH
@@ -123,7 +124,7 @@ def test_get_features(second_cursor):
     assert features.sha256 == "957da24c9f9340954aaa9df303922a0fbdcea69b6d3556c2bd462d195ab89052"
 
 
-def test_bad_encoding_syms(third_cursor):
+def test_bad_encoding_syms(third_cursor: Cursor) -> None:
     features = get_features(third_cursor, _SAMPLE3_PATH)
 
     assert features.filepath == _SAMPLE3_PATH

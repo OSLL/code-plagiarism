@@ -1,10 +1,11 @@
 from pathlib import Path
 
 import pytest
-from codeplag.consts import DEFAULT_GENERAL_REPORT_NAME, DEFAULT_SOURCES_REPORT_NAME
-from codeplag.types import ReportType
 from const import REPORTS_FOLDER
 from utils import create_report, modify_settings, run_check
+
+from codeplag.consts import DEFAULT_GENERAL_REPORT_NAME, DEFAULT_SOURCES_REPORT_NAME
+from codeplag.types import ReportType
 
 
 @pytest.fixture(scope="function", autouse=True)

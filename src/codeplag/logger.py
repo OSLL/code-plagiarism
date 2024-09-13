@@ -81,7 +81,7 @@ def set_handlers(
     logger.addHandler(get_stderr_handler())
 
 
-def log_err(*msgs) -> None:
+def log_err(*msgs: str) -> None:
     for msg in msgs:
         codeplag_logger.error(msg)
 

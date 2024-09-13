@@ -2,8 +2,6 @@ import ast
 import logging
 from pathlib import Path
 
-from webparsers.types import WorkInfo
-
 from codeplag.consts import GET_FRAZE, SUPPORTED_EXTENSIONS
 from codeplag.display import red_bold
 from codeplag.getfeatures import (
@@ -15,6 +13,7 @@ from codeplag.logger import codeplag_logger as logger
 from codeplag.logger import log_err
 from codeplag.pyplag.astwalkers import ASTWalker
 from codeplag.types import ASTFeatures
+from webparsers.types import WorkInfo
 
 
 def get_ast_from_content(code: str, path: Path | str) -> ast.Module | None:

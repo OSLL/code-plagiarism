@@ -6,15 +6,14 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Callable, Literal, ParamSpec, overload
 
-from webparsers.github_parser import GitHubParser
-from webparsers.types import WorkInfo
-
 from codeplag.consts import (
     ALL_EXTENSIONS,
     GET_FRAZE,
     UTIL_NAME,
 )
 from codeplag.types import ASTFeatures, Extension, Extensions
+from webparsers.github_parser import GitHubParser
+from webparsers.types import WorkInfo
 
 
 def get_files_path_from_directory(

@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 
 import pytest
+
 from codeplag.algorithms.compare import compare_works
 from codeplag.pyplag.utils import get_ast_from_filename, get_features_from_ast
 from codeplag.types import ASTFeatures, CompareInfo
