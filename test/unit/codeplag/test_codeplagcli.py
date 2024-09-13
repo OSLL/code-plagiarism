@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Final
 
 import pytest
+
 from codeplag.codeplagcli import CodeplagCLI, DirPath, FilePath
 
 CWD: Final[Path] = Path(os.getcwd())
@@ -30,7 +31,7 @@ def test_dir_path(path: str, expected: Path):
 
 
 @pytest.mark.parametrize("path", ["bad_dirpath", "Makefile"])
-def test_dir_path_bad(path):
+def test_dir_path_bad(path: str):
     with pytest.raises(argparse.ArgumentTypeError):
         DirPath(path)
 
@@ -50,18 +51,15 @@ def test_file_path(path: str, expected: Path):
         ("bad_filepath"),
     ],
 )
-def test_file_path_bad(path):
+def test_file_path_bad(path: str):
     with pytest.raises(argparse.ArgumentTypeError):
         FilePath(path)
 
 
 @pytest.mark.parametrize(
-    "args, raises",
+    "args",
     [
-        (
-            ["--extension", "py", "--directories", "src/", "src/"],
-            pytest.raises(SystemExit),
-        ),
+        (["--extension", "py", "--directories", "src/", "src/"],),
         (
             [
                 "--extension",
@@ -70,7 +68,6 @@ def test_file_path_bad(path):
                 "https://github.com/OSLL/code-plagiarism/tree/main/src",
                 "https://github.com/OSLL/code-plagiarism/tree/main/src",
             ],
-            pytest.raises(SystemExit),
         ),
         (
             [
@@ -80,15 +77,11 @@ def test_file_path_bad(path):
                 "https://github.com/OSLL/code-plagiarism/blob/main/setup.py",
                 "https://github.com/OSLL/code-plagiarism/blob/main/setup.py",
             ],
-            pytest.raises(SystemExit),
         ),
-        (
-            ["--extension", "py", "--files", "setup.py", "setup.py"],
-            pytest.raises(SystemExit),
-        ),
+        (["--extension", "py", "--files", "setup.py", "setup.py"],),
     ],
 )
-def test_get_parsed_args(args, raises):
+def test_get_parsed_args(args: list[str]):
     codeplagcli = CodeplagCLI()
-    with raises:
+    with pytest.raises(SystemExit):
         codeplagcli.parse_args(args=args)

@@ -1,14 +1,16 @@
 import re
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
-from codeplag.getfeatures import get_files_path_from_directory, set_sha256
-from codeplag.types import ASTFeatures
 from pytest_mock import MockerFixture
+
+from codeplag.getfeatures import get_files_path_from_directory, set_sha256
+from codeplag.types import ASTFeatures, Extensions
 
 
 @pytest.fixture
-def os_walk(request, mocker: MockerFixture):
+def os_walk(request: pytest.FixtureRequest, mocker: MockerFixture) -> MagicMock:
     return mocker.patch("os.walk", return_value=request.param)
 
 
@@ -52,7 +54,12 @@ def os_walk(request, mocker: MockerFixture):
     ],
     indirect=["os_walk"],
 )
-def test_get_files_path_from_directory(os_walk, extensions, path_regexp, expected):
+def test_get_files_path_from_directory(
+    os_walk: MagicMock,
+    extensions: Extensions | None,
+    path_regexp: re.Pattern | None,
+    expected: list[Path],
+):
     files = get_files_path_from_directory(
         Path("./"), path_regexp=path_regexp, extensions=extensions
     )

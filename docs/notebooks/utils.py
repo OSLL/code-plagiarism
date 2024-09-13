@@ -7,12 +7,13 @@ from typing import Literal
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from decouple import Config, RepositoryEnv
+from scipy.optimize import curve_fit
+
 from codeplag.algorithms.featurebased import counter_metric, struct_compare
 from codeplag.algorithms.stringbased import gst
 from codeplag.algorithms.tokenbased import value_jakkar_coef
 from codeplag.pyplag.utils import get_ast_from_content, get_features_from_ast
-from decouple import Config, RepositoryEnv
-from scipy.optimize import curve_fit
 from webparsers.github_parser import GitHubParser
 
 
@@ -188,7 +189,7 @@ def plot_and_save_result(
 
 def get_time_algorithms(
     df: pd.DataFrame,
-    work,
+    work: pd.Series,
     iterations: int = 5,
     metric: Literal["fast", "gst", "structure"] = "fast",
 ) -> pd.DataFrame:

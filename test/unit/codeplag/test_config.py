@@ -5,10 +5,11 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
+from pytest_mock import MockerFixture
+
 from codeplag import config
 from codeplag.consts import CONFIG_PATH, UTIL_NAME
 from codeplag.types import Settings
-from pytest_mock import MockerFixture
 
 config.logger = MagicMock(autospec=logging.Logger(UTIL_NAME))
 
@@ -31,7 +32,7 @@ def path(mocker: MockerFixture) -> MagicMock:
 
 
 @pytest.fixture
-def settings_config(request, mocker: MockerFixture) -> Settings | None:
+def settings_config(request: pytest.FixtureRequest, mocker: MockerFixture) -> Settings | None:
     mocker.patch.object(config, "read_config", return_value=request.param)
     return request.param
 

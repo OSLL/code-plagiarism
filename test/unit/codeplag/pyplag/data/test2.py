@@ -1,4 +1,4 @@
-def my_func(length, future, shifr):
+def my_func(length, future, shifr):  # noqa: ANN001
     future += length
     print(shifr * future)
     return future

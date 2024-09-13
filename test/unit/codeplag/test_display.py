@@ -1,4 +1,5 @@
 import pytest
+
 from codeplag.display import ComplexProgress, Progress
 
 

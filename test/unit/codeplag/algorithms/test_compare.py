@@ -1,4 +1,5 @@
 import pytest
+
 from codeplag.algorithms.compare import compare_works, fast_compare
 from codeplag.types import ASTFeatures, CompareInfo
 

@@ -6,8 +6,6 @@ import argparse
 import builtins
 from pathlib import Path
 
-from webparsers.types import GitHubContentUrl
-
 from codeplag.consts import (
     DEFAULT_MODE,
     DEFAULT_REPORT_TYPE,
@@ -22,6 +20,7 @@ from codeplag.consts import (
     WORKERS_CHOICE,
 )
 from codeplag.types import Settings
+from webparsers.types import GitHubContentUrl
 
 # FIXME: dirty hook for using logic without translations
 builtins.__dict__["_"] = builtins.__dict__.get("_", str)
@@ -51,7 +50,7 @@ class CheckUniqueStore(argparse.Action):
 class DirPath(Path):
     """Raises `argparse.ArgumentTypeError` if the directory doesn't exist."""
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args: str, **kwargs):
         path = Path(*args, **kwargs).resolve()
         if not path.is_dir():
             raise argparse.ArgumentTypeError(
@@ -64,7 +63,7 @@ class DirPath(Path):
 class FilePath(Path):
     """Raises `argparse.ArgumentTypeError` if the file doesn't exist."""
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args: str, **kwargs):
         path = Path(*args, **kwargs).resolve()
         if not path.is_file():
             raise argparse.ArgumentTypeError(

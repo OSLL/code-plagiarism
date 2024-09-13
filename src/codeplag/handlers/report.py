@@ -244,7 +244,7 @@ def _create_report(
     environment: jinja2.Environment,
     threshold: int = DEFAULT_THRESHOLD,
     language: Language = DEFAULT_LANGUAGE,
-):
+) -> None:
     template = environment.from_string(GENERAL_TEMPLATE_PATH.read_text())
     if save_path.is_dir():
         save_path = save_path / DEFAULT_GENERAL_REPORT_NAME

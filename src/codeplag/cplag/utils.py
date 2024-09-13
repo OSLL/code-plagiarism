@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Final
 
 from clang.cindex import Config, Cursor, Index, TranslationUnit
-from webparsers.types import WorkInfo
 
 from codeplag.consts import FILE_DOWNLOAD_PATH, GET_FRAZE, SUPPORTED_EXTENSIONS
 from codeplag.cplag.const import COMPILE_ARGS
@@ -12,6 +11,7 @@ from codeplag.cplag.tree import get_features
 from codeplag.getfeatures import AbstractGetter, get_files_path_from_directory
 from codeplag.logger import log_err
 from codeplag.types import ASTFeatures
+from webparsers.types import WorkInfo
 
 # FIXME: Dirty hook for finding libclang so file
 LIBCLANG_SO_FILE_PATH: Final[Path] = Path("/usr/lib/llvm-14/lib/libclang-14.so.1")

@@ -5,10 +5,11 @@ import os
 import re
 
 import pytest
-from codeplag.consts import CONFIG_PATH, UTIL_NAME, UTIL_VERSION
-from codeplag.types import WorksReport
 from const import REPORTS_FOLDER
 from utils import modify_settings, run_check, run_util
+
+from codeplag.consts import CONFIG_PATH, UTIL_NAME, UTIL_VERSION
+from codeplag.types import WorksReport
 
 CWD = os.getcwd()
 CPP_FILES = [

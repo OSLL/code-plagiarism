@@ -1,4 +1,4 @@
-def my_func(length, future):
+def my_func(length, future):  # noqa: ANN001
     future += length
     print(future)
     return future

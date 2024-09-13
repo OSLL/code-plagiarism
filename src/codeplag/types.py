@@ -93,12 +93,12 @@ class ASTFeatures:
         else:
             self.modify_date = ""
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: "ASTFeatures") -> bool:
         if not isinstance(other, self.__class__):
             raise NotImplementedError
         return str(self.filepath) == str(other.filepath)
 
-    def __lt__(self, other) -> bool:
+    def __lt__(self, other: "ASTFeatures") -> bool:
         if not isinstance(other, self.__class__):
             raise NotImplementedError
         return str(self.filepath) < str(other.filepath)

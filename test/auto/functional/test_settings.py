@@ -4,9 +4,10 @@ from pathlib import Path
 from typing import Literal
 
 import pytest
+from utils import modify_settings
+
 from codeplag.consts import CONFIG_PATH, UTIL_NAME
 from codeplag.types import Language, LogLevel, ReportsExtension, Threshold
-from utils import modify_settings
 
 
 @pytest.fixture(scope="module", autouse=True)
