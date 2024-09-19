@@ -19,7 +19,6 @@ lint.select = [
 ]
 lint.ignore = [
     "ANN003",  # missing type annotations for `*kwargs`
-    "ANN101",
     "ANN102",
     "ANN201",
     "ANN204",

@@ -2,6 +2,8 @@ import logging
 import sys
 from pathlib import Path
 
+from typing_extensions import Self
+
 from codeplag.consts import DEFAULT_LOG_LEVEL, UTIL_NAME
 from codeplag.display import clear_line, error, info, red_bold, warning
 from codeplag.types import LogLevel
@@ -15,19 +17,19 @@ class StreamFormatter(logging.Formatter):
         logging.CRITICAL: red_bold,
     }
 
-    def __init__(self):
+    def __init__(self: Self) -> None:
         self._level_fmt = "[%(levelname)s]"
         self._log_fmt = " %(asctime)s - %(message)s"
         super().__init__(datefmt="%H:%M")
 
-    def format(self, record: logging.LogRecord) -> str:
+    def format(self: Self, record: logging.LogRecord) -> str:
         self._style._fmt = self.FORMATS.get(record.levelno, info)(self._level_fmt) + self._log_fmt
 
         return super().format(record)
 
 
 class CustomStreamHandler(logging.StreamHandler):
-    def emit(self, record: logging.LogRecord):
+    def emit(self: Self, record: logging.LogRecord) -> None:
         clear_line()
         super(CustomStreamHandler, self).emit(record)
 
@@ -59,7 +61,7 @@ def get_stderr_handler() -> CustomStreamHandler:
 
 def get_stdout_handler() -> CustomStreamHandler:
     class STDOutFilter(logging.Filter):
-        def filter(self, record: logging.LogRecord) -> bool:
+        def filter(self: Self, record: logging.LogRecord) -> bool:
             return record.levelno in [logging.INFO, logging.DEBUG]
 
     stdout_handler = CustomStreamHandler(stream=sys.stdout)

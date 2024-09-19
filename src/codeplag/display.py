@@ -26,13 +26,13 @@ class Color(Enum):
 
 
 class Progress:
-    def __init__(self, iterations: int) -> None:
+    def __init__(self: Self, iterations: int) -> None:
         self.__iterations: Final[int] = iterations
         self.__iteration: int = -1
         self.__start_time_sec = monotonic()
 
     @property
-    def progress(self) -> float:
+    def progress(self: Self) -> float:
         if self.iterations == 0:
             return 1.0
         if self.__iteration <= 0:
@@ -40,38 +40,38 @@ class Progress:
         return self.__iteration / self.iterations
 
     @property
-    def start_time_sec(self) -> float:
+    def start_time_sec(self: Self) -> float:
         return self.__start_time_sec
 
     @property
-    def iterations(self) -> int:
+    def iterations(self: Self) -> int:
         return self.__iterations if self.__iterations > 0 else 0
 
-    def __iter__(self) -> Self:
+    def __iter__(self: Self) -> Self:
         return self
 
-    def __next__(self) -> float:
+    def __next__(self: Self) -> float:
         if self.progress == 1.0:
             raise StopIteration("The progress has already been completed.")
         self.__iteration += 1
         return self.progress
 
-    def __str__(self) -> str:
+    def __str__(self: Self) -> str:
         return f"Progress: {self.progress:.2%}"
 
 
 class ComplexProgress(Progress):
-    def __init__(self, iterations: int) -> None:
+    def __init__(self: Self, iterations: int) -> None:
         super(ComplexProgress, self).__init__(iterations)
         self.__internal_progresses: list[Progress] = []
 
-    def add_internal_progress(self, internal_iterations: int) -> None:
+    def add_internal_progress(self: Self, internal_iterations: int) -> None:
         if len(self.__internal_progresses) == self.iterations:
             raise IndexError("The internal iteration count limit was exceeded.")
         self.__internal_progresses.append(Progress(internal_iterations))
 
     @property
-    def progress(self) -> float:
+    def progress(self: Self) -> float:
         if self.iterations == 0:
             return 1.0
         return float(
@@ -81,7 +81,7 @@ class ComplexProgress(Progress):
             )
         )
 
-    def __next__(self) -> float:
+    def __next__(self: Self) -> float:
         if self.progress == 1.0:
             raise StopIteration("The progress has already been completed.")
         for internal_progress in self.__internal_progresses:

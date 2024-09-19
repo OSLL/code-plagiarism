@@ -8,7 +8,15 @@ import pytest
 from pytest_mock import MockerFixture
 
 from codeplag import config
-from codeplag.consts import CONFIG_PATH, UTIL_NAME
+from codeplag.consts import (
+    CONFIG_PATH,
+    DEFAULT_LANGUAGE,
+    DEFAULT_LOG_LEVEL,
+    DEFAULT_NGRAMS_LENGTH,
+    DEFAULT_REPORT_EXTENSION,
+    DEFAULT_THRESHOLD,
+    UTIL_NAME,
+)
 from codeplag.types import Settings
 
 config.logger = MagicMock(autospec=logging.Logger(UTIL_NAME))
@@ -111,18 +119,20 @@ def test_read_default_settings_conf(settings_config: Settings | None):
         [
             {"reports": "/home/bukabyka/reports"},
             {
-                "threshold": 65,
+                "threshold": DEFAULT_THRESHOLD,
+                "ngrams_length": DEFAULT_NGRAMS_LENGTH,
                 "reports": Path("/home/bukabyka/reports"),
                 "show_progress": 0,
-                "reports_extension": "csv",
-                "language": "en",
-                "log_level": "info",
+                "reports_extension": DEFAULT_REPORT_EXTENSION,
+                "language": DEFAULT_LANGUAGE,
+                "log_level": DEFAULT_LOG_LEVEL,
                 "workers": os.cpu_count() or 1,
             },
         ],
         [
             {
                 "threshold": 99,
+                "ngrams_length": 5,
                 "environment": "/home/bukabyka/.env",
                 "show_progress": 1,
                 "reports_extension": "json",
@@ -132,6 +142,7 @@ def test_read_default_settings_conf(settings_config: Settings | None):
             },
             {
                 "threshold": 99,
+                "ngrams_length": 5,
                 "environment": Path("/home/bukabyka/.env"),
                 "show_progress": 1,
                 "reports_extension": "json",
@@ -143,12 +154,13 @@ def test_read_default_settings_conf(settings_config: Settings | None):
         [
             {"bad_field": "bad_field", "reports": "/home/bukabyka/reports"},
             {
-                "threshold": 65,
+                "threshold": DEFAULT_THRESHOLD,
+                "ngrams_length": DEFAULT_NGRAMS_LENGTH,
                 "reports": Path("/home/bukabyka/reports"),
                 "show_progress": 0,
-                "reports_extension": "csv",
-                "language": "en",
-                "log_level": "info",
+                "reports_extension": DEFAULT_REPORT_EXTENSION,
+                "language": DEFAULT_LANGUAGE,
+                "log_level": DEFAULT_LOG_LEVEL,
                 "workers": os.cpu_count() or 1,
             },
         ],

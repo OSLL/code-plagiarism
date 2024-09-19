@@ -9,6 +9,7 @@ from time import monotonic
 
 import numpy as np
 import pandas as pd
+from typing_extensions import Self
 
 from codeplag.config import write_config
 from codeplag.consts import CSV_REPORT_COLUMNS, CSV_REPORT_FILENAME, CSV_SAVE_TICK_SEC
@@ -23,12 +24,12 @@ from codeplag.types import (
 
 
 class AbstractReporter(ABC):
-    def __init__(self, reports: Path) -> None:
+    def __init__(self: Self, reports: Path) -> None:
         self.reports = reports
 
     @abstractmethod
     def save_result(
-        self,
+        self: Self,
         first_work: ASTFeatures,
         second_work: ASTFeatures,
         compare_info: CompareInfo,
@@ -36,7 +37,7 @@ class AbstractReporter(ABC):
 
 
 class CSVReporter(AbstractReporter):
-    def __init__(self, reports: Path) -> None:
+    def __init__(self: Self, reports: Path) -> None:
         super().__init__(reports)
         self.reports_path = self.reports / CSV_REPORT_FILENAME
         self.__need_update: bool = False
@@ -47,7 +48,7 @@ class CSVReporter(AbstractReporter):
         self.__csv_last_save = monotonic()
 
     def save_result(
-        self,
+        self: Self,
         first_work: ASTFeatures,
         second_work: ASTFeatures,
         compare_info: CompareInfo,
@@ -81,7 +82,7 @@ class CSVReporter(AbstractReporter):
             # Time to write can be long
             self.__csv_last_save = monotonic()
 
-    def _write_df_to_fs(self) -> None:
+    def _write_df_to_fs(self: Self) -> None:
         if not self.__need_update:
             logger.debug("Nothing new to save to the csv report.")
             return
@@ -91,7 +92,7 @@ class CSVReporter(AbstractReporter):
         self.__need_update = False
 
     def get_compare_result_from_cache(
-        self, work1: ASTFeatures, work2: ASTFeatures
+        self: Self, work1: ASTFeatures, work2: ASTFeatures
     ) -> CompareInfo | None:
         cache_val = self.__df_report[
             (self.__df_report.first_path == str(work1.filepath))
@@ -109,7 +110,7 @@ class CSVReporter(AbstractReporter):
 # DEPRECATED
 class JSONReporter(AbstractReporter):
     def save_result(
-        self,
+        self: Self,
         first_work: ASTFeatures,
         second_work: ASTFeatures,
         compare_info: CompareInfo,

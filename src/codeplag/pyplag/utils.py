@@ -2,6 +2,8 @@ import ast
 import logging
 from pathlib import Path
 
+from typing_extensions import Self
+
 from codeplag.consts import GET_FRAZE, SUPPORTED_EXTENSIONS
 from codeplag.display import red_bold
 from codeplag.getfeatures import (
@@ -115,11 +117,11 @@ def _get_works_from_filepaths(filenames: list[Path]) -> list[ASTFeatures]:
 
 class PyFeaturesGetter(AbstractGetter):
     def __init__(
-        self,
+        self: Self,
         logger: logging.Logger | None = None,
         repo_regexp: str | None = None,
         path_regexp: str | None = None,
-    ):
+    ) -> None:
         super().__init__(
             extension="py",
             logger=logger,
@@ -127,7 +129,7 @@ class PyFeaturesGetter(AbstractGetter):
             path_regexp=path_regexp,
         )
 
-    def get_from_content(self, work_info: WorkInfo) -> ASTFeatures | None:
+    def get_from_content(self: Self, work_info: WorkInfo) -> ASTFeatures | None:
         tree = get_ast_from_content(work_info.code, work_info.link)
         if tree is not None:
             features = get_features_from_ast(tree, work_info.link)
@@ -136,14 +138,14 @@ class PyFeaturesGetter(AbstractGetter):
 
         self.logger.error("Unsuccessfully attempt to get AST from the file %s.", work_info.link)
 
-    def get_from_files(self, files: list[Path]) -> list[ASTFeatures]:
+    def get_from_files(self: Self, files: list[Path]) -> list[ASTFeatures]:
         if not files:
             return []
 
         self.logger.debug(f"{GET_FRAZE} files")
         return _get_works_from_filepaths(files)
 
-    def get_works_from_dir(self, directory: Path) -> list[ASTFeatures]:
+    def get_works_from_dir(self: Self, directory: Path) -> list[ASTFeatures]:
         filepaths = get_files_path_from_directory(
             directory,
             extensions=SUPPORTED_EXTENSIONS[self.extension],

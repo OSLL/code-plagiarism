@@ -52,6 +52,6 @@ def third_features(third_tree: ast.Module) -> ASTFeatures:
 
 @pytest.fixture
 def first_compare_result(first_features: ASTFeatures, second_features: ASTFeatures) -> CompareInfo:
-    compare_info = compare_works(first_features, second_features)
+    compare_info = compare_works(features1=first_features, features2=second_features)
     assert compare_info.structure is not None
     return compare_info

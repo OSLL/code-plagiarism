@@ -1,4 +1,5 @@
 import pytest
+from typing_extensions import Self
 
 from codeplag.display import ComplexProgress, Progress
 
@@ -26,7 +27,7 @@ def create_complex_progress(
 
 
 class TestProgress:
-    def test_check_progress_increased(self):
+    def test_check_progress_increased(self: Self) -> None:
         iterations = 5
         progress = Progress(iterations)
         for real_percent, expect_percent in zip(
@@ -35,12 +36,12 @@ class TestProgress:
             assert real_percent == expect_percent
             assert str(progress) == f"Progress: {expect_percent:.2%}"
 
-    def test_progress_increase_failed(self):
+    def test_progress_increase_failed(self: Self) -> None:
         progress = create_progress(0, 0)
         with pytest.raises(StopIteration):
             next(progress)
 
-    def test_can_not_change_iterations(self):
+    def test_can_not_change_iterations(self: Self) -> None:
         with pytest.raises(AttributeError):
             Progress(10).iterations = 10
 
@@ -73,7 +74,9 @@ class TestComplexProgress:
             ),
         ],
     )
-    def test_complex_progress(self, complex_progress: ComplexProgress, result: float):
+    def test_complex_progress(
+        self: Self, complex_progress: ComplexProgress, result: float
+    ) -> None:
         assert str(complex_progress) == f"Progress: {result:.2%}"
 
     @pytest.mark.parametrize(
@@ -87,15 +90,15 @@ class TestComplexProgress:
             "Only common progress is zero",
         ],
     )
-    def test_progress_increase_failed(self, progress: ComplexProgress):
+    def test_progress_increase_failed(self: Self, progress: ComplexProgress) -> None:
         with pytest.raises(StopIteration):
             next(progress)
 
-    def test_can_not_change_iterations(self):
+    def test_can_not_change_iterations(self: Self) -> None:
         with pytest.raises(AttributeError):
             ComplexProgress(10).iterations = 10
 
-    def test_check_progress_increased(self):
+    def test_check_progress_increased(self: Self) -> None:
         iterations = 5
         progress = ComplexProgress(iterations)
         progress.add_internal_progress(4)

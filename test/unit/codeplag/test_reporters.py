@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, call
 import pandas as pd
 import pytest
 from pytest_mock import MockerFixture
+from typing_extensions import Self
 
 from codeplag.consts import CSV_REPORT_COLUMNS, CSV_REPORT_FILENAME
 from codeplag.handlers.report import deserialize_compare_result
@@ -29,24 +30,24 @@ class TestJSONReporter:
     REPORTER = JSONReporter(Path("."))
 
     def test_save_result_not_occurred_due_absent_dir(
-        self,
+        self: Self,
         mock_default_logger: MagicMock,
         first_features: ASTFeatures,
         second_features: ASTFeatures,
         first_compare_result: CompareInfo,
-    ):
+    ) -> None:
         self.REPORTER.reports = Path("/bad_directory")
         self.REPORTER.save_result(first_features, second_features, first_compare_result)
         assert mock_default_logger.error.call_args == call("The folder for reports isn't exists.")
 
     def test_save_result_not_occurred_due_permission_error(
-        self,
+        self: Self,
         mocker: MockerFixture,
         mock_default_logger: MagicMock,
         first_features: ASTFeatures,
         second_features: ASTFeatures,
         first_compare_result: CompareInfo,
-    ):
+    ) -> None:
         mocker.patch.object(Path, "open", side_effect=PermissionError)
         self.REPORTER.reports = Path("/etc")
         self.REPORTER.save_result(first_features, second_features, first_compare_result)
@@ -56,12 +57,12 @@ class TestJSONReporter:
         )
 
     def test_save_result_with_modify_date(
-        self,
+        self: Self,
         mock_write_config: MagicMock,
         first_features: ASTFeatures,
         second_features: ASTFeatures,
         first_compare_result: CompareInfo,
-    ):
+    ) -> None:
         mock_write_config.reset_mock()
         self.REPORTER.save_result(first_features, second_features, first_compare_result)
         mock_write_config.assert_called_once()
@@ -72,12 +73,12 @@ class TestCSVReporter:
     REPORTER = CSVReporter(Path("./src"))
 
     def test_save_result_n_write_df_to_fs(
-        self,
+        self: Self,
         mock_default_logger: MagicMock,
         first_features: ASTFeatures,
         second_features: ASTFeatures,
         first_compare_result: CompareInfo,
-    ):
+    ) -> None:
         # First ok test
         self.REPORTER.save_result(first_features, second_features, first_compare_result)
         self.REPORTER._write_df_to_fs()

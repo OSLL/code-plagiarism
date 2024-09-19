@@ -4,9 +4,10 @@ from pathlib import Path
 from typing import Literal
 
 import pytest
-from utils import modify_settings
+from typing_extensions import Self
+from utils import NgramsLength, modify_settings
 
-from codeplag.consts import CONFIG_PATH, UTIL_NAME
+from codeplag.consts import CONFIG_PATH, NGRAMS_LENGTH_CHOICE, UTIL_NAME
 from codeplag.types import Language, LogLevel, ReportsExtension, Threshold
 
 
@@ -20,28 +21,30 @@ def teardown():
 
 class TestSettingsModify:
     @pytest.mark.parametrize(
-        "env,reports,threshold,show_progress,reports_extension,language,log_level,workers",
+        "env,reports,threshold,ngrams_length,show_progress,reports_extension,language,log_level,workers",
         [
-            (f"src/{UTIL_NAME}/types.py", "src", 83, 0, "json", "en", "debug", 1),
-            ("setup.py", "test", 67, 1, "csv", "ru", "info", os.cpu_count() or 1),
-            (f"src/{UTIL_NAME}/utils.py", "debian", 93, 0, "json", "en", "warning", 1),
+            (f"src/{UTIL_NAME}/types.py", "src", 83, 2, 0, "json", "en", "debug", 1),
+            ("setup.py", "test", 67, 3, 1, "csv", "ru", "info", os.cpu_count() or 1),
+            (f"src/{UTIL_NAME}/utils.py", "debian", 93, 4, 0, "json", "en", "warning", 1),
         ],
     )
     def test_modify_settings(
-        self,
+        self: Self,
         env: str,
         reports: str,
         threshold: Threshold,
+        ngrams_length: NgramsLength,
         show_progress: Literal[0, 1],
         reports_extension: ReportsExtension,
         language: Language,
         log_level: LogLevel,
         workers: int,
-    ):
+    ) -> None:
         result = modify_settings(
             environment=env,
             reports=reports,
             threshold=threshold,
+            ngrams_length=ngrams_length,
             show_progress=show_progress,
             reports_extension=reports_extension,
             language=language,
@@ -54,6 +57,7 @@ class TestSettingsModify:
             "environment": Path(env).resolve().__str__(),
             "reports": Path(reports).resolve().__str__(),
             "threshold": threshold,
+            "ngrams_length": ngrams_length,
             "show_progress": show_progress,
             "workers": workers,
             "language": language,
@@ -77,11 +81,21 @@ class TestSettingsModify:
         ],
     )
     def test_modify_settings_with_invalid_arguments(
-        self, env: str, reports: str, threshold: Threshold, log_level: LogLevel
-    ):
+        self: Self, env: str, reports: str, threshold: Threshold, log_level: LogLevel
+    ) -> None:
         modify_settings(
             environment=env, reports=reports, threshold=threshold, log_level=log_level
         ).assert_failed()
 
-    def test_modify_settings_with_no_arguments_failed(self):
+    @pytest.mark.parametrize(
+        "ngrams_length",
+        [NGRAMS_LENGTH_CHOICE[0] - 1, NGRAMS_LENGTH_CHOICE[-1] + 1],
+        ids=["Less than minimal value.", "More than minimal value."],
+    )
+    def test_modify_settings_with_invalid_ngrams_length(
+        self: Self, ngrams_length: NgramsLength
+    ) -> None:
+        modify_settings(ngrams_length=ngrams_length).assert_failed()
+
+    def test_modify_settings_with_no_arguments_failed(self: Self) -> None:
         modify_settings().assert_failed()

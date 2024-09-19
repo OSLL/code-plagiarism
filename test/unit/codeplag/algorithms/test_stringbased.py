@@ -1,11 +1,13 @@
 # fmt: off
 import unittest
 
+from typing_extensions import Self
+
 from codeplag.algorithms.stringbased import LevenshteinDistance, gst, is_marked_match
 
 
 class TestStringbased(unittest.TestCase):
-    def test_levenshtein_distance_cls(self):
+    def test_levenshtein_distance_cls(self: Self) -> None:
         dist_object = LevenshteinDistance('cat', 'dog')
         self.assertEqual(dist_object.distance, -1)
         result1 = dist_object.get_similarity_value()
@@ -24,12 +26,12 @@ class TestStringbased(unittest.TestCase):
         self.assertEqual(dist_object.distance, 2)
         self.assertEqual(result2, 0.6)
 
-    def test_is_marked_match(self):
+    def test_is_marked_match(self: Self) -> None:
         self.assertEqual(is_marked_match([1, 2, 3], 1, 5), True)
         self.assertEqual(is_marked_match([2, 3, 4, 5], 1, 5), True)
         self.assertEqual(is_marked_match([2, 3, 4], 1, 5), False)
 
-    def test_gst(self):
+    def test_gst(self: Self) -> None:
         res1 = gst([1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
                    [1, 4, 3, 4, 5, 6, 5, 8, 9, 10], 3)
         res2 = gst([1, 2, 3, 4, 8, 6, 7, 8, 9, 10, 11],

@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Final
 
 from clang.cindex import Config, Cursor, Index, TranslationUnit
+from typing_extensions import Self
 
 from codeplag.consts import FILE_DOWNLOAD_PATH, GET_FRAZE, SUPPORTED_EXTENSIONS
 from codeplag.cplag.const import COMPILE_ARGS
@@ -67,11 +68,11 @@ def _get_works_from_filepaths(filepaths: list[Path], compile_args: list[str]) ->
 
 class CFeaturesGetter(AbstractGetter):
     def __init__(
-        self,
+        self: Self,
         logger: logging.Logger | None = None,
         repo_regexp: str | None = None,
         path_regexp: str | None = None,
-    ):
+    ) -> None:
         super().__init__(
             extension="cpp",
             logger=logger,
@@ -79,7 +80,7 @@ class CFeaturesGetter(AbstractGetter):
             path_regexp=path_regexp,
         )
 
-    def get_from_content(self, work_info: WorkInfo) -> ASTFeatures | None:
+    def get_from_content(self: Self, work_info: WorkInfo) -> ASTFeatures | None:
         with open(FILE_DOWNLOAD_PATH, "w", encoding="utf-8") as out_file:
             out_file.write(work_info.code)
         cursor = get_cursor_from_file(FILE_DOWNLOAD_PATH, COMPILE_ARGS)
@@ -97,14 +98,14 @@ class CFeaturesGetter(AbstractGetter):
 
         return features
 
-    def get_from_files(self, files: list[Path]) -> list[ASTFeatures]:
+    def get_from_files(self: Self, files: list[Path]) -> list[ASTFeatures]:
         if not files:
             return []
 
         self.logger.debug(f"{GET_FRAZE} files")
         return _get_works_from_filepaths(files, COMPILE_ARGS)
 
-    def get_works_from_dir(self, directory: Path) -> list[ASTFeatures]:
+    def get_works_from_dir(self: Self, directory: Path) -> list[ASTFeatures]:
         filepaths = get_files_path_from_directory(
             directory,
             extensions=SUPPORTED_EXTENSIONS[self.extension],

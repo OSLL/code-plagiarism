@@ -8,6 +8,7 @@ import aiohttp
 import aiohttp.client_exceptions
 import cachetools
 import gidgethub.aiohttp
+from typing_extensions import Self
 from uritemplate import variable
 
 from webparsers.types import (
@@ -29,17 +30,19 @@ class AsyncGithubParser:
     Example:
     -------
         >>> import asyncio
-        >>> async def request():
-        ...     async with aiohttp.ClientSession() as session:
+        >>> import aiohttp
+        >>> async def requests():
+        ...     timeout = ClientTimeout(total=5)
+        ...     async with aiohttp.ClientSession(timeout=timeout) as session:
         ...         gh_parser = AsyncGithubParser(session, token=<token>)
         ...         tasks = []
         ...         for _ in range(3):
         ...             tasks.append(asyncio.create_task(gh_parser.<some_func_call>))
         ...     return await asyncio.gather(*tasks)
         ...
-        >>> asyncio.run(request())
+        >>> asyncio.run(requests())
         >>> async def loop():
-        ...     async for ... in gh_parser.<some_aysnc_gen_func_call>:
+        ...     async for ... in gh_parser.<some_async_gen_func_call>:
         ...         ...
         ...
         >>> asynio.run(loop())
@@ -66,13 +69,13 @@ class AsyncGithubParser:
     ORG_REPOS = "/orgs/{org}/repos{?per_page,page}"
 
     def __init__(
-        self,
+        self: Self,
         session: aiohttp.ClientSession,
         file_extensions: str | None = None,
         check_all: bool = False,
         logger: logging.Logger | None = None,
         token: str | None = None,
-    ):
+    ) -> None:
         if logger is None:
             self.logger = logging.getLogger(__name__)
         else:
@@ -87,14 +90,14 @@ class AsyncGithubParser:
             cache=cachetools.LRUCache(maxsize=500),
         )
 
-    def _is_accepted_extension(self, path: str) -> bool:
+    def _is_accepted_extension(self: Self, path: str) -> bool:
         if self.__file_extensions is None:
             return True
 
         return any(re.search(extension, path) for extension in self.__file_extensions)
 
     async def send_get_request(
-        self,
+        self: Self,
         api_url: str,
         url_vars: variable.VariableValueDict | None = None,
     ) -> Any:
@@ -106,7 +109,7 @@ class AsyncGithubParser:
             sys.exit(1)
 
     async def get_list_of_repos(
-        self, owner: str, reg_exp: re.Pattern | None = None
+        self: Self, owner: str, reg_exp: re.Pattern | None = None
     ) -> list[Repository]:
         repos: list[Repository] = []
         response = await self.send_get_request(self.USER_INFO, {"username": owner})
@@ -136,7 +139,7 @@ class AsyncGithubParser:
 
         return repos
 
-    async def get_pulls_info(self, owner: str, repo: str) -> list[PullRequest]:
+    async def get_pulls_info(self: Self, owner: str, repo: str) -> list[PullRequest]:
         pulls: list[PullRequest] = []
         url_vars = {"username": owner, "repo": repo, "page": 1, "per_page": 100}
         while True:
@@ -169,13 +172,13 @@ class AsyncGithubParser:
 
         return pulls
 
-    async def get_name_default_branch(self, owner: str, repo: str) -> str:
+    async def get_name_default_branch(self: Self, owner: str, repo: str) -> str:
         response = await self.send_get_request(self.REPO_GET, {"username": owner, "repo": repo})
 
         return response["default_branch"]
 
     async def _get_branch_last_commit_info(
-        self, owner: str, repo: str, branch: str = "main"
+        self: Self, owner: str, repo: str, branch: str = "main"
     ) -> dict:
         response = await self.send_get_request(
             self.BRANCH_GET, {"username": owner, "repo": repo, "branch": branch}
@@ -183,7 +186,7 @@ class AsyncGithubParser:
 
         return response["commit"]
 
-    async def get_list_repo_branches(self, owner: str, repo: str) -> list[Branch]:
+    async def get_list_repo_branches(self: Self, owner: str, repo: str) -> list[Branch]:
         branches: list[Branch] = []
         url_vars = {"per_page": 100, "page": 1, "username": owner, "repo": repo}
         while True:
@@ -211,7 +214,7 @@ class AsyncGithubParser:
         return branches
 
     async def get_file_content_by_sha(
-        self,
+        self: Self,
         owner: str,
         repo: str,
         blob_sha: str,
@@ -223,7 +226,9 @@ class AsyncGithubParser:
         file_in_bytes = bytearray(base64.b64decode(response["content"]))
         return file_in_bytes.decode("utf-8", errors="ignore")
 
-    async def _get_commit_info(self, owner: str, repo: str, branch: str, path: str) -> Commit:
+    async def _get_commit_info(
+        self: Self, owner: str, repo: str, branch: str, path: str
+    ) -> Commit:
         response: list[dict] = await self.send_get_request(
             self.COMMITS_INFO,
             url_vars={
@@ -240,7 +245,7 @@ class AsyncGithubParser:
         return Commit(commit_info["sha"], commit_info["commit"]["author"]["date"])
 
     async def get_files_generator_from_sha_commit(
-        self,
+        self: Self,
         owner: str,
         repo: str,
         branch: Branch,
@@ -286,7 +291,7 @@ class AsyncGithubParser:
             yield WorkInfo(file_content, full_link, commit_info)
 
     async def get_files_generator_from_repo_url(
-        self, repo_url: str, path_regexp: re.Pattern | None = None
+        self: Self, repo_url: str, path_regexp: re.Pattern | None = None
     ) -> AsyncGenerator[WorkInfo, None]:
         try:
             repo_url = GitHubRepoUrl(repo_url)
@@ -321,7 +326,7 @@ class AsyncGithubParser:
             ):
                 yield file
 
-    async def get_file_from_url(self, file_url: str) -> WorkInfo:
+    async def get_file_from_url(self: Self, file_url: str) -> WorkInfo:
         try:
             file_url = GitHubContentUrl(file_url)
         except ValueError as error:
@@ -347,7 +352,7 @@ class AsyncGithubParser:
         )
 
     async def get_files_generator_from_dir_url(
-        self, dir_url: str, path_regexp: re.Pattern | None = None
+        self: Self, dir_url: str, path_regexp: re.Pattern | None = None
     ) -> AsyncGenerator[WorkInfo, None]:
         try:
             dir_url = GitHubContentUrl(dir_url)
