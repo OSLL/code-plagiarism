@@ -1,11 +1,12 @@
 import pytest
+from typing_extensions import Self
 
 from codeplag.algorithms.compare import compare_works, fast_compare
 from codeplag.types import ASTFeatures, CompareInfo
 
 
 class TestCompareWorks:
-    def test_compare_works_with_structure(self, first_compare_result: CompareInfo):
+    def test_compare_works_with_structure(self: Self, first_compare_result: CompareInfo):
         assert first_compare_result.fast.jakkar == pytest.approx(0.737, 0.001)
         assert first_compare_result.fast.operators == pytest.approx(0.667, 0.001)
         assert first_compare_result.fast.keywords == 1.0
@@ -19,11 +20,13 @@ class TestCompareWorks:
         ]
 
     def test_compare_works_without_structure(
-        self,
+        self: Self,
         first_features: ASTFeatures,
         third_features: ASTFeatures,
     ):
-        compare_info = compare_works(first_features, third_features, 60)
+        compare_info = compare_works(
+            features1=first_features, features2=third_features, threshold=60
+        )
 
         assert compare_info.fast.jakkar == 0.24
         assert compare_info.fast.operators == 0.0
@@ -35,7 +38,7 @@ class TestCompareWorks:
 
 class TestFastCompare:
     def test_fast_compare_with_default_weights(
-        self, first_features: ASTFeatures, second_features: ASTFeatures
+        self: Self, first_features: ASTFeatures, second_features: ASTFeatures
     ):
         metrics = fast_compare(first_features, second_features)
 
@@ -46,7 +49,7 @@ class TestFastCompare:
         assert metrics.weighted_average == pytest.approx(0.774, 0.001)
 
     def test_fast_compare_with_different_weights(
-        self, first_features: ASTFeatures, second_features: ASTFeatures
+        self: Self, first_features: ASTFeatures, second_features: ASTFeatures
     ):
         metrics = fast_compare(first_features, second_features, weights=(0.5, 0.6, 0.7, 0.8))
 

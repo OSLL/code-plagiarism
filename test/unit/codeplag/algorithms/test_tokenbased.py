@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import Self
+
 from codeplag.algorithms.tokenbased import (
     generate_ngrams,
     get_imprints_from_hashes,
@@ -10,7 +12,7 @@ from codeplag.algorithms.tokenbased import (
 
 
 class TestTokenbased(unittest.TestCase):
-    def test_generate_unique_ngrams(self):
+    def test_generate_unique_ngrams(self: Self) -> None:
         res1 = generate_ngrams([1, 2, 3, 4, 5], 2, unique=True)
         bigrams = {(1, 2), (2, 3), (3, 4), (4, 5)}
         res2 = generate_ngrams([3, 4, 7, 8, 15, 3], 3, unique=True)
@@ -22,7 +24,7 @@ class TestTokenbased(unittest.TestCase):
         self.assertEqual(res2, trigrams)
         self.assertEqual(res3, fourgrams)
 
-    def test_generate_ngrams(self):
+    def test_generate_ngrams(self: Self) -> None:
         res1 = generate_ngrams([1, 1, 1, 2, 3, 4, 5], 2)
         bigrams = [(1, 1), (1, 1), (1, 2), (2, 3), (3, 4), (4, 5)]
         res2 = generate_ngrams([3, 4, 7, 8, 15, 3, 4, 7], 3)
@@ -42,7 +44,7 @@ class TestTokenbased(unittest.TestCase):
         self.assertEqual(res2, trigrams)
         self.assertEqual(res3, fourgrams)
 
-    def test_generate_ngrams_and_hashit(self):
+    def test_generate_ngrams_and_hashit(self: Self) -> None:
         for_bigrams = [1, 2, 3, 4, 5]
         res1 = generate_ngrams(for_bigrams, 2, hashit=True)
         wait1 = [hash(tuple(for_bigrams[i : i + 2])) for i in range(len(for_bigrams) - 1)]
@@ -59,7 +61,7 @@ class TestTokenbased(unittest.TestCase):
         self.assertEqual(res2, wait2)
         self.assertEqual(res3, wait3)
 
-    def test_generate_unique_ngrams_and_hashit(self):
+    def test_generate_unique_ngrams_and_hashit(self: Self) -> None:
         for_bigrams = [1, 2, 2, 2, 5]
         res1 = generate_ngrams(for_bigrams, 2, unique=True, hashit=True)
         wait1 = {hash(tuple(for_bigrams[i : i + 2])) for i in range(len(for_bigrams) - 1)}
@@ -76,7 +78,7 @@ class TestTokenbased(unittest.TestCase):
         self.assertEqual(res2, wait2)
         self.assertEqual(res3, wait3)
 
-    def test_get_imprints_from_hashes(self):
+    def test_get_imprints_from_hashes(self: Self) -> None:
         test_cases = [
             {
                 "arguments": {"hashes": [1, 2, 3, 4, 5]},
@@ -97,7 +99,7 @@ class TestTokenbased(unittest.TestCase):
                 result = get_imprints_from_hashes(**test_case["arguments"])
                 self.assertEqual(test_case["expected_result"], result)
 
-    def test_value_jakkar_coef(self):
+    def test_value_jakkar_coef(self: Self) -> None:
         res1 = value_jakkar_coef([1, 2, 3, 4, 5, 4], [1, 2, 3, 2, 5, 2])
         res2 = value_jakkar_coef([2, 1, 1, 3, 5, 6, 7], [1, 3, 5, 3, 5, 6])
         res3 = value_jakkar_coef([3, 1, 2, 7, 4, 5, 1, 2], [4, 5, 1, 3, 4, 6, 3, 1])
@@ -106,7 +108,7 @@ class TestTokenbased(unittest.TestCase):
         self.assertAlmostEqual(res2, 0.286, 3)
         self.assertAlmostEqual(res3, 0.091, 3)
 
-    def test_lcs(self):
+    def test_lcs(self: Self) -> None:
         res1 = lcs([1, 2, 2, 3, 1, 4], [2, 5, 3, 5, 1, 6, 4])
         res2 = lcs([1, 2, 3, 4, 5, 6, 7], [1, 3, 4, 4, 5, 7])
         res3 = lcs([2, 4, 2, 5, 6, 10], [1, 3, 4, 10, 5, 10])
@@ -115,7 +117,7 @@ class TestTokenbased(unittest.TestCase):
         self.assertEqual(res2, 5)
         self.assertEqual(res3, 3)
 
-    def test_lcs_based_coeff(self):
+    def test_lcs_based_coeff(self: Self) -> None:
         res1 = lcs_based_coeff([1, 2, 2, 3, 1, 4], [1, 1, 2, 2, 3, 4])
         res2 = lcs_based_coeff([1, 2, 1, 0, 1, 4], [1, 1, 2, 2, 3, 4])
         res3 = lcs_based_coeff([5, 7, 5, 4, 1, 2, 2], [1, 1, 2, 2, 3, 4])

@@ -2,11 +2,14 @@ import subprocess
 from pathlib import Path
 from typing import Any, Literal
 
+from typing_extensions import Self
+
 from codeplag.consts import UTIL_NAME
 from codeplag.types import (
     Flag,
     Language,
     LogLevel,
+    NgramsLength,
     ReportsExtension,
     ReportType,
     Threshold,
@@ -14,13 +17,13 @@ from codeplag.types import (
 
 
 class CmdResult:
-    def __init__(self, cmd_res: subprocess.CompletedProcess):
+    def __init__(self: Self, cmd_res: subprocess.CompletedProcess) -> None:
         self.cmd_res = cmd_res
 
-    def assert_success(self) -> None:
+    def assert_success(self: Self) -> None:
         assert not self.cmd_res.returncode, str(self.cmd_res)
 
-    def assert_failed(self) -> None:
+    def assert_failed(self: Self) -> None:
         assert self.cmd_res.returncode, str(self.cmd_res)
 
 
@@ -49,6 +52,7 @@ def modify_settings(
     reports: Path | str | None = None,
     environment: Path | str | None = None,
     threshold: Threshold | None = None,
+    ngrams_length: NgramsLength | None = None,
     show_progress: Flag | None = None,
     reports_extension: ReportsExtension | None = None,
     language: Language | None = None,
@@ -63,6 +67,7 @@ def modify_settings(
         + create_opt("reports", reports)
         + create_opt("environment", environment)
         + create_opt("threshold", threshold)
+        + create_opt("ngrams-length", ngrams_length)
         + create_opt("show_progress", show_progress)
         + create_opt("reports_extension", reports_extension)
         + create_opt("language", language)

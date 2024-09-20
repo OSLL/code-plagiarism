@@ -6,6 +6,8 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Callable, Literal, ParamSpec, overload
 
+from typing_extensions import Self
+
 from codeplag.consts import (
     ALL_EXTENSIONS,
     GET_FRAZE,
@@ -84,12 +86,12 @@ def set_sha256(get_features_func: Callable[P, ASTFeatures]) -> Callable[P, ASTFe
 
 class AbstractGetter(ABC):
     def __init__(
-        self,
+        self: Self,
         extension: Extension,
         logger: logging.Logger | None = None,
         repo_regexp: str | None = None,
         path_regexp: str | None = None,
-    ):
+    ) -> None:
         self.logger = logger if logger is not None else logging.getLogger(UTIL_NAME)
         self.extension: Extension = extension
         self.github_parser: GitHubParser | None = None
@@ -119,41 +121,41 @@ class AbstractGetter(ABC):
             )
             sys.exit(1)
 
-    def check_github_parser_provided(self) -> None:
+    def check_github_parser_provided(self: Self) -> None:
         if not isinstance(self.github_parser, GitHubParser):
             raise TypeError(
                 "GitHubParser is not provided, or the provided object "
                 "is not a GitHubParser instance."
             )
 
-    def set_github_parser(self, github_parser: GitHubParser) -> None:
+    def set_github_parser(self: Self, github_parser: GitHubParser) -> None:
         if self.github_parser:
             self.github_parser.close_session()
         self.github_parser = github_parser
 
     @abstractmethod
-    def get_from_content(self, work_info: WorkInfo) -> ASTFeatures | None: ...
+    def get_from_content(self: Self, work_info: WorkInfo) -> ASTFeatures | None: ...
 
     @abstractmethod
-    def get_from_files(self, files: list[Path]) -> list[ASTFeatures]: ...
+    def get_from_files(self: Self, files: list[Path]) -> list[ASTFeatures]: ...
 
     @overload
     def get_from_dirs(
-        self, directories: list[Path], independent: Literal[False] = False
+        self: Self, directories: list[Path], independent: Literal[False] = False
     ) -> list[ASTFeatures]: ...
 
     @overload
     def get_from_dirs(
-        self, directories: list[Path], independent: Literal[True]
+        self: Self, directories: list[Path], independent: Literal[True]
     ) -> list[list[ASTFeatures]]: ...
 
     @overload
     def get_from_dirs(
-        self, directories: list[Path], independent: bool = False
+        self: Self, directories: list[Path], independent: bool = False
     ) -> list[ASTFeatures] | list[list[ASTFeatures]]: ...
 
     def get_from_dirs(
-        self, directories: list[Path], independent: bool = False
+        self: Self, directories: list[Path], independent: bool = False
     ) -> list[ASTFeatures] | list[list[ASTFeatures]]:
         works = []
         for directory in directories:
@@ -167,9 +169,9 @@ class AbstractGetter(ABC):
         return works
 
     @abstractmethod
-    def get_works_from_dir(self, directory: Path) -> list[ASTFeatures]: ...
+    def get_works_from_dir(self: Self, directory: Path) -> list[ASTFeatures]: ...
 
-    def get_from_github_files(self, github_files: list[str]) -> list[ASTFeatures]:
+    def get_from_github_files(self: Self, github_files: list[str]) -> list[ASTFeatures]:
         works: list[ASTFeatures] = []
         if not github_files:
             return works
@@ -187,21 +189,21 @@ class AbstractGetter(ABC):
 
     @overload
     def get_from_github_project_folders(
-        self, github_project_folders: list[str], independent: Literal[False] = False
+        self: Self, github_project_folders: list[str], independent: Literal[False] = False
     ) -> list[ASTFeatures]: ...
 
     @overload
     def get_from_github_project_folders(
-        self, github_project_folders: list[str], independent: Literal[True]
+        self: Self, github_project_folders: list[str], independent: Literal[True]
     ) -> list[list[ASTFeatures]]: ...
 
     @overload
     def get_from_github_project_folders(
-        self, github_project_folders: list[str], independent: bool = False
+        self: Self, github_project_folders: list[str], independent: bool = False
     ) -> list[ASTFeatures] | list[list[ASTFeatures]]: ...
 
     def get_from_github_project_folders(
-        self, github_project_folders: list[str], independent: bool = False
+        self: Self, github_project_folders: list[str], independent: bool = False
     ) -> list[ASTFeatures] | list[list[ASTFeatures]]:
         works = []
         if not github_project_folders:
@@ -232,21 +234,21 @@ class AbstractGetter(ABC):
 
     @overload
     def get_from_users_repos(
-        self, github_user: str, independent: Literal[False] = False
+        self: Self, github_user: str, independent: Literal[False] = False
     ) -> list[ASTFeatures]: ...
 
     @overload
     def get_from_users_repos(
-        self, github_user: str, independent: Literal[True]
+        self: Self, github_user: str, independent: Literal[True]
     ) -> list[list[ASTFeatures]]: ...
 
     @overload
     def get_from_users_repos(
-        self, github_user: str, independent: bool = False
+        self: Self, github_user: str, independent: bool = False
     ) -> list[ASTFeatures] | list[list[ASTFeatures]]: ...
 
     def get_from_users_repos(
-        self, github_user: str, independent: bool = False
+        self: Self, github_user: str, independent: bool = False
     ) -> list[ASTFeatures] | list[list[ASTFeatures]]:
         works = []
         if not github_user:

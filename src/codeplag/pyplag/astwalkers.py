@@ -1,21 +1,23 @@
 import ast
 from contextlib import suppress
 
+from typing_extensions import Self
+
 from codeplag.pyplag.const import IGNORE_NODES, KEYWORDS, LITERALS, OPERATORS, TO_TOKEN
 from codeplag.types import ASTFeatures, NodeCodePlace, NodeStructurePlace
 
 
 class ASTWalker(ast.NodeVisitor):
-    def __init__(self, features: ASTFeatures) -> None:
+    def __init__(self: Self, features: ASTFeatures) -> None:
         self.features = features
         self.curr_depth = 0
 
-    def add_unique_node(self, node_name: str) -> None:
+    def add_unique_node(self: Self, node_name: str) -> None:
         self.features.unodes[node_name] = self.features.count_unodes
         self.features.from_num[self.features.count_unodes] = node_name
         self.features.count_unodes += 1
 
-    def __get_actual_name_from_node(self, node: ast.AST) -> str | None:
+    def __get_actual_name_from_node(self: Self, node: ast.AST) -> str | None:
         # TODO: Also handle ast.Expr
         if isinstance(node, (ast.AnnAssign, ast.AugAssign)):
             if isinstance(node.target, ast.Name):
@@ -37,7 +39,7 @@ class ASTWalker(ast.NodeVisitor):
             if isinstance(target, ast.Name):
                 return target.id
 
-    def add_node_to_structure(self, node: ast.AST, node_name: str) -> None:
+    def add_node_to_structure(self: Self, node: ast.AST, node_name: str) -> None:
         self.features.structure.append(
             NodeStructurePlace(depth=self.curr_depth, uid=self.features.unodes[node_name])
         )
@@ -47,7 +49,7 @@ class ASTWalker(ast.NodeVisitor):
                 actual_node_name = node_name
             self.features.head_nodes.append(f"{actual_node_name}[{node.lineno}]")
 
-    def generic_visit(self, node: ast.AST) -> None:
+    def generic_visit(self: Self, node: ast.AST) -> None:
         """Traverses, counts operators, keywords, and literals, and saves sequence of operators.
 
         Args:

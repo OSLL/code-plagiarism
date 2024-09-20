@@ -1,6 +1,8 @@
 from pathlib import Path
 from typing import Any, Literal
 
+from typing_extensions import Self
+
 from codeplag.consts import (
     DEFAULT_MODE,
 )
@@ -14,7 +16,7 @@ from codeplag.types import ReportType
 
 
 class CodeplagEngine:
-    def __init__(self, parsed_args: dict[str, Any]) -> None:
+    def __init__(self: Self, parsed_args: dict[str, Any]) -> None:
         self.root: str = parsed_args.pop("root")
         self.command: str | None = None
         # TODO: tmp
@@ -50,7 +52,7 @@ class CodeplagEngine:
             self.files: list[Path] = parsed_args.pop("files", [])
             self.directories: list[Path] = parsed_args.pop("directories", [])
 
-    def run(self) -> Literal[0, 1]:
+    def run(self: Self) -> Literal[0, 1]:
         logger.debug("Starting codeplag util ...")
 
         if self.root == "settings":

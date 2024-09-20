@@ -9,6 +9,7 @@ from codeplag.types import (
     Language,
     LogLevel,
     Mode,
+    NgramsLength,
     ReportsExtension,
     ReportType,
     Threshold,
@@ -29,6 +30,7 @@ TRANSLATIONS_PATH: Final[Path] = LIB_PATH / "translations"
 
 # Default values
 DEFAULT_THRESHOLD: Final[Threshold] = 65
+DEFAULT_NGRAMS_LENGTH: Final[NgramsLength] = 3
 DEFAULT_WEIGHTS: Final[tuple[float, float, float, float]] = (1.0, 0.4, 0.4, 0.4)
 DEFAULT_LANGUAGE: Final[Language] = "en"
 DEFAULT_LOG_LEVEL: Final[LogLevel] = "info"
@@ -70,7 +72,8 @@ REPORTS_EXTENSION_CHOICE: Final[tuple[ReportsExtension, ...]] = get_args(Reports
 EXTENSION_CHOICE: Final[tuple[Extension, ...]] = get_args(Extension)
 LANGUAGE_CHOICE: Final[tuple[Language, ...]] = get_args(Language)
 LOG_LEVEL_CHOICE: Final[tuple[LogLevel, ...]] = get_args(LogLevel)
-WORKERS_CHOICE: Final[list[int]] = list(range(1, DEFAULT_WORKERS + 1))
+WORKERS_CHOICE: Final[tuple[int, ...]] = tuple(range(1, DEFAULT_WORKERS + 1))
+NGRAMS_LENGTH_CHOICE: Final[tuple[int, ...]] = get_args(NgramsLength)
 REPORT_TYPE_CHOICE: Final[tuple[ReportType, ...]] = get_args(ReportType)
 # =======
 

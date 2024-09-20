@@ -6,6 +6,8 @@ from contextlib import redirect_stdout
 from typing import Final
 from unittest.mock import MagicMock, call, patch
 
+from typing_extensions import Self
+
 from webparsers.github_parser import GitHubParser
 from webparsers.types import Branch, Commit, PullRequest, Repository, WorkInfo
 
@@ -42,21 +44,21 @@ _GET_FILE_CONTENT_RES: Final[list[WorkInfo]] = [
 
 class Response:
     def __init__(
-        self,
+        self: Self,
         response_json: list | dict | None = None,
         status_code: int = 200,
         message: str | None = None,
-    ):
+    ) -> None:
         self.status_code = status_code
         self.message = message
         self.response_json = response_json if response_json else {}
         if self.message and isinstance(self.response_json, dict):
             self.response_json.update({"message": self.message})
 
-    def json(self):
+    def json(self: Self) -> list | dict | None:
         return self.response_json
 
-    def raise_for_status(self):
+    def raise_for_status(self: Self) -> None:
         return None
 
 
@@ -65,7 +67,7 @@ class TestGitHubParser(unittest.TestCase):
     def setUpClass(cls):
         cls.maxDiff = None
 
-    def test__is_accepted_extension(self):
+    def test__is_accepted_extension(self: Self) -> None:
         test_cases = [
             {
                 "arguments": {"path": "some/path/module.py"},
@@ -110,7 +112,7 @@ class TestGitHubParser(unittest.TestCase):
                 self.assertEqual(rv, test_case["expected_result"])
 
     @patch("webparsers.github_parser.requests.get")
-    def test_send_get_request(self, mock_get: MagicMock):
+    def test_send_get_request(self: Self, mock_get: MagicMock) -> None:
         test_cases = [
             {
                 "arguments": {"api_url": "users/moevm/repos", "params": {}},
@@ -138,7 +140,7 @@ class TestGitHubParser(unittest.TestCase):
                 )
 
     @patch("webparsers.github_parser.requests.get")
-    def test_send_get_request_bad(self, mock_get: MagicMock):
+    def test_send_get_request_bad(self: Self, mock_get: MagicMock) -> None:
         test_cases = [
             {
                 "arguments": {"api_url": "Test/url", "params": {}},
@@ -204,7 +206,7 @@ class TestGitHubParser(unittest.TestCase):
                 )
 
     @patch("webparsers.github_parser.GitHubParser.send_get_request")
-    def test_get_list_of_repos(self, mock_send_get_request: MagicMock):
+    def test_get_list_of_repos(self: Self, mock_send_get_request: MagicMock) -> None:
         test_cases = [
             {
                 "arguments": {"owner": "OSLL", "reg_exp": None},
@@ -305,7 +307,7 @@ class TestGitHubParser(unittest.TestCase):
                 self.assertEqual(mock_send_get_request.mock_calls, test_case["send_calls"])
 
     @patch("webparsers.github_parser.GitHubParser.send_get_request")
-    def test_get_list_of_repos_bad(self, mock_send_get_request: MagicMock):
+    def test_get_list_of_repos_bad(self: Self, mock_send_get_request: MagicMock) -> None:
         test_cases = [
             {
                 "arguments": {"owner": "OSLL", "reg_exp": None},
@@ -327,7 +329,7 @@ class TestGitHubParser(unittest.TestCase):
                 self.assertEqual(mock_send_get_request.mock_calls, test_case["send_calls"])
 
     @patch("webparsers.github_parser.GitHubParser.send_get_request")
-    def test_get_pulls_info(self, mock_send_get_request: MagicMock):
+    def test_get_pulls_info(self: Self, mock_send_get_request: MagicMock) -> None:
         test_cases = [
             {
                 "arguments": {"owner": "OSLL", "repo": "code-plagiarism"},
@@ -450,7 +452,7 @@ class TestGitHubParser(unittest.TestCase):
                     assert actual_call == expected_call
 
     @patch("webparsers.github_parser.GitHubParser.send_get_request")
-    def test_get_name_default_branch(self, mock_send_get_request: MagicMock):
+    def test_get_name_default_branch(self: Self, mock_send_get_request: MagicMock) -> None:
         test_cases = [
             {
                 "arguments": {"owner": "OSLL", "repo": "aido-auto-feedback"},
@@ -478,7 +480,7 @@ class TestGitHubParser(unittest.TestCase):
                 self.assertEqual(mock_send_get_request.mock_calls, test_case["send_calls"])
 
     @patch("webparsers.github_parser.GitHubParser.send_get_request")
-    def test__get_branch_last_commit_info(self, mock_send_get_request: MagicMock):
+    def test__get_branch_last_commit_info(self: Self, mock_send_get_request: MagicMock) -> None:
         _COMMIT1 = {
             "sha": "jal934304",
             "commit": {"author": {"name": "OSLL", "date": "2022-12-29T10:10:41Z"}},
@@ -519,7 +521,7 @@ class TestGitHubParser(unittest.TestCase):
                 self.assertEqual(mock_send_get_request.mock_calls, test_case["send_calls"])
 
     @patch("webparsers.github_parser.GitHubParser.send_get_request")
-    def test_get_file_content_by_sha(self, mock_send_get_request: MagicMock):
+    def test_get_file_content_by_sha(self: Self, mock_send_get_request: MagicMock) -> None:
         test_cases = [
             {
                 "arguments": {
@@ -564,8 +566,8 @@ class TestGitHubParser(unittest.TestCase):
     @patch("webparsers.github_parser.GitHubParser.get_file_content_by_sha")
     @patch("webparsers.github_parser.GitHubParser.send_get_request")
     def test_get_files_generator_from_sha_commit(
-        self, mock_send_get_request: MagicMock, mock_get_file_content_by_sha: MagicMock
-    ):
+        self: Self, mock_send_get_request: MagicMock, mock_get_file_content_by_sha: MagicMock
+    ) -> None:
         test_cases = [
             {
                 "arguments": {
@@ -793,7 +795,7 @@ class TestGitHubParser(unittest.TestCase):
                 )
 
     @patch("webparsers.github_parser.GitHubParser.send_get_request")
-    def test_get_list_repo_branches(self, mock_send_get_request: MagicMock):
+    def test_get_list_repo_branches(self: Self, mock_send_get_request: MagicMock) -> None:
         _COMMIT_DATE = "2022-12-29T10:10:41Z"
         _BRANCH_INFO1 = {
             "name": "main",
@@ -859,12 +861,12 @@ class TestGitHubParser(unittest.TestCase):
     @patch("webparsers.github_parser.GitHubParser._get_branch_last_commit_info")
     @patch("webparsers.github_parser.GitHubParser.get_files_generator_from_sha_commit")
     def test_get_files_generator_from_repo_url(
-        self,
+        self: Self,
         mock_get_files_generator_from_sha_commit: MagicMock,
         mock_get_sha_last_branch_commit: MagicMock,
         mock_get_list_repo_branches: MagicMock,
         mock_get_name_default_branch: MagicMock,
-    ):
+    ) -> None:
         test_cases = [
             {
                 "check_all": 0,
@@ -912,8 +914,8 @@ class TestGitHubParser(unittest.TestCase):
     @patch("webparsers.github_parser.GitHubParser.get_file_content_by_sha")
     @patch("webparsers.github_parser.GitHubParser.send_get_request")
     def test_get_file_from_url(
-        self, mock_send_get_request: MagicMock, mock_get_file_content_by_sha: MagicMock
-    ):
+        self: Self, mock_send_get_request: MagicMock, mock_get_file_content_by_sha: MagicMock
+    ) -> None:
         test_cases = [
             {
                 "arguments": {
@@ -941,11 +943,11 @@ class TestGitHubParser(unittest.TestCase):
     @patch("webparsers.github_parser.GitHubParser.get_files_generator_from_sha_commit")
     @patch("webparsers.github_parser.GitHubParser.send_get_request")
     def test_get_files_generator_from_dir_url(
-        self,
+        self: Self,
         mock_send_get_request: MagicMock,
         mock_get_files_generator_from_sha_commit: MagicMock,
         mock_get_file_content_by_sha: MagicMock,
-    ):
+    ) -> None:
         test_cases = [
             {
                 "arguments": {"dir_url": "https://github.com/OSLL/code-plagiarism/tree/main/src"},

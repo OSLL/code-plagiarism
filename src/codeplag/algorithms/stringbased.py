@@ -1,10 +1,11 @@
 from typing import Literal, Sequence
 
 import numpy as np
+from typing_extensions import Self
 
 
 class LevenshteinDistance:
-    def __init__(self, sequence1: Sequence, sequence2: Sequence):
+    def __init__(self: Self, sequence1: Sequence, sequence2: Sequence) -> None:
         self.sequence1 = sequence1
         self.sequence2 = sequence2
         self.s1_length = len(sequence1)
@@ -16,7 +17,7 @@ class LevenshteinDistance:
     def m(symbol1: str, symbol2: str) -> Literal[0, 1]:
         return 0 if symbol1 == symbol2 else 1
 
-    def calculate_distance_matrix(self) -> None:
+    def calculate_distance_matrix(self: Self) -> None:
         """Calculates the Levenshtein distance.
 
         The function calculates the Levenshtein matrix and sets in the distance attribute minimal
@@ -40,7 +41,7 @@ class LevenshteinDistance:
 
         self.distance = self.distance_matrix[self.s1_length][self.s2_length]
 
-    def get_similarity_value(self) -> float:
+    def get_similarity_value(self: Self) -> float:
         """The function returns the resulting fraction of similarity between two sequences."""
         if self.distance == -1:
             self.calculate_distance_matrix()

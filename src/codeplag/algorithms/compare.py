@@ -4,13 +4,21 @@ import numpy as np
 
 from codeplag.algorithms.featurebased import counter_metric, struct_compare
 from codeplag.algorithms.tokenbased import value_jakkar_coef
-from codeplag.consts import DEFAULT_WEIGHTS
-from codeplag.types import ASTFeatures, CompareInfo, FastMetrics, StructuresInfo
+from codeplag.consts import DEFAULT_NGRAMS_LENGTH, DEFAULT_WEIGHTS
+from codeplag.types import (
+    ASTFeatures,
+    CompareInfo,
+    FastMetrics,
+    NgramsLength,
+    StructuresInfo,
+    Threshold,
+)
 
 
 def fast_compare(
     features_f: ASTFeatures,
     features_s: ASTFeatures,
+    ngrams_length: NgramsLength = DEFAULT_NGRAMS_LENGTH,
     weights: tuple[float, float, float, float] = DEFAULT_WEIGHTS,
 ) -> FastMetrics:
     """Returns comparison result of two works compared by fast algorithms.
@@ -22,11 +30,16 @@ def fast_compare(
     ----
         features_f: The features of the first  source file.
         features_s: The features of the second  source file.
+        ngrams_length (NgramsLength): N-grams length.
         weights: Weights of fast metrics that participate in
           counting total similarity coefficient.
 
     """
-    jakkar_coef = value_jakkar_coef(features_f.tokens, features_s.tokens)
+    jakkar_coef = value_jakkar_coef(
+        tokens_first=features_f.tokens,
+        tokens_second=features_s.tokens,
+        ngrams_length=ngrams_length,
+    )
     ops_res = counter_metric(features_f.operators, features_s.operators)
     kw_res = counter_metric(features_f.keywords, features_s.keywords)
     lits_res = counter_metric(features_f.literals, features_s.literals)
@@ -46,7 +59,10 @@ def fast_compare(
 
 
 def compare_works(
-    features1: ASTFeatures, features2: ASTFeatures, threshold: int | None = None
+    features1: ASTFeatures,
+    features2: ASTFeatures,
+    ngrams_length: NgramsLength = DEFAULT_NGRAMS_LENGTH,
+    threshold: Threshold | None = None,
 ) -> CompareInfo:
     """The function returns the complex result of comparing two works.
 
@@ -54,6 +70,7 @@ def compare_works(
     ----
         features1: The features of the first work.
         features2: The features of the second work.
+        ngrams_length (NgramsLength): N-grams length.
         threshold: The threshold of plagiarism searcher alarm.
 
     Returns:
@@ -65,7 +82,9 @@ def compare_works(
         metric anywhere.
 
     """
-    fast_metrics = fast_compare(features1, features2)
+    fast_metrics = fast_compare(
+        features_f=features1, features_s=features2, ngrams_length=ngrams_length
+    )
     if threshold and (fast_metrics.weighted_average * 100.0) < threshold:
         return CompareInfo(fast=fast_metrics)
 

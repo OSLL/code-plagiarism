@@ -6,6 +6,8 @@ import argparse
 import builtins
 from pathlib import Path
 
+from typing_extensions import Self
+
 from codeplag.consts import (
     DEFAULT_MODE,
     DEFAULT_REPORT_TYPE,
@@ -13,6 +15,7 @@ from codeplag.consts import (
     LANGUAGE_CHOICE,
     LOG_LEVEL_CHOICE,
     MODE_CHOICE,
+    NGRAMS_LENGTH_CHOICE,
     REPORT_TYPE_CHOICE,
     REPORTS_EXTENSION_CHOICE,
     UTIL_NAME,
@@ -30,12 +33,12 @@ class CheckUniqueStore(argparse.Action):
     """Checks that the list of arguments contains no duplicates, then stores."""
 
     def __call__(
-        self,
+        self: Self,
         _parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
         values: list[str],
         _option_string: str | None = None,
-    ):
+    ) -> None:
         if len(values) > len(set(values)):
             str_values = ", ".join(str(path) for path in values)
             raise argparse.ArgumentError(
@@ -50,7 +53,7 @@ class CheckUniqueStore(argparse.Action):
 class DirPath(Path):
     """Raises `argparse.ArgumentTypeError` if the directory doesn't exist."""
 
-    def __new__(cls, *args: str, **kwargs):
+    def __new__(cls: type["DirPath"], *args: str, **kwargs) -> Path:
         path = Path(*args, **kwargs).resolve()
         if not path.is_dir():
             raise argparse.ArgumentTypeError(
@@ -63,7 +66,7 @@ class DirPath(Path):
 class FilePath(Path):
     """Raises `argparse.ArgumentTypeError` if the file doesn't exist."""
 
-    def __new__(cls, *args: str, **kwargs):
+    def __new__(cls: type["FilePath"], *args: str, **kwargs) -> Path:
         path = Path(*args, **kwargs).resolve()
         if not path.is_file():
             raise argparse.ArgumentTypeError(
@@ -76,7 +79,7 @@ class FilePath(Path):
 class CodeplagCLI(argparse.ArgumentParser):
     """The argument parser of the codeplag util."""
 
-    def __add_settings_path(self, subparsers: argparse._SubParsersAction) -> None:
+    def __add_settings_path(self: Self, subparsers: argparse._SubParsersAction) -> None:
         settings = subparsers.add_parser(
             "settings",
             help=_("Modifies and shows static settings of the '{util_name}' util.").format(
@@ -138,6 +141,17 @@ class CodeplagCLI(argparse.ArgumentParser):
             metavar="{50, 51, ..., 99}",
         )
         settings_modify.add_argument(
+            "-nl",
+            "--ngrams-length",
+            help=_(
+                "The length of N-grams generated to calculate the Jakkar coefficient. A long "
+                "length of N-grams reduces the Jakkar coefficient because there are fewer equal "
+                "sequences of two works."
+            ),
+            type=int,
+            choices=NGRAMS_LENGTH_CHOICE,
+        )
+        settings_modify.add_argument(
             "-l",
             "--language",
             help=_("The language of help messages, generated reports, errors."),
@@ -167,7 +181,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             help=_("Show the '{util_name}' util settings.").format(util_name=UTIL_NAME),
         )
 
-    def __add_check_path(self, subparsers: argparse._SubParsersAction) -> None:
+    def __add_check_path(self: Self, subparsers: argparse._SubParsersAction) -> None:
         check = subparsers.add_parser("check", help=_("Start searching similar works."))
         check.add_argument(
             "-d",
@@ -261,7 +275,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             default=[],
         )
 
-    def __add_report_path(self, subparsers: argparse._SubParsersAction) -> None:
+    def __add_report_path(self: Self, subparsers: argparse._SubParsersAction) -> None:
         report = subparsers.add_parser(
             "report",
             help=_(
@@ -302,7 +316,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             default=DEFAULT_REPORT_TYPE,
         )
 
-    def __init__(self):
+    def __init__(self: Self) -> None:
         super(CodeplagCLI, self).__init__(
             prog=UTIL_NAME,
             formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -331,7 +345,7 @@ class CodeplagCLI(argparse.ArgumentParser):
         self.__add_check_path(subparsers)
         self.__add_report_path(subparsers)
 
-    def validate_args(self, parsed_args: argparse.Namespace) -> None:
+    def validate_args(self: Self, parsed_args: argparse.Namespace) -> None:
         parsed_args_dict = vars(parsed_args)
         root = parsed_args_dict.get("root")
         if root is None:
@@ -364,7 +378,7 @@ class CodeplagCLI(argparse.ArgumentParser):
                     )
                 )
 
-    def parse_args(self, args: list[str] | None = None) -> argparse.Namespace:
+    def parse_args(self: Self, args: list[str] | None = None) -> argparse.Namespace:
         parsed_args = super(CodeplagCLI, self).parse_args(args)
         self.validate_args(parsed_args)
         return parsed_args

@@ -1,7 +1,7 @@
-# fmt: off
 import unittest
 
 import numpy as np
+from typing_extensions import Self
 
 from codeplag.algorithms.featurebased import (
     add_not_counted,
@@ -14,9 +14,10 @@ from codeplag.algorithms.featurebased import (
 )
 
 
+# fmt: off
 class TestFeaturebased(unittest.TestCase):
 
-    def test_counter_metric_normal(self):
+    def test_counter_metric_normal(self: Self) -> None:
         example1 = {'a': 2, 'b': 1, 'c': 5, 'd': 7}
         example2 = {'a': 10, 'c': 8, 'e': 2, 'f': 12}
         example3 = {'USub': 3, 'Mor': 3, 'Der': 5}
@@ -32,7 +33,7 @@ class TestFeaturebased(unittest.TestCase):
         self.assertEqual(res3, 0.0)
         self.assertEqual(res4, 1.0)
 
-    def test_op_shift_metric_normal(self):
+    def test_op_shift_metric_normal(self: Self) -> None:
         empty_list = []
         example1 = ['+', '-', '=']
         example2 = ['+', '+=', '/', '%']
@@ -54,7 +55,7 @@ class TestFeaturebased(unittest.TestCase):
         self.assertEqual(res7[0], 2)
         self.assertAlmostEqual(res7[1], 0.6, 2)
 
-    def test_get_children_indexes_normal(self):
+    def test_get_children_indexes_normal(self: Self) -> None:
         example1 = [(1, 2), (2, 3), (3, 5), (2, 4), (2, 5), (1, 6)]
         example2 = [(3, 4), (3, 2), (4, 5), (3, 1), (4, 8), (3, 8)]
         example3 = [(2, 1), (3, 4), (3, 10), (4, 1), (2, 5), (2, 9)]
@@ -75,7 +76,7 @@ class TestFeaturebased(unittest.TestCase):
         self.assertEqual(ind3[1], 4)
         self.assertEqual(ind3[2], 5)
 
-    def test_find_max_index(self):
+    def test_find_max_index(self: Self) -> None:
         arr1 = np.array([[[1, 2], [2, 3]],
                         [[3, 4], [5, 10]]])
         res1 = find_max_index(arr1)
@@ -91,7 +92,7 @@ class TestFeaturebased(unittest.TestCase):
         self.assertEqual(res3[0], 0)
         self.assertEqual(res3[1], 0)
 
-    def test_matrix_value(self):
+    def test_matrix_value(self: Self) -> None:
         arr1 = np.array([[[1, 2], [2, 3]],
                         [[3, 4], [5, 10]]])
         metric1, indexes1 = matrix_value(arr1)
@@ -118,7 +119,7 @@ class TestFeaturebased(unittest.TestCase):
         self.assertEqual(metric3[1], 1)
         self.assertEqual(indexes3, [])
 
-    def test_add_not_counted(self):
+    def test_add_not_counted(self: Self) -> None:
         structure = [(1, 2), (2, 1), (1, 3), (2, 4),
                      (3, 5), (1, 4), (2, 2), (2, 5)]
         res1 = add_not_counted(structure, 3, [0, 2, 5, len(structure)],
@@ -127,7 +128,7 @@ class TestFeaturebased(unittest.TestCase):
         self.assertEqual(res1, 3)
 
     # Тут хорошо бы переписать под общий случай, а не под codeplag
-    def test_struct_compare_normal(self):
+    def test_struct_compare_normal(self: Self) -> None:
         structure1 = [(1, 0), (2, 1), (3, 2),
                       (3, 2), (2, 3), (3, 4),
                       (4, 5), (3, 6), (3, 4),
@@ -167,7 +168,7 @@ class TestFeaturebased(unittest.TestCase):
         self.assertEqual(compliance_matrix[0][0][0], 13)
         self.assertEqual(compliance_matrix[0][0][1], 22)
 
-    def test_struct_compare_file_empty(self):
+    def test_struct_compare_file_empty(self: Self) -> None:
         structure1 = [(1, 2)]
         structure1.clear()
         structure2 = [(1, 0), (2, 1), (2, 2), (3, 3),

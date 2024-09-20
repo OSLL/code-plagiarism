@@ -148,7 +148,7 @@
   # Extension of reports 'csv'
   # Reports path to '/usr/src/works'
   # Path to environment variables '/usr/src/works/.env'
-  $ codeplag settings modify --threshold 70 --language en --show_progress 1 --reports_extension csv --reports /usr/src/works --environment /usr/src/works/.env
+  $ codeplag settings modify --threshold 70 --language en --show_progress 1 --reports_extension csv --reports /usr/src/works --environment /usr/src/works/.env --ngrams-length 2 --workers 4
   ```
 - Python analyzer:
   ```

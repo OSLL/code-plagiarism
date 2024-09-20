@@ -9,6 +9,9 @@ of two token sequences.
 import math
 from typing import Literal, Sequence, overload
 
+from codeplag.consts import DEFAULT_NGRAMS_LENGTH
+from codeplag.types import NgramsLength
+
 
 @overload
 def generate_ngrams(
@@ -88,7 +91,9 @@ def get_imprints_from_hashes(hashes: Sequence[int]) -> list[int]:
 
 
 def value_jakkar_coef(
-    tokens_first: Sequence[int], tokens_second: Sequence[int], ngrams_length: int = 3
+    tokens_first: Sequence[int],
+    tokens_second: Sequence[int],
+    ngrams_length: NgramsLength = DEFAULT_NGRAMS_LENGTH,
 ) -> float:
     """The function returns the value of the Jakkar coefficient.
 
@@ -96,7 +101,7 @@ def value_jakkar_coef(
     ----
         tokens_first (Sequence[int]): list of tokens of the first program.
         tokens_second (Sequence[int]): list of tokens of the second program.
-        ngrams_length (int): N-grams length.
+        ngrams_length (NgramsLength): N-grams length.
 
     """
     ngrams_first: set[tuple[int, ...]] = generate_ngrams(
@@ -155,7 +160,7 @@ def lcs_based_coeff(subseq1: Sequence[int], subseq2: Sequence[int]) -> float:
     Args:
     ----
         subseq1 (Sequence[int]): the first sequence.
-        subseq2 (Sequence[int]): the second sequnce.
+        subseq2 (Sequence[int]): the second sequence.
 
     """
     count_elem1 = len(subseq1)

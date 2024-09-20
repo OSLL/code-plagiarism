@@ -14,12 +14,13 @@ from typing import (
 )
 
 import numpy.typing as npt
-from typing_extensions import NotRequired
+from typing_extensions import NotRequired, Self
 
 Extension = Literal["py", "cpp"]
 Extensions = tuple[Pattern, ...]
 Flag = Literal[0, 1]
 Mode = Literal["many_to_many", "one_to_one"]
+NgramsLength = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 ReportsExtension = Literal["json", "csv"]
 ReportType = Literal["general", "sources"]
 Language = Literal["en", "ru"]
@@ -85,7 +86,7 @@ class ASTFeatures:
     tokens: list[int] = field(default_factory=list)
     tokens_pos: list[NodeCodePlace] = field(default_factory=list)
 
-    def __post_init__(self) -> None:
+    def __post_init__(self: Self) -> None:
         if isinstance(self.filepath, Path) and self.filepath.exists():
             self.modify_date = datetime.fromtimestamp(self.filepath.stat().st_mtime).strftime(
                 "%Y-%m-%d %H:%M:%S"
@@ -93,17 +94,17 @@ class ASTFeatures:
         else:
             self.modify_date = ""
 
-    def __eq__(self, other: "ASTFeatures") -> bool:
+    def __eq__(self: Self, other: "ASTFeatures") -> bool:
         if not isinstance(other, self.__class__):
             raise NotImplementedError
         return str(self.filepath) == str(other.filepath)
 
-    def __lt__(self, other: "ASTFeatures") -> bool:
+    def __lt__(self: Self, other: "ASTFeatures") -> bool:
         if not isinstance(other, self.__class__):
             raise NotImplementedError
         return str(self.filepath) < str(other.filepath)
 
-    def get_sha256(self) -> str:
+    def get_sha256(self: Self) -> str:
         return hashlib.sha256(str(self.tokens).encode("utf-8")).hexdigest()
 
 
@@ -161,6 +162,7 @@ class Settings(TypedDict):
     reports: NotRequired[Path]
     reports_extension: ReportsExtension
     show_progress: Flag
+    ngrams_length: NgramsLength
     threshold: Threshold
     workers: int
 

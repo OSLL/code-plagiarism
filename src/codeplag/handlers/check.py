@@ -14,10 +14,11 @@ import pandas as pd
 from decouple import Config, RepositoryEnv
 from numpy.typing import NDArray
 from requests import Session
+from typing_extensions import Self
 
 from codeplag.algorithms.compare import compare_works
 from codeplag.config import read_settings_conf
-from codeplag.consts import DEFAULT_MODE, SUPPORTED_EXTENSIONS
+from codeplag.consts import DEFAULT_MODE, DEFAULT_NGRAMS_LENGTH, SUPPORTED_EXTENSIONS
 from codeplag.cplag.utils import CFeaturesGetter
 from codeplag.display import (
     ComplexProgress,
@@ -35,6 +36,7 @@ from codeplag.types import (
     Extension,
     Flag,
     Mode,
+    NgramsLength,
     ProcessingWorksInfo,
     Threshold,
 )
@@ -43,7 +45,7 @@ from webparsers.github_parser import GitHubParser
 
 class WorksComparator:
     def __init__(
-        self,
+        self: Self,
         extension: Extension,
         repo_regexp: str | None = None,
         path_regexp: str | None = None,
@@ -84,6 +86,9 @@ class WorksComparator:
         self.show_progress: Flag = settings_conf["show_progress"]
         self.threshold: Threshold | None = settings_conf["threshold"]
         self.workers: int = settings_conf["workers"]
+        self.ngrams_length: NgramsLength = settings_conf.get(
+            "ngrams_length", DEFAULT_NGRAMS_LENGTH
+        )
         reports = settings_conf.get("reports")
         if reports is not None:
             reports_extension = settings_conf["reports_extension"]
@@ -95,7 +100,7 @@ class WorksComparator:
         if set_github_parser:
             self.set_github_parser(all_branches, settings_conf.get("environment"))
 
-    def set_github_parser(self, all_branches: bool, environment: Path | None = None) -> None:
+    def set_github_parser(self: Self, all_branches: bool, environment: Path | None = None) -> None:
         """Sets a GitHubParser object for getting works information from GitHub.
 
         Args:
@@ -126,7 +131,7 @@ class WorksComparator:
         )
 
     def check(
-        self,
+        self: Self,
         files: list[Path] | None = None,
         directories: list[Path] | None = None,
         github_files: list[str] | None = None,
@@ -170,7 +175,7 @@ class WorksComparator:
             self.reporter._write_df_to_fs()
 
     def __many_to_many_check(
-        self,
+        self: Self,
         features_from_files: list[ASTFeatures],
         directories: list[Path],
         features_from_gh_files: list[ASTFeatures],
@@ -203,7 +208,7 @@ class WorksComparator:
             self._handle_completed_futures(processed)
 
     def __one_to_one_check(
-        self,
+        self: Self,
         features_from_files: list[ASTFeatures],
         directories: list[Path],
         features_from_gh_files: list[ASTFeatures],
@@ -252,7 +257,7 @@ class WorksComparator:
             self._handle_completed_futures(processed)
 
     def _do_step(
-        self,
+        self: Self,
         executor: ProcessPoolExecutor,
         processing: list[ProcessingWorksInfo],
         work1: ASTFeatures,
@@ -277,7 +282,7 @@ class WorksComparator:
         _print_pretty_progress_if_need_and_increase(self.progress, self.workers)
 
     def _handle_compare_result(
-        self,
+        self: Self,
         work1: ASTFeatures,
         work2: ASTFeatures,
         metrics: CompareInfo,
@@ -303,7 +308,7 @@ class WorksComparator:
             )
 
     def _handle_completed_futures(
-        self,
+        self: Self,
         processing: list[ProcessingWorksInfo],
     ) -> None:
         for proc_works_info in processing:
@@ -314,17 +319,17 @@ class WorksComparator:
             _print_pretty_progress_if_need_and_increase(self.progress, self.workers)
 
     def _create_future_compare(
-        self,
+        self: Self,
         executor: ProcessPoolExecutor,
         work1: ASTFeatures,
         work2: ASTFeatures,
     ) -> Future:
-        return executor.submit(compare_works, work1, work2, self.threshold)
+        return executor.submit(compare_works, work1, work2, self.ngrams_length, self.threshold)
 
 
 class IgnoreThresholdWorksComparator(WorksComparator):
     def __init__(
-        self,
+        self: Self,
         extension: Extension,
         repo_regexp: str | None = None,
         path_regexp: str | None = None,
