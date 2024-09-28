@@ -19,22 +19,23 @@ def counter_metric(counter1: Mapping[str, int], counter2: Mapping[str, int]) -> 
     if len(counter1) == 0 and len(counter2) == 0:
         return 1.0
 
-    percent_of_same = [0, 0]
+    percent_of_same_numerator = 0
+    percent_of_same_denominator = 0
     for key in counter1:
         if key not in counter2:
-            percent_of_same[1] += counter1[key]
+            percent_of_same_denominator += counter1[key]
             continue
-        percent_of_same[0] += min(counter1[key], counter2[key])
-        percent_of_same[1] += max(counter1[key], counter2[key])
+        percent_of_same_numerator += min(counter1[key], counter2[key])
+        percent_of_same_denominator += max(counter1[key], counter2[key])
     for key in counter2:
         if key not in counter1:
-            percent_of_same[1] += counter2[key]
+            percent_of_same_denominator += counter2[key]
             continue
 
-    if percent_of_same[1] == 0:
+    if percent_of_same_denominator == 0:
         return 0.0
 
-    return percent_of_same[0] / percent_of_same[1]
+    return percent_of_same_numerator / percent_of_same_denominator
 
 
 def op_shift_metric(ops1: list[str], ops2: list[str]) -> tuple[int, float]:
@@ -54,7 +55,7 @@ def op_shift_metric(ops1: list[str], ops2: list[str]) -> tuple[int, float]:
         ops1, ops2 = ops2, ops1
         count_el_f, count_el_s = count_el_s, count_el_f
 
-    y = np.zeros(count_el_s, dtype=np.float32)
+    y = np.empty(count_el_s, dtype=np.float32)
 
     shift = 0
     while shift < count_el_s:
@@ -234,11 +235,11 @@ def struct_compare(
     key_indexes1.append(count_of_nodes1)
     key_indexes2.append(count_of_nodes2)
 
-    array = np.zeros((count_of_children1, count_of_children2, 2), dtype=np.int64)
+    array = np.empty((count_of_children1, count_of_children2, 2), dtype=np.int64)
 
     for i in np.arange(0, count_of_children1, 1):
+        section1 = tree1[key_indexes1[i] + 1 : key_indexes1[i + 1]]
         for j in np.arange(0, count_of_children2, 1):
-            section1 = tree1[key_indexes1[i] + 1 : key_indexes1[i + 1]]
             section2 = tree2[key_indexes2[j] + 1 : key_indexes2[j + 1]]
             array[i][j] = struct_compare(section1, section2)
 

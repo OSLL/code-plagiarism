@@ -11,7 +11,7 @@ class LevenshteinDistance:
         self.s1_length = len(sequence1)
         self.s2_length = len(sequence2)
         self.distance = -1
-        self.distance_matrix = np.zeros((self.s1_length + 1, self.s2_length + 1), dtype=np.int64)
+        self.distance_matrix = np.empty((self.s1_length + 1, self.s2_length + 1), dtype=np.int64)
 
     @staticmethod
     def m(symbol1: str, symbol2: str) -> Literal[0, 1]:

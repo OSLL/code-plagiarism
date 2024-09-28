@@ -348,7 +348,7 @@ def compliance_matrix_to_df(
     head_nodes1: list[str],
     head_nodes2: list[str],
 ) -> pd.DataFrame:
-    data = np.zeros(
+    data = np.empty(
         (
             compliance_matrix.shape[0],
             compliance_matrix.shape[1],
