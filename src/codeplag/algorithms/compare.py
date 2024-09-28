@@ -88,7 +88,7 @@ def compare_works(
     if threshold and (fast_metrics.weighted_average * 100.0) < threshold:
         return CompareInfo(fast=fast_metrics)
 
-    compliance_matrix = np.zeros(
+    compliance_matrix = np.empty(
         (len(features1.head_nodes), len(features2.head_nodes), 2), dtype=np.int64
     )
     struct_res = struct_compare(features1.structure, features2.structure, compliance_matrix)

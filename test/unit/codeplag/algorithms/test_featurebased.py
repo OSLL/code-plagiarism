@@ -140,7 +140,7 @@ class TestFeaturebased(unittest.TestCase):
                       (3, 8), (3, 8), (2, 9)]
         count_ch1 = (get_children_indexes(structure1, len(structure1)))[1]
         count_ch2 = (get_children_indexes(structure2, len(structure2)))[1]
-        compliance_matrix = np.zeros((count_ch1, count_ch2, 2),
+        compliance_matrix = np.empty((count_ch1, count_ch2, 2),
                                      dtype=np.int64)
         res = struct_compare(structure1, structure2,
                              compliance_matrix)
@@ -160,7 +160,7 @@ class TestFeaturebased(unittest.TestCase):
                       (4, 4), (5, 8), (4, 10), (5, 4)]
         count_ch1 = (get_children_indexes(structure1, len(structure1)))[1]
         count_ch2 = (get_children_indexes(structure2, len(structure2)))[1]
-        compliance_matrix = np.zeros((count_ch1, count_ch2, 2),
+        compliance_matrix = np.empty((count_ch1, count_ch2, 2),
                                      dtype=np.int64)
         res = struct_compare(structure1, structure2,
                              compliance_matrix)
