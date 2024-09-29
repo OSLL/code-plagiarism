@@ -287,7 +287,7 @@ class CodeplagCLI(argparse.ArgumentParser):
         )
 
         report_commands = report.add_subparsers(
-            help=_("Report commands of the '{util_name}' util.").format(util_name={UTIL_NAME}),
+            help=_("Report commands of the '{util_name}' util.").format(util_name=UTIL_NAME),
             required=True,
             metavar="COMMAND",
             dest="report",
@@ -302,7 +302,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             "-p",
             "--path",
             help=_(
-                "Path to save generated report. " "If it's a directory, then create a file in it."
+                "Path to save generated report. If it's a directory, then create a file in it."
             ),
             required=True,
             type=Path,
