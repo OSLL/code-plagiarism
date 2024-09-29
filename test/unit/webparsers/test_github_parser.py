@@ -64,7 +64,7 @@ class Response:
 
 class TestGitHubParser(unittest.TestCase):
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls: type["TestGitHubParser"]) -> None:
         cls.maxDiff = None
 
     def test__is_accepted_extension(self: Self) -> None:

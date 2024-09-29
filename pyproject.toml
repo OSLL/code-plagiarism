@@ -22,7 +22,6 @@ lint.ignore = [
     "ANN102",
     "ANN201",
     "ANN204",
-    "ANN206",
     "ANN401",  # dynamically typed expressions (typing.Any)
     "D100",
     "D101",
