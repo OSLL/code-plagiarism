@@ -1,5 +1,5 @@
 from pathlib import Path
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock
 
 import pandas as pd
 import pytest
@@ -8,11 +8,10 @@ from typing_extensions import Self
 
 from codeplag.consts import CSV_REPORT_COLUMNS, CSV_REPORT_FILENAME
 from codeplag.handlers.report import deserialize_compare_result
-from codeplag.reporters import CSVReporter, JSONReporter
+from codeplag.reporters import CSVReporter
 from codeplag.types import (
     ASTFeatures,
     CompareInfo,
-    WorksReport,
 )
 
 
@@ -24,49 +23,6 @@ def mock_default_logger(mocker: MockerFixture) -> MagicMock:
 @pytest.fixture
 def mock_write_config(mocker: MockerFixture) -> MagicMock:
     return mocker.patch("codeplag.reporters.write_config")
-
-
-class TestJSONReporter:
-    REPORTER = JSONReporter(Path("."))
-
-    def test_save_result_not_occurred_due_absent_dir(
-        self: Self,
-        mock_default_logger: MagicMock,
-        first_features: ASTFeatures,
-        second_features: ASTFeatures,
-        first_compare_result: CompareInfo,
-    ) -> None:
-        self.REPORTER.reports = Path("/bad_directory")
-        self.REPORTER.save_result(first_features, second_features, first_compare_result)
-        assert mock_default_logger.error.call_args == call("The folder for reports isn't exists.")
-
-    def test_save_result_not_occurred_due_permission_error(
-        self: Self,
-        mocker: MockerFixture,
-        mock_default_logger: MagicMock,
-        first_features: ASTFeatures,
-        second_features: ASTFeatures,
-        first_compare_result: CompareInfo,
-    ) -> None:
-        mocker.patch.object(Path, "open", side_effect=PermissionError)
-        self.REPORTER.reports = Path("/etc")
-        self.REPORTER.save_result(first_features, second_features, first_compare_result)
-        Path.open.assert_called_once()
-        assert mock_default_logger.error.call_args == call(
-            "Not enough rights to write reports to the folder."
-        )
-
-    def test_save_result_with_modify_date(
-        self: Self,
-        mock_write_config: MagicMock,
-        first_features: ASTFeatures,
-        second_features: ASTFeatures,
-        first_compare_result: CompareInfo,
-    ) -> None:
-        mock_write_config.reset_mock()
-        self.REPORTER.save_result(first_features, second_features, first_compare_result)
-        mock_write_config.assert_called_once()
-        assert mock_write_config.call_args[0][1].keys() == WorksReport.__annotations__.keys()
 
 
 class TestCSVReporter:

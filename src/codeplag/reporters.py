@@ -1,7 +1,6 @@
 """This module contains logic for saving a comparison result into JSON or CSV."""
 
 import json
-import uuid
 from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
@@ -11,7 +10,6 @@ import numpy as np
 import pandas as pd
 from typing_extensions import Self
 
-from codeplag.config import write_config
 from codeplag.consts import CSV_REPORT_COLUMNS, CSV_REPORT_FILENAME, CSV_SAVE_TICK_SEC
 from codeplag.logger import codeplag_logger as logger
 from codeplag.types import (
@@ -19,7 +17,6 @@ from codeplag.types import (
     CompareInfo,
     FastMetrics,
     StructuresInfo,
-    WorksReport,
 )
 
 
@@ -105,40 +102,6 @@ class CSVReporter(AbstractReporter):
             and cache_val.iloc[0].second_sha256 == work2.sha256
         ):
             return deserialize_compare_result(cache_val.iloc[0])
-
-
-# DEPRECATED
-class JSONReporter(AbstractReporter):
-    def save_result(
-        self: Self,
-        first_work: ASTFeatures,
-        second_work: ASTFeatures,
-        compare_info: CompareInfo,
-    ) -> None:
-        if not self.reports.is_dir():
-            logger.error("The folder for reports isn't exists.")
-            return
-        assert compare_info.structure is not None
-
-        struct_info_dict = compare_info.structure._asdict()
-        struct_info_dict["compliance_matrix"] = struct_info_dict["compliance_matrix"].tolist()
-        report = WorksReport(
-            date=_get_current_date(),
-            first_path=first_work.filepath.__str__(),
-            first_modify_date=first_work.modify_date,
-            second_path=second_work.filepath.__str__(),
-            second_modify_date=second_work.modify_date,
-            first_heads=first_work.head_nodes,
-            second_heads=second_work.head_nodes,
-            fast=compare_info.fast._asdict(),
-            structure=struct_info_dict,
-        )
-
-        try:
-            report_file = self.reports / f"{uuid.uuid4().hex}.json"
-            write_config(report_file, report)
-        except PermissionError:
-            logger.error("Not enough rights to write reports to the folder.")
 
 
 def read_df(path: Path) -> pd.DataFrame:

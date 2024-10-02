@@ -21,7 +21,7 @@ Extensions = tuple[Pattern, ...]
 Flag = Literal[0, 1]
 Mode = Literal["many_to_many", "one_to_one"]
 NgramsLength = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-ReportsExtension = Literal["json", "csv"]
+ReportsExtension = Literal["csv"]
 ReportType = Literal["general", "sources"]
 Language = Literal["en", "ru"]
 LogLevel = Literal["debug", "info", "warning", "error"]
@@ -128,19 +128,6 @@ class StructuresInfo(NamedTuple):
 class CompareInfo(NamedTuple):
     fast: FastMetrics
     structure: StructuresInfo | None = None
-
-
-# TODO: Rework it structure
-class WorksReport(TypedDict):
-    date: str
-    first_path: str
-    second_path: str
-    first_modify_date: str
-    second_modify_date: str
-    first_heads: list[str]
-    second_heads: list[str]
-    fast: dict[str, int]  # dict from FastMetrics
-    structure: dict  # dict from StructuresInfo
 
 
 # Exceptions

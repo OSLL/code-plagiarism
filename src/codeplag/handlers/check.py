@@ -29,7 +29,7 @@ from codeplag.display import (
 from codeplag.getfeatures import AbstractGetter
 from codeplag.logger import codeplag_logger as logger
 from codeplag.pyplag.utils import PyFeaturesGetter
-from codeplag.reporters import CSVReporter, JSONReporter
+from codeplag.reporters import CSVReporter
 from codeplag.types import (
     ASTFeatures,
     CompareInfo,
@@ -92,7 +92,10 @@ class WorksComparator:
         reports = settings_conf.get("reports")
         if reports is not None:
             reports_extension = settings_conf["reports_extension"]
-            Reporter = CSVReporter if reports_extension == "csv" else JSONReporter
+            if reports_extension == "csv":
+                Reporter = CSVReporter
+            else:
+                raise ValueError(f"Unsupported reports extension '{reports_extension}'.")
             self.reporter = Reporter(reports)
         else:
             self.reporter = None

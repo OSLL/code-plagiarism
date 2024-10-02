@@ -23,9 +23,9 @@ class TestSettingsModify:
     @pytest.mark.parametrize(
         "env,reports,threshold,ngrams_length,show_progress,reports_extension,language,log_level,workers",
         [
-            (f"src/{UTIL_NAME}/types.py", "src", 83, 2, 0, "json", "en", "debug", 1),
+            (f"src/{UTIL_NAME}/types.py", "src", 83, 2, 0, "csv", "en", "debug", 1),
             ("setup.py", "test", 67, 3, 1, "csv", "ru", "info", os.cpu_count() or 1),
-            (f"src/{UTIL_NAME}/utils.py", "debian", 93, 4, 0, "json", "en", "warning", 1),
+            (f"src/{UTIL_NAME}/utils.py", "debian", 93, 4, 0, "csv", "en", "warning", 1),
         ],
     )
     def test_modify_settings(
