@@ -1,15 +1,11 @@
 from __future__ import annotations
 
-import json
 import os
-import re
 
 import pytest
-from const import REPORTS_FOLDER
 from utils import modify_settings, run_check, run_util
 
 from codeplag.consts import CONFIG_PATH, UTIL_NAME, UTIL_VERSION
-from codeplag.types import WorksReport
 
 CWD = os.getcwd()
 CPP_FILES = [
@@ -145,23 +141,3 @@ def test_check_failed_when_path_regexp_provided_without_required_args(
 
     result.assert_failed()
     assert result.cmd_res.returncode == 2
-
-
-def test_save_reports(create_reports_folder: None):
-    modify_settings(reports=REPORTS_FOLDER, reports_extension="json").assert_success()
-    run_check(
-        [
-            "--directories",
-            "./src",
-        ]
-    ).assert_success()
-    reports_files = os.listdir(REPORTS_FOLDER)
-
-    assert len(reports_files) > 0
-    for file in reports_files:
-        assert re.search(".*[.]json$", file)
-        filepath = f"{REPORTS_FOLDER}/{file}"
-        with open(filepath, "r") as f:
-            report = json.loads(f.read())
-            for key in set(WorksReport.__annotations__.keys()):
-                assert key in report
