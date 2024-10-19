@@ -19,6 +19,7 @@ from typing_extensions import NotRequired, Self
 Extension = Literal["py", "cpp"]
 Extensions = tuple[Pattern, ...]
 Flag = Literal[0, 1]
+MaxDepth = Literal[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 999]
 Mode = Literal["many_to_many", "one_to_one"]
 NgramsLength = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 ReportsExtension = Literal["csv"]
@@ -149,6 +150,7 @@ class Settings(TypedDict):
     reports: NotRequired[Path]
     reports_extension: ReportsExtension
     show_progress: Flag
+    max_depth: MaxDepth
     ngrams_length: NgramsLength
     threshold: Threshold
     workers: int

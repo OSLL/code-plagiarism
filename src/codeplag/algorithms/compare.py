@@ -4,11 +4,12 @@ import numpy as np
 
 from codeplag.algorithms.featurebased import counter_metric, struct_compare
 from codeplag.algorithms.tokenbased import value_jakkar_coef
-from codeplag.consts import DEFAULT_NGRAMS_LENGTH, DEFAULT_WEIGHTS
+from codeplag.consts import DEFAULT_MAX_DEPTH, DEFAULT_NGRAMS_LENGTH, DEFAULT_WEIGHTS
 from codeplag.types import (
     ASTFeatures,
     CompareInfo,
     FastMetrics,
+    MaxDepth,
     NgramsLength,
     StructuresInfo,
     Threshold,
@@ -62,16 +63,19 @@ def compare_works(
     features1: ASTFeatures,
     features2: ASTFeatures,
     ngrams_length: NgramsLength = DEFAULT_NGRAMS_LENGTH,
+    max_depth: MaxDepth = DEFAULT_MAX_DEPTH,
     threshold: Threshold | None = None,
 ) -> CompareInfo:
     """The function returns the complex result of comparing two works.
 
     Args:
     ----
-        features1: The features of the first work.
-        features2: The features of the second work.
+        features1 (ASTFeatures): The features of the first work.
+        features2 (ASTFeatures): The features of the second work.
         ngrams_length (NgramsLength): N-grams length.
-        threshold: The threshold of plagiarism searcher alarm.
+        max_depth (MaxDepth | None): Max depth of the AST structure which play role in
+          calculations.
+        threshold (Threshold | None): The threshold of plagiarism searcher alarm.
 
     Returns:
     -------
@@ -91,7 +95,11 @@ def compare_works(
     compliance_matrix = np.empty(
         (len(features1.head_nodes), len(features2.head_nodes), 2), dtype=np.int64
     )
-    struct_res = struct_compare(features1.structure, features2.structure, compliance_matrix)
+    struct_res = struct_compare(
+        [node for node in features1.structure if node.depth <= max_depth],
+        [node for node in features2.structure if node.depth <= max_depth],
+        compliance_matrix,
+    )
     struct_res = struct_res[0] / struct_res[1]
 
     structure_info = StructuresInfo(similarity=struct_res, compliance_matrix=compliance_matrix)

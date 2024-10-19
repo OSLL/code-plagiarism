@@ -12,6 +12,7 @@ from codeplag.consts import (
     CONFIG_PATH,
     DEFAULT_LANGUAGE,
     DEFAULT_LOG_LEVEL,
+    DEFAULT_MAX_DEPTH,
     DEFAULT_NGRAMS_LENGTH,
     DEFAULT_REPORT_EXTENSION,
     DEFAULT_THRESHOLD,
@@ -120,6 +121,7 @@ def test_read_default_settings_conf(settings_config: Settings | None):
             {"reports": "/home/bukabyka/reports"},
             {
                 "threshold": DEFAULT_THRESHOLD,
+                "max_depth": DEFAULT_MAX_DEPTH,
                 "ngrams_length": DEFAULT_NGRAMS_LENGTH,
                 "reports": Path("/home/bukabyka/reports"),
                 "show_progress": 0,
@@ -132,6 +134,7 @@ def test_read_default_settings_conf(settings_config: Settings | None):
         [
             {
                 "threshold": 99,
+                "max_depth": 6,
                 "ngrams_length": 5,
                 "environment": "/home/bukabyka/.env",
                 "show_progress": 1,
@@ -142,6 +145,7 @@ def test_read_default_settings_conf(settings_config: Settings | None):
             },
             {
                 "threshold": 99,
+                "max_depth": 6,
                 "ngrams_length": 5,
                 "environment": Path("/home/bukabyka/.env"),
                 "show_progress": 1,
@@ -155,6 +159,7 @@ def test_read_default_settings_conf(settings_config: Settings | None):
             {"bad_field": "bad_field", "reports": "/home/bukabyka/reports"},
             {
                 "threshold": DEFAULT_THRESHOLD,
+                "max_depth": DEFAULT_MAX_DEPTH,
                 "ngrams_length": DEFAULT_NGRAMS_LENGTH,
                 "reports": Path("/home/bukabyka/reports"),
                 "show_progress": 0,

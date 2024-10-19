@@ -14,6 +14,7 @@ from codeplag.consts import (
     EXTENSION_CHOICE,
     LANGUAGE_CHOICE,
     LOG_LEVEL_CHOICE,
+    MAX_DEPTH_CHOICE,
     MODE_CHOICE,
     NGRAMS_LENGTH_CHOICE,
     REPORT_TYPE_CHOICE,
@@ -139,6 +140,13 @@ class CodeplagCLI(argparse.ArgumentParser):
             type=int,
             choices=range(50, 100),
             metavar="{50, 51, ..., 99}",
+        )
+        settings_modify.add_argument(
+            "-md",
+            "--max-depth",
+            help=_("The maximum depth of the AST structure which play role in calculations."),
+            type=int,
+            choices=MAX_DEPTH_CHOICE,
         )
         settings_modify.add_argument(
             "-nl",

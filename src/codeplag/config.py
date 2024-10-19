@@ -6,6 +6,7 @@ from codeplag.consts import (
     CONFIG_PATH,
     DEFAULT_LANGUAGE,
     DEFAULT_LOG_LEVEL,
+    DEFAULT_MAX_DEPTH,
     DEFAULT_NGRAMS_LENGTH,
     DEFAULT_REPORT_EXTENSION,
     DEFAULT_THRESHOLD,
@@ -81,6 +82,7 @@ def write_settings_conf(settings: Settings) -> None:
 
 DefaultSettingsConfig = Settings(
     threshold=DEFAULT_THRESHOLD,
+    max_depth=DEFAULT_MAX_DEPTH,
     ngrams_length=DEFAULT_NGRAMS_LENGTH,
     show_progress=0,
     reports_extension=DEFAULT_REPORT_EXTENSION,
