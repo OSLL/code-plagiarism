@@ -8,6 +8,7 @@ from codeplag.types import (
     Extensions,
     Language,
     LogLevel,
+    MaxDepth,
     Mode,
     NgramsLength,
     ReportsExtension,
@@ -39,6 +40,7 @@ DEFAULT_GENERAL_REPORT_NAME: Final[str] = "report.html"
 DEFAULT_SOURCES_REPORT_NAME: Final[str] = "sources.html"
 DEFAULT_WORKERS: Final[int] = os.cpu_count() or 1
 DEFAULT_MODE: Final[Mode] = "many_to_many"
+DEFAULT_MAX_DEPTH: Final[MaxDepth] = 999
 DEFAULT_REPORT_TYPE: Final[ReportType] = "general"
 # =============
 
@@ -73,6 +75,7 @@ EXTENSION_CHOICE: Final[tuple[Extension, ...]] = get_args(Extension)
 LANGUAGE_CHOICE: Final[tuple[Language, ...]] = get_args(Language)
 LOG_LEVEL_CHOICE: Final[tuple[LogLevel, ...]] = get_args(LogLevel)
 WORKERS_CHOICE: Final[tuple[int, ...]] = tuple(range(1, DEFAULT_WORKERS + 1))
+MAX_DEPTH_CHOICE: Final[tuple[int, ...]] = get_args(MaxDepth)
 NGRAMS_LENGTH_CHOICE: Final[tuple[int, ...]] = get_args(NgramsLength)
 REPORT_TYPE_CHOICE: Final[tuple[ReportType, ...]] = get_args(ReportType)
 # =======

@@ -147,7 +147,7 @@ def matrix_value(array: np.ndarray) -> tuple[list, list]:
 
     Complexity:
         rows = array.shape[0]
-        columns = array.shpe[1]
+        columns = array.shape[1]
         O(min(rows, columns) * rows * columns)
 
     """

@@ -9,6 +9,7 @@ from codeplag.types import (
     Flag,
     Language,
     LogLevel,
+    MaxDepth,
     NgramsLength,
     ReportsExtension,
     ReportType,
@@ -52,6 +53,7 @@ def modify_settings(
     reports: Path | str | None = None,
     environment: Path | str | None = None,
     threshold: Threshold | None = None,
+    max_depth: MaxDepth | None = None,
     ngrams_length: NgramsLength | None = None,
     show_progress: Flag | None = None,
     reports_extension: ReportsExtension | None = None,
@@ -67,6 +69,7 @@ def modify_settings(
         + create_opt("reports", reports)
         + create_opt("environment", environment)
         + create_opt("threshold", threshold)
+        + create_opt("max-depth", max_depth)
         + create_opt("ngrams-length", ngrams_length)
         + create_opt("show_progress", show_progress)
         + create_opt("reports_extension", reports_extension)

@@ -18,7 +18,12 @@ from typing_extensions import Self
 
 from codeplag.algorithms.compare import compare_works
 from codeplag.config import read_settings_conf
-from codeplag.consts import DEFAULT_MODE, DEFAULT_NGRAMS_LENGTH, SUPPORTED_EXTENSIONS
+from codeplag.consts import (
+    DEFAULT_MAX_DEPTH,
+    DEFAULT_MODE,
+    DEFAULT_NGRAMS_LENGTH,
+    SUPPORTED_EXTENSIONS,
+)
 from codeplag.cplag.utils import CFeaturesGetter
 from codeplag.display import (
     ComplexProgress,
@@ -35,6 +40,7 @@ from codeplag.types import (
     CompareInfo,
     Extension,
     Flag,
+    MaxDepth,
     Mode,
     NgramsLength,
     ProcessingWorksInfo,
@@ -88,6 +94,10 @@ class WorksComparator:
         self.workers: int = settings_conf["workers"]
         self.ngrams_length: NgramsLength = settings_conf.get(
             "ngrams_length", DEFAULT_NGRAMS_LENGTH
+        )
+        self.max_depth: MaxDepth = settings_conf.get(
+            "max_depth",
+            DEFAULT_MAX_DEPTH,
         )
         reports = settings_conf.get("reports")
         if reports is not None:
@@ -327,7 +337,9 @@ class WorksComparator:
         work1: ASTFeatures,
         work2: ASTFeatures,
     ) -> Future:
-        return executor.submit(compare_works, work1, work2, self.ngrams_length, self.threshold)
+        return executor.submit(
+            compare_works, work1, work2, self.ngrams_length, self.max_depth, self.threshold
+        )
 
 
 class IgnoreThresholdWorksComparator(WorksComparator):

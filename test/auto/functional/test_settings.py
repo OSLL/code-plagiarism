@@ -5,7 +5,7 @@ from typing import Literal
 
 import pytest
 from typing_extensions import Self
-from utils import NgramsLength, modify_settings
+from utils import MaxDepth, NgramsLength, modify_settings
 
 from codeplag.consts import CONFIG_PATH, NGRAMS_LENGTH_CHOICE, UTIL_NAME
 from codeplag.types import Language, LogLevel, ReportsExtension, Threshold
@@ -21,11 +21,11 @@ def teardown():
 
 class TestSettingsModify:
     @pytest.mark.parametrize(
-        "env,reports,threshold,ngrams_length,show_progress,reports_extension,language,log_level,workers",
+        "env,reports,threshold,max_depth,ngrams_length,show_progress,reports_extension,language,log_level,workers",
         [
-            (f"src/{UTIL_NAME}/types.py", "src", 83, 2, 0, "csv", "en", "debug", 1),
-            ("setup.py", "test", 67, 3, 1, "csv", "ru", "info", os.cpu_count() or 1),
-            (f"src/{UTIL_NAME}/utils.py", "debian", 93, 4, 0, "csv", "en", "warning", 1),
+            (f"src/{UTIL_NAME}/types.py", "src", 83, 6, 2, 0, "csv", "en", "debug", 1),
+            ("setup.py", "test", 67, 7, 3, 1, "csv", "ru", "info", os.cpu_count() or 1),
+            (f"src/{UTIL_NAME}/utils.py", "debian", 93, 8, 4, 0, "csv", "en", "warning", 1),
         ],
     )
     def test_modify_settings(
@@ -33,6 +33,7 @@ class TestSettingsModify:
         env: str,
         reports: str,
         threshold: Threshold,
+        max_depth: MaxDepth,
         ngrams_length: NgramsLength,
         show_progress: Literal[0, 1],
         reports_extension: ReportsExtension,
@@ -44,6 +45,7 @@ class TestSettingsModify:
             environment=env,
             reports=reports,
             threshold=threshold,
+            max_depth=max_depth,
             ngrams_length=ngrams_length,
             show_progress=show_progress,
             reports_extension=reports_extension,
@@ -57,6 +59,7 @@ class TestSettingsModify:
             "environment": Path(env).resolve().__str__(),
             "reports": Path(reports).resolve().__str__(),
             "threshold": threshold,
+            "max_depth": max_depth,
             "ngrams_length": ngrams_length,
             "show_progress": show_progress,
             "workers": workers,
