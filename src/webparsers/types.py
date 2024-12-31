@@ -73,7 +73,7 @@ class Commit(NamedTuple):
     date: str  # TODO: convert to datetime or another
 
 
-class Branch(NamedTuple):
+class BranchInfo(NamedTuple):
     name: str
     last_commit: Commit
 
