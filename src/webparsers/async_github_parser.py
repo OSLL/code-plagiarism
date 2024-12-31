@@ -12,7 +12,7 @@ from typing_extensions import Self
 from uritemplate import variable
 
 from webparsers.types import (
-    Branch,
+    BranchInfo,
     Commit,
     GitHubContentUrl,
     GitHubRepoUrl,
@@ -186,8 +186,8 @@ class AsyncGithubParser:
 
         return response["commit"]
 
-    async def get_list_repo_branches(self: Self, owner: str, repo: str) -> list[Branch]:
-        branches: list[Branch] = []
+    async def get_list_repo_branches(self: Self, owner: str, repo: str) -> list[BranchInfo]:
+        branches: list[BranchInfo] = []
         url_vars = {"per_page": 100, "page": 1, "username": owner, "repo": repo}
         while True:
             response = await self.send_get_request(self.BRANCH_GET, url_vars)
@@ -198,7 +198,7 @@ class AsyncGithubParser:
                 branch_name = branch_info["name"]
                 commit_info = await self.send_get_request(branch_info["commit"]["url"])
                 branches.append(
-                    Branch(
+                    BranchInfo(
                         name=branch_name,
                         last_commit=Commit(
                             commit_info["sha"],
@@ -248,7 +248,7 @@ class AsyncGithubParser:
         self: Self,
         owner: str,
         repo: str,
-        branch: Branch,
+        branch: BranchInfo,
         sha: str,
         path: str = "",
         path_regexp: re.Pattern | None = None,
@@ -266,7 +266,7 @@ class AsyncGithubParser:
                 async for file_gen in self.get_files_generator_from_sha_commit(
                     owner=owner,
                     repo=repo,
-                    branch=Branch(branch.name, commit_info),
+                    branch=BranchInfo(branch.name, commit_info),
                     sha=node["sha"],
                     path=current_path,
                     path_regexp=path_regexp,
@@ -307,7 +307,7 @@ class AsyncGithubParser:
                 repo_url.owner, repo_url.repo, default_branch
             )
             branches = [
-                Branch(
+                BranchInfo(
                     name=default_branch,
                     last_commit=Commit(
                         commit_info["sha"],
@@ -384,7 +384,7 @@ class AsyncGithubParser:
                 async for work_info in self.get_files_generator_from_sha_commit(
                     owner=dir_url.owner,
                     repo=dir_url.repo,
-                    branch=Branch(dir_url.branch, commit_info),
+                    branch=BranchInfo(dir_url.branch, commit_info),
                     sha=node["sha"],
                     path=current_path,
                     path_regexp=path_regexp,

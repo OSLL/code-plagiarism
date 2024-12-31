@@ -123,7 +123,7 @@ def print_suspect_parts(
             column = 1
 
         if row in ROWS:
-            print(red_bold(symbol))
+            print(red_bold(symbol), end="")
 
         column += 1
 

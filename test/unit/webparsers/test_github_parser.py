@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, call, patch
 from typing_extensions import Self
 
 from webparsers.github_parser import GitHubParser
-from webparsers.types import Branch, Commit, PullRequest, Repository, WorkInfo
+from webparsers.types import BranchInfo, Commit, PullRequest, Repository, WorkInfo
 
 _REQUEST_PARAMS_1 = {"per_page": 100, "page": 1}
 _REQUEST_PARAMS_3 = {"per_page": 100, "page": 3}
@@ -20,8 +20,8 @@ _COMMIT2: Final[Commit] = Commit("xuwerlkjlsaoewerl", "2022-12-20T20:13:58Z")
 _COMMIT1_RESP = [{"sha": _COMMIT1.sha, "commit": {"author": {"date": _COMMIT1.date}}}]
 _COMMIT2_RESP = [{"sha": _COMMIT2.sha, "commit": {"author": {"date": _COMMIT2.date}}}]
 
-_BRANCH1: Final[Branch] = Branch("iss76", _COMMIT1)
-_BRANCH2: Final[Branch] = Branch("iss78", _COMMIT2)
+_BRANCH1: Final[BranchInfo] = BranchInfo("iss76", _COMMIT1)
+_BRANCH2: Final[BranchInfo] = BranchInfo("iss78", _COMMIT2)
 
 _GET_FILE_CONTENT_RES: Final[list[WorkInfo]] = [
     WorkInfo(
@@ -801,12 +801,25 @@ class TestGitHubParser(unittest.TestCase):
             "name": "main",
             "commit": {
                 "sha": "0928jlskdfj",
-                "commit": {"author": {"date": _COMMIT_DATE}},
             },
         }
         _BRANCH_INFO2 = {
             "name": "iss76",
-            "commit": {"sha": "kjsadfwi", "commit": {"author": {"date": _COMMIT_DATE}}},
+            "commit": {
+                "sha": "kjsadfwi",
+            },
+        }
+        _COMMIT_INFO1 = {
+            "commit": {
+                "sha": "0928jlskdfj",
+                "commit": {"author": {"date": _COMMIT_DATE}},
+            }
+        }
+        _COMMIT_INFO2 = {
+            "commit": {
+                "sha": "kjsadfwi",
+                "commit": {"author": {"date": _COMMIT_DATE}},
+            },
         }
 
         test_cases = [
@@ -817,29 +830,21 @@ class TestGitHubParser(unittest.TestCase):
                         "/repos/OSLL/aido-auto-feedback/branches",
                         params=_REQUEST_PARAMS_1,
                     ),
+                    call(
+                        "/repos/OSLL/aido-auto-feedback/branches/main",
+                    ),
+                    call(
+                        "/repos/OSLL/aido-auto-feedback/branches/iss76",
+                    ),
                 ],
                 "send_se": [
                     Response([_BRANCH_INFO1, _BRANCH_INFO2]),
+                    Response(_COMMIT_INFO1),
+                    Response(_COMMIT_INFO2),
                 ],
                 "expected_result": [
-                    Branch("main", Commit("0928jlskdfj", "2022-12-29T10:10:41Z")),
-                    Branch("iss76", Commit("kjsadfwi", "2022-12-29T10:10:41Z")),
-                ],
-            },
-            {
-                "arguments": {
-                    "owner": "moevm",
-                    "repo": "asm_web_debug",
-                },
-                "send_calls": [
-                    call("/repos/moevm/asm_web_debug/branches", params=_REQUEST_PARAMS_1),
-                ],
-                "send_se": [
-                    Response([_BRANCH_INFO1, _BRANCH_INFO2]),
-                ],
-                "expected_result": [
-                    Branch("main", Commit("0928jlskdfj", _COMMIT_DATE)),
-                    Branch("iss76", Commit("kjsadfwi", _COMMIT_DATE)),
+                    BranchInfo("main", Commit("0928jlskdfj", _COMMIT_DATE)),
+                    BranchInfo("iss76", Commit("kjsadfwi", _COMMIT_DATE)),
                 ],
             },
         ]

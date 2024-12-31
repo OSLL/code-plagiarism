@@ -8,7 +8,7 @@ import requests
 from typing_extensions import Self
 
 from webparsers.types import (
-    Branch,
+    BranchInfo,
     Commit,
     Extensions,
     GitHubContentUrl,
@@ -189,7 +189,7 @@ class GitHubParser:
         self: Self,
         owner: str,
         repo: str,
-        branch: Branch,
+        branch: BranchInfo,
         sha: str,
         path: str = "",
         path_regexp: re.Pattern | None = None,
@@ -206,7 +206,7 @@ class GitHubParser:
                 yield from self.get_files_generator_from_sha_commit(
                     owner=owner,
                     repo=repo,
-                    branch=Branch(branch.name, commit_info),
+                    branch=BranchInfo(branch.name, commit_info),
                     sha=node["sha"],
                     path=current_path,
                     path_regexp=path_regexp,
@@ -223,8 +223,8 @@ class GitHubParser:
 
             yield self.get_file_content_by_sha(owner, repo, node["sha"], commit_info, full_link)
 
-    def get_list_repo_branches(self: Self, owner: str, repo: str) -> list[Branch]:
-        branches: list[Branch] = []
+    def get_list_repo_branches(self: Self, owner: str, repo: str) -> list[BranchInfo]:
+        branches: list[BranchInfo] = []
         api_url: str = f"/repos/{owner}/{repo}/branches"
         params: dict[str, int] = {"per_page": 100, "page": 1}
         while True:
@@ -233,12 +233,14 @@ class GitHubParser:
             cnt = 0  # noqa: SIM113
             for node in response_json:
                 cnt += 1
-                commit_info = node["commit"]
+                branch_name = node["name"]
+                last_commit_sha = node["commit"]["sha"]
+                commit_info = self._get_branch_last_commit_info(owner, repo, branch_name)
                 branches.append(
-                    Branch(
-                        name=node["name"],
+                    BranchInfo(
+                        name=branch_name,
                         last_commit=Commit(
-                            commit_info["sha"],
+                            last_commit_sha,
                             commit_info["commit"]["author"]["date"],
                         ),
                     )
@@ -267,7 +269,7 @@ class GitHubParser:
                 repo_url.owner, repo_url.repo, default_branch
             )
             branches = [
-                Branch(
+                BranchInfo(
                     name=default_branch,
                     last_commit=Commit(
                         commit_info["sha"],
@@ -331,7 +333,7 @@ class GitHubParser:
                 yield from self.get_files_generator_from_sha_commit(
                     owner=dir_url.owner,
                     repo=dir_url.repo,
-                    branch=Branch(dir_url.branch, commit_info),
+                    branch=BranchInfo(dir_url.branch, commit_info),
                     sha=node["sha"],
                     path=current_path,
                     path_regexp=path_regexp,
