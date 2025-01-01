@@ -56,6 +56,7 @@ def modify_settings(
     max_depth: MaxDepth | None = None,
     ngrams_length: NgramsLength | None = None,
     show_progress: Flag | None = None,
+    short_output: Flag | None = None,
     reports_extension: ReportsExtension | None = None,
     language: Language | None = None,
     log_level: LogLevel | None = None,
@@ -72,6 +73,7 @@ def modify_settings(
         + create_opt("max-depth", max_depth)
         + create_opt("ngrams-length", ngrams_length)
         + create_opt("show_progress", show_progress)
+        + create_opt("short-output", short_output)
         + create_opt("reports_extension", reports_extension)
         + create_opt("language", language)
         + create_opt("log-level", log_level)

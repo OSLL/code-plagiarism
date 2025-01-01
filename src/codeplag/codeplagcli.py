@@ -128,6 +128,13 @@ class CodeplagCLI(argparse.ArgumentParser):
             choices=[0, 1],
         )
         settings_modify.add_argument(
+            "-so",
+            "--short-output",
+            help=_("Do not show check works results in the stdout."),
+            type=int,
+            choices=[0, 1],
+        )
+        settings_modify.add_argument(
             "-t",
             "--threshold",
             help=_(

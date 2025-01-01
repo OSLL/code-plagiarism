@@ -1,6 +1,5 @@
 import hashlib
 from collections import defaultdict
-from concurrent.futures import Future
 from dataclasses import dataclass, field
 from datetime import datetime
 from functools import total_ordering
@@ -150,6 +149,7 @@ class Settings(TypedDict):
     reports: NotRequired[Path]
     reports_extension: ReportsExtension
     show_progress: Flag
+    short_output: Flag
     max_depth: MaxDepth
     ngrams_length: NgramsLength
     threshold: Threshold
@@ -161,10 +161,9 @@ class SameHead(NamedTuple):
     percent: float
 
 
-class ProcessingWorksInfo(NamedTuple):
+class ProcessingWorks(NamedTuple):
     work1: ASTFeatures
     work2: ASTFeatures
-    compare_future: Future
 
 
 SameFuncs = dict[str, list[SameHead]]
