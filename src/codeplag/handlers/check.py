@@ -3,7 +3,7 @@
 import logging
 import math
 import os
-from concurrent.futures import Future, ProcessPoolExecutor
+from concurrent.futures import Future, ProcessPoolExecutor, as_completed
 from datetime import timedelta
 from itertools import combinations
 from pathlib import Path
@@ -43,7 +43,7 @@ from codeplag.types import (
     MaxDepth,
     Mode,
     NgramsLength,
-    ProcessingWorksInfo,
+    ProcessingWorks,
     Threshold,
 )
 from webparsers.github_parser import GitHubParser
@@ -90,6 +90,7 @@ class WorksComparator:
 
         settings_conf = read_settings_conf()
         self.show_progress: Flag = settings_conf["show_progress"]
+        self.short_output: Flag = settings_conf["short_output"]
         self.threshold: Threshold | None = settings_conf["threshold"]
         self.workers: int = settings_conf["workers"]
         self.ngrams_length: NgramsLength = settings_conf.get(
@@ -212,13 +213,14 @@ class WorksComparator:
             )
             self.progress = Progress(iterations)
         with ProcessPoolExecutor(max_workers=self.workers) as executor:
-            processed: list[ProcessingWorksInfo] = []
+            processing: list[ProcessingWorks] = []
+            futures: set[Future] = set()
             for i, work1 in enumerate(works):
                 for j, work2 in enumerate(works):
                     if i <= j:
                         continue
-                    self._do_step(executor, processed, work1, work2)
-            self._handle_completed_futures(processed)
+                    self._do_step(executor, processing, futures, work1, work2)
+            self._handle_completed_futures(processing, futures)
 
     def __one_to_one_check(
         self: Self,
@@ -252,7 +254,8 @@ class WorksComparator:
             self.progress = ComplexProgress(iterations)
         cases = combinations(combined_elements, r=2)
         with ProcessPoolExecutor(max_workers=self.workers) as executor:
-            processed: list[ProcessingWorksInfo] = []
+            processing: list[ProcessingWorks] = []
+            futures: set[Future] = set()
             for internal_iteration, case in enumerate(cases, start=1):
                 first_sequence, second_sequence = case
                 if self.progress is not None:
@@ -266,13 +269,14 @@ class WorksComparator:
                     self.progress.add_internal_progress(internal_iterations)
                 for work1 in first_sequence:
                     for work2 in second_sequence:
-                        self._do_step(executor, processed, work1, work2)
-            self._handle_completed_futures(processed)
+                        self._do_step(executor, processing, futures, work1, work2)
+            self._handle_completed_futures(processing, futures)
 
     def _do_step(
         self: Self,
         executor: ProcessPoolExecutor,
-        processing: list[ProcessingWorksInfo],
+        processing: list[ProcessingWorks],
+        futures: set[Future],
         work1: ASTFeatures,
         work2: ASTFeatures,
     ) -> None:
@@ -285,11 +289,10 @@ class WorksComparator:
         if isinstance(self.reporter, CSVReporter):
             metrics = self.reporter.get_compare_result_from_cache(work1, work2)
         if metrics is None:
-            processing.append(
-                ProcessingWorksInfo(
-                    work1, work2, self._create_future_compare(executor, work1, work2)
-                )
-            )
+            future = self._create_future_compare(executor, work1, work2)
+            future.id = len(processing)  # type: ignore
+            futures.add(future)
+            processing.append(ProcessingWorks(work1, work2))
             return
         self._handle_compare_result(work1, work2, metrics)
         _print_pretty_progress_if_need_and_increase(self.progress, self.workers)
@@ -305,6 +308,8 @@ class WorksComparator:
             return
         if self.reporter and save:
             self.reporter.save_result(work1, work2, metrics)
+        if self.short_output:
+            return
 
         if self.threshold and (metrics.structure.similarity * 100) <= self.threshold:
             print_compare_result(work1, work2, metrics)
@@ -322,10 +327,12 @@ class WorksComparator:
 
     def _handle_completed_futures(
         self: Self,
-        processing: list[ProcessingWorksInfo],
+        processing: list[ProcessingWorks],
+        futures: set[Future],
     ) -> None:
-        for proc_works_info in processing:
-            metrics: CompareInfo = proc_works_info.compare_future.result()
+        for future in as_completed(futures):
+            metrics: CompareInfo = future.result()
+            proc_works_info = processing[future.id]  # type: ignore
             self._handle_compare_result(
                 proc_works_info.work1, proc_works_info.work2, metrics, save=True
             )

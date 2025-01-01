@@ -85,6 +85,7 @@ DefaultSettingsConfig = Settings(
     max_depth=DEFAULT_MAX_DEPTH,
     ngrams_length=DEFAULT_NGRAMS_LENGTH,
     show_progress=0,
+    short_output=0,
     reports_extension=DEFAULT_REPORT_EXTENSION,
     language=DEFAULT_LANGUAGE,
     log_level=DEFAULT_LOG_LEVEL,
