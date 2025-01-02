@@ -330,6 +330,26 @@ class CodeplagCLI(argparse.ArgumentParser):
             choices=REPORT_TYPE_CHOICE,
             default=DEFAULT_REPORT_TYPE,
         )
+        report_create.add_argument(
+            "-frp",
+            "--first-root-path",
+            help=_(
+                "Path to first compared works. "
+                "Can be path to directory or URL to the project folder."
+            ),
+            type=str,
+            required=False,
+        )
+        report_create.add_argument(
+            "-srp",
+            "--second-root-path",
+            help=_(
+                "Path to second compared works. "
+                "Can be path to directory or URL to the project folder."
+            ),
+            type=str,
+            required=False,
+        )
 
     def __init__(self: Self) -> None:
         super(CodeplagCLI, self).__init__(

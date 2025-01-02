@@ -32,17 +32,39 @@ from codeplag.types import (
 )
 
 
-def html_report_create(report_path: Path, report_type: ReportType) -> Literal[0, 1]:
+class Elements(TypedDict):
+    cnt_elements: int
+    same_parts: SameFuncs
+    max_funcs_same_percentages: dict[str, float]
+
+
+SamePartsOfAll = dict[str, dict[str, Elements]]
+CntHeadNodes = dict[str, int]
+ResultingSamePercentages = dict[str, float]
+
+
+def html_report_create(
+    report_path: Path,
+    report_type: ReportType,
+    first_root_path: Path | str | None = None,
+    second_root_path: Path | str | None = None,
+) -> Literal[0, 1]:
     """Creates an HTML report based on the configuration settings.
 
     Args:
     ----
-        report_path: The path where the report should be created.
-        report_type: Type of the created report file.
+        report_path (Path): The path where the report should be created.
+        report_type (ReportType): Type of the created report file.
+        first_root_path (Path | str | None): Path to first compared works.
+        second_root_path (Path | str | None): Path to second compared works.
 
     Returns:
     -------
         Literal[0, 1]: 0 if the report was successfully created, 1 otherwise.
+
+    Raises:
+    -------
+        ValueError: When provided invalid report type or only one path.
 
     Example usage:
         >>> from pathlib import Path
@@ -61,17 +83,73 @@ def html_report_create(report_path: Path, report_type: ReportType) -> Literal[0,
     if not (reports_path / CSV_REPORT_FILENAME).exists():
         logger.error(f"There is nothing in '{reports_path}' to create a basic html report from.")
         return 1
-    create_report_function = _create_report if report_type == "general" else _create_sources_report
+    if report_type == "general":
+        create_report_function = _create_general_report
+    elif report_type == "sources":
+        create_report_function = _create_sources_report
+    else:
+        raise ValueError("Invalid report type.")
+    all_paths_provided = all([first_root_path, second_root_path])
+    if not all_paths_provided and any([first_root_path, second_root_path]):
+        raise ValueError("All paths must be provided.")
+
+    df = read_df(reports_path / CSV_REPORT_FILENAME)
+    if all_paths_provided:
+        paths = tuple(sorted([str(first_root_path), str(second_root_path)]))
+        df = df[df["first_path"].str.startswith(paths[0])]  # type: ignore
+        df = df[df["second_path"].str.startswith(paths[1])]  # type: ignore
+    else:
+        paths = None
     environment = jinja2.Environment(extensions=["jinja2.ext.i18n"])
     environment.install_gettext_translations(get_translations())  # type: ignore
     create_report_function(
-        reports_path / CSV_REPORT_FILENAME,
+        df,  # type:ignore
         report_path,
         environment,
         settings_config["threshold"],
         settings_config["language"],
+        paths,  # type: ignore
     )
     return 0
+
+
+def calculate_general_total_similarity(
+    df: pd.DataFrame, unique_first_paths: NDArray, unique_second_paths: NDArray
+) -> float:
+    total_similarity = 0.0
+    if unique_first_paths.size == 0:
+        return total_similarity
+    for first_path in unique_first_paths:
+        max_similarity = 0.0
+        for second_path in unique_second_paths:
+            sorted_paths = sorted([first_path, second_path])
+            selected = df[
+                (df["first_path"].str.startswith(sorted_paths[0]))  # type: ignore
+                & (df["second_path"].str.startswith(sorted_paths[1]))  # type: ignore
+            ]
+            if selected is None or selected.size == 0:
+                continue
+            module_similarity = float(selected.iloc[0]["weighted_average"])
+            if module_similarity > max_similarity:
+                max_similarity = module_similarity
+        total_similarity += max_similarity
+    return total_similarity / unique_first_paths.size
+
+
+def calculate_sources_total_similarity(
+    same_percentages: ResultingSamePercentages,
+    pattern: str,
+) -> float:
+    item_cnt = 0
+    total_similarity = 0.0
+    for path, percentage in same_percentages.items():
+        if not path.startswith(pattern):
+            continue
+        total_similarity += percentage
+        item_cnt += 1
+    if item_cnt == 0:
+        return 0.0
+    return total_similarity / item_cnt
 
 
 def _convert_similarity_matrix_to_percent_matrix(matrix: NDArray) -> NDArray:
@@ -169,17 +247,6 @@ def _get_parsed_line(
         yield line, cmp_res, same_parts_of_second, same_parts_of_first
 
 
-class Elements(TypedDict):
-    cnt_elements: int
-    same_parts: SameFuncs
-    max_funcs_same_percentages: dict[str, float]
-
-
-SamePartsOfAll = dict[str, dict[str, Elements]]
-CntHeadNodes = dict[str, int]
-ResultingSamePercentages = dict[str, float]
-
-
 def _get_resulting_same_percentages(
     same_parts_of_all: SamePartsOfAll, cnt_head_nodes: CntHeadNodes
 ) -> ResultingSamePercentages:
@@ -238,37 +305,61 @@ def _search_sources(
     return {k: v for k, v in same_parts_of_all.items() if v}, cnt_head_nodes
 
 
-def _create_report(
-    df_path: Path,
+def _create_general_report(
+    df: pd.DataFrame,
     save_path: Path,
     environment: jinja2.Environment,
     threshold: int = DEFAULT_THRESHOLD,
     language: Language = DEFAULT_LANGUAGE,
+    paths: tuple[str, str] | None = None,
 ) -> None:
+    if paths is not None:
+        unique_first_paths = pd.unique(df["first_path"])
+        unique_second_paths = pd.unique(df["second_path"])
+        assert isinstance(unique_first_paths, np.ndarray)
+        assert isinstance(unique_second_paths, np.ndarray)
+        first_root_path_sim = calculate_general_total_similarity(
+            df, unique_first_paths, unique_second_paths
+        )
+        second_root_path_sim = calculate_general_total_similarity(
+            df, unique_second_paths, unique_first_paths
+        )
+    else:
+        first_root_path_sim = None
+        second_root_path_sim = None
     template = environment.from_string(GENERAL_TEMPLATE_PATH.read_text())
     if save_path.is_dir():
         save_path = save_path / DEFAULT_GENERAL_REPORT_NAME
     save_path.write_text(
         template.render(
-            data=_get_parsed_line(read_df(df_path)),
+            data=_get_parsed_line(df),
             list=list,
             len=len,
             round=round,
             threshold=threshold,
             language=language,
+            first_root_path_sim=first_root_path_sim,
+            second_root_path_sim=second_root_path_sim,
         )
     )
 
 
 def _create_sources_report(
-    df_path: Path,
+    df: pd.DataFrame,
     save_path: Path,
     environment: jinja2.Environment,
     threshold: int = DEFAULT_THRESHOLD,
     language: Language = DEFAULT_LANGUAGE,
+    paths: tuple[str, str] | None = None,
 ) -> None:
-    data, cnt_head_nodes = _search_sources(read_df(df_path), threshold)
+    data, cnt_head_nodes = _search_sources(df, threshold)
     same_percentages = _get_resulting_same_percentages(data, cnt_head_nodes)
+    if paths is not None:
+        first_root_path_sim = calculate_sources_total_similarity(same_percentages, paths[0])
+        second_root_path_sim = calculate_sources_total_similarity(same_percentages, paths[1])
+    else:
+        first_root_path_sim = None
+        second_root_path_sim = None
     template = environment.from_string(SOURCES_TEMPLATE_PATH.read_text())
     if save_path.is_dir():
         save_path = save_path / DEFAULT_SOURCES_REPORT_NAME
@@ -283,5 +374,7 @@ def _create_sources_report(
             list=list,
             len=len,
             round=round,
+            first_root_path_sim=first_root_path_sim,
+            second_root_path_sim=second_root_path_sim,
         )
     )
