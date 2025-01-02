@@ -53,3 +53,21 @@ class TestCreateReport:
         create_report(second_report_path, report_type).assert_success()
 
         assert first_report_path.read_text() != second_report_path.read_text()
+
+    @pytest.mark.parametrize(
+        "report_type",
+        ["general", "sources"],
+    )
+    def test_provided_only_first_path(self: Self, report_type: ReportType) -> None:
+        create_report(
+            REPORTS_FOLDER / "report.html", report_type, first_root_path="/usr/src"
+        ).assert_failed()
+
+    @pytest.mark.parametrize(
+        "report_type",
+        ["general", "sources"],
+    )
+    def test_provided_only_second_path(self: Self, report_type: ReportType) -> None:
+        create_report(
+            REPORTS_FOLDER / "report.html", report_type, second_root_path="/usr/src"
+        ).assert_failed()

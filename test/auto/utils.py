@@ -45,8 +45,22 @@ def run_check(cmd: list[str], extension: str = "py") -> CmdResult:
     return run_util(["--extension", extension] + cmd, root="check")
 
 
-def create_report(path: Path, report_type: ReportType) -> CmdResult:
-    return run_util(["create", "--path", str(path), "--type", report_type], root="report")
+def create_opt(key: str, value: Any | None) -> list[str]:
+    return [f"--{key}", str(value)] if value is not None else []
+
+
+def create_report(
+    path: Path,
+    report_type: ReportType,
+    first_root_path: str | None = None,
+    second_root_path: str | None = None,
+) -> CmdResult:
+    return run_util(
+        ["create", "--path", str(path), "--type", report_type]
+        + create_opt("first-root-path", first_root_path)
+        + create_opt("second-root-path", second_root_path),
+        root="report",
+    )
 
 
 def modify_settings(
@@ -62,9 +76,6 @@ def modify_settings(
     log_level: LogLevel | None = None,
     workers: int | None = None,
 ) -> CmdResult:
-    def create_opt(key: str, value: Any | None) -> list[str]:
-        return [f"--{key}", str(value)] if value is not None else []
-
     return run_util(
         ["modify"]
         + create_opt("reports", reports)
