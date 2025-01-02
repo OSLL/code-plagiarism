@@ -4,8 +4,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: codeplag 0.5.10\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"Project-Id-Version: codeplag 0.5.11\n"
 "POT-Creation-Date: 2024-05-21 09:28+0300\n"
 "PO-Revision-Date: 2024-05-11 12:05+0300\n"
 "Last-Translator: Artyom Semidolin\n"
@@ -201,7 +200,23 @@ msgstr ""
 msgid "Type of the created report file."
 msgstr "Тип создаваемого файла отчёта."
 
-#: src/codeplag/codeplagcli.py:338
+#: src/codeplag/codeplagcli.py:336
+msgid ""
+"Path to first compared works. Can be path to directory or URL to the "
+"project folder."
+msgstr ""
+"Путь к первым сравниваемым файлам. Это может быть путь к директории или "
+"URL к папке проекта."
+
+#: src/codeplag/codeplagcli.py:346
+msgid ""
+"Path to second compared works. Can be path to directory or URL to the "
+"project folder."
+msgstr ""
+"Путь ко вторым сравниваемым файлам. Это может быть путь к директории или "
+"URL к папке проекта."
+
+#: src/codeplag/codeplagcli.py:358
 msgid ""
 "Program help to find similar parts of source codes for the different "
 "languages."
@@ -209,31 +224,31 @@ msgstr ""
 "Программа помогает находить схожие части исходных кодов для разных языков"
 " программирования."
 
-#: src/codeplag/codeplagcli.py:346
+#: src/codeplag/codeplagcli.py:366
 msgid "Print current version number and exit."
 msgstr "Выводит текущую версию программы."
 
-#: src/codeplag/codeplagcli.py:352
+#: src/codeplag/codeplagcli.py:372
 msgid "Commands help."
 msgstr "Справка по командам."
 
-#: src/codeplag/codeplagcli.py:367
+#: src/codeplag/codeplagcli.py:387
 msgid "No command is provided; please choose one from the available (--help)."
 msgstr ""
 "Ни одна из команд не выбрана, пожалуйста, выбери одну из доступных команд"
 " (--help)."
 
-#: src/codeplag/codeplagcli.py:378
+#: src/codeplag/codeplagcli.py:398
 msgid "There is nothing to modify; please provide at least one argument."
 msgstr ""
 "Нечего модифицировать, пожалуйста, выберите один из параметров для "
 "модификации."
 
-#: src/codeplag/codeplagcli.py:382
+#: src/codeplag/codeplagcli.py:402
 msgid "The'repo-regexp' option requires the provided 'github-user' option."
 msgstr "Аргумент 'repo-regexp' требует заданного параметра 'github-user'."
 
-#: src/codeplag/codeplagcli.py:390
+#: src/codeplag/codeplagcli.py:410
 msgid ""
 "The'path-regexp' option requires the provided 'directories', 'github-"
 "user', or 'github-project-folder' options."
@@ -250,75 +265,84 @@ msgid "Check results"
 msgstr "Результаты проверки"
 
 #: src/templates/general.templ:44 src/templates/sources.templ:46
-msgid "General information"
-msgstr "Общая информация"
+msgid "Summary information"
+msgstr "Сводка по работам"
 
-#: src/templates/general.templ:46
+#: src/templates/general.templ:46 src/templates/general.templ:65
+#: src/templates/sources.templ:48
 msgid "Path"
 msgstr "Путь"
 
-#: src/templates/general.templ:47
+#: src/templates/general.templ:47 src/templates/sources.templ:49
+msgid "Total similarity"
+msgstr "Общая схожесть, %"
+
+#: src/templates/general.templ:63 src/templates/sources.templ:65
+msgid "General information"
+msgstr "Общая информация"
+
+#: src/templates/general.templ:66
 msgid "Last modification date"
 msgstr "Дата последней модификации"
 
-#: src/templates/general.templ:48
+#: src/templates/general.templ:67
 msgid "Check date"
 msgstr "Дата проверки"
 
-#: src/templates/general.templ:61
+#: src/templates/general.templ:80
 msgid "Metrics information"
 msgstr "Информация по метрикам"
 
-#: src/templates/general.templ:63
+#: src/templates/general.templ:82
 msgid "Metric"
 msgstr "Метрика"
 
-#: src/templates/general.templ:64
+#: src/templates/general.templ:83
 msgid "Value"
 msgstr "Значение"
 
-#: src/templates/general.templ:67
+#: src/templates/general.templ:86
 msgid "Jaccard Coefficient"
 msgstr "Коэффициент Жаккара"
 
-#: src/templates/general.templ:71
+#: src/templates/general.templ:90
 msgid "Similarity of operators"
 msgstr "Схожесть операторов"
 
-#: src/templates/general.templ:75
+#: src/templates/general.templ:94
 msgid "Similarity of keywords"
 msgstr "Схожесть ключевых слов"
 
-#: src/templates/general.templ:79
+#: src/templates/general.templ:98
 msgid "Similarity of literals"
 msgstr "Схожеcть литералов"
 
-#: src/templates/general.templ:82
+#: src/templates/general.templ:101
 msgid "Weighted average by fast metrics"
 msgstr "Средневзвешенное по быстрым метрикам"
 
-#: src/templates/general.templ:85
+#: src/templates/general.templ:104
 msgid "Similarity of structures"
 msgstr "Схожесть структур"
 
-#: src/templates/general.templ:91
+#: src/templates/general.templ:110
 msgid "Similar parts of the second program relative to the first"
 msgstr "Схожие части второй программы относительно первой"
 
-#: src/templates/general.templ:93 src/templates/general.templ:125
+#: src/templates/general.templ:112 src/templates/general.templ:144
 msgid "Part of the first program"
 msgstr "Часть первой программ"
 
-#: src/templates/general.templ:94 src/templates/general.templ:124
+#: src/templates/general.templ:113 src/templates/general.templ:143
 msgid "Part of the second program"
 msgstr "Часть второй программы"
 
-#: src/templates/general.templ:95 src/templates/general.templ:126
-#: src/templates/sources.templ:69
+#: src/templates/general.templ:114 src/templates/general.templ:145
+#: src/templates/sources.templ:88
 msgid "Similarity"
 msgstr "Схожесть"
 
-#: src/templates/general.templ:122
+#: src/templates/general.templ:141
 msgid "Similar parts of the first program relative to the second"
 msgstr "Схожие части первой программы относительно второй"
 
@@ -326,26 +350,26 @@ msgstr "Схожие части первой программы относите
 msgid "Verification results"
 msgstr "Результаты проверки"
 
-#: src/templates/sources.templ:48
+#: src/templates/sources.templ:67
 msgid "The path to the file being checked"
 msgstr "Путь до проверяемого файла"
 
-#: src/templates/sources.templ:49
+#: src/templates/sources.templ:68
 msgid "Total maximum compliance, %"
 msgstr "Суммарное максимальное соответствие, %"
 
-#: src/templates/sources.templ:64
+#: src/templates/sources.templ:83
 msgid "Similar parts of the programs"
 msgstr "Схожие части программ"
 
-#: src/templates/sources.templ:66
+#: src/templates/sources.templ:85
 msgid "The name of a similar file"
 msgstr "Имя схожего файла"
 
-#: src/templates/sources.templ:67
+#: src/templates/sources.templ:86
 msgid "Part of the file that is being checked"
 msgstr "Часть проверяемого файла"
 
-#: src/templates/sources.templ:68
+#: src/templates/sources.templ:87
 msgid "Part of a similar file"
 msgstr "Часть схожего файла"

@@ -133,7 +133,7 @@ def calculate_general_total_similarity(
             if module_similarity > max_similarity:
                 max_similarity = module_similarity
         total_similarity += max_similarity
-    return total_similarity / unique_first_paths.size
+    return round(total_similarity / unique_first_paths.size * 100, 2)
 
 
 def calculate_sources_total_similarity(
@@ -149,7 +149,7 @@ def calculate_sources_total_similarity(
         item_cnt += 1
     if item_cnt == 0:
         return 0.0
-    return total_similarity / item_cnt
+    return round(total_similarity / item_cnt, 2)
 
 
 def _convert_similarity_matrix_to_percent_matrix(matrix: NDArray) -> NDArray:
@@ -340,6 +340,7 @@ def _create_general_report(
             language=language,
             first_root_path_sim=first_root_path_sim,
             second_root_path_sim=second_root_path_sim,
+            paths=paths,
         )
     )
 
@@ -376,5 +377,6 @@ def _create_sources_report(
             round=round,
             first_root_path_sim=first_root_path_sim,
             second_root_path_sim=second_root_path_sim,
+            paths=paths,
         )
     )
