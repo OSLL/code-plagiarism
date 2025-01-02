@@ -29,6 +29,8 @@ class CodeplagEngine:
         elif self.root == "report":
             self.path: Path = parsed_args.pop("path")
             self.report_type: ReportType = parsed_args.pop("type")
+            self.first_root_path = parsed_args.pop("first_root_path", None)
+            self.second_root_path = parsed_args.pop("second_root_path", None)
         else:
             self.github_files: list[str] = parsed_args.pop("github_files", [])
             self.github_project_folders: list[str] = parsed_args.pop("github_project_folders", [])
@@ -62,7 +64,9 @@ class CodeplagEngine:
                 settings_modify(self.parsed_args)
                 settings_show()
         elif self.root == "report":
-            return html_report_create(self.path, self.report_type)
+            return html_report_create(
+                self.path, self.report_type, self.first_root_path, self.second_root_path
+            )
         else:
             self.comparator.check(
                 self.files,

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pandas as pd
 import pytest
 
 from codeplag.handlers.report import (
@@ -13,9 +14,73 @@ from codeplag.handlers.report import (
     _get_resulting_same_percentages,
     _get_same_funcs,
     _replace_minimal_value,
+    calculate_general_total_similarity,
+    calculate_sources_total_similarity,
 )
 from codeplag.reporters import serialize_compare_result
 from codeplag.types import ASTFeatures, CompareInfo, SameHead
+
+
+@pytest.mark.parametrize(
+    "same_percentages,pattern,expected",
+    [
+        ({}, "pattern", 0.0),
+        (
+            {
+                "/usr/codeplag/marshal.py": 80.0,
+                "/usr/codeplag/featurebased.py": 81.25,
+                "/home/band/setup.py": 50.0,
+            },
+            "/usr/codeplag",
+            80.62,
+        ),
+    ],
+)
+def test_calculate_sources_total_similarity(
+    same_percentages: ResultingSamePercentages, pattern: str, expected: float
+):
+    assert calculate_sources_total_similarity(same_percentages, pattern) == expected
+
+
+@pytest.mark.parametrize(
+    "df,unique_first_paths,unique_second_paths,expected",
+    [
+        (pd.DataFrame({}), np.array([]), np.array([]), 0.0),
+        (
+            pd.DataFrame(
+                {
+                    "first_path": ["a.py", "b.py", "a.py"],
+                    "second_path": ["c.py", "d.py", "e.py"],
+                    "weighted_average": [0.15, 0.1, 0.3],
+                }
+            ),
+            np.array(["a.py", "b.py"]),
+            np.array(["c.py", "d.py", "e.py"]),
+            20.0,
+        ),
+        (
+            pd.DataFrame(
+                {
+                    "first_path": ["a.py", "b.py", "a.py"],
+                    "second_path": ["c.py", "d.py", "e.py"],
+                    "weighted_average": [0.15, 0.1, 0.3],
+                }
+            ),
+            np.array(["c.py", "d.py", "e.py"]),
+            np.array(["a.py", "b.py"]),
+            18.33,
+        ),
+    ],
+)
+def test_calculate_general_total_similarity(
+    df: pd.DataFrame,
+    unique_first_paths: np.ndarray,
+    unique_second_paths: np.ndarray,
+    expected: float,
+):
+    assert (
+        calculate_general_total_similarity(df, unique_first_paths, unique_second_paths) == expected
+    )
 
 
 @pytest.mark.parametrize(

@@ -38,6 +38,25 @@
 </head>
 <body>
     <h1 align="center">{{ _("Check results") }}</h1>
+    {% if first_root_path_sim is not none %}
+        <div style="border: 0.2rem solid black; padding: 1rem; margin: 0.5rem;">
+            <table align="center">
+                <caption>{{ _("Summary information") }}</caption>
+                <tr class="table__header">
+                    <th>{{ _("Path") }}</th>
+                    <th>{{ _("Total similarity") }}</th>
+                </tr>
+                <tr class="table__row">
+                    <td>{{ paths[0] }}</td>
+                    <td>{{ first_root_path_sim }}</td>
+                </tr>
+                <tr class="table__row">
+                    <td>{{ paths[1] }}</td>
+                    <td>{{ second_root_path_sim }}</td>
+                </tr>
+            </table>
+        </div>
+    {% endif %}
     {% for line, cmp_res, same_parts_of_second, same_parts_of_first in data %}
         <div style="border: 0.2rem solid black; padding: 1rem; margin: 0.5rem;">
             <table align="center">

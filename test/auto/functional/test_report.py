@@ -11,7 +11,9 @@ from codeplag.types import ReportType
 
 @pytest.fixture(scope="function", autouse=True)
 def setup(create_reports_folder: None):
-    modify_settings(reports=REPORTS_FOLDER, reports_extension="csv").assert_success()
+    modify_settings(
+        reports=REPORTS_FOLDER, reports_extension="csv", short_output=1
+    ).assert_success()
     run_check(["--directories", "test/unit/codeplag/cplag", "src/"]).assert_success()
 
     yield
@@ -53,3 +55,38 @@ class TestCreateReport:
         create_report(second_report_path, report_type).assert_success()
 
         assert first_report_path.read_text() != second_report_path.read_text()
+
+    @pytest.mark.parametrize(
+        "report_type",
+        ["general", "sources"],
+    )
+    def test_default_report_diff_with_provided_paths(self: Self, report_type: ReportType) -> None:
+        first_report_path = REPORTS_FOLDER / "report1.html"
+        second_report_path = REPORTS_FOLDER / "report2.html"
+
+        create_report(first_report_path, report_type).assert_success()
+        create_report(
+            second_report_path,
+            report_type,
+            first_root_path="/usr/src/codeplag",
+            second_root_path="/usr/src/webparsers",
+        ).assert_success()
+        assert first_report_path.read_text() != second_report_path.read_text()
+
+    @pytest.mark.parametrize(
+        "report_type",
+        ["general", "sources"],
+    )
+    def test_provided_only_first_path(self: Self, report_type: ReportType) -> None:
+        create_report(
+            REPORTS_FOLDER / "report.html", report_type, first_root_path="/usr/src"
+        ).assert_failed()
+
+    @pytest.mark.parametrize(
+        "report_type",
+        ["general", "sources"],
+    )
+    def test_provided_only_second_path(self: Self, report_type: ReportType) -> None:
+        create_report(
+            REPORTS_FOLDER / "report.html", report_type, second_root_path="/usr/src"
+        ).assert_failed()
