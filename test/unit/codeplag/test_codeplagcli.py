@@ -59,8 +59,9 @@ def test_file_path_bad(path: str):
 @pytest.mark.parametrize(
     "args",
     [
-        ["--extension", "py", "--directories", "src/", "src/"],
+        ["check", "--extension", "py", "--directories", "src/", "src/"],
         [
+            "check",
             "--extension",
             "py",
             "--github-project-folders",
@@ -68,16 +69,81 @@ def test_file_path_bad(path: str):
             "https://github.com/OSLL/code-plagiarism/tree/main/src",
         ],
         [
+            "check",
             "--extension",
             "py",
             "--github-files",
             "https://github.com/OSLL/code-plagiarism/blob/main/setup.py",
             "https://github.com/OSLL/code-plagiarism/blob/main/setup.py",
         ],
-        ["--extension", "py", "--files", "setup.py", "setup.py"],
+        ["check", "--extension", "py", "--files", "setup.py", "setup.py"],
+        ["check", "--extension", "pypy"],
+    ],
+    ids=[
+        "Twice repeated directory.",
+        "Twice repeated GitHub project folder.",
+        "Twice repeated GitHub file.",
+        "Twice repeated file.",
+        "Invalid extension.",
     ],
 )
-def test_get_parsed_args(args: list[str]):
+def test_get_parsed_args_failed(args: list[str]):
     codeplagcli = CodeplagCLI()
     with pytest.raises(SystemExit):
         codeplagcli.parse_args(args=args)
+
+
+@pytest.mark.parametrize(
+    "args,expected",
+    [
+        (["check", "--extension", "cpp"], {"extension": "cpp", "root": "check"}),
+        (
+            ["check", "--extension", "py", "--files", "setup.py"],
+            {"extension": "py", "root": "check", "files": [Path("setup.py").absolute()]},
+        ),
+        (
+            ["report", "create", "--path", "./", "--type", "general"],
+            {
+                "root": "report",
+                "report": "create",
+                "type": "general",
+                "path": Path("./"),
+                "first_root_path": None,
+                "second_root_path": None,
+            },
+        ),
+        (
+            [
+                "report",
+                "create",
+                "--path",
+                "./",
+                "--type",
+                "general",
+                "--first-root-path",
+                "codeplag",
+                "--second-root-path",
+                "webparsers",
+            ],
+            {
+                "root": "report",
+                "report": "create",
+                "type": "general",
+                "path": Path("./"),
+                "first_root_path": "codeplag",
+                "second_root_path": "webparsers",
+            },
+        ),
+    ],
+    ids=[
+        "Only extension provided.",
+        "Extension and one file provided.",
+        "Create general report from all records.",
+        "Create general report from selected records.",
+    ],
+)
+def test_get_parsed_args(args: list[str], expected: argparse.Namespace):
+    codeplagcli = CodeplagCLI()
+    namespace = codeplagcli.parse_args(args=args)
+    for key, value in expected.items():
+        assert getattr(namespace, key) == value
