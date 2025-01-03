@@ -6,6 +6,7 @@ from typing_extensions import Self
 
 from codeplag.consts import UTIL_NAME
 from codeplag.types import (
+    ExitCode,
     Flag,
     Language,
     LogLevel,
@@ -26,6 +27,9 @@ class CmdResult:
 
     def assert_failed(self: Self) -> None:
         assert self.cmd_res.returncode, str(self.cmd_res)
+
+    def assert_found_plagiarism(self: Self) -> None:
+        assert self.cmd_res.returncode == ExitCode.EXIT_FOUND_SIM, str(self.cmd_res)
 
 
 def run_cmd(cmd: list[str]) -> CmdResult:

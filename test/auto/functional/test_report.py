@@ -9,12 +9,12 @@ from codeplag.consts import DEFAULT_GENERAL_REPORT_NAME, DEFAULT_SOURCES_REPORT_
 from codeplag.types import ReportType
 
 
-@pytest.fixture(scope="function", autouse=True)
-def setup(create_reports_folder: None):
+@pytest.fixture(scope="module", autouse=True)
+def setup(create_reports_folder_module: None):
     modify_settings(
         reports=REPORTS_FOLDER, reports_extension="csv", short_output=1
     ).assert_success()
-    run_check(["--directories", "test/unit/codeplag/cplag", "src/"]).assert_success()
+    run_check(["--directories", "test/unit/codeplag/cplag", "src/"]).assert_found_plagiarism()
 
     yield
 
@@ -78,15 +78,21 @@ class TestCreateReport:
         ["general", "sources"],
     )
     def test_provided_only_first_path(self: Self, report_type: ReportType) -> None:
-        create_report(
+        result = create_report(
             REPORTS_FOLDER / "report.html", report_type, first_root_path="/usr/src"
-        ).assert_failed()
+        )
+
+        result.assert_failed()
+        assert result.cmd_res.returncode == 2
 
     @pytest.mark.parametrize(
         "report_type",
         ["general", "sources"],
     )
     def test_provided_only_second_path(self: Self, report_type: ReportType) -> None:
-        create_report(
+        result = create_report(
             REPORTS_FOLDER / "report.html", report_type, second_root_path="/usr/src"
-        ).assert_failed()
+        )
+
+        result.assert_failed()
+        assert result.cmd_res.returncode == 2

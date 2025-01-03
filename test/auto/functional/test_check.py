@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 
 import pytest
+from const import REPORTS_FOLDER
 from utils import modify_settings, run_check, run_util
 
 from codeplag.consts import CONFIG_PATH, UTIL_NAME, UTIL_VERSION
@@ -29,8 +30,8 @@ PY_GITHUB_DIR = f"{REPO_URL}/blob/main/src/codeplag/pyplag"
 
 
 @pytest.fixture(scope="module", autouse=True)
-def setup_module():
-    first_cond = not modify_settings(environment=".env").cmd_res.returncode
+def setup_module(create_reports_folder_module: None):
+    first_cond = not modify_settings(environment=".env", reports=REPORTS_FOLDER).cmd_res.returncode
     second_cond = os.environ.get("ACCESS_TOKEN", "") != ""
 
     assert first_cond or second_cond
@@ -48,64 +49,79 @@ def test_check_util_version():
 
 
 @pytest.mark.parametrize(
-    "cmd, out",
+    "cmd, out, found_plag",
     [
-        (["--files", *CPP_FILES], b"Getting works features from files"),
+        (["--files", *CPP_FILES], b"Getting works features from files", False),
         (
             ["--directories", CPP_DIR],
             f"Getting works features from {CWD}/{CPP_DIR}".encode("utf-8"),
+            True,
         ),
         (
             ["--github-files", *CPP_GITHUB_FILES],
             b"Getting works features from GitHub urls",
+            True,
         ),
         (
             ["--github-project-folders", CPP_GITHUB_DIR],
             f"Getting works features from {CPP_GITHUB_DIR}".encode("utf-8"),
+            True,
         ),
         (
             ["--github-user", "OSLL", "--repo-regexp", "code-plag"],
             f"Getting works features from {REPO_URL}".encode("utf-8"),
+            True,
         ),
     ],
 )
-def test_compare_cpp_files(cmd: list[str], out: bytes):
+def test_compare_cpp_files(cmd: list[str], out: bytes, found_plag: bool):
     result = run_check(cmd, extension="cpp")
 
-    result.assert_success()
+    if found_plag:
+        result.assert_found_plagiarism()
+    else:
+        result.assert_success()
     assert out in result.cmd_res.stdout
 
 
 @pytest.mark.parametrize(
-    "cmd, out",
+    "cmd, out, found_plag",
     [
-        (["--files", *PY_FILES], b"Getting works features from files"),
+        (["--files", *PY_FILES], b"Getting works features from files", False),
         (
             ["--directories", *PY_DIRS],
             f"Getting works features from {CWD}/{PY_DIRS[0]}".encode("utf-8"),
+            True,
         ),
         (
             ["--github-files", *PY_GITHUB_FILES],
             b"Getting works features from GitHub urls",
+            False,
         ),
         (
             ["--github-project-folders", PY_GITHUB_DIR],
             f"Getting works features from {PY_GITHUB_DIR}".encode("utf-8"),
+            False,
         ),
         (
             ["--github-user", "OSLL", "--repo-regexp", "code-plag"],
             f"Getting works features from {REPO_URL}".encode("utf-8"),
+            True,
         ),
         (
             ["--directories", *PY_DIRS, "--mode", "one_to_one"],
             f"Getting works features from {CWD}/{PY_DIRS[0]}".encode("utf-8"),
+            False,
         ),
     ],
 )
-def test_compare_py_files(cmd: list[str], out: bytes):
+def test_compare_py_files(cmd: list[str], out: bytes, found_plag: bool):
     result = run_check(cmd)
 
-    result.assert_success()
+    if found_plag:
+        result.assert_found_plagiarism()
+    else:
+        result.assert_success()
     assert out in result.cmd_res.stdout
 
 

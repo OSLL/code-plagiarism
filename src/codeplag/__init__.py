@@ -1,7 +1,7 @@
-from typing import Literal
+from codeplag.types import ExitCode
 
 
-def main() -> Literal[0, 1, 2]:
+def main() -> ExitCode:
     import argcomplete
     import pandas as pd
 
@@ -29,7 +29,7 @@ def main() -> Literal[0, 1, 2]:
         code = codeplag_util.run()
     except KeyboardInterrupt:
         logger.warning("The util stopped by keyboard interrupt.")
-        return 1
+        return ExitCode.EXIT_KEYBOARD
     except Exception:
         logger.error(
             "An unexpected error occurred while running the utility. "
@@ -37,6 +37,6 @@ def main() -> Literal[0, 1, 2]:
             LOG_PATH,
         )
         logger.debug("Trace:", exc_info=True)
-        return 2
+        return ExitCode.EXIT_UNKNOWN
 
     return code

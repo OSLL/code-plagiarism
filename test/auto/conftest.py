@@ -18,6 +18,17 @@ def create_reports_folder():
     shutil.rmtree(REPORTS_FOLDER)
 
 
+@pytest.fixture(scope="module")
+def create_reports_folder_module():
+    with suppress(Exception):
+        os.mkdir(REPORTS_FOLDER)
+    assert os.path.exists(REPORTS_FOLDER)
+
+    yield
+
+    shutil.rmtree(REPORTS_FOLDER)
+
+
 @pytest.fixture(scope="session", autouse=True)
 def set_logging_level():
     modify_settings(log_level="debug")

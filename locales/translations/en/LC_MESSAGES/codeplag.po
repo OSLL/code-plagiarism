@@ -4,7 +4,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: codeplag 0.5.11\n"
+"Project-Id-Version: codeplag 0.5.12\n"
 "POT-Creation-Date: 2024-05-21 09:28+0300\n"
 "PO-Revision-Date: 2024-05-16 19:15+0300\n"
 "Last-Translator: Artyom Semidolin\n"
@@ -241,6 +241,14 @@ msgid ""
 msgstr ""
 "The'path-regexp' option requires the provided 'directories', 'github-"
 "user', or 'github-project-folder' options."
+
+#: src/codeplag/codeplagcli.py:421 src/codeplag/handlers/report.py:95
+msgid "All paths must be provided."
+msgstr "All or none of the root paths must be specified."
+
+#: src/codeplag/handlers/report.py:92
+msgid "Invalid report type."
+msgstr "Invalid report type."
 
 #: src/templates/general.templ:5 src/templates/sources.templ:5
 msgid "Comparative report"
