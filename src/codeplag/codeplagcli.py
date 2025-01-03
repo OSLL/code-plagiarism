@@ -412,6 +412,13 @@ class CodeplagCLI(argparse.ArgumentParser):
                         "'github-user', or 'github-project-folder' options."
                     )
                 )
+        elif (
+            root == "report"
+            and command == "create"
+            and not all([parsed_args.first_root_path, parsed_args.second_root_path])
+            and any([parsed_args.first_root_path, parsed_args.second_root_path])
+        ):
+            self.error(_("All paths must be provided."))
 
     def parse_args(self: Self, args: list[str] | None = None) -> argparse.Namespace:
         parsed_args = super(CodeplagCLI, self).parse_args(args)

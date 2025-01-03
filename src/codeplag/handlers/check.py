@@ -38,6 +38,7 @@ from codeplag.reporters import CSVReporter
 from codeplag.types import (
     ASTFeatures,
     CompareInfo,
+    ExitCode,
     Extension,
     Flag,
     MaxDepth,
@@ -151,7 +152,7 @@ class WorksComparator:
         github_files: list[str] | None = None,
         github_project_folders: list[str] | None = None,
         github_user: str = "",
-    ) -> None:
+    ) -> ExitCode:
         if files is None:
             files = []
         if directories is None:
@@ -167,8 +168,9 @@ class WorksComparator:
         features_from_gh_files = self.features_getter.get_from_github_files(github_files)
 
         logger.info("Starting searching for plagiarism ...")
+        exit_code = ExitCode.EXIT_SUCCESS
         if self.mode == "many_to_many":
-            self.__many_to_many_check(
+            exit_code = self.__many_to_many_check(
                 features_from_files,
                 directories,
                 features_from_gh_files,
@@ -176,7 +178,7 @@ class WorksComparator:
                 github_user,
             )
         elif self.mode == "one_to_one":
-            self.__one_to_one_check(
+            exit_code = self.__one_to_one_check(
                 features_from_files,
                 directories,
                 features_from_gh_files,
@@ -187,6 +189,7 @@ class WorksComparator:
         logger.info("Ending searching for plagiarism ...")
         if isinstance(self.reporter, CSVReporter):
             self.reporter._write_df_to_fs()
+        return exit_code
 
     def __many_to_many_check(
         self: Self,
@@ -195,7 +198,7 @@ class WorksComparator:
         features_from_gh_files: list[ASTFeatures],
         github_project_folders: list[str],
         github_user: str,
-    ) -> None:
+    ) -> ExitCode:
         works: list[ASTFeatures] = []
         works.extend(features_from_files)
         works.extend(self.features_getter.get_from_dirs(directories))
@@ -212,6 +215,7 @@ class WorksComparator:
                 iterations,
             )
             self.progress = Progress(iterations)
+        exit_code = ExitCode.EXIT_SUCCESS
         with ProcessPoolExecutor(max_workers=self.workers) as executor:
             processing: list[ProcessingWorks] = []
             futures: set[Future] = set()
@@ -219,8 +223,11 @@ class WorksComparator:
                 for j, work2 in enumerate(works):
                     if i <= j:
                         continue
-                    self._do_step(executor, processing, futures, work1, work2)
-            self._handle_completed_futures(processing, futures)
+                    exit_code = ExitCode(
+                        exit_code | self._do_step(executor, processing, futures, work1, work2)
+                    )
+            exit_code = ExitCode(exit_code | self._handle_completed_futures(processing, futures))
+        return exit_code
 
     def __one_to_one_check(
         self: Self,
@@ -229,7 +236,7 @@ class WorksComparator:
         features_from_gh_files: list[ASTFeatures],
         github_project_folders: list[str],
         github_user: str,
-    ) -> None:
+    ) -> ExitCode:
         combined_elements = filter(
             bool,
             (
@@ -253,6 +260,7 @@ class WorksComparator:
             )
             self.progress = ComplexProgress(iterations)
         cases = combinations(combined_elements, r=2)
+        exit_code = ExitCode.EXIT_SUCCESS
         with ProcessPoolExecutor(max_workers=self.workers) as executor:
             processing: list[ProcessingWorks] = []
             futures: set[Future] = set()
@@ -269,8 +277,11 @@ class WorksComparator:
                     self.progress.add_internal_progress(internal_iterations)
                 for work1 in first_sequence:
                     for work2 in second_sequence:
-                        self._do_step(executor, processing, futures, work1, work2)
-            self._handle_completed_futures(processing, futures)
+                        exit_code = ExitCode(
+                            exit_code | self._do_step(executor, processing, futures, work1, work2)
+                        )
+            exit_code = ExitCode(exit_code | self._handle_completed_futures(processing, futures))
+        return exit_code
 
     def _do_step(
         self: Self,
@@ -279,10 +290,10 @@ class WorksComparator:
         futures: set[Future],
         work1: ASTFeatures,
         work2: ASTFeatures,
-    ) -> None:
+    ) -> ExitCode:
         if work1.filepath == work2.filepath:
             _print_pretty_progress_if_need_and_increase(self.progress, self.workers)
-            return
+            return ExitCode.EXIT_SUCCESS
 
         work1, work2 = sorted([work1, work2])
         metrics = None
@@ -293,9 +304,10 @@ class WorksComparator:
             future.id = len(processing)  # type: ignore
             futures.add(future)
             processing.append(ProcessingWorks(work1, work2))
-            return
+            return ExitCode.EXIT_SUCCESS
         self._handle_compare_result(work1, work2, metrics)
         _print_pretty_progress_if_need_and_increase(self.progress, self.workers)
+        return ExitCode.EXIT_FOUND_SIM
 
     def _handle_compare_result(
         self: Self,
@@ -303,13 +315,13 @@ class WorksComparator:
         work2: ASTFeatures,
         metrics: CompareInfo,
         save: bool = False,
-    ) -> None:
+    ) -> ExitCode:
         if metrics.structure is None:
-            return
+            return ExitCode.EXIT_SUCCESS
         if self.reporter and save:
             self.reporter.save_result(work1, work2, metrics)
         if self.short_output:
-            return
+            return ExitCode.EXIT_FOUND_SIM
 
         if self.threshold and (metrics.structure.similarity * 100) <= self.threshold:
             print_compare_result(work1, work2, metrics)
@@ -324,19 +336,25 @@ class WorksComparator:
                     work2.head_nodes,
                 ),
             )
+        return ExitCode.EXIT_FOUND_SIM
 
     def _handle_completed_futures(
         self: Self,
         processing: list[ProcessingWorks],
         futures: set[Future],
-    ) -> None:
+    ) -> ExitCode:
+        exit_code = ExitCode.EXIT_SUCCESS
         for future in as_completed(futures):
             metrics: CompareInfo = future.result()
             proc_works_info = processing[future.id]  # type: ignore
-            self._handle_compare_result(
-                proc_works_info.work1, proc_works_info.work2, metrics, save=True
+            exit_code = ExitCode(
+                exit_code
+                | self._handle_compare_result(
+                    proc_works_info.work1, proc_works_info.work2, metrics, save=True
+                )
             )
             _print_pretty_progress_if_need_and_increase(self.progress, self.workers)
+        return exit_code
 
     def _create_future_compare(
         self: Self,

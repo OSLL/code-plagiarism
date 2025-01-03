@@ -2,6 +2,7 @@ import hashlib
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
+from enum import IntEnum
 from functools import total_ordering
 from pathlib import Path
 from typing import (
@@ -130,12 +131,20 @@ class CompareInfo(NamedTuple):
     structure: StructuresInfo | None = None
 
 
-# Exceptions
+# Exceptions and errors
 # ----------------------------------------------------------------------------
 
 
 class CLIException(Exception):
     """A common exception occurred while using CLI."""
+
+
+class ExitCode(IntEnum):
+    EXIT_SUCCESS = 0
+    EXIT_KEYBOARD = 1
+    EXIT_INVAL = 3
+    EXIT_UNKNOWN = 5
+    EXIT_FOUND_SIM = 200
 
 
 # Misc

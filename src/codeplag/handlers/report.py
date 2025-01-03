@@ -3,7 +3,7 @@
 from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
-from typing import Generator, Literal, TypedDict
+from typing import Generator, TypedDict
 
 import jinja2
 import numpy as np
@@ -25,6 +25,7 @@ from codeplag.reporters import deserialize_compare_result, read_df
 from codeplag.translate import get_translations
 from codeplag.types import (
     CompareInfo,
+    ExitCode,
     Language,
     ReportType,
     SameFuncs,
@@ -48,7 +49,7 @@ def html_report_create(
     report_type: ReportType,
     first_root_path: Path | str | None = None,
     second_root_path: Path | str | None = None,
-) -> Literal[0, 1]:
+) -> ExitCode:
     """Creates an HTML report based on the configuration settings.
 
     Args:
@@ -60,7 +61,7 @@ def html_report_create(
 
     Returns:
     -------
-        Literal[0, 1]: 0 if the report was successfully created, 1 otherwise.
+        ExitCode: 0 if the report was successfully created, 1 otherwise.
 
     Raises:
     -------
@@ -76,22 +77,22 @@ def html_report_create(
     reports_path = settings_config.get("reports")
     if not reports_path:
         logger.error("Can't create general report without provided in settings 'report' path.")
-        return 1
+        return ExitCode.EXIT_INVAL
     if settings_config["reports_extension"] != "csv":
         logger.error("Can create report only when 'reports_extension' is csv.")
-        return 1
+        return ExitCode.EXIT_INVAL
     if not (reports_path / CSV_REPORT_FILENAME).exists():
         logger.error(f"There is nothing in '{reports_path}' to create a basic html report from.")
-        return 1
+        return ExitCode.EXIT_INVAL
     if report_type == "general":
         create_report_function = _create_general_report
     elif report_type == "sources":
         create_report_function = _create_sources_report
     else:
-        raise ValueError("Invalid report type.")
+        raise ValueError(_("Invalid report type."))
     all_paths_provided = all([first_root_path, second_root_path])
     if not all_paths_provided and any([first_root_path, second_root_path]):
-        raise ValueError("All paths must be provided.")
+        raise ValueError(_("All paths must be provided."))
 
     df = read_df(reports_path / CSV_REPORT_FILENAME)
     if all_paths_provided:
@@ -110,7 +111,7 @@ def html_report_create(
         settings_config["language"],
         paths,  # type: ignore
     )
-    return 0
+    return ExitCode.EXIT_SUCCESS
 
 
 def calculate_general_total_similarity(

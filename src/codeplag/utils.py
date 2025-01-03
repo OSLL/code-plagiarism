@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any
 
 from typing_extensions import Self
 
@@ -12,7 +12,7 @@ from codeplag.handlers.report import (
 )
 from codeplag.handlers.settings import settings_modify, settings_show
 from codeplag.logger import codeplag_logger as logger
-from codeplag.types import ReportType
+from codeplag.types import ExitCode, ReportType
 
 
 class CodeplagEngine:
@@ -54,7 +54,7 @@ class CodeplagEngine:
             self.files: list[Path] = parsed_args.pop("files", [])
             self.directories: list[Path] = parsed_args.pop("directories", [])
 
-    def run(self: Self) -> Literal[0, 1]:
+    def run(self: Self) -> ExitCode:
         logger.debug("Starting codeplag util ...")
 
         if self.root == "settings":
@@ -68,11 +68,11 @@ class CodeplagEngine:
                 self.path, self.report_type, self.first_root_path, self.second_root_path
             )
         else:
-            self.comparator.check(
+            return self.comparator.check(
                 self.files,
                 self.directories,
                 self.github_files,
                 self.github_project_folders,
                 self.github_user,
             )
-        return 0
+        return ExitCode.EXIT_SUCCESS
