@@ -78,7 +78,7 @@ def test_compare_cpp_files(cmd: list[str], out: bytes, found_plag: bool):
     result = run_check(cmd, extension="cpp")
 
     if found_plag:
-        result.assert_found_plagiarism()
+        result.assert_found_similarity()
     else:
         result.assert_success()
     assert out in result.cmd_res.stdout
@@ -119,7 +119,7 @@ def test_compare_py_files(cmd: list[str], out: bytes, found_plag: bool):
     result = run_check(cmd)
 
     if found_plag:
-        result.assert_found_plagiarism()
+        result.assert_found_similarity()
     else:
         result.assert_success()
     assert out in result.cmd_res.stdout

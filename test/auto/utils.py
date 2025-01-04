@@ -28,7 +28,7 @@ class CmdResult:
     def assert_failed(self: Self) -> None:
         assert self.cmd_res.returncode, str(self.cmd_res)
 
-    def assert_found_plagiarism(self: Self) -> None:
+    def assert_found_similarity(self: Self) -> None:
         assert self.cmd_res.returncode == ExitCode.EXIT_FOUND_SIM, str(self.cmd_res)
 
 
