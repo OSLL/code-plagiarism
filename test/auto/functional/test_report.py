@@ -14,7 +14,7 @@ def setup(create_reports_folder_module: None):
     modify_settings(
         reports=REPORTS_FOLDER, reports_extension="csv", short_output=1
     ).assert_success()
-    run_check(["--directories", "test/unit/codeplag/cplag", "src/"]).assert_found_plagiarism()
+    run_check(["--directories", "test/unit/codeplag/cplag", "src/"]).assert_found_similarity()
 
     yield
 

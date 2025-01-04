@@ -211,5 +211,5 @@ help-general:
 .EXPORT_ALL_VARIABLES:
 .PHONY: all test man
 
-include docker.mk
+include docker/docker.mk
 include locales/i18n.mk
