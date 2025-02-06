@@ -1,6 +1,16 @@
 LOCALES_DIR                 := locales/
 
 
+translate-help:
+	@echo "Translate:"
+	@echo "  translate-extract      Extracts all lines that need to be translated;"
+	@echo "  translate-update       Updates all po files with new code changes;"
+	@echo "  translate-compile      Compile message catalogs to MO files;"
+	@echo "  translate-init         Initializing a new language for translation;"
+	@echo "      LANGUAGE=..."
+	@echo "  translate-help         Displays information about available translation targets."
+	@echo
+
 translate-extract:
 	pybabel extract --mapping-file ${LOCALES_DIR}/babel.cfg \
 		--keywords _ \
@@ -32,12 +42,3 @@ translate-init:
 		echo "You should provide the 'LANGUAGE' variable for initializing translation."; \
 		exit 1; \
 	fi
-
-help-translate:
-	@echo "Translate:"
-	@echo "  translate-extract      Extracts all lines that need to be translated;"
-	@echo "  translate-update       Updates all po files with new code changes;"
-	@echo "  translate-compile      Compile message catalogs to MO files;"
-	@echo "  translate-init         Initializing a new language for translation."
-	@echo "      LANGUAGE=..."
-	@echo

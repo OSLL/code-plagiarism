@@ -1,3 +1,15 @@
+docker-help:
+	@echo "Docker:"
+	@echo "  docker-run             Runs docker container with installed util;"
+	@echo "  docker-image           Build docker image;"
+	@echo "      ALL=[1|0] REBUILD=[1|0]"
+	@echo "  docker-test            Runs unit tests with pytest framework in the docker container;"
+	@echo "  docker-autotest        Runs autotests in docker container;"
+	@echo "  docker-build-package   Build the debian package in special docker image;"
+	@echo "  docker-rmi ALL=[1|0]   Delete created docker images;"
+	@echo "  docker-help            Displays information about available docker targets."
+	@echo
+
 docker-base-image: substitute-sources substitute-docker
 	@docker image inspect $(BASE_DOCKER_TAG) > /dev/null 2>&1 || ( \
 		echo "Building base docker image." && \

@@ -176,9 +176,9 @@ reinstall: uninstall install
 todo-list: clean-all
 	@grep --color=auto -r -n 'TODO' ./* --exclude=Makefile --exclude-dir=docs
 
-help: help-general help-translate
+help: general-help docker-help translate-help
 
-help-general:
+general-help:
 	@echo "Usage:"
 	@echo "  make [targets] [arguments]"
 	@echo
@@ -195,16 +195,7 @@ help-general:
 	@echo "  clean-cache            Delete __pycache__ folders created by pytest framework;"
 	@echo "  clean                  Remove generated while installing and testing files in the source directory (contains clean-cache);"
 	@echo "  clean-all              Remove all generated files such as created docker files, debian and sources (contains clean);"
-	@echo "  help                   Display this message and exit."
-	@echo
-	@echo "Docker:"
-	@echo "  docker-run             Runs docker container with installed util;"
-	@echo "  docker-image           Build docker image;"
-	@echo "      ALL=[1|0] REBUILD=[1|0]"
-	@echo "  docker-test            Runs unit tests with pytest framework in the docker container;"
-	@echo "  docker-autotest        Runs autotests in docker container;"
-	@echo "  docker-build-package   Build the debian package in special docker image;"
-	@echo "  docker-rmi ALL=[1|0]   Delete created docker images."
+	@echo "  help                   Displays information about all available targets."
 	@echo
 
 
