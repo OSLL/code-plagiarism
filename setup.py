@@ -2,12 +2,11 @@ import os
 import sys
 from pathlib import Path
 
-from setuptools import Extension, find_packages, setup
-
 BUILD_REQUIREMENTS: tuple[str, ...] = (
     "argparse-manpage==3",
     "Babel==2.15.0",
     "Cython~=3.0.8",
+    "setuptools~=75.8.0",
 )
 INSTALL_REQUIREMENTS: tuple[str, ...] = (
     "argcomplete~=2.0.0",
@@ -40,6 +39,7 @@ elif UTIL_NAME is None or UTIL_VERSION is None:
     sys.exit(1)
 try:
     from Cython.Build import cythonize
+    from setuptools import Extension, find_packages, setup
 except ModuleNotFoundError:
     print(
         "For the correct build install required build dependencies: "
