@@ -7,6 +7,7 @@ BUILD_REQUIREMENTS: tuple[str, ...] = (
     "Babel==2.15.0",
     "Cython~=3.0.8",
     "setuptools~=75.8.0",
+    "Jinja2~=3.1.2",
 )
 INSTALL_REQUIREMENTS: tuple[str, ...] = (
     "argcomplete~=2.0.0",
