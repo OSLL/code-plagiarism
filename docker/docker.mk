@@ -1,11 +1,13 @@
 docker-help:
 	@echo "Docker:"
 	@echo "  docker-run             Runs docker container with installed util;"
-	@echo "  docker-image           Build docker image;"
+	@echo "  docker-image           Builds a docker image;"
 	@echo "      ALL=[1|0] REBUILD=[1|0]"
+	@echo "  docker-base-image      Builds a basic docker image from which to build other images;"
+	@echo "  docker-test-image      Builds a docker image for running tests and building package;"
 	@echo "  docker-test            Runs unit tests with pytest framework in the docker container;"
 	@echo "  docker-autotest        Runs autotests in docker container;"
-	@echo "  docker-build-package   Build the debian package in special docker image;"
+	@echo "  docker-build-package   Builds the debian package in special docker image;"
 	@echo "  docker-rmi ALL=[1|0]   Delete created docker images;"
 	@echo "  docker-help            Displays information about available docker targets."
 	@echo

@@ -128,6 +128,7 @@ package: substitute-debian
 
 test: substitute-sources
 	pytest test/unit -vv
+	pytest test/misc -vv
 	make clean-cache
 
 autotest:
@@ -184,17 +185,22 @@ general-help:
 	@echo
 	@echo "Commands:"
 	@echo "  install                Install on the local computer without using package manager;"
-	@echo "  uninstall              Remove installed util from system;"
-	@echo "  man                    Create man file."
-	@echo "                         Require argparse-manpage python library;"
+	@echo "  uninstall              Removes the installed utility from the system;"
+	@echo "  reinstall              Removes the installed utility from the system and then installs it again;"
+	@echo "  man                    Create man file. Require argparse-manpage python library;"
 	@echo "  pre-commit             Runs all pre-commit hooks;"
 	@echo "  test                   Runs unit tests with pytest framework;"
 	@echo "  autotest               Runs auto tests."
 	@echo "                         Required installed '$(UTIL_NAME)' util and provided ACCESS_TOKEN;"
+	@echo "  substitute-sources     Substitutes dynamic variables into source code files and generates final files;"
+	@echo "  substitute-debian      Substitutes dynamic variables into debian files and generates final files;"
+	@echo "  substitute-docker      Substitutes dynamic variables into docker files and generates final files;"
 	@echo "  package                Build the debian package;"
 	@echo "  clean-cache            Delete __pycache__ folders created by pytest framework;"
 	@echo "  clean                  Remove generated while installing and testing files in the source directory (contains clean-cache);"
 	@echo "  clean-all              Remove all generated files such as created docker files, debian and sources (contains clean);"
+	@echo "  todo-list              Displays what is good to do in the source code;"
+	@echo "  general-help           Displays information about upper-level targets;"
 	@echo "  help                   Displays information about all available targets."
 	@echo
 
