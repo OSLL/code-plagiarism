@@ -4,8 +4,10 @@ from typing import Final
 
 import pytest
 
-TARGET_PATTERN = re.compile(r"^[a-zA-Z0-9-]*:\s*")
+TARGET_PATTERN = re.compile(r"^(?P<target_name>[a-zA-Z0-9-]+):\s*")
+MAKEFILE_HELP_TARGET_PATTERN = re.compile(r"^  (?P<target_name>[a-zA-Z0-9-]+)\s+")
 MAKEFILE_NAME: Final = "Makefile"
+MAKEFILE_HELP_TARGETS_IGNORE: Final = {"make"}
 
 
 @pytest.fixture
@@ -18,9 +20,10 @@ def makefile_targets() -> set[str]:
     )
     targets = set()
     for line in result.stdout.splitlines():
-        if not TARGET_PATTERN.search(line):
+        target_match = TARGET_PATTERN.search(line)
+        if not target_match:
             continue
-        target_name = line.split(":")[0]
+        target_name = target_match.group("target_name")
         if target_name == MAKEFILE_NAME:
             continue
         targets.add(target_name)
@@ -36,9 +39,20 @@ def test_makefile_consist_help_msgs_for_all_targets(makefile_targets: set[str]):
         stderr=subprocess.PIPE,
         check=True,
     ).stdout
-    targets_without_help = {
-        target for target in makefile_targets if target not in make_help_stdout
-    }
-    assert (
-        not targets_without_help
-    ), f"Help message for the '{targets_without_help}' targets not found."
+    makefile_help_targets = []
+    for line in make_help_stdout.splitlines():
+        target_match = MAKEFILE_HELP_TARGET_PATTERN.search(line)
+        if not target_match:
+            continue
+        makefile_help_targets.append(target_match.group("target_name"))
+    unique_makefile_help_targets = set(makefile_help_targets)
+    assert len(makefile_help_targets) == len(
+        unique_makefile_help_targets
+    ), "Some targets' help messages repeats."
+    unique_makefile_help_targets -= MAKEFILE_HELP_TARGETS_IGNORE
+    targets_without_help_message = makefile_targets - unique_makefile_help_targets
+    targets_which_only_in_the_makehelp = unique_makefile_help_targets - makefile_targets
+    assert unique_makefile_help_targets == makefile_targets, (
+        f"Help message for the '{targets_without_help_message}' targets not found. "
+        f"Help message for the '{targets_which_only_in_the_makehelp}' targets found."
+    )
