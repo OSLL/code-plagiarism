@@ -184,6 +184,7 @@ general-help:
 	@echo "  make [targets] [arguments]"
 	@echo
 	@echo "Commands:"
+	@echo "  all                    Install on the local computer without using package manager;"
 	@echo "  install                Install on the local computer without using package manager;"
 	@echo "  uninstall              Removes the installed utility from the system;"
 	@echo "  reinstall              Removes the installed utility from the system and then installs it again;"
