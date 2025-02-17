@@ -50,7 +50,9 @@ def test_makefile_consist_help_msgs_for_all_targets(makefile_targets: set[str]):
         unique_makefile_help_targets
     ), "Some targets' help messages repeats."
     unique_makefile_help_targets -= MAKEFILE_HELP_TARGETS_IGNORE
+    targets_without_help_message = makefile_targets - unique_makefile_help_targets
+    targets_which_only_in_the_makehelp = unique_makefile_help_targets - makefile_targets
     assert unique_makefile_help_targets == makefile_targets, (
-        f"Help message for the '{makefile_targets - unique_makefile_help_targets}' targets not found. "
-        f"Help message for the '{unique_makefile_help_targets - makefile_targets}' targets found."
+        f"Help message for the '{targets_without_help_message}' targets not found. "
+        f"Help message for the '{targets_which_only_in_the_makehelp}' targets found."
     )
