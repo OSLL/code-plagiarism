@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update
 RUN apt-get install -y debhelper
-RUN pip3 install pytest==7.4.0 pytest-mock==3.11.1 @PYTHON_BUILD_LIBS@
+RUN pip3 install pytest==8.3.4 pytest-mock==3.14.0 @PYTHON_BUILD_LIBS@
 RUN mkdir -p @LOGS_PATH@
 
 # TODO: Move to middle docker file or make another solution

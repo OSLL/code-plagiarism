@@ -1,4 +1,4 @@
-"""This module contains logic for saving a comparison result into JSON or CSV."""
+"""This module contains logic for saving a comparison result into CSV."""
 
 import json
 from abc import ABC, abstractmethod
@@ -41,7 +41,7 @@ class CSVReporter(AbstractReporter):
         if self.reports_path.is_file():
             self.__df_report = read_df(self.reports_path)
         else:
-            self.__df_report = pd.DataFrame(columns=CSV_REPORT_COLUMNS, dtype=object)
+            self.__df_report = pd.DataFrame(columns=np.array(CSV_REPORT_COLUMNS), dtype=object)
         self.__csv_last_save = monotonic()
 
     def save_result(
@@ -65,7 +65,8 @@ class CSVReporter(AbstractReporter):
             (self.__df_report.first_path == str(first_work.filepath))
             & (self.__df_report.second_path == str(second_work.filepath))
         ]
-        self.__df_report.drop(cache_val.index, inplace=True)
+        if isinstance(cache_val, pd.DataFrame):
+            self.__df_report.drop(cache_val.index, inplace=True)  # type: ignore
         self.__df_report = pd.concat(
             [
                 self.__df_report,
