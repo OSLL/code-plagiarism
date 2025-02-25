@@ -127,7 +127,7 @@ class WorksComparator:
         """
         if not environment:
             logger.warning(
-                "Env file not found or not a file. " "Trying to get token from environment."
+                "Env file not found or not a file. Trying to get token from environment."
             )
             access_token: str = os.environ.get("ACCESS_TOKEN", "")
         else:

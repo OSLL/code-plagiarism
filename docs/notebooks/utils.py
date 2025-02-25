@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 from datetime import datetime
 from time import perf_counter
 from typing import Literal
@@ -34,28 +35,32 @@ def remove_unnecessary_blank_lines(source_code: str) -> str:
     return re.sub(pattern, "\n", source_code)
 
 
-def get_data_from_dir(path: str = "./data", max_count_lines: int | None = None) -> pd.DataFrame:
+def get_data_from_dir(
+    path: str = "./data", max_count_lines: int | None = None
+) -> pd.DataFrame | None:
     df = pd.DataFrame()
     for filename in os.listdir(path):
         if not re.search(r".csv$", filename):
             continue
 
-        tmp_df = pd.read_csv(os.path.join(path, filename), sep=";", index_col=0)
+        tmp_df = pd.read_csv(os.path.join(path, filename), sep=";", index_col=0)  # type: ignore
         df = df.append(tmp_df, ignore_index=True)
 
     if max_count_lines:
-        return df[df.count_lines_without_blank_lines < max_count_lines]
+        result = df[df.count_lines_without_blank_lines < max_count_lines]
+        assert isinstance(result, pd.DataFrame) or result is None
+        return result
 
     return df
 
 
-def save_works_from_repo_url(url: str, check_policy: bool = True) -> None:
+def save_works_from_repo_url(url: str, check_policy: bool = True, min_lines: int = 5) -> None:
     current_repo_name = url.split("/")[-1]
     env_config = Config(RepositoryEnv("../../.env"))
     gh = GitHubParser(
         file_extensions=(re.compile(r".py$"),),
         check_all=check_policy,
-        access_token=env_config.get("ACCESS_TOKEN"),
+        access_token=env_config.get("ACCESS_TOKEN", default=""),  # type: ignore
     )
     files = list(gh.get_files_generator_from_repo_url(url))
     files = [(remove_unnecessary_blank_lines(file.code), file.link) for file in files]
@@ -76,22 +81,34 @@ def save_works_from_repo_url(url: str, check_policy: bool = True) -> None:
             ],
         }
     )
-    df = df[df["count_lines_without_blank_lines"] > 5]
+    filtered_df = df["count_lines_without_blank_lines"]
+    assert filtered_df is not None
+    df = df[filtered_df > min_lines]
+    if df is None:
+        print(f"Nothing to save with minimal count of lines '{min_lines}'.", file=sys.stderr)
+        return
     df.to_csv(os.path.join("./data/", current_repo_name + ".csv"), sep=";")
 
 
 def get_time_to_meta(df: pd.DataFrame, iterations: int = 10) -> pd.DataFrame:
     count_lines = []
     to_meta_time = []
-    for index, content in df[["content", "link", "count_lines_without_blank_lines"]].iterrows():
+    filtered_df = df[["content", "link", "count_lines_without_blank_lines"]]
+    if filtered_df is None:
+        raise Exception("DataFrame is empty, nothing to parse.")
+    for index, content in filtered_df.iterrows():
+        code = content[0]
+        filepath = content[1]
+        assert isinstance(code, str)
+        assert isinstance(filepath, str)
         print(index, " " * 20, end="\r")
         for _ in range(iterations):
-            tree = get_ast_from_content(content[0], content[1])
+            tree = get_ast_from_content(code, filepath)
             if tree is None:
                 break
             try:
                 start = perf_counter()
-                get_features_from_ast(tree, content[1])
+                get_features_from_ast(tree, filepath)
                 end = perf_counter() - start
                 to_meta_time.append(end)
                 count_lines.append(content[2])
@@ -130,7 +147,7 @@ def plot_and_save_result(
         p = np.poly1d(z)
         plt.plot(unique_count_lines, p(unique_count_lines), "r--", label="Линейный тренд.")
     elif trend == "n^2":
-        popt_cons, _ = curve_fit(
+        popt_cons, _ = curve_fit(  # type: ignore
             square_func,
             unique_count_lines,
             mean_times,
@@ -144,7 +161,7 @@ def plot_and_save_result(
             label="Квадратичный тренд.",
         )
     elif trend == "n^3":
-        popt_cons, _ = curve_fit(
+        popt_cons, _ = curve_fit(  # type: ignore
             cube_func,
             unique_count_lines,
             mean_times,
@@ -156,7 +173,7 @@ def plot_and_save_result(
         p = np.poly1d(popt_cons)
         plt.plot(unique_count_lines, p(unique_count_lines), "r--", label="Кубический тренд.")
     elif trend == "n^4":
-        popt_cons, _ = curve_fit(
+        popt_cons, _ = curve_fit(  # type: ignore
             quart_func,
             unique_count_lines,
             mean_times,
@@ -200,14 +217,21 @@ def get_time_algorithms(
         raise Exception("Unexpected error when parsing first work.")
 
     features1 = get_features_from_ast(tree1, work.link)
-    for index, content in df[["content", "link", "count_lines_without_blank_lines"]].iterrows():
+    filtered_df = df[["content", "link", "count_lines_without_blank_lines"]]
+    if filtered_df is None:
+        raise Exception("DataFrame is empty, nothing to parse.")
+    for index, content in filtered_df.iterrows():
+        code = content[0]
+        filepath = content[1]
+        assert isinstance(code, str)
+        assert isinstance(filepath, str)
         for _ in range(iterations):
             print(index, " " * 20, end="\r")
-            tree2 = get_ast_from_content(content[0], content[1])
+            tree2 = get_ast_from_content(code, filepath)
             if tree2 is None:
                 continue
             try:
-                features2 = get_features_from_ast(tree2, content[1])
+                features2 = get_features_from_ast(tree2, filepath)
             except Exception:
                 continue
 

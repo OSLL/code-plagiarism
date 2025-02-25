@@ -1,4 +1,4 @@
-"""This module contains logic for saving a comparison result into JSON or CSV."""
+"""This module contains logic for saving a comparison result into CSV."""
 
 import json
 from abc import ABC, abstractmethod
@@ -65,7 +65,8 @@ class CSVReporter(AbstractReporter):
             (self.__df_report.first_path == str(first_work.filepath))
             & (self.__df_report.second_path == str(second_work.filepath))
         ]
-        self.__df_report.drop(cache_val.index, inplace=True)
+        if cache_val is not None:
+            self.__df_report.drop(cache_val.index, inplace=True)
         self.__df_report = pd.concat(
             [
                 self.__df_report,
