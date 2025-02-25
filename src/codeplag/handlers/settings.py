@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import pandas as pd
 
 from codeplag.config import read_settings_conf, write_settings_conf
@@ -11,7 +12,7 @@ def settings_show() -> None:
     settings_config = read_settings_conf()
     table = pd.DataFrame(
         list(settings_config.values()),
-        index=settings_config.keys(),
+        index=np.array(settings_config),
         columns=pd.Index(["Value"], name="Key"),
     )
     print(table)

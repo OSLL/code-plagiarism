@@ -5,7 +5,7 @@ PWD                     := $(shell pwd)
 USER_UID                ?= $(shell id --user)
 USER_GID                ?= $(shell id --group)
 
-BASE_DOCKER_VERSION     := 1.0
+BASE_DOCKER_VERSION     := 1.1
 BASE_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-base-ubuntu22.04:$(BASE_DOCKER_VERSION) | tr A-Z a-z)
 TEST_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-test-ubuntu22.04:$(UTIL_VERSION) | tr A-Z a-z)
 DOCKER_TAG              ?= $(shell echo $(UTIL_NAME)-ubuntu22.04:$(UTIL_VERSION) | tr A-Z a-z)

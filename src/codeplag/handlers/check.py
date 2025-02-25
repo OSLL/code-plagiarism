@@ -398,7 +398,9 @@ def compliance_matrix_to_df(
     for row in range(compliance_matrix.shape[0]):
         for col in range(compliance_matrix.shape[1]):
             data[row][col] = compliance_matrix[row][col][0] / compliance_matrix[row][col][1]
-    compliance_matrix_df = pd.DataFrame(data=data, index=head_nodes1, columns=head_nodes2)
+    compliance_matrix_df = pd.DataFrame(
+        data=data, index=np.array(head_nodes1), columns=np.array(head_nodes2)
+    )
     return compliance_matrix_df
 
 
