@@ -30,13 +30,16 @@ def main() -> ExitCode:
     except KeyboardInterrupt:
         logger.warning("The util stopped by keyboard interrupt.")
         return ExitCode.EXIT_KEYBOARD
-    except Exception:
+    except Exception as error:
         logger.error(
-            "An unexpected error occurred while running the utility. "
+            "An unexpected error occurred while running the utility - %s. "
             "For getting more information, check file '%s'.",
+            error,
             LOG_PATH,
         )
-        logger.debug("Trace:", exc_info=True)
+        stdout_handler = logger.handlers.pop()
+        logger.error("Trace:", exc_info=True)
+        logger.handlers.append(stdout_handler)
         return ExitCode.EXIT_UNKNOWN
 
     return code
