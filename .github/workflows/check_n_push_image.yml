@@ -64,6 +64,11 @@ jobs:
           make docker-image DOCKER_TAG=${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu22.04:${{ steps.get_version.outputs.version }}
           docker image save --output /tmp/codeplag-ubuntu22.04.tar ${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu22.04:${{ steps.get_version.outputs.version }}
 
+      - name: Pytest coverage comment
+        uses: MishaKav/pytest-coverage-comment@v1
+        with:
+          pytest-xml-coverage-path: ./test/unit/pytest-coverage.xml
+
       - name: Run autotests
         run: |
           export $(cat .env | xargs)

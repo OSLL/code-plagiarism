@@ -103,7 +103,7 @@
 
 - Testing for analyzers with pytest lib (required preinstalled pytest framework).
   ```
-  $ pip3 install pytest==8.3.4 pytest-mock==3.14.0
+  $ pip3 install $(python3 setup.py --test-requirements)
   $ make test
   ```
 

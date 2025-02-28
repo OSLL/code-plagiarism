@@ -9,6 +9,11 @@ BUILD_REQUIREMENTS: tuple[str, ...] = (
     "setuptools~=75.8.1",
     "Jinja2~=3.1.5",
 )
+TEST_REQUIREMENTS: tuple[str, ...] = (
+    "pytest~=8.3.4",
+    "pytest-mock~=3.14.0",
+    "pytest-cov~=6.0.0",
+)
 INSTALL_REQUIREMENTS: tuple[str, ...] = (
     "argcomplete~=3.5.3",
     "numpy~=1.26.4",
@@ -31,6 +36,9 @@ UTIL_VERSION = os.getenv("UTIL_VERSION")
 
 if "--build-requirements" in sys.argv:
     print(" ".join(BUILD_REQUIREMENTS))
+    sys.exit(0)
+if "--test-requirements" in sys.argv:
+    print(" ".join(TEST_REQUIREMENTS))
     sys.exit(0)
 elif "--install-requirements" in sys.argv:
     print(" ".join(INSTALL_REQUIREMENTS))
