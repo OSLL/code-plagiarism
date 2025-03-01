@@ -71,7 +71,7 @@ precision = 2
 output = "test/unit/pytest-coverage.xml"
 
 [tool.pytest.ini_options]
-addopts = "--cov=src/ --cov-report xml"
+addopts = "-vv"
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]

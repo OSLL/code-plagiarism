@@ -129,12 +129,11 @@ package: substitute-debian
 	)
 
 test: substitute-sources
-	pytest test/unit -vv
-	pytest test/misc -vv
+	pytest test/unit test/misc --cov=src/ --cov-report xml --cov-report term
 	make clean-cache
 
 autotest:
-	pytest test/auto -vv
+	pytest test/auto
 	make clean-cache
 
 pre-commit:
