@@ -4,11 +4,12 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update
 RUN apt-get install -y debhelper
-RUN pip3 install pytest==8.3.4 pytest-mock==3.14.0 @PYTHON_BUILD_LIBS@
+RUN pip3 install @PYTHON_TEST_LIBS@ @PYTHON_BUILD_LIBS@
 RUN mkdir -p @LOGS_PATH@
 
 # TODO: Move to middle docker file or make another solution
 ADD setup.py /usr/src/@UTIL_NAME@/setup.py
+ADD pyproject.toml /usr/src/@UTIL_NAME@/pyproject.toml
 ADD src/ /usr/src/@UTIL_NAME@/src
 ADD README.md /usr/src/@UTIL_NAME@/README.md
 ADD LICENSE /usr/src/@UTIL_NAME@/LICENSE

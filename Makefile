@@ -1,4 +1,4 @@
-UTIL_VERSION            := 0.5.14
+UTIL_VERSION            := 0.5.15
 UTIL_NAME               := codeplag
 PWD                     := $(shell pwd)
 
@@ -33,6 +33,7 @@ DOCKER_SUB_FILES        := docker/base_ubuntu2204.dockerfile \
 
 PYTHON_REQUIRED_LIBS    := $(shell python3 setup.py --install-requirements)
 PYTHON_BUILD_LIBS       := $(shell python3 setup.py --build-requirements)
+PYTHON_TEST_LIBS        := $(shell python3 setup.py --test-requirements)
 
 
 ifeq ($(IS_DEVELOPED), 1)
@@ -49,6 +50,7 @@ substitute = @sed \
 		-e "s|@DEVEL_SUFFIX@|${DEVEL_SUFFIX}|g" \
 		-e "s|@PYTHON_REQUIRED_LIBS@|${PYTHON_REQUIRED_LIBS}|g" \
 		-e "s|@PYTHON_BUILD_LIBS@|${PYTHON_BUILD_LIBS}|g" \
+		-e "s|@PYTHON_TEST_LIBS@|${PYTHON_TEST_LIBS}|g" \
 		-e "s|@LOGS_PATH@|${LOGS_PATH}|g" \
 		-e "s|@LIB_PATH@|${LIB_PATH}|g" \
 		-e "s|@CONFIG_PATH@|${CONFIG_PATH}|g" \
@@ -127,12 +129,11 @@ package: substitute-debian
 	)
 
 test: substitute-sources
-	pytest test/unit -vv
-	pytest test/misc -vv
+	pytest test/unit test/misc --cov=src/ --cov-report xml --cov-report term
 	make clean-cache
 
 autotest:
-	pytest test/auto -vv
+	pytest test/auto
 	make clean-cache
 
 pre-commit:
