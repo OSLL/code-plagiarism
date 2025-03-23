@@ -320,10 +320,9 @@ class GitHubParser:
         response_json = self.send_get_request(api_url, params=params).json()
 
         for node in response_json:
-            current_path = f'/{node["path"]}'
+            current_path = f"/{node['path']}"
             full_link = (
-                f"{_GH_URL}{dir_url.owner}/{dir_url.repo}"
-                f"/tree/{dir_url.branch}/{current_path[2:]}"
+                f"{_GH_URL}{dir_url.owner}/{dir_url.repo}/tree/{dir_url.branch}/{current_path[2:]}"
             )
             node_type = node["type"]
             if node_type == "dir":

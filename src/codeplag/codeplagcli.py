@@ -45,7 +45,7 @@ class CheckUniqueStore(argparse.Action):
             raise argparse.ArgumentError(
                 self,
                 _(
-                    "You cannot specify the same value multiple times. " "You provided '{values}'."
+                    "You cannot specify the same value multiple times. You provided '{values}'."
                 ).format(values=str_values),
             )
         setattr(namespace, self.dest, values)
@@ -356,8 +356,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             prog=UTIL_NAME,
             formatter_class=argparse.ArgumentDefaultsHelpFormatter,
             description=_(
-                "Program help to find similar parts of source "
-                "codes for the different languages."
+                "Program help to find similar parts of source codes for the different languages."
             ),
         )
         self.add_argument(

@@ -34,7 +34,7 @@ jobs:
         pip install $(python3 setup.py --install-requirements)
         pip install $(python3 setup.py --build-requirements)
         pip install --requirement docs/notebooks/requirements.txt
-        pip install pre-commit==3.4.0
+        pip install pre-commit==4.1.0
         make pre-commit
 
   docker-build-test-autotest:
@@ -63,6 +63,11 @@ jobs:
           export $(cat .env | xargs)
           make docker-image DOCKER_TAG=${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu22.04:${{ steps.get_version.outputs.version }}
           docker image save --output /tmp/codeplag-ubuntu22.04.tar ${{ secrets.DOCKER_HUB_USERNAME }}/codeplag-ubuntu22.04:${{ steps.get_version.outputs.version }}
+
+      - name: Pytest coverage comment
+        uses: MishaKav/pytest-coverage-comment@v1
+        with:
+          pytest-xml-coverage-path: ./test/unit/pytest-coverage.xml
 
       - name: Run autotests
         run: |

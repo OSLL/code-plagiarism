@@ -32,10 +32,12 @@ class LevenshteinDistance:
             for column in np.arange(1, self.s2_length + 1):
                 symbol1 = self.sequence1[row - 1]
                 symbol2 = self.sequence2[column - 1]
-                minimum = min(
-                    self.distance_matrix[row - 1][column] + 1,
-                    self.distance_matrix[row][column - 1] + 1,
-                    self.distance_matrix[row - 1][column - 1] + self.m(symbol1, symbol2),
+                minimum = np.min(
+                    [
+                        self.distance_matrix[row - 1][column] + 1,
+                        self.distance_matrix[row][column - 1] + 1,
+                        self.distance_matrix[row - 1][column - 1] + self.m(symbol1, symbol2),
+                    ]
                 )
                 self.distance_matrix[row][column] = minimum
 
