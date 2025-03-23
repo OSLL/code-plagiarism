@@ -102,9 +102,15 @@ class CSVReporter(AbstractReporter):
             and cache_val.iloc[0].second_sha256 == work2.sha256
         ):
             return deserialize_compare_result(cache_val.iloc[0])
+    
+    def get_work_from_cache(self: Self, work_file_pth: str) -> ASTFeatures:
+        pass
+
+    def _write_df_to_fs_works(self: Self):
+        pass
 
 
-def read_df(path: Path) -> pd.DataFrame:
+def read_df(path: Path, ) -> pd.DataFrame:
     return pd.read_csv(path, sep=";", index_col=0, dtype=object)  # type: ignore
 
 
@@ -163,3 +169,44 @@ def deserialize_compare_result(compare_result: pd.Series) -> CompareInfo:
 
 def _get_current_date() -> str:
     return datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+
+def serialize_ASTFeratures(work: ASTFeatures) -> pd.DataFrame:
+    data = pd.DataFrame(
+        {
+            "filepath": str(work.filepath),
+            "sha256": work.sha256,
+            "count_of_nodes": work.count_of_nodes,
+            "head_nodes": work.head_nodes,
+            "operators": work.operators,
+            "keywords": work.keywords,
+            "literals": work.literals,
+            "unodes": work.unodes,
+            "from_num": work.from_num,
+            "count_unodes": work.count_unodes,
+            "structure": [dict(item) for item in work.structure],
+            "tokens": work.tokens,
+            "tokens_pos": [{"lineno": pos.lineno, "col_offset": pos.col_offset} for pos in work.tokens_pos]
+        },
+        dtype=object
+    )
+    return data
+
+
+def deserialize_ASTFeratures(work: pd.Series) -> ASTFeatures:
+    features = ASTFeatures(
+        filepath=work['filepath'],
+        sha256=work['sha256'],
+        count_of_nodes=work['count_of_nodes'],
+        head_nodes=work['head_nodes'],
+        operators=work['operators'],
+        keywords=work['keywords'],
+        literals=work['literals'],
+        unodes=work['unodes'],
+        from_num=work['from_num'],
+        count_unodes=work['count_unodes'],
+        structure=work['structure'],
+        tokens=work['tokens'],
+        tokens_pos=work['tokens_pos']
+    )
+    return features
