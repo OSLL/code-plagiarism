@@ -171,14 +171,53 @@ def _get_current_date() -> str:
     return datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
 
-def serialize_ASTFeratures(work: ASTFeatures) -> dict:
-    return work.__dict__
+def serialize_compare_result_to_dict(
+    first_work: ASTFeatures,
+    second_work: ASTFeatures,
+    compare_info: CompareInfo
+) -> dict:
+    assert compare_info.structure is not None
+
+    data = {
+            "date": _get_current_date(),
+            "first_modify_date": first_work.modify_date,
+            "first_sha256": first_work.sha256,
+            "second_modify_date": second_work.modify_date,
+            "second_sha256": second_work.sha256,
+            "first_path": first_work.filepath.__str__(),
+            "second_path": second_work.filepath.__str__(),
+            "jakkar": compare_info.fast.jakkar,
+            "operators": compare_info.fast.operators,
+            "keywords": compare_info.fast.keywords,
+            "literals": compare_info.fast.literals,
+            "weighted_average": compare_info.fast.weighted_average,
+            "struct_similarity": compare_info.structure.similarity,
+            "first_heads": [first_work.head_nodes],
+            "second_heads": [second_work.head_nodes],
+            "compliance_matrix": [compare_info.structure.compliance_matrix.tolist()],
+        }
+
+    return data
 
 
-def deserialize_ASTFeratures(work_dict: dict) -> ASTFeatures:
-    features = ASTFeatures(work_dict['filepath'])
-    keys = list(work_dict.keys())
-    keys.pop(keys.index('filepath'))
-    for key in keys:
-        setattr(features, key, work_dict.get(key))
-    return features
+def deserialize_compare_result_from_dict(compare_result: dict) -> CompareInfo:
+    if isinstance(compare_result['compliance_matrix'], str):
+        similarity_matrix = np.array(json.loads(compare_result['compliance_matrix']))
+    else:
+        similarity_matrix = np.array(compare_result['compliance_matrix'])
+
+    compare_info = CompareInfo(
+        fast=FastMetrics(
+            jakkar=float(compare_result['jakkar']),
+            operators=float(compare_result['operators']),
+            keywords=float(compare_result['keywords']),
+            literals=float(compare_result['literals']),
+            weighted_average=float(compare_result['weighted_average']),
+        ),
+        structure=StructuresInfo(
+            compliance_matrix=similarity_matrix,
+            similarity=float(compare_result['struct_similarity']),
+        ),
+    )
+
+    return compare_info
