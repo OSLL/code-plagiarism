@@ -171,42 +171,14 @@ def _get_current_date() -> str:
     return datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
 
-def serialize_ASTFeratures(work: ASTFeatures) -> pd.DataFrame:
-    data = pd.DataFrame(
-        {
-            "filepath": str(work.filepath),
-            "sha256": work.sha256,
-            "count_of_nodes": work.count_of_nodes,
-            "head_nodes": work.head_nodes,
-            "operators": work.operators,
-            "keywords": work.keywords,
-            "literals": work.literals,
-            "unodes": work.unodes,
-            "from_num": work.from_num,
-            "count_unodes": work.count_unodes,
-            "structure": [dict(item) for item in work.structure],
-            "tokens": work.tokens,
-            "tokens_pos": [{"lineno": pos.lineno, "col_offset": pos.col_offset} for pos in work.tokens_pos]
-        },
-        dtype=object
-    )
-    return data
+def serialize_ASTFeratures(work: ASTFeatures) -> dict:
+    return work.__dict__
 
 
-def deserialize_ASTFeratures(work: pd.Series) -> ASTFeatures:
-    features = ASTFeatures(
-        filepath=work['filepath'],
-        sha256=work['sha256'],
-        count_of_nodes=work['count_of_nodes'],
-        head_nodes=work['head_nodes'],
-        operators=work['operators'],
-        keywords=work['keywords'],
-        literals=work['literals'],
-        unodes=work['unodes'],
-        from_num=work['from_num'],
-        count_unodes=work['count_unodes'],
-        structure=work['structure'],
-        tokens=work['tokens'],
-        tokens_pos=work['tokens_pos']
-    )
+def deserialize_ASTFeratures(work_dict: dict) -> ASTFeatures:
+    features = ASTFeatures(work_dict['filepath'])
+    keys = list(work_dict.keys())
+    keys.pop(keys.index('filepath'))
+    for key in keys:
+        setattr(features, key, work_dict.get(key))
     return features
