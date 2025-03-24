@@ -76,29 +76,19 @@ class TestCSVReporter:
             == first_compare_result.structure.compliance_matrix.tolist()
         )
 
-    def test_compare_info_serialize_deserialize(self: Self) -> None:
-        fast_metrics = FastMetrics(
-            jakkar=0.8,
-            operators=15,
-            keywords=20,
-            literals=30,
-            weighted_average=0.9
-        )
+    def test_compare_info_serialize_deserialize(
+        self: Self,
+        first_compare_result: CompareInfo
+    ) -> None:
 
-        structures_info = StructuresInfo(
-            similarity=0.7,
-            compliance_matrix=[[0.9, 0.6], [0.6, 0.8]]
-        )
-
-        compare_info = CompareInfo(fast=fast_metrics, structure=structures_info)
-        compare_info_dict = serialize_compare_result_to_dict(compare_info)
+        compare_info_dict = serialize_compare_result_to_dict(first_compare_result)
         deserialize = deserialize_compare_result_from_dict(compare_info_dict)
 
-        assert compare_info_dict.fast.jakkar == deserialize.fast.jakkar
-        assert compare_info_dict.operators.jakkar == deserialize.operators.jakkar
-        assert compare_info_dict.keywords.jakkar == deserialize.keywords.jakkar
-        assert compare_info_dict.literals.jakkar == deserialize.literals.jakkar
-        assert compare_info_dict.weighted_average.jakkar == deserialize.weighted_average.jakkar
+        assert first_compare_result.fast.jakkar == deserialize.fast.jakkar
+        assert first_compare_result.operators.jakkar == deserialize.operators.jakkar
+        assert first_compare_result.keywords.jakkar == deserialize.keywords.jakkar
+        assert first_compare_result.literals.jakkar == deserialize.literals.jakkar
+        assert first_compare_result.weighted_average.jakkar == deserialize.weighted_average.jakkar
 
-        assert compare_info_dict.structure.similarity == deserialize.structure.similarity
-        assert compare_info_dict.structure.compliance_matrix == deserialize.structure.compliance_matrix
+        assert first_compare_result.structure.similarity == deserialize.structure.similarity
+        assert first_compare_result.structure.compliance_matrix == deserialize.structure.compliance_matrix

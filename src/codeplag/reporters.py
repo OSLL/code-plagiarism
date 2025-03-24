@@ -104,7 +104,7 @@ class CSVReporter(AbstractReporter):
             return deserialize_compare_result(cache_val.iloc[0])
 
 
-def read_df(path: Path, ) -> pd.DataFrame:
+def read_df(path: Path) -> pd.DataFrame:
     return pd.read_csv(path, sep=";", index_col=0, dtype=object)  # type: ignore
 
 
