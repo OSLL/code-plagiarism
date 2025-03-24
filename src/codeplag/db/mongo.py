@@ -122,23 +122,42 @@ class ReportRepository:
 
 
 class FeatureRepository:
-    def __init__(self):
+    def __init__(self, mongo_connection: MongoDBConnection):
         """
         Инициализация репозитория для коллекции features.
         """
-        self.collection = None
+        self.collection = mongo_connection.get_collection("features")
 
-    def write_feature(self, path: str, modify_date: str, sha256: str, features: Dict):
+    def write_feature(self, work: ASTFeatures, cmp_for_feature: CompareInfo):
         """
         Вставка или обновление документа в коллекции features.
         Первичный ключ: path.
+
+        Args:
+            work (ASTFeatures): Файл для сохранения признаков.
+            cmp_for_feature (CompareInfo): объект с нужными данными о структуре
         """
+        # Формируем _id как путь файла
+        document_id = {"first": str(work.filepath)}
 
         document = {
-            "path": path,
-            "modify_date": modify_date,
-            "sha256": sha256,
-            "features": features
+            "_id": document_id,
+            "path": document_id,
+            "modify_date": work.modify_date,
+            "sha256": work.sha256,
+            "features": {
+                "head_nodes": work.head_nodes,
+                "structure": {
+                    "similarity": cmp_for_feature.structure.similarity,
+                    "compliance_matrix": cmp_for_feature.structure.compliance_matrix.tolist(),
+                }
+            }
         }
 
-        # other instructions
+        # Вставка или обновление документа
+        self.collection.update_one(
+            {"_id": document_id},
+            {"$set": document},
+            upsert=True
+        )
+        print(f"Документ для пути {document_id} успешно вставлен/обновлен.")
