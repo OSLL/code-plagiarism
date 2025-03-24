@@ -32,6 +32,13 @@ class AbstractReporter(ABC):
         compare_info: CompareInfo,
     ) -> None: ...
 
+    @abstractmethod
+    def get_result(
+        self: Self,
+        first_work: ASTFeatures,
+        second_work: ASTFeatures,
+    ) -> CompareInfo | None: ...
+
 
 class CSVReporter(AbstractReporter):
     def __init__(self: Self, reports: Path) -> None:
@@ -89,7 +96,7 @@ class CSVReporter(AbstractReporter):
         self.__df_report.to_csv(self.reports_path, sep=";")
         self.__need_update = False
 
-    def get_compare_result_from_cache(
+    def get_result(
         self: Self, work1: ASTFeatures, work2: ASTFeatures
     ) -> CompareInfo | None:
         cache_val = self.__df_report[
