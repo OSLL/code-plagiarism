@@ -102,12 +102,6 @@ class CSVReporter(AbstractReporter):
             and cache_val.iloc[0].second_sha256 == work2.sha256
         ):
             return deserialize_compare_result(cache_val.iloc[0])
-    
-    def get_work_from_cache(self: Self, work_file_pth: str) -> ASTFeatures:
-        pass
-
-    def _write_df_to_fs_works(self: Self):
-        pass
 
 
 def read_df(path: Path, ) -> pd.DataFrame:
@@ -172,51 +166,39 @@ def _get_current_date() -> str:
 
 
 def serialize_compare_result_to_dict(
-    first_work: ASTFeatures,
-    second_work: ASTFeatures,
     compare_info: CompareInfo
 ) -> dict:
     assert compare_info.structure is not None
 
     data = {
-            "date": _get_current_date(),
-            "first_modify_date": first_work.modify_date,
-            "first_sha256": first_work.sha256,
-            "second_modify_date": second_work.modify_date,
-            "second_sha256": second_work.sha256,
-            "first_path": first_work.filepath.__str__(),
-            "second_path": second_work.filepath.__str__(),
-            "jakkar": compare_info.fast.jakkar,
-            "operators": compare_info.fast.operators,
-            "keywords": compare_info.fast.keywords,
-            "literals": compare_info.fast.literals,
-            "weighted_average": compare_info.fast.weighted_average,
-            "struct_similarity": compare_info.structure.similarity,
-            "first_heads": [first_work.head_nodes],
-            "second_heads": [second_work.head_nodes],
-            "compliance_matrix": [compare_info.structure.compliance_matrix.tolist()],
+        "fast" : dict(zip(
+            list(compare_info.fast.__annotations__.keys()), list(compare_info.fast)
+        )),
+        "structure" : 
+        {
+            "similarity": compare_info.structure.similarity, 
+            "compliance_matrix": compare_info.structure.compliance_matrix.tolist()
         }
+    }
 
     return data
 
 
 def deserialize_compare_result_from_dict(compare_result: dict) -> CompareInfo:
-    if isinstance(compare_result['compliance_matrix'], str):
-        similarity_matrix = np.array(json.loads(compare_result['compliance_matrix']))
-    else:
-        similarity_matrix = np.array(compare_result['compliance_matrix'])
+    structure_d = dict(compare_result["structure"])
+    fast_d = dict(compare_result["fast"])
 
     compare_info = CompareInfo(
         fast=FastMetrics(
-            jakkar=float(compare_result['jakkar']),
-            operators=float(compare_result['operators']),
-            keywords=float(compare_result['keywords']),
-            literals=float(compare_result['literals']),
-            weighted_average=float(compare_result['weighted_average']),
+            jakkar=fast_d['jakkar'],
+            operators=fast_d['operators'],
+            keywords=fast_d['keywords'],
+            literals=fast_d['literals'],
+            weighted_average=fast_d['weighted_average'],
         ),
         structure=StructuresInfo(
-            compliance_matrix=similarity_matrix,
-            similarity=float(compare_result['struct_similarity']),
+            similarity=structure_d['similarity'],
+            compliance_matrix=np.array(structure_d['compliance_matrix']),
         ),
     )
 

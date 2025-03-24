@@ -8,10 +8,16 @@ from typing_extensions import Self
 
 from codeplag.consts import CSV_REPORT_COLUMNS, CSV_REPORT_FILENAME
 from codeplag.handlers.report import deserialize_compare_result
-from codeplag.reporters import CSVReporter
+from codeplag.reporters import (
+    CSVReporter,
+    serialize_compare_result_to_dict,
+    deserialize_compare_result_from_dict
+)
 from codeplag.types import (
     ASTFeatures,
     CompareInfo,
+    FastMetrics,
+    StructuresInfo
 )
 
 
@@ -69,3 +75,30 @@ class TestCSVReporter:
             deser_compare_info.structure.compliance_matrix.tolist()
             == first_compare_result.structure.compliance_matrix.tolist()
         )
+
+    def test_compare_info_serialize_deserialize(self: Self) -> None:
+        fast_metrics = FastMetrics(
+            jakkar=0.8,
+            operators=15,
+            keywords=20,
+            literals=30,
+            weighted_average=0.9
+        )
+
+        structures_info = StructuresInfo(
+            similarity=0.7,
+            compliance_matrix=[[0.9, 0.6], [0.6, 0.8]]
+        )
+
+        compare_info = CompareInfo(fast=fast_metrics, structure=structures_info)
+        compare_info_dict = serialize_compare_result_to_dict(compare_info)
+        deserialize = deserialize_compare_result_from_dict(compare_info_dict)
+
+        assert compare_info_dict.fast.jakkar == deserialize.fast.jakkar
+        assert compare_info_dict.operators.jakkar == deserialize.operators.jakkar
+        assert compare_info_dict.keywords.jakkar == deserialize.keywords.jakkar
+        assert compare_info_dict.literals.jakkar == deserialize.literals.jakkar
+        assert compare_info_dict.weighted_average.jakkar == deserialize.weighted_average.jakkar
+
+        assert compare_info_dict.structure.similarity == deserialize.structure.similarity
+        assert compare_info_dict.structure.compliance_matrix == deserialize.structure.compliance_matrix
