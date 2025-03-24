@@ -21,8 +21,7 @@ from codeplag.types import (
 
 
 class AbstractReporter(ABC):
-    def __init__(self: Self, reports: Path) -> None:
-        self.reports = reports
+    def __init__(self: Self) -> None: ...
 
     @abstractmethod
     def save_result(
@@ -42,7 +41,8 @@ class AbstractReporter(ABC):
 
 class CSVReporter(AbstractReporter):
     def __init__(self: Self, reports: Path) -> None:
-        super().__init__(reports)
+        super().__init__()
+        self.reports = reports
         self.reports_path = self.reports / CSV_REPORT_FILENAME
         self.__need_update: bool = False
         if self.reports_path.is_file():

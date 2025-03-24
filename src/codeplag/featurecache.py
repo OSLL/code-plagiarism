@@ -6,6 +6,7 @@ from codeplag.types import ASTFeatures
 
 
 class AbstractFeatureCache(ABC):
+    def __init__(self: Self) -> None: ...
 
     @abstractmethod
     def save_feature(self: Self, feature: ASTFeatures) -> None: ...
