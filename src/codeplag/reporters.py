@@ -21,9 +21,6 @@ from codeplag.types import (
 
 
 class AbstractReporter(ABC):
-    def __init__(self: Self, reports: Path) -> None:
-        self.reports = reports
-
     @abstractmethod
     def save_result(
         self: Self,
@@ -32,10 +29,17 @@ class AbstractReporter(ABC):
         compare_info: CompareInfo,
     ) -> None: ...
 
+    @abstractmethod
+    def get_result(
+        self: Self,
+        first_work: ASTFeatures,
+        second_work: ASTFeatures,
+    ) -> CompareInfo | None: ...
+
 
 class CSVReporter(AbstractReporter):
     def __init__(self: Self, reports: Path) -> None:
-        super().__init__(reports)
+        self.reports = reports
         self.reports_path = self.reports / CSV_REPORT_FILENAME
         self.__need_update: bool = False
         if self.reports_path.is_file():
@@ -89,7 +93,7 @@ class CSVReporter(AbstractReporter):
         self.__df_report.to_csv(self.reports_path, sep=";")
         self.__need_update = False
 
-    def get_compare_result_from_cache(
+    def get_result(
         self: Self, work1: ASTFeatures, work2: ASTFeatures
     ) -> CompareInfo | None:
         cache_val = self.__df_report[
