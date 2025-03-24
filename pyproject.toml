@@ -59,3 +59,22 @@ typeCheckingMode = "basic"
 
 [build-system]
 requires = ["setuptools", "Cython"]
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+include_namespace_packages = true
+precision = 2
+
+[tool.coverage.xml]
+output = "test/unit/pytest-coverage.xml"
+
+[tool.pytest.ini_options]
+addopts = "-vv"
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+pythonpath = [
+    "src",
+]

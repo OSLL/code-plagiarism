@@ -11,12 +11,12 @@ def get_compile_args() -> list[str]:
 
 COMPILE_ARGS = get_compile_args()
 IGNORE = [
-    CursorKind.PREPROCESSING_DIRECTIVE,
+    CursorKind.PREPROCESSING_DIRECTIVE,  # type: ignore
     # CursorKind.MACRO_DEFINITION,
-    CursorKind.MACRO_INSTANTIATION,
-    CursorKind.INCLUSION_DIRECTIVE,
-    CursorKind.USING_DIRECTIVE,
-    CursorKind.NAMESPACE,
+    CursorKind.MACRO_INSTANTIATION,  # type: ignore
+    CursorKind.INCLUSION_DIRECTIVE,  # type: ignore
+    CursorKind.USING_DIRECTIVE,  # type: ignore
+    CursorKind.NAMESPACE,  # type: ignore
 ]
 # fmt: off
 OPERATORS = (

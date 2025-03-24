@@ -46,9 +46,9 @@ def test_makefile_consist_help_msgs_for_all_targets(makefile_targets: set[str]):
             continue
         makefile_help_targets.append(target_match.group("target_name"))
     unique_makefile_help_targets = set(makefile_help_targets)
-    assert len(makefile_help_targets) == len(
-        unique_makefile_help_targets
-    ), "Some targets' help messages repeats."
+    assert len(makefile_help_targets) == len(unique_makefile_help_targets), (
+        "Some targets' help messages repeats."
+    )
     unique_makefile_help_targets -= MAKEFILE_HELP_TARGETS_IGNORE
     targets_without_help_message = makefile_targets - unique_makefile_help_targets
     targets_which_only_in_the_makehelp = unique_makefile_help_targets - makefile_targets

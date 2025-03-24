@@ -4,10 +4,11 @@
 # Environment variables
 .env
 
-# Developmnt environmemt
+# Development and environment
 .vscode
 .python-version
 docs/notebooks/.ipynb_checkpoints/
+test/unit/pytest-coverage.xml
 
 # Build
 __pycache__

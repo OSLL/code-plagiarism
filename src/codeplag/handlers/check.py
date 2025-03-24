@@ -127,7 +127,7 @@ class WorksComparator:
         """
         if not environment:
             logger.warning(
-                "Env file not found or not a file. " "Trying to get token from environment."
+                "Env file not found or not a file. Trying to get token from environment."
             )
             access_token: str = os.environ.get("ACCESS_TOKEN", "")
         else:
@@ -298,7 +298,7 @@ class WorksComparator:
         work1, work2 = sorted([work1, work2])
         metrics = None
         if isinstance(self.reporter, CSVReporter):
-            metrics = self.reporter.get_compare_result_from_cache(work1, work2)
+            metrics = self.reporter.get_result(work1, work2)
         if metrics is None:
             future = self._create_future_compare(executor, work1, work2)
             future.id = len(processing)  # type: ignore
@@ -398,7 +398,9 @@ def compliance_matrix_to_df(
     for row in range(compliance_matrix.shape[0]):
         for col in range(compliance_matrix.shape[1]):
             data[row][col] = compliance_matrix[row][col][0] / compliance_matrix[row][col][1]
-    compliance_matrix_df = pd.DataFrame(data=data, index=head_nodes1, columns=head_nodes2)
+    compliance_matrix_df = pd.DataFrame(
+        data=data, index=np.array(head_nodes1), columns=np.array(head_nodes2)
+    )
     return compliance_matrix_df
 
 

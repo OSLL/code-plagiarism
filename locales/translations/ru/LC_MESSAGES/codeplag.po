@@ -4,7 +4,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: codeplag 0.5.12\n"
+"Project-Id-Version: codeplag 0.5.13\n"
 "POT-Creation-Date: 2024-05-21 09:28+0300\n"
 "PO-Revision-Date: 2024-05-11 12:05+0300\n"
 "Last-Translator: Artyom Semidolin\n"
@@ -224,31 +224,31 @@ msgstr ""
 "Программа помогает находить схожие части исходных кодов для разных языков"
 " программирования."
 
-#: src/codeplag/codeplagcli.py:366
+#: src/codeplag/codeplagcli.py:365
 msgid "Print current version number and exit."
 msgstr "Выводит текущую версию программы."
 
-#: src/codeplag/codeplagcli.py:372
+#: src/codeplag/codeplagcli.py:371
 msgid "Commands help."
 msgstr "Справка по командам."
 
-#: src/codeplag/codeplagcli.py:387
+#: src/codeplag/codeplagcli.py:386
 msgid "No command is provided; please choose one from the available (--help)."
 msgstr ""
 "Ни одна из команд не выбрана, пожалуйста, выбери одну из доступных команд"
 " (--help)."
 
-#: src/codeplag/codeplagcli.py:398
+#: src/codeplag/codeplagcli.py:397
 msgid "There is nothing to modify; please provide at least one argument."
 msgstr ""
 "Нечего модифицировать, пожалуйста, выберите один из параметров для "
 "модификации."
 
-#: src/codeplag/codeplagcli.py:402
+#: src/codeplag/codeplagcli.py:401
 msgid "The'repo-regexp' option requires the provided 'github-user' option."
 msgstr "Аргумент 'repo-regexp' требует заданного параметра 'github-user'."
 
-#: src/codeplag/codeplagcli.py:410
+#: src/codeplag/codeplagcli.py:409
 msgid ""
 "The'path-regexp' option requires the provided 'directories', 'github-"
 "user', or 'github-project-folder' options."
@@ -256,7 +256,7 @@ msgstr ""
 "Аргумент 'path-regexp' требует заданного параметра 'directories', "
 "'github-user' или 'github-project-folder'."
 
-#: src/codeplag/codeplagcli.py:421 src/codeplag/handlers/report.py:95
+#: src/codeplag/codeplagcli.py:420 src/codeplag/handlers/report.py:95
 msgid "All paths must be provided."
 msgstr "Необходимо указать все корневые пути или не указывать ни одного."
 

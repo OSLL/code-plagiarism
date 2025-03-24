@@ -5,8 +5,8 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: codeplag 0.5.12\n"
-"POT-Creation-Date: 2025-01-03 14:06+0300\n"
+"Project-Id-Version: codeplag 0.5.13\n"
+"POT-Creation-Date: 2025-02-25 22:01+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Artyom Semidolin\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -190,33 +190,33 @@ msgid ""
 "languages."
 msgstr ""
 
-#: src/codeplag/codeplagcli.py:366
+#: src/codeplag/codeplagcli.py:365
 msgid "Print current version number and exit."
 msgstr ""
 
-#: src/codeplag/codeplagcli.py:372
+#: src/codeplag/codeplagcli.py:371
 msgid "Commands help."
 msgstr ""
 
-#: src/codeplag/codeplagcli.py:387
+#: src/codeplag/codeplagcli.py:386
 msgid "No command is provided; please choose one from the available (--help)."
 msgstr ""
 
-#: src/codeplag/codeplagcli.py:398
+#: src/codeplag/codeplagcli.py:397
 msgid "There is nothing to modify; please provide at least one argument."
 msgstr ""
 
-#: src/codeplag/codeplagcli.py:402
+#: src/codeplag/codeplagcli.py:401
 msgid "The'repo-regexp' option requires the provided 'github-user' option."
 msgstr ""
 
-#: src/codeplag/codeplagcli.py:410
+#: src/codeplag/codeplagcli.py:409
 msgid ""
 "The'path-regexp' option requires the provided 'directories', 'github-"
 "user', or 'github-project-folder' options."
 msgstr ""
 
-#: src/codeplag/codeplagcli.py:421 src/codeplag/handlers/report.py:95
+#: src/codeplag/codeplagcli.py:420 src/codeplag/handlers/report.py:95
 msgid "All paths must be provided."
 msgstr ""
 

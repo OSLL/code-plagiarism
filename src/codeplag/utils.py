@@ -5,6 +5,8 @@ from typing_extensions import Self
 
 from codeplag.consts import (
     DEFAULT_MODE,
+    UTIL_NAME,
+    UTIL_VERSION,
 )
 from codeplag.handlers.check import IgnoreThresholdWorksComparator, WorksComparator
 from codeplag.handlers.report import (
@@ -55,7 +57,7 @@ class CodeplagEngine:
             self.directories: list[Path] = parsed_args.pop("directories", [])
 
     def run(self: Self) -> ExitCode:
-        logger.debug("Starting codeplag util ...")
+        logger.info("Starting %s util (%s) ...", UTIL_NAME, UTIL_VERSION)
 
         if self.root == "settings":
             if self.command == "show":

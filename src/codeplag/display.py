@@ -4,6 +4,7 @@ from functools import partial
 from time import monotonic
 from typing import Final
 
+import numpy as np
 import pandas as pd
 from typing_extensions import Self
 
@@ -183,7 +184,7 @@ def print_compare_result(
     print("May be similar:", message, end="\n\n", sep="\n")
     main_metrics_df = pd.DataFrame(
         [compare_info.fast],
-        index=["Similarity"],
+        index=np.array(["Similarity"]),
         columns=pd.Index(
             (field.upper() for field in compare_info.fast._fields), name="FastMetrics:"
         ),
@@ -196,7 +197,7 @@ def print_compare_result(
 
     additional_metrics_df = pd.DataFrame(
         compare_info.structure.similarity,
-        index=["Similarity"],
+        index=np.array(["Similarity"]),
         columns=pd.Index(["Structure"], name="AdditionalMetrics:"),
     )
     print(additional_metrics_df)

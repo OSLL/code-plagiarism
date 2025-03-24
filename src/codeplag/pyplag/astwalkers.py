@@ -47,7 +47,7 @@ class ASTWalker(ast.NodeVisitor):
             actual_node_name = self.__get_actual_name_from_node(node)
             if actual_node_name is None:
                 actual_node_name = node_name
-            self.features.head_nodes.append(f"{actual_node_name}[{node.lineno}]")
+            self.features.head_nodes.append(f"{actual_node_name}[{node.lineno}]")  # type: ignore
 
     def generic_visit(self: Self, node: ast.AST) -> None:
         """Traverses, counts operators, keywords, and literals, and saves sequence of operators.
@@ -62,7 +62,7 @@ class ASTWalker(ast.NodeVisitor):
             self.features.tokens.append(TO_TOKEN[type_name])
             if "lineno" in dir(node) and "col_offset" in dir(node):
                 self.features.tokens_pos.append(
-                    NodeCodePlace(lineno=node.lineno, col_offset=node.col_offset)
+                    NodeCodePlace(lineno=node.lineno, col_offset=node.col_offset)  # type: ignore
                 )
             else:
                 self.features.tokens_pos.append(self.features.tokens_pos[-1])

@@ -44,11 +44,11 @@ def generic_visit(node: Cursor, features: ASTFeatures, curr_depth: int = 0) -> N
 def get_features(tree: Cursor, filepath: Path | str = "") -> ASTFeatures:
     features = ASTFeatures(filepath or tree.displayname)
     for token in tree.get_tokens():
-        if token.kind == TokenKind.PUNCTUATION and token.spelling in OPERATORS:
+        if token.kind == TokenKind.PUNCTUATION and token.spelling in OPERATORS:  # type: ignore
             features.operators[token.spelling] += 1
-        if token.kind == TokenKind.KEYWORD:
+        if token.kind == TokenKind.KEYWORD:  # type: ignore
             features.keywords[token.spelling] += 1
-        if token.kind == TokenKind.LITERAL:
+        if token.kind == TokenKind.LITERAL:  # type: ignore
             features.literals[token.spelling] += 1
 
     generic_visit(tree, features)
