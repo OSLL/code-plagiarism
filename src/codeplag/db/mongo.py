@@ -22,51 +22,51 @@ PASSWORD = "example"
 class MongoDBConnection:
     def __init__(self: Self, host: str = HOST, user: str = USER, password: str = PASSWORD, db_name: str = "new_database"):
         """
-        Инициализация подключения к MongoDB.
+        Initialization of the connection to MongoDB.
 
-        :param host: Хост MongoDB.
-        :param user: Имя пользователя MongoDB.
-        :param password: Пароль пользователя MongoDB.
-        :param db_name: Имя базы данных.
+        :param host: MongoDB host.
+        :param user: MongoDB username.
+        :param password: MongoDB password.
+        :param db_name: Database name.
         """
         self.url = self.url = f"mongodb://{user}:{password}@{host}:27017/"
         self.db_name = db_name
         self.client = None
         self.db = None
 
-        # Подключение к MongoDB
+        # Connecting to MongoDB
         self.connect()
 
-        # Регистрация метода disconnect для выполнения при завершении программы
+        # Registering the disconnect method for execution upon program termination
         atexit.register(self.disconnect)
 
     def connect(self: Self):
         """
-        Подключение к MongoDB.
+        Connecting to MongoDB.
         """
         try:
             self.client = MongoClient(self.url, serverSelectionTimeoutMS=5000)
-            self.client.admin.command('ping')  # Проверка подключения
-            logger.debug("Подключение к MongoDB успешно!")
+            self.client.admin.command('ping')  # Checking the connection
+            logger.debug("Successfully connected to MongoDB!")
             self.db = self.client[self.db_name]
         except ConnectionFailure as e:
-            logger.error(f"Не удалось подключиться к MongoDB: {e}")
+            logger.error(f"Failed to connect to MongoDB: {e}")
             raise
 
     def disconnect(self: Self):
         """
-        Отключение от MongoDB.
+        Disconnecting from MongoDB.
         """
         if self.client:
             self.client.close()
-            logger.debug("Подключение к MongoDB закрыто.")
+            logger.debug("MongoDB connection closed.")
 
     def get_collection(self: Self, collection_name: str):
         """
-        Получение коллекции по имени из текущей базы данных.
+        Getting a collection by name from the current database.
 
-        :param collection_name: Имя коллекции.
-        :return: Объект коллекции текущей базы данных.
+        :param collection_name: Name of the collection.
+        :return: Collection object of the current database.
         """
 
         return self.db[collection_name]
@@ -75,7 +75,7 @@ class MongoDBConnection:
 class ReportRepository:
     def __init__(self: Self, mongo_connection: MongoDBConnection):
         """
-        Инициализация репозитория для коллекции compare_info.
+        Initialization of the repository for the compare_info collection.
         """
         self.collection = mongo_connection.get_collection("compare_info")
 
@@ -86,22 +86,22 @@ class ReportRepository:
             compare_info: CompareInfo
     ):
         """
-        Вставка или обновление документа в коллекции compare_info.
-        Первичный ключ: _id (отсортированные пути).
+        Insert or update a document in the compare_info collection.
+        Primary key: _id (sorted paths).
 
         Args:
-            work1 (ASTFeatures): Первый файл для сравнения.
-            work2 (ASTFeatures): Второй файл для сравнения.
-            compare_info (CompareInfo): Информация о сравнении.
+            work1 (ASTFeatures): The first file for comparison.
+            work2 (ASTFeatures): The second file for comparison.
+            compare_info (CompareInfo): Comparison information.
         """
-        # Сортируем пути для создания уникального первичного ключа
+        # Sorting paths to create a unique primary key
         work1, work2 = sorted([work1, work2])
         first_path, second_path = [str(work1.filepath), str(work2.filepath)]
 
-        # Формируем _id как строку из отсортированных путей
+        # Forming _id as a string of sorted paths
         document_id = {"first": first_path, "second": second_path}
 
-        # Используем функцию serialize_compare_result_to_dict для преобразования данных
+        # Using the serialize_compare_result_to_dict function to convert data
         serialized_compare_info = None  # serialize_compare_result_to_dict(compare_info)
 
         document = {
@@ -115,35 +115,35 @@ class ReportRepository:
             "compare_info": serialized_compare_info,
         }
 
-        # Вставка или обновление документа
+        # Insert or update the document
         self.collection.update_one(
             {"_id": document_id},
             {"$set": document},
             upsert=True
         )
-        logger.debug(f"Документ для ({first_path}, {second_path}) успешно вставлен/обновлен.")
+        logger.debug(f"Document for ({first_path}, {second_path}) successfully inserted/updated.")
 
 
 class FeatureRepository:
     def __init__(self: Self, mongo_connection: MongoDBConnection):
         """
-        Инициализация репозитория для коллекции features.
+        Initialization of the repository for the features collection.
         """
         self.collection = mongo_connection.get_collection("features")
 
     def write_feature(self: Self, work: ASTFeatures, cmp_for_feature: CompareInfo):
         """
-        Вставка или обновление документа в коллекции features.
-        Первичный ключ: path.
+        Insert or update a document in the features collection.
+        Primary key: path.
 
         Args:
-            work (ASTFeatures): Файл для сохранения признаков.
-            cmp_for_feature (CompareInfo): объект с нужными данными о структуре
+            work (ASTFeatures): File for saving features.
+            cmp_for_feature (CompareInfo): Object with required structure data.
         """
-        # Формируем _id как путь файла
+        # Forming _id as the file path
         document_id = {"first": str(work.filepath)}
 
-        # Используем функцию serialize_compare_result_to_dict для преобразования данных
+        # Using the serialize_compare_result_to_dict function to convert data
         serialized_compare_info = None  # serialize_compare_result_to_dict(cmp_for_feature)
 
         document = {
@@ -161,10 +161,10 @@ class FeatureRepository:
             "compare_info": serialized_compare_info,
         }
 
-        # Вставка или обновление документа
+        # Insert or update the document
         self.collection.update_one(
             {"_id": document_id},
             {"$set": document},
             upsert=True
         )
-        logger.debug(f"Документ для пути {document_id} успешно вставлен/обновлен.")
+        logger.debug(f"Document for path {document_id} successfully inserted/updated.")
