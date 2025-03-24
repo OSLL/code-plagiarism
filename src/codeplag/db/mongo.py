@@ -5,10 +5,12 @@ import numpy as np
 from pathlib import Path
 from collections import defaultdict
 from typing import Dict
+from typing_extensions import Self
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 from codeplag.types import ASTFeatures, CompareInfo, FastMetrics, StructuresInfo
 from codeplag.logger import codeplag_logger as logger
+
 # from ..reporters import serialize_compare_result_to_dict, deserialize_compare_result_from_dict
 
 
@@ -18,7 +20,7 @@ PASSWORD = "example"
 
 
 class MongoDBConnection:
-    def __init__(self, host=HOST, user=USER, password=PASSWORD, db_name="new_database"):
+    def __init__(self: Self, host: str = HOST, user: str = USER, password: str = PASSWORD, db_name: str = "new_database"):
         """
         Инициализация подключения к MongoDB.
 
@@ -38,7 +40,7 @@ class MongoDBConnection:
         # Регистрация метода disconnect для выполнения при завершении программы
         atexit.register(self.disconnect)
 
-    def connect(self):
+    def connect(self: Self):
         """
         Подключение к MongoDB.
         """
@@ -51,7 +53,7 @@ class MongoDBConnection:
             logger.error(f"Не удалось подключиться к MongoDB: {e}")
             raise
 
-    def disconnect(self):
+    def disconnect(self: Self):
         """
         Отключение от MongoDB.
         """
@@ -59,7 +61,7 @@ class MongoDBConnection:
             self.client.close()
             logger.debug("Подключение к MongoDB закрыто.")
 
-    def get_collection(self, collection_name):
+    def get_collection(self: Self, collection_name: str):
         """
         Получение коллекции по имени из текущей базы данных.
 
@@ -71,17 +73,17 @@ class MongoDBConnection:
 
 
 class ReportRepository:
-    def __init__(self, mongo_connection: MongoDBConnection):
+    def __init__(self: Self, mongo_connection: MongoDBConnection):
         """
         Инициализация репозитория для коллекции compare_info.
         """
         self.collection = mongo_connection.get_collection("compare_info")
 
     def write_compare_info(
-        self,
-        work1: ASTFeatures,
-        work2: ASTFeatures,
-        compare_info: CompareInfo
+            self: Self,
+            work1: ASTFeatures,
+            work2: ASTFeatures,
+            compare_info: CompareInfo
     ):
         """
         Вставка или обновление документа в коллекции compare_info.
@@ -93,7 +95,8 @@ class ReportRepository:
             compare_info (CompareInfo): Информация о сравнении.
         """
         # Сортируем пути для создания уникального первичного ключа
-        first_path, second_path = sorted([str(work1.filepath), str(work2.filepath)])
+        work1, work2 = sorted([work1, work2])
+        first_path, second_path = [str(work1.filepath), str(work2.filepath)]
 
         # Формируем _id как строку из отсортированных путей
         document_id = {"first": first_path, "second": second_path}
@@ -118,17 +121,17 @@ class ReportRepository:
             {"$set": document},
             upsert=True
         )
-        print(f"Документ для ({first_path}, {second_path}) успешно вставлен/обновлен.")
+        logger.debug(f"Документ для ({first_path}, {second_path}) успешно вставлен/обновлен.")
 
 
 class FeatureRepository:
-    def __init__(self, mongo_connection: MongoDBConnection):
+    def __init__(self: Self, mongo_connection: MongoDBConnection):
         """
         Инициализация репозитория для коллекции features.
         """
         self.collection = mongo_connection.get_collection("features")
 
-    def write_feature(self, work: ASTFeatures, cmp_for_feature: CompareInfo):
+    def write_feature(self: Self, work: ASTFeatures, cmp_for_feature: CompareInfo):
         """
         Вставка или обновление документа в коллекции features.
         Первичный ключ: path.
@@ -139,6 +142,9 @@ class FeatureRepository:
         """
         # Формируем _id как путь файла
         document_id = {"first": str(work.filepath)}
+
+        # Используем функцию serialize_compare_result_to_dict для преобразования данных
+        serialized_compare_info = None  # serialize_compare_result_to_dict(cmp_for_feature)
 
         document = {
             "_id": document_id,
@@ -151,7 +157,8 @@ class FeatureRepository:
                     "similarity": cmp_for_feature.structure.similarity,
                     "compliance_matrix": cmp_for_feature.structure.compliance_matrix.tolist(),
                 }
-            }
+            },
+            "compare_info": serialized_compare_info,
         }
 
         # Вставка или обновление документа
@@ -160,4 +167,4 @@ class FeatureRepository:
             {"$set": document},
             upsert=True
         )
-        print(f"Документ для пути {document_id} успешно вставлен/обновлен.")
+        logger.debug(f"Документ для пути {document_id} успешно вставлен/обновлен.")
