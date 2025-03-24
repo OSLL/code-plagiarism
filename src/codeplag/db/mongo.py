@@ -1,13 +1,20 @@
+import sys
+import os
+import atexit
+import numpy as np
+from pathlib import Path
+from collections import defaultdict
+from typing import Dict
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
-import sys
-import atexit
-from typing import Dict
+from codeplag.types import ASTFeatures, CompareInfo, FastMetrics, StructuresInfo
+from codeplag.logger import codeplag_logger as logger
+# from ..reporters import serialize_compare_result_to_dict, deserialize_compare_result_from_dict
 
 
 HOST = "localhost"
-USER = "username"
-PASSWORD = ""
+USER = "root"
+PASSWORD = "example"
 
 
 class MongoDBConnection:
@@ -20,8 +27,7 @@ class MongoDBConnection:
         :param password: Пароль пользователя MongoDB.
         :param db_name: Имя базы данных.
         """
-        # future url: url = self.url = f"mongodb://{user}:{password}@{host}:27017/"
-        self.url = "mongodb://localhost:27017/"
+        self.url = self.url = f"mongodb://{user}:{password}@{host}:27017/"
         self.db_name = db_name
         self.client = None
         self.db = None
@@ -39,10 +45,10 @@ class MongoDBConnection:
         try:
             self.client = MongoClient(self.url, serverSelectionTimeoutMS=5000)
             self.client.admin.command('ping')  # Проверка подключения
-            print("Подключение к MongoDB успешно!")
+            logger.debug("Подключение к MongoDB успешно!")
             self.db = self.client[self.db_name]
         except ConnectionFailure as e:
-            print(f"Не удалось подключиться к MongoDB: {e}")
+            logger.error(f"Не удалось подключиться к MongoDB: {e}")
             raise
 
     def disconnect(self):
@@ -51,7 +57,7 @@ class MongoDBConnection:
         """
         if self.client:
             self.client.close()
-            print("Подключение к MongoDB закрыто.")
+            logger.debug("Подключение к MongoDB закрыто.")
 
     def get_collection(self, collection_name):
         """
@@ -60,28 +66,59 @@ class MongoDBConnection:
         :param collection_name: Имя коллекции.
         :return: Объект коллекции текущей базы данных.
         """
-        pass
+
+        return self.db[collection_name]
 
 
 class ReportRepository:
-    def __init__(self):
+    def __init__(self, mongo_connection: MongoDBConnection):
         """
         Инициализация репозитория для коллекции compare_info.
         """
-        self.compare_info = None
+        self.collection = mongo_connection.get_collection("compare_info")
 
-    def write_compare_info(self, first_path: str, second_path: str, compare_info: Dict):
+    def write_compare_info(
+        self,
+        work1: ASTFeatures,
+        work2: ASTFeatures,
+        compare_info: CompareInfo
+    ):
         """
         Вставка или обновление документа в коллекции compare_info.
-        Первичный ключ: (first_path, second_path).
+        Первичный ключ: _id (отсортированные пути).
+
+        Args:
+            work1 (ASTFeatures): Первый файл для сравнения.
+            work2 (ASTFeatures): Второй файл для сравнения.
+            compare_info (CompareInfo): Информация о сравнении.
         """
+        # Сортируем пути для создания уникального первичного ключа
+        first_path, second_path = sorted([str(work1.filepath), str(work2.filepath)])
+
+        # Формируем _id как строку из отсортированных путей
+        document_id = {"first": first_path, "second": second_path}
+
+        # Используем функцию serialize_compare_result_to_dict для преобразования данных
+        serialized_compare_info = None  # serialize_compare_result_to_dict(compare_info)
+
         document = {
+            "_id": document_id,
             "first_path": first_path,
             "second_path": second_path,
-            "compare_info": compare_info
+            "first_sha256": work1.sha256,
+            "second_sha256": work2.sha256,
+            "first_modify_date": work1.modify_date,
+            "second_modify_date": work2.modify_date,
+            "compare_info": serialized_compare_info,
         }
 
-        # other instructions  with self.compare_info
+        # Вставка или обновление документа
+        self.collection.update_one(
+            {"_id": document_id},
+            {"$set": document},
+            upsert=True
+        )
+        print(f"Документ для ({first_path}, {second_path}) успешно вставлен/обновлен.")
 
 
 class FeatureRepository:
@@ -96,6 +133,7 @@ class FeatureRepository:
         Вставка или обновление документа в коллекции features.
         Первичный ключ: path.
         """
+
         document = {
             "path": path,
             "modify_date": modify_date,
