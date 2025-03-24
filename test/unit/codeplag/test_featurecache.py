@@ -1,14 +1,8 @@
 from unittest.mock import MagicMock
 from typing_extensions import Self
 
-
 from codeplag.featurecache import serialize_feratures_to_dict, deserialize_feratures_from_dict
 from codeplag.types import ASTFeatures
-from codeplag.pyplag.utils import (
-    get_ast_from_filename, 
-    get_features_from_ast
-)
-
 
 
 class TestSerialization:

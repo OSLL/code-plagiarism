@@ -77,18 +77,14 @@ class TestCSVReporter:
         )
 
 
-def test_compare_info_serialize_deserialize(
-    first_compare_result: CompareInfo
-) -> None:
-
+def test_compare_info_serialize_deserialize(first_compare_result: CompareInfo) -> None:
     compare_info_dict = serialize_compare_result_to_dict(first_compare_result)
     deserialize = deserialize_compare_result_from_dict(compare_info_dict)
 
-    assert first_compare_result.fast.jakkar == deserialize.fast.jakkar
-    assert first_compare_result.operators.jakkar == deserialize.operators.jakkar
-    assert first_compare_result.keywords.jakkar == deserialize.keywords.jakkar
-    assert first_compare_result.literals.jakkar == deserialize.literals.jakkar
-    assert first_compare_result.weighted_average.jakkar == deserialize.weighted_average.jakkar
-
-    assert first_compare_result.structure.similarity == deserialize.structure.similarity
-    assert first_compare_result.structure.compliance_matrix == deserialize.structure.compliance_matrix
+    assert deserialize.fast == first_compare_result.fast
+    assert deserialize.structure is not None
+    assert deserialize.structure.similarity == first_compare_result.structure.similarity
+    assert (
+        deserialize.structure.compliance_matrix.tolist()
+        == first_compare_result.structure.compliance_matrix.tolist()
+    )

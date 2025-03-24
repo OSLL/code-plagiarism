@@ -165,9 +165,7 @@ def _get_current_date() -> str:
     return datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
 
-def serialize_compare_result_to_dict(
-    compare_info: CompareInfo
-) -> dict:
+def serialize_compare_result_to_dict(compare_info: CompareInfo) -> dict:
     assert compare_info.structure is not None
 
     data = {
@@ -185,8 +183,11 @@ def serialize_compare_result_to_dict(
 
 
 def deserialize_compare_result_from_dict(compare_result: dict) -> CompareInfo:
+    assert compare_result is not None
     structure_d = dict(compare_result["structure"])
+    assert structure_d is not None
     fast_d = dict(compare_result["fast"])
+    assert fast_d is not None
 
     compare_info = CompareInfo(
         fast=FastMetrics(
