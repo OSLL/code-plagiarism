@@ -1,6 +1,4 @@
 [project]
-name = "codeplag"
-version = "0.5.16"
 description = "Code plagiarism searching package."
 readme = "README.md"
 requires-python = "~=3.10"

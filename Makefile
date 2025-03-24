@@ -1,5 +1,5 @@
-UTIL_VERSION            := $(shell grep -oP 'version\s+=\s+"\K[0-9.]+' pyproject.toml)
-UTIL_NAME               := $(shell grep -oP 'name\s+=\s+"\K\w+' pyproject.toml)
+UTIL_VERSION            := 0.5.16
+UTIL_NAME               := codeplag
 PWD                     := $(shell pwd)
 
 USER_UID                ?= $(shell id --user)
