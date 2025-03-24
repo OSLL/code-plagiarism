@@ -23,17 +23,17 @@ Note that all of the unit tests names should starts with prefix 'test_'.
 
 ## Branches rules
 
-1) The 'main' branch consists sources of the last work and tested version of the util, correct documentation, some helpfull scripts and research notebooks;
-2) The 'develop' branch consist source of the current developing version;
+1) The 'main' branch consists sources of the last work and tested version of the util, correct documentation, some helpfull scripts and research notebooks.
+2) The 'develop' branch consist source of the current developing version.
 3) All pull requests should fix one issue or some related issues. After the review, all commits will squash (combined into one) and merge with descriptive message.
 
 ## Making pull requests
 
 Sequence for submitting PR:
 
-1) Fork this repo (for external contributors) or clone (for internal contributors);
-2) Make branch off of 'develop' branch;
-3) Add descriptive unit tests;
-4) If desire, you may to add auto tests. When adding error fixes it's required;
-5) After making commits check that all pre-commit hooks is passed;
-6) Push commits into your remote branch and than create pull request.
+1) Fork this repo (for external contributors) or clone (for internal contributors).
+2) Make branch off of 'main' branch.
+3) Add descriptive unit tests if you affect the source code.
+4) If desire, you may to add auto tests. When adding error fixes it's required.
+5) After making commits check that all pre-commit hooks is passed.
+6) Push commits into your remote branch and than create pull request into 'main' branch.
