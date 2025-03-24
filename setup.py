@@ -60,7 +60,7 @@ except ModuleNotFoundError:
 setup(
     name=f"{UTIL_NAME}",
     version=f"{UTIL_VERSION}",
-    description="Code plagiarism searching package",
+    description="Code plagiarism searching package.",
     author="Artyom Semidolin, Dmitry Nikolaev, Alexander Evsikov",
     url="https://github.com/OSLL/code-plagiarism",
     long_description=Path("README.md").read_text(encoding="utf-8"),

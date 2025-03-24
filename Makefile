@@ -1,14 +1,15 @@
-UTIL_VERSION            := 0.5.15
+UTIL_VERSION            := 0.5.16
 UTIL_NAME               := codeplag
 PWD                     := $(shell pwd)
 
 USER_UID                ?= $(shell id --user)
 USER_GID                ?= $(shell id --group)
 
-BASE_DOCKER_VERSION     := 1.1
-BASE_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-base-ubuntu22.04:$(BASE_DOCKER_VERSION) | tr A-Z a-z)
-TEST_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-test-ubuntu22.04:$(UTIL_VERSION) | tr A-Z a-z)
-DOCKER_TAG              ?= $(shell echo $(UTIL_NAME)-ubuntu22.04:$(UTIL_VERSION) | tr A-Z a-z)
+BASE_DOCKER_VERSION     := 1.2
+DIST                    := ubuntu22.04
+BASE_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-base-${DIST}:$(BASE_DOCKER_VERSION))
+TEST_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-test-${DIST}:$(UTIL_VERSION))
+DOCKER_TAG              ?= $(shell echo $(UTIL_NAME)-${DIST}:$(UTIL_VERSION))
 
 PYTHONDONTWRITEBYTECODE := "1"
 PYTHONPATH              := $(PWD)/src/:$(PWD)/test/auto
@@ -17,16 +18,17 @@ LOGS_PATH               := /var/log/$(UTIL_NAME)
 CODEPLAG_LOG_PATH       := $(LOGS_PATH)/$(UTIL_NAME).log
 CONFIG_PATH             := /etc/$(UTIL_NAME)/settings.conf
 LIB_PATH                := /var/lib/$(UTIL_NAME)
-DEBIAN_PACKAGES_PATH    := debian/deb
+DEBIAN_PATH             := debian/
+DEBIAN_PACKAGES_PATH    := ${DEBIAN_PATH}/deb
 PY_INSTALL_PATH         := $(shell python3 -c "import site; print(site.getsitepackages()[0]);")
 
 SOURCE_SUB_FILES        := src/$(UTIL_NAME)/consts.py
 IS_DEVELOPED            ?= 1
 ALL                     ?= 0
-DEBIAN_SUB_FILES        := debian/changelog \
-                           debian/control \
-                           debian/preinst \
-                           debian/copyright
+DEBIAN_SUB_FILES        := ${DEBIAN_PATH}/changelog \
+                           ${DEBIAN_PATH}/control \
+                           ${DEBIAN_PATH}/preinst \
+                           ${DEBIAN_PATH}/copyright
 DOCKER_SUB_FILES        := docker/base_ubuntu2204.dockerfile \
                            docker/test_ubuntu2204.dockerfile \
                            docker/ubuntu2204.dockerfile
@@ -40,7 +42,7 @@ ifeq ($(IS_DEVELOPED), 1)
 DEVEL_SUFFIX            := .devel
 endif
 
-DEB_PKG_NAME            := ${UTIL_NAME}-util_${UTIL_VERSION}-1${DEVEL_SUFFIX}_amd64
+DEB_PKG_NAME            := ${UTIL_NAME}-util_${UTIL_VERSION}-1${DEVEL_SUFFIX}.${DIST}_amd64
 
 
 substitute = @sed \
@@ -51,6 +53,7 @@ substitute = @sed \
 		-e "s|@PYTHON_REQUIRED_LIBS@|${PYTHON_REQUIRED_LIBS}|g" \
 		-e "s|@PYTHON_BUILD_LIBS@|${PYTHON_BUILD_LIBS}|g" \
 		-e "s|@PYTHON_TEST_LIBS@|${PYTHON_TEST_LIBS}|g" \
+		-e "s|@DIST@|${DIST}|g" \
 		-e "s|@LOGS_PATH@|${LOGS_PATH}|g" \
 		-e "s|@LIB_PATH@|${LIB_PATH}|g" \
 		-e "s|@CONFIG_PATH@|${CONFIG_PATH}|g" \
@@ -78,24 +81,15 @@ substitute-debian: $(DEBIAN_SUB_FILES)
 substitute-docker: $(DOCKER_SUB_FILES)
 	@echo "Substituted information about the utility in the docker files."
 
-man: substitute-sources
-	mkdir -p man
-	argparse-manpage --pyfile src/$(UTIL_NAME)/$(UTIL_NAME)cli.py \
-					 --function CodeplagCLI \
-					 --author "Codeplag Development Team" \
-					 --project-name "$(UTIL_NAME) $(UTIL_VERSION)" \
-					 --url "https://github.com/OSLL/code-plagiarism" \
-					 --output man/$(UTIL_NAME).1
-
 install: substitute-sources man translate-compile
-	python3 -m pip install --root=/$(DESTDIR) .
+	python3 -m pip install --root=$(DESTDIR)/ .
 
-	@echo "Cleaning unnecessary files after Cython compilation"
-	find "$(DESTDIR)/$(PY_INSTALL_PATH)/$(UTIL_NAME)/" -type f -name '*.py' -exec rm --force {} +
-	find "$(DESTDIR)/$(PY_INSTALL_PATH)/$(UTIL_NAME)" -type d -iname "__pycache__" -exec rm --recursive --force {} +
+	@echo "Cleaning unnecessary files after Cython compilation in $(PY_INSTALL_PATH)"
+	find "$(DESTDIR)/$(PY_INSTALL_PATH)/$(UTIL_NAME)/" -type f -name '*.py' -exec rm --force '{}' +
+	find "$(DESTDIR)/$(PY_INSTALL_PATH)/$(UTIL_NAME)" -type d -iname "__pycache__" -exec rm --recursive --force '{}' +
 
-	@echo "Cleaning unnecessary temporary Python files after installation"
-	find "$(DESTDIR)/$(PY_INSTALL_PATH)/$(UTIL_NAME)/" -type f -name '*.tmp.py' -exec rm --force {} +
+	@echo "Cleaning unnecessary temporary Python files after installation in $(PY_INSTALL_PATH)"
+	find "$(DESTDIR)/$(PY_INSTALL_PATH)/$(UTIL_NAME)/" -type f -name '*.tmp.py' -exec rm --force '{}' +
 	rm --recursive --force "$(DESTDIR)/$(PY_INSTALL_PATH)/$(UTIL_NAME)/consts"
 
 	install -D -d -m 0755 $(DESTDIR)/$(LOGS_PATH)
@@ -106,7 +100,7 @@ install: substitute-sources man translate-compile
 	install -D -m 0666 src/templates/sources.templ $(DESTDIR)/$(LIB_PATH)/sources.templ
 
 	cp --recursive locales/translations/ $(DESTDIR)/$(LIB_PATH)/
-	find "$(DESTDIR)/$(LIB_PATH)/translations/" -type f -name '*.po' -exec rm --force {} +
+	find "$(DESTDIR)/$(LIB_PATH)/translations/" -type f -name '*.po' -exec rm --force '{}' +
 
 	if [ ! -f $(DESTDIR)/$(CONFIG_PATH) ]; then \
 		install -D -d -m 0755 $(DESTDIR)/etc/$(UTIL_NAME); \
@@ -115,6 +109,17 @@ install: substitute-sources man translate-compile
 	fi
 
 	install -D -m 0644 man/$(UTIL_NAME).1 $(DESTDIR)/usr/share/man/man1/$(UTIL_NAME).1
+
+man: substitute-sources
+	mkdir -p man
+	if [ ! -f man/$(UTIL_NAME).1 ]; then \
+		argparse-manpage --pyfile src/$(UTIL_NAME)/$(UTIL_NAME)cli.py \
+						--function CodeplagCLI \
+						--author "Codeplag Development Team" \
+						--project-name "$(UTIL_NAME) $(UTIL_VERSION)" \
+						--url "https://github.com/OSLL/code-plagiarism" \
+						--output man/$(UTIL_NAME).1; \
+	fi
 
 package: substitute-debian
 	find $(DEBIAN_PACKAGES_PATH)/$(UTIL_NAME)* > /dev/null 2>&1 || ( \
@@ -141,6 +146,7 @@ pre-commit:
 
 clean-cache:
 	find . -maxdepth 1 -type d | grep -E "pytest_cache" | (xargs rm -r 2> /dev/null || exit 0)
+	find "src/$(UTIL_NAME)/" -type f -name '*.c' -exec rm --force '{}' +
 	rm --recursive --force $(shell find -type d -iname "__pycache__")
 
 clean: clean-cache
@@ -148,29 +154,28 @@ clean: clean-cache
 	rm --force --recursive build/
 	rm --force --recursive dist/
 	rm --force --recursive $(DEBIAN_PACKAGES_PATH)/*
-	rm --force --recursive debian/.debhelper/
-	rm --force --recursive debian/$(UTIL_NAME)-util/
-	rm --force debian/debhelper-build-stamp
-	rm --force debian/files
-	rm --force debian/$(UTIL_NAME)-util.debhelper.log
-	rm --force debian/$(UTIL_NAME)-util.substvars
+	rm --force --recursive ${DEBIAN_PATH}/.debhelper/
+	rm --force --recursive ${DEBIAN_PATH}/$(UTIL_NAME)-util/
+	rm --force ${DEBIAN_PATH}/debhelper-build-stamp
+	rm --force ${DEBIAN_PATH}/files
+	rm --force ${DEBIAN_PATH}/$(UTIL_NAME)-util.debhelper.log
+	rm --force ${DEBIAN_PATH}/$(UTIL_NAME)-util.substvars
 	rm --force --recursive src/$(UTIL_NAME).egg-info
 
 clean-all: clean
 	rm --force src/$(UTIL_NAME)/consts.py
 
-	rm --force docker/base_ubuntu2204.dockerfile
-	rm --force docker/test_ubuntu2204.dockerfile
-	rm --force docker/ubuntu2204.dockerfile
+	rm --force docker/*.dockerfile
 
 	rm --force --recursive $(DEBIAN_PACKAGES_PATH)
-	rm --force debian/changelog
-	rm --force debian/control
-	rm --force debian/preinst
-	rm --force debian/copyright
+	rm --force ${DEBIAN_PATH}/changelog
+	rm --force ${DEBIAN_PATH}/control
+	rm --force ${DEBIAN_PATH}/preinst
+	rm --force ${DEBIAN_PATH}/copyright
 
 uninstall:
-	rm --force /usr/share/man/man1/$(UTIL_NAME).1
+	rm --force $(DESTDIR)/usr/share/man/man1/$(UTIL_NAME).1
+	rm --force --recursive $(DESTDIR)/$(LIB_PATH)
 	pip3 uninstall $(UTIL_NAME) -y
 
 reinstall: uninstall install
