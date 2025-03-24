@@ -7,9 +7,9 @@ USER_GID                ?= $(shell id --group)
 
 BASE_DOCKER_VERSION     := 1.2
 DIST                    := ubuntu22.04
-BASE_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-base-${DIST}:$(BASE_DOCKER_VERSION) | tr A-Z a-z)
-TEST_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-test-${DIST}:$(UTIL_VERSION) | tr A-Z a-z)
-DOCKER_TAG              ?= $(shell echo $(UTIL_NAME)-${DIST}:$(UTIL_VERSION) | tr A-Z a-z)
+BASE_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-base-${DIST}:$(BASE_DOCKER_VERSION))
+TEST_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-test-${DIST}:$(UTIL_VERSION))
+DOCKER_TAG              ?= $(shell echo $(UTIL_NAME)-${DIST}:$(UTIL_VERSION))
 
 PYTHONDONTWRITEBYTECODE := "1"
 PYTHONPATH              := $(PWD)/src/:$(PWD)/test/auto

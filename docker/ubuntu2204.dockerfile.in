@@ -2,6 +2,7 @@ FROM @BASE_DOCKER_TAG@
 
 # TODO: Move to middle docker file or make another solution
 ADD setup.py /usr/src/@UTIL_NAME@/setup.py
+ADD pyproject.toml /usr/src/@UTIL_NAME@/pyproject.toml
 ADD src/ /usr/src/@UTIL_NAME@/src
 ADD README.md /usr/src/@UTIL_NAME@/README.md
 ADD LICENSE /usr/src/@UTIL_NAME@/LICENSE
