@@ -6,6 +6,7 @@ from typing_extensions import Self
 
 from codeplag.consts import GET_FRAZE, SUPPORTED_EXTENSIONS
 from codeplag.display import red_bold
+from codeplag.featurescache import AbstractFeaturesCache
 from codeplag.getfeatures import (
     AbstractGetter,
     get_files_path_from_directory,
@@ -99,17 +100,25 @@ def get_features_from_ast(tree: ast.Module, filepath: Path | str) -> ASTFeatures
     return features
 
 
-def _get_works_from_filepaths(filenames: list[Path]) -> list[ASTFeatures]:
+def _get_works_from_filepaths(filenames: list[Path], features_cache: AbstractFeaturesCache | None) -> list[ASTFeatures]:
     if not filenames:
         return []
 
     works = []
     for filename in filenames:
-        tree = get_ast_from_filename(filename)
-        if not tree:
-            continue
+        features = None
 
-        features = get_features_from_ast(tree, filename)
+        if features_cache is not None:
+            features = features_cache.get_features_from_filepath(filename)
+
+        if features is None:
+            tree = get_ast_from_filename(filename)
+            if not tree:
+                continue
+
+            features = get_features_from_ast(tree, filename)
+            if features_cache is not None:
+                features_cache.save_features(features)
         works.append(features)
 
     return works
@@ -121,29 +130,40 @@ class PyFeaturesGetter(AbstractGetter):
         logger: logging.Logger | None = None,
         repo_regexp: str | None = None,
         path_regexp: str | None = None,
+        features_cache: AbstractFeaturesCache | None = None,
     ) -> None:
         super().__init__(
             extension="py",
             logger=logger,
             repo_regexp=repo_regexp,
             path_regexp=path_regexp,
+            features_cache=features_cache,
         )
 
     def get_from_content(self: Self, work_info: WorkInfo) -> ASTFeatures | None:
-        tree = get_ast_from_content(work_info.code, work_info.link)
-        if tree is not None:
-            features = get_features_from_ast(tree, work_info.link)
-            features.modify_date = work_info.commit.date
-            return features
+        features = None
 
-        self.logger.error("Unsuccessfully attempt to get AST from the file %s.", work_info.link)
+        if self.features_cache is not None:
+            features = self.features_cache.get_features_from_filepath(work_info.link)
+
+        if features is None:
+            tree = get_ast_from_content(work_info.code, work_info.link)
+            if tree is not None:
+                features = get_features_from_ast(tree, work_info.link)
+                features.modify_date = work_info.commit.date
+                if self.features_cache is not None:
+                    self.features_cache.save_features(features)
+            else:
+                self.logger.error("Unsuccessfully attempt to get AST from the file %s.", work_info.link)
+
+        return features
 
     def get_from_files(self: Self, files: list[Path]) -> list[ASTFeatures]:
         if not files:
             return []
 
         self.logger.debug(f"{GET_FRAZE} files")
-        return _get_works_from_filepaths(files)
+        return _get_works_from_filepaths(files, self.features_cache)
 
     def get_works_from_dir(self: Self, directory: Path) -> list[ASTFeatures]:
         filepaths = get_files_path_from_directory(
@@ -152,4 +172,4 @@ class PyFeaturesGetter(AbstractGetter):
             path_regexp=self.path_regexp,
         )
 
-        return _get_works_from_filepaths(filepaths)
+        return _get_works_from_filepaths(filepaths, self.features_cache)

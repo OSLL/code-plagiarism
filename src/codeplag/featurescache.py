@@ -1,9 +1,18 @@
 from abc import abstractmethod, ABC
+from pathlib import Path
 
 from typing_extensions import Self
 
 from codeplag.db.mongo import FeaturesRepository
+from codeplag.getfeatures import set_sha256
 from codeplag.types import ASTFeatures
+
+
+@set_sha256
+def get_work_info(filepath: Path | str) -> ASTFeatures:
+    features = ASTFeatures(filepath)
+
+    return features
 
 
 class AbstractFeaturesCache(ABC):
@@ -12,6 +21,19 @@ class AbstractFeaturesCache(ABC):
 
     @abstractmethod
     def get_features(self: Self, work: ASTFeatures) -> ASTFeatures | None: ...
+
+    def get_features_from_filepath(self: Self, filepath: str | Path) -> ASTFeatures | None:
+        features = get_work_info(filepath)
+
+        return self.get_features(features)
+
+
+class DummyFeaturesCache(AbstractFeaturesCache):
+    def save_features(self: Self, features: ASTFeatures) -> None:
+        return None
+
+    def get_features(self: Self, work: ASTFeatures) -> ASTFeatures | None:
+        return None
 
 
 class MongoFeaturesCache(AbstractFeaturesCache):
