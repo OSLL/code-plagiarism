@@ -1,23 +1,19 @@
-import sys
-import os
 import atexit
-import numpy as np
-from pathlib import Path
-from collections import defaultdict
-from typing import Dict
-from typing_extensions import Self
+
 from pymongo import MongoClient
-from pymongo.errors import ConnectionFailure
 from pymongo.collection import Collection
-from codeplag.featurecache import serialize_features_to_dict
-from codeplag.reporters import serialize_compare_result_to_dict
-from codeplag.types import ASTFeatures, CompareInfo, FastMetrics, StructuresInfo
+from pymongo.errors import ConnectionFailure
+from typing_extensions import Self
+
+from codeplag.consts import DEFAULT_MONGO_HOST, DEFAULT_MONGO_USER, DEFAULT_MONGO_PASS
+from codeplag.featurescache import serialize_features_to_dict
 from codeplag.logger import codeplag_logger as logger
+from codeplag.reporters import serialize_compare_result_to_dict
+from codeplag.types import ASTFeatures, CompareInfo
 
-
-HOST = "localhost"
-USER = "root"
-PASSWORD = "example"
+HOST = DEFAULT_MONGO_HOST
+USER = DEFAULT_MONGO_USER
+PASSWORD = DEFAULT_MONGO_PASS
 
 
 class MongoDBConnection:
@@ -32,7 +28,7 @@ class MongoDBConnection:
             db_name (str): Name of the database to connect to.
         """
 
-        self.url = self.url = f"mongodb://{user}:{password}@{host}:27017/"
+        self.url = f"mongodb://{user}:{password}@{host}:27017/"
         self.db_name = db_name
         self.client = None
         self.db = None
@@ -145,7 +141,6 @@ class FeaturesRepository:
 
         Args:
             work (ASTFeatures): The file for which features are being saved.
-            cmp_for_feature (CompareInfo): An object containing structural data for comparison.
         """
 
         # Forming _id as the file path
