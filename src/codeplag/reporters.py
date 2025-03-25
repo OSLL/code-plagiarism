@@ -168,3 +168,44 @@ def deserialize_compare_result(compare_result: pd.Series) -> CompareInfo:
 
 def _get_current_date() -> str:
     return datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+
+def serialize_compare_result_to_dict(compare_info: CompareInfo) -> dict:
+    assert compare_info.structure is not None
+
+    data = {
+        "fast" : dict(zip(
+            list(compare_info.fast.__annotations__.keys()), list(compare_info.fast)
+        )),
+        "structure" : 
+        {
+            "similarity": compare_info.structure.similarity, 
+            "compliance_matrix": compare_info.structure.compliance_matrix.tolist()
+        }
+    }
+
+    return data
+
+
+def deserialize_compare_result_from_dict(compare_result: dict) -> CompareInfo:
+    assert compare_result is not None
+    structure_d = dict(compare_result["structure"])
+    assert structure_d is not None
+    fast_d = dict(compare_result["fast"])
+    assert fast_d is not None
+
+    compare_info = CompareInfo(
+        fast=FastMetrics(
+            jakkar=fast_d['jakkar'],
+            operators=fast_d['operators'],
+            keywords=fast_d['keywords'],
+            literals=fast_d['literals'],
+            weighted_average=fast_d['weighted_average'],
+        ),
+        structure=StructuresInfo(
+            similarity=structure_d['similarity'],
+            compliance_matrix=np.array(structure_d['compliance_matrix']),
+        ),
+    )
+
+    return compare_info

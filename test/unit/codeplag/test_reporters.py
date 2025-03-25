@@ -8,10 +8,16 @@ from typing_extensions import Self
 
 from codeplag.consts import CSV_REPORT_COLUMNS, CSV_REPORT_FILENAME
 from codeplag.handlers.report import deserialize_compare_result
-from codeplag.reporters import CSVReporter
+from codeplag.reporters import (
+    CSVReporter,
+    serialize_compare_result_to_dict,
+    deserialize_compare_result_from_dict
+)
 from codeplag.types import (
     ASTFeatures,
     CompareInfo,
+    FastMetrics,
+    StructuresInfo
 )
 
 
@@ -69,3 +75,16 @@ class TestCSVReporter:
             deser_compare_info.structure.compliance_matrix.tolist()
             == first_compare_result.structure.compliance_matrix.tolist()
         )
+
+
+def test_compare_info_serialize_deserialize(first_compare_result: CompareInfo) -> None:
+    compare_info_dict = serialize_compare_result_to_dict(first_compare_result)
+    deserialize = deserialize_compare_result_from_dict(compare_info_dict)
+
+    assert deserialize.fast == first_compare_result.fast
+    assert deserialize.structure is not None
+    assert deserialize.structure.similarity == first_compare_result.structure.similarity
+    assert (
+        deserialize.structure.compliance_matrix.tolist()
+        == first_compare_result.structure.compliance_matrix.tolist()
+    )
