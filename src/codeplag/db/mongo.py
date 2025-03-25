@@ -79,15 +79,16 @@ class MongoDBConnection:
 
 
 class ReportRepository:
-    COLLECTION: str = 'compare_info'
+    COLLECTION_NAME: str = 'compare_info'
 
     def __init__(self: Self, mongo_connection: MongoDBConnection) -> None:
         """Initialization of the repository for the compare_info collection."""
 
-        self.collection = mongo_connection.get_collection(self.COLLECTION)
-        if self.collection is None:
-            logger.error('Mongo collection "%s" not found', self.COLLECTION)
-            raise Exception('Mongo collection "%s" not found', self.COLLECTION)
+        collection = mongo_connection.get_collection(self.COLLECTION_NAME)
+        if collection is None:
+            logger.error('Mongo collection "%s" not found', self.COLLECTION_NAME)
+            raise Exception('Mongo collection "%s" not found', self.COLLECTION_NAME)
+        self.collection: Collection = collection
 
     def write_compare_info(
             self: Self,
@@ -139,10 +140,11 @@ class FeaturesRepository:
     def __init__(self: Self, mongo_connection: MongoDBConnection) -> None:
         """Initialization of the repository for the features collection."""
 
-        self.collection = mongo_connection.get_collection(self.COLLECTION)
-        if self.collection is None:
-            logger.error('Mongo collection "%s" not found', self.COLLECTION)
-            raise Exception('Mongo collection "%s" not found', self.COLLECTION)
+        collection = mongo_connection.get_collection(self.COLLECTION_NAME)
+        if collection is None:
+            logger.error('Mongo collection "%s" not found', self.COLLECTION_NAME)
+            raise Exception('Mongo collection "%s" not found', self.COLLECTION_NAME)
+        self.collection: Collection = collection
 
     def write_features(self: Self, work: ASTFeatures) -> None:
         """Insert or update a document in the features collection.
