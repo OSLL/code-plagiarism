@@ -1,11 +1,11 @@
-UTIL_VERSION            := 0.5.16
+UTIL_VERSION            := 0.5.17
 UTIL_NAME               := codeplag
 PWD                     := $(shell pwd)
 
 USER_UID                ?= $(shell id --user)
 USER_GID                ?= $(shell id --group)
 
-BASE_DOCKER_VERSION     := 1.2
+BASE_DOCKER_VERSION     := 1.3
 DIST                    := ubuntu22.04
 BASE_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-base-${DIST}:$(BASE_DOCKER_VERSION))
 TEST_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-test-${DIST}:$(UTIL_VERSION))
@@ -29,9 +29,6 @@ DEBIAN_SUB_FILES        := ${DEBIAN_PATH}/changelog \
                            ${DEBIAN_PATH}/control \
                            ${DEBIAN_PATH}/preinst \
                            ${DEBIAN_PATH}/copyright
-DOCKER_SUB_FILES        := docker/base_ubuntu2204.dockerfile \
-                           docker/test_ubuntu2204.dockerfile \
-                           docker/ubuntu2204.dockerfile
 
 PYTHON_REQUIRED_LIBS    := $(shell python3 setup.py --install-requirements)
 PYTHON_BUILD_LIBS       := $(shell python3 setup.py --build-requirements)
@@ -51,13 +48,10 @@ substitute = @sed \
 		-e "s|@CODEPLAG_LOG_PATH@|${CODEPLAG_LOG_PATH}|g" \
 		-e "s|@DEVEL_SUFFIX@|${DEVEL_SUFFIX}|g" \
 		-e "s|@PYTHON_REQUIRED_LIBS@|${PYTHON_REQUIRED_LIBS}|g" \
-		-e "s|@PYTHON_BUILD_LIBS@|${PYTHON_BUILD_LIBS}|g" \
-		-e "s|@PYTHON_TEST_LIBS@|${PYTHON_TEST_LIBS}|g" \
 		-e "s|@DIST@|${DIST}|g" \
 		-e "s|@LOGS_PATH@|${LOGS_PATH}|g" \
 		-e "s|@LIB_PATH@|${LIB_PATH}|g" \
 		-e "s|@CONFIG_PATH@|${CONFIG_PATH}|g" \
-		-e "s|@BASE_DOCKER_TAG@|${BASE_DOCKER_TAG}|g" \
 		-e "s|@DEBIAN_PACKAGES_PATH@|${DEBIAN_PACKAGES_PATH}|g" \
 		-e "s|@DEB_PKG_NAME@|${DEB_PKG_NAME}|g" \
 		$(1) > $(2) \
@@ -164,8 +158,6 @@ clean: clean-cache
 
 clean-all: clean
 	rm --force src/$(UTIL_NAME)/consts.py
-
-	rm --force docker/*.dockerfile
 
 	rm --force --recursive $(DEBIAN_PACKAGES_PATH)
 	rm --force ${DEBIAN_PATH}/changelog

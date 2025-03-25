@@ -144,6 +144,7 @@ class ExitCode(IntEnum):
     EXIT_KEYBOARD = 1
     EXIT_INVAL = 3
     EXIT_UNKNOWN = 5
+    # Exit codes that are 200 or greater are auxiliary codes.
     EXIT_FOUND_SIM = 200
 
 
