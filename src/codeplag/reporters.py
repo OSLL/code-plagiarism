@@ -11,6 +11,7 @@ import pandas as pd
 from typing_extensions import Self
 
 from codeplag.consts import CSV_REPORT_COLUMNS, CSV_REPORT_FILENAME, CSV_SAVE_TICK_SEC
+from codeplag.db.mongo import ReportRepository
 from codeplag.logger import codeplag_logger as logger
 from codeplag.types import (
     ASTFeatures,
@@ -35,6 +36,34 @@ class AbstractReporter(ABC):
         first_work: ASTFeatures,
         second_work: ASTFeatures,
     ) -> CompareInfo | None: ...
+
+
+class MongoReporter(AbstractReporter):
+    def __init__(self: Self, repository: ReportRepository) -> None:
+        self.repository = repository
+
+    def save_result(
+        self: Self,
+        first_work: ASTFeatures,
+        second_work: ASTFeatures,
+        compare_info: CompareInfo,
+    ) -> None:
+        """Updates the cache with new comparisons and writes it to the MongoDB.
+
+        Args:
+            first_work (ASTFeatures): Contains the first work metadata.
+            second_work (ASTFeatures): Contains the second work metadata.
+            compare_info (CompareInfo): Contains information about comparisons
+              between the first and second works.
+        """
+        self.repository.write_compare_info(first_work, second_work, compare_info)
+
+    def get_result(
+        self: Self,
+        first_work: ASTFeatures,
+        second_work: ASTFeatures,
+    ) -> CompareInfo | None:
+        return None
 
 
 class CSVReporter(AbstractReporter):
@@ -94,7 +123,9 @@ class CSVReporter(AbstractReporter):
         self.__need_update = False
 
     def get_result(
-        self: Self, work1: ASTFeatures, work2: ASTFeatures
+        self: Self,
+        work1: ASTFeatures,
+        work2: ASTFeatures
     ) -> CompareInfo | None:
         cache_val = self.__df_report[
             (self.__df_report.first_path == str(work1.filepath))

@@ -2,15 +2,32 @@ from abc import abstractmethod, ABC
 
 from typing_extensions import Self
 
+from codeplag.db.mongo import FeaturesRepository
 from codeplag.types import ASTFeatures
 
 
-class AbstractFeatureCache(ABC):
+class AbstractFeaturesCache(ABC):
     @abstractmethod
-    def save_features(self: Self, feature: ASTFeatures) -> None: ...
+    def save_features(self: Self, features: ASTFeatures) -> None: ...
 
     @abstractmethod
     def get_features(self: Self, work: ASTFeatures) -> ASTFeatures | None: ...
+
+
+class MongoFeaturesCache(AbstractFeaturesCache):
+    def __init__(self: Self, repository: FeaturesRepository) -> None:
+        self.repository = repository
+
+    def save_features(self: Self, features: ASTFeatures) -> None:
+        """Updates the cache with new work metadata and writes it to the MongoDB.
+
+        Args:
+            features (ASTFeatures): Contains work metadata.
+        """
+        self.repository.write_features(features)
+
+    def get_features(self: Self, work: ASTFeatures) -> ASTFeatures | None:
+        return None
 
 
 def serialize_features_to_dict(work: ASTFeatures) -> dict:
