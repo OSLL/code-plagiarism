@@ -132,13 +132,13 @@ class ReportRepository:
         logger.debug(f"Document for ({first_path}, {second_path}) successfully inserted/updated.")
 
 
-class FeatureRepository:
+class FeaturesRepository:
     def __init__(self: Self, mongo_connection: MongoDBConnection) -> None:
         """Initialization of the repository for the features collection."""
 
         self.collection = mongo_connection.get_collection("features")
 
-    def write_features(self: Self, work: ASTFeatures, cmp_for_feature: CompareInfo) -> None:
+    def write_features(self: Self, work: ASTFeatures) -> None:
         """Insert or update a document in the features collection.
 
         The primary key (_id) is formed using the file path.
@@ -157,7 +157,7 @@ class FeatureRepository:
         document = {
             "_id": document_id,
             "modify_date": work.modify_date,
-            "sha256": serialized_work.__getitem__("sha256"),
+            "sha256": work.sha256,
             "features": serialized_work
         }
 
