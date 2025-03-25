@@ -97,7 +97,7 @@ class AbstractGetter(ABC):
         self.logger = logger if logger is not None else logging.getLogger(UTIL_NAME)
         self.extension: Extension = extension
         self.github_parser: GitHubParser | None = None
-        self.features_cache: AbstractFeaturesCache = features_cache
+        self.features_cache: AbstractFeaturesCache | None = features_cache
 
         try:
             if repo_regexp is not None:
