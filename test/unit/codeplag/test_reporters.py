@@ -15,9 +15,7 @@ from codeplag.reporters import (
 )
 from codeplag.types import (
     ASTFeatures,
-    CompareInfo,
-    FastMetrics,
-    StructuresInfo
+    CompareInfo
 )
 
 
