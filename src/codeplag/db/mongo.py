@@ -13,8 +13,6 @@ from codeplag.reporters import serialize_compare_result_to_dict
 from codeplag.types import ASTFeatures, CompareInfo, FastMetrics, StructuresInfo
 from codeplag.logger import codeplag_logger as logger
 
-# from ..reporters import serialize_compare_result_to_dict, deserialize_compare_result_from_dict
-
 
 HOST = "localhost"
 USER = "root"
