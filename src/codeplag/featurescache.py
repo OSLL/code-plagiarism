@@ -3,14 +3,12 @@ from pathlib import Path
 
 from typing_extensions import Self
 
-from codeplag.db.mongo import FeaturesRepository
-from codeplag.getfeatures import set_sha256
 from codeplag.types import ASTFeatures
 
 
-@set_sha256
 def get_work_info(filepath: Path | str) -> ASTFeatures:
     features = ASTFeatures(filepath)
+    features.sha256 = features.get_sha256()
 
     return features
 
@@ -26,30 +24,6 @@ class AbstractFeaturesCache(ABC):
         features = get_work_info(filepath)
 
         return self.get_features(features)
-
-
-class DummyFeaturesCache(AbstractFeaturesCache):
-    def save_features(self: Self, features: ASTFeatures) -> None:
-        return None
-
-    def get_features(self: Self, work: ASTFeatures) -> ASTFeatures | None:
-        return None
-
-
-class MongoFeaturesCache(AbstractFeaturesCache):
-    def __init__(self: Self, repository: FeaturesRepository) -> None:
-        self.repository = repository
-
-    def save_features(self: Self, features: ASTFeatures) -> None:
-        """Updates the cache with new work metadata and writes it to the MongoDB.
-
-        Args:
-            features (ASTFeatures): Contains work metadata.
-        """
-        self.repository.write_features(features)
-
-    def get_features(self: Self, work: ASTFeatures) -> ASTFeatures | None:
-        return None
 
 
 def serialize_features_to_dict(work: ASTFeatures) -> dict:

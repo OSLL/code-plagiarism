@@ -100,7 +100,8 @@ def get_features_from_ast(tree: ast.Module, filepath: Path | str) -> ASTFeatures
     return features
 
 
-def _get_works_from_filepaths(filenames: list[Path], features_cache: AbstractFeaturesCache | None) -> list[ASTFeatures]:
+def _get_works_from_filepaths(filenames: list[Path],
+                              features_cache: AbstractFeaturesCache | None) -> list[ASTFeatures]:
     if not filenames:
         return []
 
@@ -154,7 +155,8 @@ class PyFeaturesGetter(AbstractGetter):
                 if self.features_cache is not None:
                     self.features_cache.save_features(features)
             else:
-                self.logger.error("Unsuccessfully attempt to get AST from the file %s.", work_info.link)
+                self.logger.error("Unsuccessfully attempt to get AST from the file %s.",
+                                  work_info.link)
 
         return features
 

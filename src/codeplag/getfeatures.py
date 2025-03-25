@@ -13,7 +13,7 @@ from codeplag.consts import (
     GET_FRAZE,
     UTIL_NAME,
 )
-from codeplag.featurescache import AbstractFeaturesCache, DummyFeaturesCache
+from codeplag.featurescache import AbstractFeaturesCache
 from codeplag.types import ASTFeatures, Extension, Extensions
 from webparsers.github_parser import GitHubParser
 from webparsers.types import WorkInfo
@@ -97,7 +97,7 @@ class AbstractGetter(ABC):
         self.logger = logger if logger is not None else logging.getLogger(UTIL_NAME)
         self.extension: Extension = extension
         self.github_parser: GitHubParser | None = None
-        self.features_cache = features_cache if features_cache is not None else DummyFeaturesCache()
+        self.features_cache: AbstractFeaturesCache = features_cache
 
         try:
             if repo_regexp is not None:

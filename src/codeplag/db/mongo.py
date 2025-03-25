@@ -6,9 +6,9 @@ from pymongo.errors import ConnectionFailure
 from typing_extensions import Self
 
 from codeplag.consts import DEFAULT_MONGO_HOST, DEFAULT_MONGO_USER, DEFAULT_MONGO_PASS
-from codeplag.featurescache import serialize_features_to_dict
+from codeplag.featurescache import serialize_features_to_dict, AbstractFeaturesCache
 from codeplag.logger import codeplag_logger as logger
-from codeplag.reporters import serialize_compare_result_to_dict
+from codeplag.reporters import serialize_compare_result_to_dict, AbstractReporter
 from codeplag.types import ASTFeatures, CompareInfo
 
 HOST = DEFAULT_MONGO_HOST
@@ -163,3 +163,47 @@ class FeaturesRepository:
             upsert=True
         )
         logger.debug(f"Document for path {document_id} successfully inserted/updated.")
+
+
+class MongoReporter(AbstractReporter):
+    def __init__(self: Self, repository: ReportRepository) -> None:
+        self.repository = repository
+
+    def save_result(
+        self: Self,
+        first_work: ASTFeatures,
+        second_work: ASTFeatures,
+        compare_info: CompareInfo,
+    ) -> None:
+        """Updates the cache with new comparisons and writes it to the MongoDB.
+
+        Args:
+            first_work (ASTFeatures): Contains the first work metadata.
+            second_work (ASTFeatures): Contains the second work metadata.
+            compare_info (CompareInfo): Contains information about comparisons
+              between the first and second works.
+        """
+        self.repository.write_compare_info(first_work, second_work, compare_info)
+
+    def get_result(
+        self: Self,
+        first_work: ASTFeatures,
+        second_work: ASTFeatures,
+    ) -> CompareInfo | None:
+        return None
+
+
+class MongoFeaturesCache(AbstractFeaturesCache):
+    def __init__(self: Self, repository: FeaturesRepository) -> None:
+        self.repository = repository
+
+    def save_features(self: Self, features: ASTFeatures) -> None:
+        """Updates the cache with new work metadata and writes it to the MongoDB.
+
+        Args:
+            features (ASTFeatures): Contains work metadata.
+        """
+        self.repository.write_features(features)
+
+    def get_features(self: Self, work: ASTFeatures) -> ASTFeatures | None:
+        return None
