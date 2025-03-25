@@ -135,7 +135,7 @@ class ReportRepository:
 
 
 class FeaturesRepository:
-    COLLECTION: str = 'compare_info'
+    COLLECTION_NAME: str = 'compare_info'
 
     def __init__(self: Self, mongo_connection: MongoDBConnection) -> None:
         """Initialization of the repository for the features collection."""
