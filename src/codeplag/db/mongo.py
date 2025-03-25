@@ -9,6 +9,7 @@ from typing_extensions import Self
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 from pymongo.collection import Collection
+from codeplag.featurecache import serialize_features_to_dict
 from codeplag.reporters import serialize_compare_result_to_dict
 from codeplag.types import ASTFeatures, CompareInfo, FastMetrics, StructuresInfo
 from codeplag.logger import codeplag_logger as logger
@@ -115,8 +116,6 @@ class ReportRepository:
 
         document = {
             "_id": document_id,
-            "first_path": first_path,
-            "second_path": second_path,
             "first_sha256": work1.sha256,
             "second_sha256": work2.sha256,
             "first_modify_date": work1.modify_date,
@@ -139,7 +138,7 @@ class FeatureRepository:
 
         self.collection = mongo_connection.get_collection("features")
 
-    def write_feature(self: Self, work: ASTFeatures, cmp_for_feature: CompareInfo) -> None:
+    def write_features(self: Self, work: ASTFeatures, cmp_for_feature: CompareInfo) -> None:
         """Insert or update a document in the features collection.
 
         The primary key (_id) is formed using the file path.
@@ -152,21 +151,14 @@ class FeatureRepository:
         # Forming _id as the file path
         document_id = str(work.filepath)
 
-        # Using the serialize_compare_result_to_dict function to convert data
-        serialized_compare_info = serialize_compare_result_to_dict(cmp_for_feature)
+        # Using function serialize_features_to_dict to convert data
+        serialized_work = serialize_features_to_dict(work)
 
         document = {
             "_id": document_id,
             "modify_date": work.modify_date,
-            "sha256": work.sha256,
-            "features": {
-                "head_nodes": work.head_nodes,
-                "structure": {
-                    "similarity": cmp_for_feature.structure.similarity,
-                    "compliance_matrix": cmp_for_feature.structure.compliance_matrix.tolist(),
-                }
-            },
-            "compare_info": serialized_compare_info,
+            "sha256": serialized_work.__getitem__("sha256"),
+            "features": serialized_work
         }
 
         # Insert or update the document
