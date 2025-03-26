@@ -93,11 +93,7 @@ class CSVReporter(AbstractReporter):
         self.__df_report.to_csv(self.reports_path, sep=";")
         self.__need_update = False
 
-    def get_result(
-        self: Self,
-        work1: ASTFeatures,
-        work2: ASTFeatures
-    ) -> CompareInfo | None:
+    def get_result(self: Self, work1: ASTFeatures, work2: ASTFeatures) -> CompareInfo | None:
         cache_val = self.__df_report[
             (self.__df_report.first_path == str(work1.filepath))
             & (self.__df_report.second_path == str(work2.filepath))
@@ -176,13 +172,17 @@ def serialize_compare_result_to_dict(compare_info: CompareInfo) -> dict:
     assert compare_info.structure is not None
 
     data = {
-        "fast": dict(zip(
-            list(compare_info.fast.__annotations__.keys()), list(compare_info.fast)
-        )),
+        "fast": dict(
+            zip(
+                list(compare_info.fast.__annotations__.keys()),
+                list(compare_info.fast),
+                strict=False,
+            )
+        ),
         "structure": {
             "similarity": compare_info.structure.similarity,
-            "compliance_matrix": compare_info.structure.compliance_matrix.tolist()
-        }
+            "compliance_matrix": compare_info.structure.compliance_matrix.tolist(),
+        },
     }
 
     return data
@@ -197,15 +197,15 @@ def deserialize_compare_result_from_dict(compare_result: dict) -> CompareInfo:
 
     compare_info = CompareInfo(
         fast=FastMetrics(
-            jakkar=float(fast_d['jakkar']),
-            operators=float(fast_d['operators']),
-            keywords=float(fast_d['keywords']),
-            literals=float(fast_d['literals']),
-            weighted_average=float(fast_d['weighted_average']),
+            jakkar=float(fast_d["jakkar"]),
+            operators=float(fast_d["operators"]),
+            keywords=float(fast_d["keywords"]),
+            literals=float(fast_d["literals"]),
+            weighted_average=float(fast_d["weighted_average"]),
         ),
         structure=StructuresInfo(
-            similarity=float(structure_d['similarity']),
-            compliance_matrix=np.array(structure_d['compliance_matrix']),
+            similarity=float(structure_d["similarity"]),
+            compliance_matrix=np.array(structure_d["compliance_matrix"]),
         ),
     )
 

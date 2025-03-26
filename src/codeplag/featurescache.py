@@ -1,4 +1,4 @@
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 from pathlib import Path
 
 from typing_extensions import Self
@@ -29,15 +29,15 @@ class AbstractFeaturesCache(ABC):
 def serialize_features_to_dict(work: ASTFeatures) -> dict:
     serialized_dict = work.__dict__
 
-    serialized_dict['filepath'] = str(work.filepath)
+    serialized_dict["filepath"] = str(work.filepath)
 
     return serialized_dict
 
 
 def deserialize_features_from_dict(work_dict: dict) -> ASTFeatures:
-    features = ASTFeatures(work_dict['filepath'])
+    features = ASTFeatures(work_dict["filepath"])
     keys = list(work_dict.keys())
-    keys.pop(keys.index('filepath'))
+    keys.pop(keys.index("filepath"))
     for key in keys:
         setattr(features, key, work_dict.get(key))
     return features

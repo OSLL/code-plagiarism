@@ -50,8 +50,9 @@ def get_cursor_from_file(filepath: Path, args: list[str] | None = None) -> Curso
     return file_obj.cursor
 
 
-def _get_works_from_filepaths(filepaths: list[Path], features_cache: AbstractFeaturesCache | None,
-                              compile_args: list[str]) -> list[ASTFeatures]:
+def _get_works_from_filepaths(
+    filepaths: list[Path], features_cache: AbstractFeaturesCache | None, compile_args: list[str]
+) -> list[ASTFeatures]:
     if not filepaths:
         return []
 
@@ -78,11 +79,11 @@ def _get_works_from_filepaths(filepaths: list[Path], features_cache: AbstractFea
 
 class CFeaturesGetter(AbstractGetter):
     def __init__(
-            self: Self,
-            logger: logging.Logger | None = None,
-            repo_regexp: str | None = None,
-            path_regexp: str | None = None,
-            features_cache: AbstractFeaturesCache | None = None,
+        self: Self,
+        logger: logging.Logger | None = None,
+        repo_regexp: str | None = None,
+        path_regexp: str | None = None,
+        features_cache: AbstractFeaturesCache | None = None,
     ) -> None:
         super().__init__(
             extension="cpp",

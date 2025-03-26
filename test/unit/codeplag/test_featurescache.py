@@ -1,6 +1,6 @@
-from codeplag.featurescache import serialize_features_to_dict, deserialize_features_from_dict
 from typing_extensions import Self
 
+from codeplag.featurescache import deserialize_features_from_dict, serialize_features_to_dict
 from codeplag.types import ASTFeatures
 
 
