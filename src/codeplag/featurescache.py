@@ -4,7 +4,7 @@ from pathlib import Path
 
 from typing_extensions import Self
 
-from codeplag.types import ASTFeatures, NodeStructurePlace, NodeCodePlace
+from codeplag.types import ASTFeatures, NodeCodePlace, NodeStructurePlace
 
 
 def get_work_info(filepath: Path | str) -> ASTFeatures:
