@@ -159,6 +159,7 @@ class FeaturesRepository:
         }
 
         # Insert or update the document
+        logger.info(f"Inserting {document}")
         self.collection.update_one({"_id": document_id}, {"$set": document}, upsert=True)
         logger.debug(f"Document for path {document_id} successfully inserted/updated.")
 
