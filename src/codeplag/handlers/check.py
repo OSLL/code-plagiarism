@@ -8,12 +8,12 @@ from datetime import timedelta
 from itertools import combinations
 from pathlib import Path
 from time import monotonic
-from pymongo.errors import ConnectionFailure
 
 import numpy as np
 import pandas as pd
 from decouple import Config, RepositoryEnv
 from numpy.typing import NDArray
+from pymongo.errors import ConnectionFailure
 from requests import Session
 from typing_extensions import Self
 
@@ -88,7 +88,7 @@ class WorksComparator:
             try:
                 self.connection = MongoDBConnection()
             except ConnectionFailure:
-                pass
+                logger.debug("Can't connect to MongoDB")
 
         if extension == "py":
             FeaturesGetter = PyFeaturesGetter
