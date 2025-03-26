@@ -1,19 +1,17 @@
-from unittest.mock import MagicMock
+from codeplag.featurescache import serialize_features_to_dict, deserialize_features_from_dict
 from typing_extensions import Self
 
-from codeplag.featurecache import serialize_feratures_to_dict, deserialize_feratures_from_dict
 from codeplag.types import ASTFeatures
 
 
 class TestSerialization:
-    def test_serialize_deserialize_astfeatures(
-        self: Self,
-        first_features: ASTFeatures
-    ) -> None:
-        serialized = serialize_feratures_to_dict(first_features)
-        deserialized = deserialize_feratures_from_dict(serialized)
+    def test_serialize_deserialize_astfeatures(self: Self, first_features: ASTFeatures) -> None:
+        serialized = serialize_features_to_dict(first_features)
+        deserialized = deserialize_features_from_dict(serialized)
 
+        assert first_features == deserialized
         assert first_features.sha256 == deserialized.sha256
+        assert first_features.modify_date == deserialized.modify_date
         assert first_features.count_of_nodes == deserialized.count_of_nodes
         assert first_features.head_nodes == deserialized.head_nodes
         assert first_features.operators == deserialized.operators

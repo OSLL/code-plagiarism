@@ -1,23 +1,19 @@
-import sys
-import os
 import atexit
-import numpy as np
-from pathlib import Path
-from collections import defaultdict
-from typing import Dict
-from typing_extensions import Self
+
 from pymongo import MongoClient
-from pymongo.errors import ConnectionFailure
 from pymongo.collection import Collection
-from codeplag.featurecache import serialize_features_to_dict
-from codeplag.reporters import serialize_compare_result_to_dict
-from codeplag.types import ASTFeatures, CompareInfo, FastMetrics, StructuresInfo
+from pymongo.errors import ConnectionFailure
+from typing_extensions import Self
+
+from codeplag.consts import DEFAULT_MONGO_HOST, DEFAULT_MONGO_USER, DEFAULT_MONGO_PASS
+from codeplag.featurescache import serialize_features_to_dict, AbstractFeaturesCache
 from codeplag.logger import codeplag_logger as logger
+from codeplag.reporters import serialize_compare_result_to_dict, AbstractReporter
+from codeplag.types import ASTFeatures, CompareInfo
 
-
-HOST = "localhost"
-USER = "root"
-PASSWORD = "example"
+HOST = DEFAULT_MONGO_HOST
+USER = DEFAULT_MONGO_USER
+PASSWORD = DEFAULT_MONGO_PASS
 
 
 class MongoDBConnection:
@@ -32,7 +28,7 @@ class MongoDBConnection:
             db_name (str): Name of the database to connect to.
         """
 
-        self.url = self.url = f"mongodb://{user}:{password}@{host}:27017/"
+        self.url = f"mongodb://{user}:{password}@{host}:27017/"
         self.db_name = db_name
         self.client = None
         self.db = None
@@ -69,7 +65,7 @@ class MongoDBConnection:
             self.client.close()
             logger.debug("MongoDB connection closed.")
 
-    def get_collection(self: Self, collection_name: str) -> Collection:
+    def get_collection(self: Self, collection_name: str) -> Collection | None:
         """Get a collection by name from the current database.
 
         Args:
@@ -79,14 +75,20 @@ class MongoDBConnection:
             Collection: The MongoDB collection object.
         """
 
-        return self.db[collection_name]
+        return self.db[collection_name] if self.db is not None else None
 
 
 class ReportRepository:
+    COLLECTION_NAME: str = 'compare_info'
+
     def __init__(self: Self, mongo_connection: MongoDBConnection) -> None:
         """Initialization of the repository for the compare_info collection."""
 
-        self.collection = mongo_connection.get_collection("compare_info")
+        collection = mongo_connection.get_collection(self.COLLECTION_NAME)
+        if collection is None:
+            logger.error('Mongo collection "%s" not found', self.COLLECTION_NAME)
+            raise Exception('Mongo collection "%s" not found', self.COLLECTION_NAME)
+        self.collection: Collection = collection
 
     def write_compare_info(
             self: Self,
@@ -133,10 +135,16 @@ class ReportRepository:
 
 
 class FeaturesRepository:
+    COLLECTION_NAME: str = 'compare_info'
+
     def __init__(self: Self, mongo_connection: MongoDBConnection) -> None:
         """Initialization of the repository for the features collection."""
 
-        self.collection = mongo_connection.get_collection("features")
+        collection = mongo_connection.get_collection(self.COLLECTION_NAME)
+        if collection is None:
+            logger.error('Mongo collection "%s" not found', self.COLLECTION_NAME)
+            raise Exception('Mongo collection "%s" not found', self.COLLECTION_NAME)
+        self.collection: Collection = collection
 
     def write_features(self: Self, work: ASTFeatures) -> None:
         """Insert or update a document in the features collection.
@@ -145,7 +153,6 @@ class FeaturesRepository:
 
         Args:
             work (ASTFeatures): The file for which features are being saved.
-            cmp_for_feature (CompareInfo): An object containing structural data for comparison.
         """
 
         # Forming _id as the file path
@@ -168,3 +175,47 @@ class FeaturesRepository:
             upsert=True
         )
         logger.debug(f"Document for path {document_id} successfully inserted/updated.")
+
+
+class MongoReporter(AbstractReporter):
+    def __init__(self: Self, repository: ReportRepository) -> None:
+        self.repository = repository
+
+    def save_result(
+        self: Self,
+        first_work: ASTFeatures,
+        second_work: ASTFeatures,
+        compare_info: CompareInfo,
+    ) -> None:
+        """Updates the cache with new comparisons and writes it to the MongoDB.
+
+        Args:
+            first_work (ASTFeatures): Contains the first work metadata.
+            second_work (ASTFeatures): Contains the second work metadata.
+            compare_info (CompareInfo): Contains information about comparisons
+              between the first and second works.
+        """
+        self.repository.write_compare_info(first_work, second_work, compare_info)
+
+    def get_result(
+        self: Self,
+        first_work: ASTFeatures,
+        second_work: ASTFeatures,
+    ) -> CompareInfo | None:
+        return None
+
+
+class MongoFeaturesCache(AbstractFeaturesCache):
+    def __init__(self: Self, repository: FeaturesRepository) -> None:
+        self.repository = repository
+
+    def save_features(self: Self, features: ASTFeatures) -> None:
+        """Updates the cache with new work metadata and writes it to the MongoDB.
+
+        Args:
+            features (ASTFeatures): Contains work metadata.
+        """
+        self.repository.write_features(features)
+
+    def get_features(self: Self, work: ASTFeatures) -> ASTFeatures | None:
+        return None

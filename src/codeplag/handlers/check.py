@@ -23,8 +23,16 @@ from codeplag.consts import (
     DEFAULT_MODE,
     DEFAULT_NGRAMS_LENGTH,
     SUPPORTED_EXTENSIONS,
+    DEFAULT_DB_ENABLED
 )
 from codeplag.cplag.utils import CFeaturesGetter
+from codeplag.db.mongo import (
+    ReportRepository,
+    MongoDBConnection,
+    FeaturesRepository,
+    MongoFeaturesCache,
+    MongoReporter,
+)
 from codeplag.display import (
     ComplexProgress,
     Progress,
@@ -34,7 +42,7 @@ from codeplag.display import (
 from codeplag.getfeatures import AbstractGetter
 from codeplag.logger import codeplag_logger as logger
 from codeplag.pyplag.utils import PyFeaturesGetter
-from codeplag.reporters import CSVReporter
+from codeplag.reporters import AbstractReporter, CSVReporter
 from codeplag.types import (
     ASTFeatures,
     CompareInfo,
@@ -74,6 +82,10 @@ class WorksComparator:
               searches on all branches of the repository.
 
         """
+        self.connection: MongoDBConnection | None = None
+        if DEFAULT_DB_ENABLED:
+            self.connection = MongoDBConnection()
+
         if extension == "py":
             FeaturesGetter = PyFeaturesGetter
         elif extension == "cpp":
@@ -81,10 +93,17 @@ class WorksComparator:
         else:
             raise Exception(f"Unsupported extension '{extension}'.")
 
+        features_cache = None
+        if self.connection is not None:
+            repository = FeaturesRepository(self.connection)
+
+            features_cache = MongoFeaturesCache(repository)
+
         self.features_getter: AbstractGetter = FeaturesGetter(
             logger=logger,
             repo_regexp=repo_regexp,
             path_regexp=path_regexp,
+            features_cache=features_cache
         )
         self.mode: Mode = mode
         self.progress: Progress | None = None
@@ -102,7 +121,12 @@ class WorksComparator:
             DEFAULT_MAX_DEPTH,
         )
         reports = settings_conf.get("reports")
-        if reports is not None:
+        self.reporter: AbstractReporter | None = None
+        if self.connection is not None:
+            repository = ReportRepository(self.connection)
+
+            self.reporter = MongoReporter(repository)
+        elif reports is not None:
             reports_extension = settings_conf["reports_extension"]
             if reports_extension == "csv":
                 Reporter = CSVReporter
@@ -297,7 +321,7 @@ class WorksComparator:
 
         work1, work2 = sorted([work1, work2])
         metrics = None
-        if isinstance(self.reporter, CSVReporter):
+        if self.reporter is not None:
             metrics = self.reporter.get_result(work1, work2)
         if metrics is None:
             future = self._create_future_compare(executor, work1, work2)

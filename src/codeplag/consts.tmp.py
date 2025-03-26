@@ -42,6 +42,10 @@ DEFAULT_WORKERS: Final[int] = os.cpu_count() or 1
 DEFAULT_MODE: Final[Mode] = "many_to_many"
 DEFAULT_MAX_DEPTH: Final[MaxDepth] = 999
 DEFAULT_REPORT_TYPE: Final[ReportType] = "general"
+DEFAULT_DB_ENABLED: Final[bool] = True
+DEFAULT_MONGO_HOST: Final[str] = "localhost"
+DEFAULT_MONGO_USER: Final[str] = "root"
+DEFAULT_MONGO_PASS: Final[str] = "example"
 # =============
 
 GET_FRAZE: Final[str] = "Getting works features from"
