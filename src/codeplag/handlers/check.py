@@ -13,25 +13,26 @@ import numpy as np
 import pandas as pd
 from decouple import Config, RepositoryEnv
 from numpy.typing import NDArray
+from pymongo.errors import ConnectionFailure
 from requests import Session
 from typing_extensions import Self
 
 from codeplag.algorithms.compare import compare_works
 from codeplag.config import read_settings_conf
 from codeplag.consts import (
+    DEFAULT_DB_ENABLED,
     DEFAULT_MAX_DEPTH,
     DEFAULT_MODE,
     DEFAULT_NGRAMS_LENGTH,
     SUPPORTED_EXTENSIONS,
-    DEFAULT_DB_ENABLED
 )
 from codeplag.cplag.utils import CFeaturesGetter
 from codeplag.db.mongo import (
-    ReportRepository,
-    MongoDBConnection,
     FeaturesRepository,
+    MongoDBConnection,
     MongoFeaturesCache,
     MongoReporter,
+    ReportRepository,
 )
 from codeplag.display import (
     ComplexProgress,
@@ -84,7 +85,10 @@ class WorksComparator:
         """
         self.connection: MongoDBConnection | None = None
         if DEFAULT_DB_ENABLED:
-            self.connection = MongoDBConnection()
+            try:
+                self.connection = MongoDBConnection()
+            except ConnectionFailure:
+                logger.debug("Can't connect to MongoDB")
 
         if extension == "py":
             FeaturesGetter = PyFeaturesGetter
@@ -103,7 +107,7 @@ class WorksComparator:
             logger=logger,
             repo_regexp=repo_regexp,
             path_regexp=path_regexp,
-            features_cache=features_cache
+            features_cache=features_cache,
         )
         self.mode: Mode = mode
         self.progress: Progress | None = None

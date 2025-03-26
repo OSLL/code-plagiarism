@@ -5,10 +5,10 @@ from pymongo.collection import Collection
 from pymongo.errors import ConnectionFailure
 from typing_extensions import Self
 
-from codeplag.consts import DEFAULT_MONGO_HOST, DEFAULT_MONGO_USER, DEFAULT_MONGO_PASS
-from codeplag.featurescache import serialize_features_to_dict, AbstractFeaturesCache
+from codeplag.consts import DEFAULT_MONGO_HOST, DEFAULT_MONGO_PASS, DEFAULT_MONGO_USER
+from codeplag.featurescache import AbstractFeaturesCache, serialize_features_to_dict
 from codeplag.logger import codeplag_logger as logger
-from codeplag.reporters import serialize_compare_result_to_dict, AbstractReporter
+from codeplag.reporters import AbstractReporter, serialize_compare_result_to_dict
 from codeplag.types import ASTFeatures, CompareInfo
 
 HOST = DEFAULT_MONGO_HOST
@@ -17,8 +17,13 @@ PASSWORD = DEFAULT_MONGO_PASS
 
 
 class MongoDBConnection:
-    def __init__(self: Self, host: str = HOST, user: str = USER,
-                 password: str = PASSWORD, db_name: str = "new_database") -> None:
+    def __init__(
+        self: Self,
+        host: str = HOST,
+        user: str = USER,
+        password: str = PASSWORD,
+        db_name: str = "new_database",
+    ) -> None:
         """Initialize the connection to MongoDB.
 
         Args:
@@ -27,7 +32,6 @@ class MongoDBConnection:
             password (str): MongoDB password for authentication.
             db_name (str): Name of the database to connect to.
         """
-
         self.url = f"mongodb://{user}:{password}@{host}:27017/"
         self.db_name = db_name
         self.client = None
@@ -45,10 +49,9 @@ class MongoDBConnection:
         Attempts to connect to the MongoDB server and logs the result.
         Raises an exception if the connection fails.
         """
-
         try:
             self.client = MongoClient(self.url, serverSelectionTimeoutMS=5000)
-            self.client.admin.command('ping')  # Checking the connection
+            self.client.admin.command("ping")  # Checking the connection
             logger.debug("Successfully connected to MongoDB!")
             self.db = self.client[self.db_name]
         except ConnectionFailure as e:
@@ -60,7 +63,6 @@ class MongoDBConnection:
 
         Ensures that the MongoDB client is properly closed upon program termination.
         """
-
         if self.client:
             self.client.close()
             logger.debug("MongoDB connection closed.")
@@ -74,16 +76,14 @@ class MongoDBConnection:
         Returns:
             Collection: The MongoDB collection object.
         """
-
         return self.db[collection_name] if self.db is not None else None
 
 
 class ReportRepository:
-    COLLECTION_NAME: str = 'compare_info'
+    COLLECTION_NAME: str = "compare_info"
 
     def __init__(self: Self, mongo_connection: MongoDBConnection) -> None:
         """Initialization of the repository for the compare_info collection."""
-
         collection = mongo_connection.get_collection(self.COLLECTION_NAME)
         if collection is None:
             logger.error('Mongo collection "%s" not found', self.COLLECTION_NAME)
@@ -91,10 +91,7 @@ class ReportRepository:
         self.collection: Collection = collection
 
     def write_compare_info(
-            self: Self,
-            work1: ASTFeatures,
-            work2: ASTFeatures,
-            compare_info: CompareInfo
+        self: Self, work1: ASTFeatures, work2: ASTFeatures, compare_info: CompareInfo
     ) -> None:
         """Insert or update a document in the compare_info collection.
 
@@ -105,7 +102,6 @@ class ReportRepository:
             work2 (ASTFeatures): The second file for comparison.
             compare_info (CompareInfo): Information about the comparison results.
         """
-
         # Sorting paths to create a unique primary key
         work1, work2 = sorted([work1, work2])
         first_path, second_path = [str(work1.filepath), str(work2.filepath)]
@@ -126,20 +122,15 @@ class ReportRepository:
         }
 
         # Insert or update the document
-        self.collection.update_one(
-            {"_id": document_id},
-            {"$set": document},
-            upsert=True
-        )
+        self.collection.update_one({"_id": document_id}, {"$set": document}, upsert=True)
         logger.debug(f"Document for ({first_path}, {second_path}) successfully inserted/updated.")
 
 
 class FeaturesRepository:
-    COLLECTION_NAME: str = 'compare_info'
+    COLLECTION_NAME: str = "compare_info"
 
     def __init__(self: Self, mongo_connection: MongoDBConnection) -> None:
         """Initialization of the repository for the features collection."""
-
         collection = mongo_connection.get_collection(self.COLLECTION_NAME)
         if collection is None:
             logger.error('Mongo collection "%s" not found', self.COLLECTION_NAME)
@@ -154,7 +145,6 @@ class FeaturesRepository:
         Args:
             work (ASTFeatures): The file for which features are being saved.
         """
-
         # Forming _id as the file path
         document_id = str(work.filepath)
 
@@ -165,15 +155,11 @@ class FeaturesRepository:
             "_id": document_id,
             "modify_date": work.modify_date,
             "sha256": work.sha256,
-            "features": serialized_work
+            "features": serialized_work,
         }
 
         # Insert or update the document
-        self.collection.update_one(
-            {"_id": document_id},
-            {"$set": document},
-            upsert=True
-        )
+        self.collection.update_one({"_id": document_id}, {"$set": document}, upsert=True)
         logger.debug(f"Document for path {document_id} successfully inserted/updated.")
 
 

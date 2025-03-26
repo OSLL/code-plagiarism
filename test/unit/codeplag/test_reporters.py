@@ -10,13 +10,10 @@ from codeplag.consts import CSV_REPORT_COLUMNS, CSV_REPORT_FILENAME
 from codeplag.handlers.report import deserialize_compare_result
 from codeplag.reporters import (
     CSVReporter,
+    deserialize_compare_result_from_dict,
     serialize_compare_result_to_dict,
-    deserialize_compare_result_from_dict
 )
-from codeplag.types import (
-    ASTFeatures,
-    CompareInfo
-)
+from codeplag.types import ASTFeatures, CompareInfo
 
 
 @pytest.fixture
