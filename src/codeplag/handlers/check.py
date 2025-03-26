@@ -8,6 +8,7 @@ from datetime import timedelta
 from itertools import combinations
 from pathlib import Path
 from time import monotonic
+from pymongo.errors import ConnectionFailure
 
 import numpy as np
 import pandas as pd
@@ -84,7 +85,10 @@ class WorksComparator:
         """
         self.connection: MongoDBConnection | None = None
         if DEFAULT_DB_ENABLED:
-            self.connection = MongoDBConnection()
+            try:
+                self.connection = MongoDBConnection()
+            except ConnectionFailure:
+                pass
 
         if extension == "py":
             FeaturesGetter = PyFeaturesGetter
