@@ -130,9 +130,13 @@ class CodeplagCLI(argparse.ArgumentParser):
         settings_modify.add_argument(
             "-so",
             "--short-output",
-            help=_("Do not show check works results in the stdout."),
+            help=_(
+                "When provided '0' show all check works results in the stdout. "
+                "When provided '1' show only new found check works results in the stdout. "
+                "When provided '2' do not show check works result in the stdout."
+            ),
             type=int,
-            choices=[0, 1],
+            choices=[0, 1, 2],
         )
         settings_modify.add_argument(
             "-t",

@@ -148,6 +148,12 @@ class ExitCode(IntEnum):
     EXIT_FOUND_SIM = 200
 
 
+class ShortOutput(IntEnum):
+    SHOW_ALL = 0
+    SHOW_NEW = 1
+    NO_SHOW = 2
+
+
 # Misc
 # ----------------------------------------------------------------------------
 
@@ -159,7 +165,7 @@ class Settings(TypedDict):
     reports: NotRequired[Path]
     reports_extension: ReportsExtension
     show_progress: Flag
-    short_output: Flag
+    short_output: ShortOutput
     max_depth: MaxDepth
     ngrams_length: NgramsLength
     threshold: Threshold
