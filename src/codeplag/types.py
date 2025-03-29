@@ -142,6 +142,7 @@ class CLIException(Exception):
 class ExitCode(IntEnum):
     EXIT_SUCCESS = 0
     EXIT_KEYBOARD = 1
+    EXIT_PARSER = 2
     EXIT_INVAL = 3
     EXIT_UNKNOWN = 5
     # Exit codes that are 200 or greater are auxiliary codes.
