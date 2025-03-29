@@ -4,9 +4,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: codeplag 0.5.13\n"
+"Project-Id-Version: codeplag 0.5.18\n"
 "POT-Creation-Date: 2024-05-21 09:28+0300\n"
-"PO-Revision-Date: 2024-05-16 19:15+0300\n"
+"PO-Revision-Date: 2025-03-28 12:05+0300\n"
 "Last-Translator: Artyom Semidolin\n"
 "Language: en\n"
 "Language-Team: en <LL@li.org>\n"
@@ -57,10 +57,16 @@ msgid "Show progress of searching plagiarism."
 msgstr "Show progress of searching plagiarism."
 
 #: src/codeplag/codeplagcli.py:133
-msgid "Do not show check works results in the stdout."
-msgstr "Do not show check works results in the stdout."
+msgid ""
+"When provided '0' show all check works results in the stdout. When "
+"provided '1' show only new found check works results in the stdout. When "
+"provided '2' do not show check works result in the stdout."
+msgstr ""
+"When provided '0' show all check works results in the stdout. When "
+"provided '1' show only new found check works results in the stdout. When "
+"provided '2' do not show check works result in the stdout."
 
-#: src/codeplag/codeplagcli.py:140
+#: src/codeplag/codeplagcli.py:144
 msgid ""
 "Threshold of analyzer which classifies two work as same. If this number "
 "is too large, such as 99, then completely matching jobs will be found. "
@@ -72,11 +78,11 @@ msgstr ""
 "Otherwise, if this number is small, such as 50, then all work with "
 "minimal similarity will be found."
 
-#: src/codeplag/codeplagcli.py:154
+#: src/codeplag/codeplagcli.py:158
 msgid "The maximum depth of the AST structure which play role in calculations."
 msgstr "The maximum depth of the AST structure which play role in calculations."
 
-#: src/codeplag/codeplagcli.py:161
+#: src/codeplag/codeplagcli.py:165
 msgid ""
 "The length of N-grams generated to calculate the Jakkar coefficient. A "
 "long length of N-grams reduces the Jakkar coefficient because there are "
@@ -86,11 +92,11 @@ msgstr ""
 "long length of N-grams reduces the Jakkar coefficient because there are "
 "fewer equal sequences of two works."
 
-#: src/codeplag/codeplagcli.py:172
+#: src/codeplag/codeplagcli.py:176
 msgid "The language of help messages, generated reports, errors."
 msgstr "The language of help messages, generated reports, errors."
 
-#: src/codeplag/codeplagcli.py:178
+#: src/codeplag/codeplagcli.py:182
 msgid ""
 "Sets the threshold for the '{util_name}' util loggers'. Logging messages "
 "that are less severe than the level will be ignored."
@@ -98,27 +104,27 @@ msgstr ""
 "Sets the threshold for the '{util_name}' util loggers'. Logging messages "
 "that are less severe than the level will be ignored."
 
-#: src/codeplag/codeplagcli.py:188
+#: src/codeplag/codeplagcli.py:192
 msgid "The maximum number of processes that can be used to compare works."
 msgstr "The maximum number of processes that can be used to compare works."
 
-#: src/codeplag/codeplagcli.py:196
+#: src/codeplag/codeplagcli.py:200
 msgid "Show the '{util_name}' util settings."
 msgstr "Show the '{util_name}' util settings."
 
-#: src/codeplag/codeplagcli.py:200
+#: src/codeplag/codeplagcli.py:204
 msgid "Start searching similar works."
 msgstr "Start searching similar works."
 
-#: src/codeplag/codeplagcli.py:206
+#: src/codeplag/codeplagcli.py:210
 msgid "Absolute or relative path to a local directories with project files."
 msgstr "Absolute or relative path to a local directories with project files."
 
-#: src/codeplag/codeplagcli.py:216
+#: src/codeplag/codeplagcli.py:220
 msgid "Absolute or relative path to files on a computer."
 msgstr "Absolute or relative path to files on a computer."
 
-#: src/codeplag/codeplagcli.py:223
+#: src/codeplag/codeplagcli.py:227
 msgid ""
 "Choose one of the following modes of searching plagiarism. The "
 "'many_to_many' mode may require more free memory."
@@ -126,7 +132,7 @@ msgstr ""
 "Choose one of the following modes of searching plagiarism. The "
 "'many_to_many' mode may require more free memory."
 
-#: src/codeplag/codeplagcli.py:234
+#: src/codeplag/codeplagcli.py:238
 msgid ""
 "A regular expression for filtering checked works by name. Used with "
 "options 'directories', 'github-user' and 'github-project-folders'."
@@ -134,35 +140,35 @@ msgstr ""
 "A regular expression for filtering checked works by name. Used with "
 "options 'directories', 'github-user' and 'github-project-folders'."
 
-#: src/codeplag/codeplagcli.py:243
+#: src/codeplag/codeplagcli.py:247
 msgid "Ignore the threshold when checking of works."
 msgstr "Ignore the threshold when checking of works."
 
-#: src/codeplag/codeplagcli.py:250
+#: src/codeplag/codeplagcli.py:254
 msgid "Extension responsible for the analyzed programming language."
 msgstr "Extension responsible for the analyzed programming language."
 
-#: src/codeplag/codeplagcli.py:260
+#: src/codeplag/codeplagcli.py:264
 msgid "Searching in all branches."
 msgstr "Searching in all branches."
 
-#: src/codeplag/codeplagcli.py:267
+#: src/codeplag/codeplagcli.py:271
 msgid "A regular expression to filter searching repositories on GitHub."
 msgstr "A regular expression to filter searching repositories on GitHub."
 
-#: src/codeplag/codeplagcli.py:274
+#: src/codeplag/codeplagcli.py:278
 msgid "URL to file in a GitHub repository."
 msgstr "URL to file in a GitHub repository."
 
-#: src/codeplag/codeplagcli.py:280
+#: src/codeplag/codeplagcli.py:284
 msgid "GitHub organization/user name."
 msgstr "GitHub organization/user name."
 
-#: src/codeplag/codeplagcli.py:287
+#: src/codeplag/codeplagcli.py:291
 msgid "URL to a GitHub project folder."
 msgstr "URL to a GitHub project folder."
 
-#: src/codeplag/codeplagcli.py:297
+#: src/codeplag/codeplagcli.py:301
 msgid ""
 "Handling generated by the {util_name} reports as creating html report "
 "file or show it on console."
@@ -170,15 +176,15 @@ msgstr ""
 "Handling generated by the {util_name} reports as creating html report "
 "file or show it on console."
 
-#: src/codeplag/codeplagcli.py:305
+#: src/codeplag/codeplagcli.py:309
 msgid "Report commands of the '{util_name}' util."
 msgstr "Report commands of the '{util_name}' util."
 
-#: src/codeplag/codeplagcli.py:314
+#: src/codeplag/codeplagcli.py:318
 msgid "Generate general report from created some time ago report files."
 msgstr "Generate general report from created some time ago report files."
 
-#: src/codeplag/codeplagcli.py:319
+#: src/codeplag/codeplagcli.py:323
 msgid ""
 "Path to save generated report. If it's a directory, then create a file in"
 " it."
@@ -186,11 +192,11 @@ msgstr ""
 "Path to save generated report. If it's a directory, then create a file in"
 " it."
 
-#: src/codeplag/codeplagcli.py:328
+#: src/codeplag/codeplagcli.py:332
 msgid "Type of the created report file."
 msgstr "Type of the created report file."
 
-#: src/codeplag/codeplagcli.py:336
+#: src/codeplag/codeplagcli.py:340
 msgid ""
 "Path to first compared works. Can be path to directory or URL to the "
 "project folder."
@@ -198,7 +204,7 @@ msgstr ""
 "Path to first compared works. Can be path to directory or URL to the "
 "project folder."
 
-#: src/codeplag/codeplagcli.py:346
+#: src/codeplag/codeplagcli.py:350
 msgid ""
 "Path to second compared works. Can be path to directory or URL to the "
 "project folder."
@@ -206,7 +212,7 @@ msgstr ""
 "Path to second compared works. Can be path to directory or URL to the "
 "project folder."
 
-#: src/codeplag/codeplagcli.py:358
+#: src/codeplag/codeplagcli.py:362
 msgid ""
 "Program help to find similar parts of source codes for the different "
 "languages."
@@ -214,27 +220,27 @@ msgstr ""
 "Program help to find similar parts of source codes for the different "
 "languages."
 
-#: src/codeplag/codeplagcli.py:365
+#: src/codeplag/codeplagcli.py:369
 msgid "Print current version number and exit."
 msgstr "Print current version number and exit."
 
-#: src/codeplag/codeplagcli.py:371
+#: src/codeplag/codeplagcli.py:375
 msgid "Commands help."
 msgstr "Commands help."
 
-#: src/codeplag/codeplagcli.py:386
+#: src/codeplag/codeplagcli.py:390
 msgid "No command is provided; please choose one from the available (--help)."
 msgstr "No command is provided; please choose one from the available (--help)."
 
-#: src/codeplag/codeplagcli.py:397
+#: src/codeplag/codeplagcli.py:401
 msgid "There is nothing to modify; please provide at least one argument."
 msgstr "There is nothing to modify; please provide at least one argument."
 
-#: src/codeplag/codeplagcli.py:401
+#: src/codeplag/codeplagcli.py:405
 msgid "The'repo-regexp' option requires the provided 'github-user' option."
 msgstr "The'repo-regexp' option requires the provided 'github-user' option."
 
-#: src/codeplag/codeplagcli.py:409
+#: src/codeplag/codeplagcli.py:413
 msgid ""
 "The'path-regexp' option requires the provided 'directories', 'github-"
 "user', or 'github-project-folder' options."
@@ -242,7 +248,7 @@ msgstr ""
 "The'path-regexp' option requires the provided 'directories', 'github-"
 "user', or 'github-project-folder' options."
 
-#: src/codeplag/codeplagcli.py:420 src/codeplag/handlers/report.py:95
+#: src/codeplag/codeplagcli.py:424 src/codeplag/handlers/report.py:95
 msgid "All paths must be provided."
 msgstr "All or none of the root paths must be specified."
 
