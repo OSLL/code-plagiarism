@@ -14,9 +14,9 @@ from codeplag.consts import CSV_REPORT_COLUMNS, CSV_REPORT_FILENAME, CSV_SAVE_TI
 from codeplag.logger import codeplag_logger as logger
 from codeplag.types import (
     ASTFeatures,
-    CompareInfo,
-    FastMetrics,
-    StructuresInfo,
+    FastCompareInfo,
+    FullCompareInfo,
+    StructureCompareInfo,
 )
 
 
@@ -29,7 +29,7 @@ class AbstractReporter(ABC):
         self: Self,
         first_work: ASTFeatures,
         second_work: ASTFeatures,
-        compare_info: CompareInfo,
+        compare_info: FullCompareInfo,
     ) -> None: ...
 
 
@@ -48,14 +48,14 @@ class CSVReporter(AbstractReporter):
         self: Self,
         first_work: ASTFeatures,
         second_work: ASTFeatures,
-        compare_info: CompareInfo,
+        compare_info: FullCompareInfo,
     ) -> None:
         """Updates the cache with new comparisons and writes it to the filesystem periodically.
 
         Args:
             first_work (ASTFeatures): Contains the first work metadata.
             second_work (ASTFeatures): Contains the second work metadata.
-            compare_info (CompareInfo): Contains information about comparisons
+            compare_info (FullCompareInfo): Contains information about comparisons
               between the first and second works.
         """
         if not self.reports.is_dir():
@@ -91,7 +91,7 @@ class CSVReporter(AbstractReporter):
 
     def get_compare_result_from_cache(
         self: Self, work1: ASTFeatures, work2: ASTFeatures
-    ) -> CompareInfo | None:
+    ) -> FullCompareInfo | None:
         cache_val = self.__df_report[
             (self.__df_report.first_path == str(work1.filepath))
             & (self.__df_report.second_path == str(work2.filepath))
@@ -112,10 +112,8 @@ def read_df(path: Path) -> pd.DataFrame:
 def serialize_compare_result(
     first_work: ASTFeatures,
     second_work: ASTFeatures,
-    compare_info: CompareInfo,
+    compare_info: FullCompareInfo,
 ) -> pd.DataFrame:
-    assert compare_info.structure is not None
-
     return pd.DataFrame(
         {
             "date": _get_current_date(),
@@ -139,21 +137,21 @@ def serialize_compare_result(
     )
 
 
-def deserialize_compare_result(compare_result: pd.Series) -> CompareInfo:
+def deserialize_compare_result(compare_result: pd.Series) -> FullCompareInfo:
     if isinstance(compare_result.compliance_matrix, str):
         similarity_matrix = np.array(json.loads(compare_result.compliance_matrix))
     else:
         similarity_matrix = np.array(compare_result.compliance_matrix)
 
-    compare_info = CompareInfo(
-        fast=FastMetrics(
+    compare_info = FullCompareInfo(
+        fast=FastCompareInfo(
             jakkar=float(compare_result.jakkar),
             operators=float(compare_result.operators),
             keywords=float(compare_result.keywords),
             literals=float(compare_result.literals),
             weighted_average=float(compare_result.weighted_average),
         ),
-        structure=StructuresInfo(
+        structure=StructureCompareInfo(
             compliance_matrix=similarity_matrix,
             similarity=float(compare_result.struct_similarity),
         ),

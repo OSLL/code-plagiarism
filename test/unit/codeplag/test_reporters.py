@@ -11,7 +11,7 @@ from codeplag.handlers.report import deserialize_compare_result
 from codeplag.reporters import CSVReporter
 from codeplag.types import (
     ASTFeatures,
-    CompareInfo,
+    FullCompareInfo,
 )
 
 
@@ -33,7 +33,7 @@ class TestCSVReporter:
         mock_default_logger: MagicMock,
         first_features: ASTFeatures,
         second_features: ASTFeatures,
-        first_compare_result: CompareInfo,
+        first_compare_result: FullCompareInfo,
     ) -> None:
         # First ok test
         self.REPORTER.save_result(first_features, second_features, first_compare_result)

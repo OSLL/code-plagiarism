@@ -24,8 +24,8 @@ from codeplag.logger import codeplag_logger as logger
 from codeplag.reporters import deserialize_compare_result, read_df
 from codeplag.translate import get_translations
 from codeplag.types import (
-    CompareInfo,
     ExitCode,
+    FullCompareInfo,
     Language,
     ReportType,
     SameFuncs,
@@ -222,7 +222,7 @@ def _get_parsed_line(
     df: pd.DataFrame,
     threshold: int = DEFAULT_THRESHOLD,
     include_funcs_less_threshold: bool = True,
-) -> Generator[tuple[pd.Series, CompareInfo, SameFuncs, SameFuncs], None, None]:
+) -> Generator[tuple[pd.Series, FullCompareInfo, SameFuncs, SameFuncs], None, None]:
     for _, line in df.iterrows():
         cmp_res = deserialize_compare_result(line)
         first_heads = _deserialize_head_nodes(line.first_heads)

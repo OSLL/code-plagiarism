@@ -2,11 +2,11 @@ import pytest
 from typing_extensions import Self
 
 from codeplag.algorithms.compare import compare_works, fast_compare
-from codeplag.types import ASTFeatures, CompareInfo
+from codeplag.types import ASTFeatures, FastCompareInfo, FullCompareInfo
 
 
 class TestCompareWorks:
-    def test_compare_works_with_structure(self: Self, first_compare_result: CompareInfo):
+    def test_compare_works_with_structure(self: Self, first_compare_result: FullCompareInfo):
         assert first_compare_result.fast.jakkar == pytest.approx(0.737, 0.001)
         assert first_compare_result.fast.operators == pytest.approx(0.667, 0.001)
         assert first_compare_result.fast.keywords == 1.0
@@ -28,12 +28,12 @@ class TestCompareWorks:
             features1=first_features, features2=third_features, threshold=60
         )
 
-        assert compare_info.fast.jakkar == 0.24
-        assert compare_info.fast.operators == 0.0
-        assert compare_info.fast.keywords == 0.6
-        assert compare_info.fast.literals == 0.0
-        assert compare_info.fast.weighted_average == pytest.approx(0.218, 0.001)
-        assert compare_info.structure is None
+        assert isinstance(compare_info, FastCompareInfo)
+        assert compare_info.jakkar == 0.24
+        assert compare_info.operators == 0.0
+        assert compare_info.keywords == 0.6
+        assert compare_info.literals == 0.0
+        assert compare_info.weighted_average == pytest.approx(0.218, 0.001)
 
 
 class TestFastCompare:

@@ -113,7 +113,7 @@ class ASTFeatures:
 # Compare information
 
 
-class FastMetrics(NamedTuple):
+class FastCompareInfo(NamedTuple):
     jakkar: float
     operators: float
     keywords: float
@@ -121,14 +121,14 @@ class FastMetrics(NamedTuple):
     weighted_average: float
 
 
-class StructuresInfo(NamedTuple):
+class StructureCompareInfo(NamedTuple):
     similarity: float
     compliance_matrix: npt.NDArray
 
 
-class CompareInfo(NamedTuple):
-    fast: FastMetrics
-    structure: StructuresInfo | None = None
+class FullCompareInfo(NamedTuple):
+    fast: FastCompareInfo
+    structure: StructureCompareInfo
 
 
 # Exceptions and errors
@@ -198,6 +198,6 @@ SameFuncs = dict[str, list[SameHead]]
 # To fix that you need to pass right module-name to namedtuple-factory
 NodeCodePlace.__module__ = __name__
 NodeStructurePlace.__module__ = __name__
-FastMetrics.__module__ = __name__
-StructuresInfo.__module__ = __name__
-CompareInfo.__module__ = __name__
+FastCompareInfo.__module__ = __name__
+StructureCompareInfo.__module__ = __name__
+FullCompareInfo.__module__ = __name__

@@ -37,10 +37,11 @@ from codeplag.pyplag.utils import PyFeaturesGetter
 from codeplag.reporters import CSVReporter
 from codeplag.types import (
     ASTFeatures,
-    CompareInfo,
     ExitCode,
     Extension,
     Flag,
+    FullCompareInfo,
+    FastCompareInfo,
     MaxDepth,
     Mode,
     NgramsLength,
@@ -315,10 +316,10 @@ class WorksComparator:
         self: Self,
         work1: ASTFeatures,
         work2: ASTFeatures,
-        metrics: CompareInfo,
+        metrics: FullCompareInfo | FastCompareInfo,
         save: bool = False,
     ) -> ExitCode:
-        if metrics.structure is None:
+        if isinstance(metrics, FastCompareInfo):
             return ExitCode.EXIT_SUCCESS
         if self.reporter and save:
             self.reporter.save_result(work1, work2, metrics)
@@ -347,7 +348,7 @@ class WorksComparator:
     ) -> ExitCode:
         exit_code = ExitCode.EXIT_SUCCESS
         for future in as_completed(futures):
-            metrics: CompareInfo = future.result()
+            metrics: FullCompareInfo | FastCompareInfo = future.result()
             proc_works_info = processing[future.id]  # type: ignore
             exit_code = ExitCode(
                 exit_code
