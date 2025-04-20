@@ -1,14 +1,13 @@
 from pathlib import Path
 from unittest.mock import MagicMock
 
-import pandas as pd
 import pytest
 from pytest_mock import MockerFixture
 from typing_extensions import Self
 
 from codeplag.consts import CSV_REPORT_COLUMNS
 from codeplag.handlers.report import deserialize_compare_result
-from codeplag.reporters import CSVReporter
+from codeplag.reporters import CSVReporter, read_df
 from codeplag.types import (
     ASTFeatures,
     FullCompareInfo,
@@ -46,7 +45,7 @@ class TestCSVReporter:
         assert "Saving" in mock_default_logger.debug.mock_calls[-1].args[0]
         self.REPORTER._write_df_to_fs()
         assert "Nothing" in mock_default_logger.debug.mock_calls[-1].args[0]
-        df = pd.read_csv(self.REPORTER.reports_path, sep=";", index_col=0)
+        df = read_df(self.REPORTER.reports_path)
         self.REPORTER.reports_path.unlink()
 
         # Check deserialization
