@@ -21,8 +21,8 @@ from codeplag.types import (
 
 
 class AbstractReporter(ABC):
-    def __init__(self: Self, reports: Path) -> None:
-        self.reports = reports
+    @abstractmethod
+    def __init__(self: Self) -> None: ...
 
     @abstractmethod
     def save_result(
@@ -32,16 +32,24 @@ class AbstractReporter(ABC):
         compare_info: FullCompareInfo,
     ) -> None: ...
 
+    @abstractmethod
+    def get_result(
+        self: Self, work1: ASTFeatures, work2: ASTFeatures
+    ) -> FullCompareInfo | None: ...
+
 
 class CSVReporter(AbstractReporter):
     def __init__(self: Self, reports: Path) -> None:
-        super().__init__(reports)
-        self.reports_path = self.reports / CSV_REPORT_FILENAME
+        if reports.is_dir():
+            self.reports_path = reports / CSV_REPORT_FILENAME
+        else:
+            self.reports_path = reports
         self.__need_update: bool = False
-        if self.reports_path.is_file():
+        if self.reports_path.exists():
             self.__df_report = read_df(self.reports_path)
         else:
             self.__df_report = pd.DataFrame(columns=np.array(CSV_REPORT_COLUMNS), dtype=object)
+            write_df(self.__df_report, self.reports_path)
         self.__csv_last_save = monotonic()
 
     def save_result(
@@ -58,8 +66,8 @@ class CSVReporter(AbstractReporter):
             compare_info (FullCompareInfo): Contains information about comparisons
               between the first and second works.
         """
-        if not self.reports.is_dir():
-            logger.error("The folder for reports isn't exists.")
+        if not self.reports_path.exists():
+            logger.error("The file '%s' for reports is no longer exists.", self.reports_path)
             return
         cache_val = self.__df_report[
             (self.__df_report.first_path == str(first_work.filepath))
@@ -86,12 +94,10 @@ class CSVReporter(AbstractReporter):
             return
 
         logger.debug(f"Saving report to the file '{self.reports_path}'")
-        self.__df_report.to_csv(self.reports_path, sep=";")
+        write_df(self.__df_report, self.reports_path)
         self.__need_update = False
 
-    def get_compare_result_from_cache(
-        self: Self, work1: ASTFeatures, work2: ASTFeatures
-    ) -> FullCompareInfo | None:
+    def get_result(self: Self, work1: ASTFeatures, work2: ASTFeatures) -> FullCompareInfo | None:
         cache_val = self.__df_report[
             (self.__df_report.first_path == str(work1.filepath))
             & (self.__df_report.second_path == str(work2.filepath))
@@ -107,6 +113,10 @@ class CSVReporter(AbstractReporter):
 
 def read_df(path: Path) -> pd.DataFrame:
     return pd.read_csv(path, sep=";", index_col=0, dtype=object)  # type: ignore
+
+
+def write_df(df: pd.DataFrame, path: Path) -> None:
+    df.to_csv(path, sep=";")
 
 
 def serialize_compare_result(
