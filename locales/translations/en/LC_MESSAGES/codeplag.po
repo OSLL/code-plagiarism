@@ -45,7 +45,6 @@ msgid "Path to the environment file with GitHub access token."
 msgstr "Path to the environment file with GitHub access token."
 
 #: src/codeplag/codeplagcli.py:112
-#, fuzzy
 msgid ""
 "If defined, then saves reports about suspect works into provided file or "
 "directory. If directory by provided path doesn't exists than saves "
