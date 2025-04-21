@@ -300,7 +300,7 @@ class WorksComparator:
         work1, work2 = sorted([work1, work2])
         metrics = None
         if isinstance(self.reporter, CSVReporter):
-            metrics = self.reporter.get_compare_result_from_cache(work1, work2)
+            metrics = self.reporter.get_result(work1, work2)
         if metrics is None:
             future = self._create_future_compare(executor, work1, work2)
             future.id = len(processing)  # type: ignore

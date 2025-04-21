@@ -74,14 +74,12 @@ class TestSettingsModify:
         "env,reports,threshold,log_level,short_output",
         [
             (".env", "src", 101, "debug", ShortOutput.NO_SHOW),
-            ("setup.py", "test983hskdfue", 67, "info", ShortOutput.NO_SHOW),
             (f"src/{UTIL_NAME}/utils.pyjlsieuow0", "debian", 93, "warning", ShortOutput.SHOW_ALL),
             (f"src/{UTIL_NAME}/types.py", "src", 83, "foobar", ShortOutput.SHOW_NEW),
             (f"src/{UTIL_NAME}/types.py", "src", 83, "info", 3),
         ],
         ids=[
             "Incorrect threshold.",
-            "Path to reports doesn't exists.",
             "Path to environment doesn't exists.",
             "Invalid log level.",
             "Invalid short-output.",

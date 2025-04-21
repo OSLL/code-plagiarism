@@ -109,9 +109,13 @@ class CodeplagCLI(argparse.ArgumentParser):
         settings_modify.add_argument(
             "-r",
             "--reports",
-            help=_("If defined, then saves reports about suspect works into provided path."),
-            metavar="DIRECTORY",
-            type=DirPath,
+            help=_(
+                "If defined, then saves reports about suspect works into provided file or "
+                "directory. If directory by provided path doesn't exists than saves reports "
+                "as a file."
+            ),
+            metavar="PATH",
+            type=Path,
         )
         settings_modify.add_argument(
             "-re",
