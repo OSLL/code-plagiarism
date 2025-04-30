@@ -184,7 +184,9 @@ class MongoReporter(AbstractReporter):
         self.repository.write_compare_info(first_work, second_work, compare_info)
 
     def get_result(
-        self: Self, work1: ASTFeatures, work2: ASTFeatures,
+        self: Self,
+        work1: ASTFeatures,
+        work2: ASTFeatures,
     ) -> FullCompareInfo | None:
         return None
 

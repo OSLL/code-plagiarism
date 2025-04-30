@@ -26,10 +26,10 @@ class AbstractReporter(ABC):
 
     @abstractmethod
     def save_result(
-            self: Self,
-            first_work: ASTFeatures,
-            second_work: ASTFeatures,
-            compare_info: FullCompareInfo,
+        self: Self,
+        first_work: ASTFeatures,
+        second_work: ASTFeatures,
+        compare_info: FullCompareInfo,
     ) -> None: ...
 
     @abstractmethod
