@@ -9,8 +9,8 @@ from codeplag.consts import CSV_REPORT_COLUMNS
 from codeplag.handlers.report import deserialize_compare_result
 from codeplag.reporters import (
     CSVReporter,
-    read_df,
     deserialize_compare_result_from_dict,
+    read_df,
     serialize_compare_result_to_dict,
 )
 from codeplag.types import (
