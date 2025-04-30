@@ -1,1 +1,1 @@
-@UTIL_NAME@-util (@UTIL_VERSION@-1@DEVEL_SUFFIX@) stable; urgency=medium
+@UTIL_NAME@-util (@UTIL_VERSION@-1@DEVEL_SUFFIX@.@DIST@) stable; urgency=medium

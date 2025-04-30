@@ -113,7 +113,7 @@ class ASTFeatures:
 # Compare information
 
 
-class FastMetrics(NamedTuple):
+class FastCompareInfo(NamedTuple):
     jakkar: float
     operators: float
     keywords: float
@@ -121,14 +121,14 @@ class FastMetrics(NamedTuple):
     weighted_average: float
 
 
-class StructuresInfo(NamedTuple):
+class StructureCompareInfo(NamedTuple):
     similarity: float
     compliance_matrix: npt.NDArray
 
 
-class CompareInfo(NamedTuple):
-    fast: FastMetrics
-    structure: StructuresInfo | None = None
+class FullCompareInfo(NamedTuple):
+    fast: FastCompareInfo
+    structure: StructureCompareInfo
 
 
 # Exceptions and errors
@@ -142,9 +142,17 @@ class CLIException(Exception):
 class ExitCode(IntEnum):
     EXIT_SUCCESS = 0
     EXIT_KEYBOARD = 1
+    EXIT_PARSER = 2
     EXIT_INVAL = 3
     EXIT_UNKNOWN = 5
+    # Exit codes that are 200 or greater are auxiliary codes.
     EXIT_FOUND_SIM = 200
+
+
+class ShortOutput(IntEnum):
+    SHOW_ALL = 0
+    SHOW_NEW = 1
+    NO_SHOW = 2
 
 
 # Misc
@@ -158,7 +166,7 @@ class Settings(TypedDict):
     reports: NotRequired[Path]
     reports_extension: ReportsExtension
     show_progress: Flag
-    short_output: Flag
+    short_output: ShortOutput
     max_depth: MaxDepth
     ngrams_length: NgramsLength
     threshold: Threshold
@@ -190,6 +198,6 @@ SameFuncs = dict[str, list[SameHead]]
 # To fix that you need to pass right module-name to namedtuple-factory
 NodeCodePlace.__module__ = __name__
 NodeStructurePlace.__module__ = __name__
-FastMetrics.__module__ = __name__
-StructuresInfo.__module__ = __name__
-CompareInfo.__module__ = __name__
+FastCompareInfo.__module__ = __name__
+StructureCompareInfo.__module__ = __name__
+FullCompareInfo.__module__ = __name__

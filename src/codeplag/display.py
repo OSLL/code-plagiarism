@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from typing_extensions import Self
 
-from codeplag.types import ASTFeatures, CompareInfo, NodeCodePlace
+from codeplag.types import ASTFeatures, FullCompareInfo, NodeCodePlace
 
 CHARS_CNT: Final[int] = 40
 USEFUL_CHARS: Final[int] = 100
@@ -157,7 +157,7 @@ def clear_line() -> None:
 def print_compare_result(
     features1: ASTFeatures,
     features2: ASTFeatures,
-    compare_info: CompareInfo,
+    compare_info: FullCompareInfo,
     compliance_matrix_df: pd.DataFrame | None = None,
 ) -> None:
     """Prints the pretty result of comparing two files.
@@ -166,7 +166,7 @@ def print_compare_result(
     ----
         features1 (ASTFeatures): The features of the first  source file.
         features2 (ASTFeatures): The features of the second  source file.
-        compare_info (CompareInfo): The compare metrics of two works.
+        compare_info (FullCompareInfo): The compare metrics of two works.
         compliance_matrix_df (pd.DataFrame | None, optional): DataFrame consisting
           structures similarity information of two works.
 
@@ -186,14 +186,11 @@ def print_compare_result(
         [compare_info.fast],
         index=np.array(["Similarity"]),
         columns=pd.Index(
-            (field.upper() for field in compare_info.fast._fields), name="FastMetrics:"
+            (field.upper() for field in compare_info.fast._fields), name="FastCompareInfo:"
         ),
     )
     print(main_metrics_df)
     print()
-
-    if compare_info.structure is None:
-        return
 
     additional_metrics_df = pd.DataFrame(
         compare_info.structure.similarity,

@@ -13,7 +13,7 @@ from codeplag.consts import (
     DEFAULT_WORKERS,
 )
 from codeplag.logger import codeplag_logger as logger
-from codeplag.types import Settings
+from codeplag.types import Settings, ShortOutput
 
 Config = dict[str, Any]
 
@@ -85,7 +85,7 @@ DefaultSettingsConfig = Settings(
     max_depth=DEFAULT_MAX_DEPTH,
     ngrams_length=DEFAULT_NGRAMS_LENGTH,
     show_progress=0,
-    short_output=0,
+    short_output=ShortOutput.SHOW_ALL,
     reports_extension=DEFAULT_REPORT_EXTENSION,
     language=DEFAULT_LANGUAGE,
     log_level=DEFAULT_LOG_LEVEL,

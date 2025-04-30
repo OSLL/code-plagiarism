@@ -6,7 +6,7 @@ import pytest
 
 from codeplag.algorithms.compare import compare_works
 from codeplag.pyplag.utils import get_ast_from_filename, get_features_from_ast
-from codeplag.types import ASTFeatures, CompareInfo
+from codeplag.types import ASTFeatures, FullCompareInfo
 
 CWD = Path(os.path.dirname(os.path.abspath(__file__)))
 FILEPATH1 = CWD / "./data/test1.py"
@@ -51,7 +51,9 @@ def third_features(third_tree: ast.Module) -> ASTFeatures:
 
 
 @pytest.fixture
-def first_compare_result(first_features: ASTFeatures, second_features: ASTFeatures) -> CompareInfo:
+def first_compare_result(
+    first_features: ASTFeatures, second_features: ASTFeatures
+) -> FullCompareInfo:
     compare_info = compare_works(features1=first_features, features2=second_features)
-    assert compare_info.structure is not None
+    assert isinstance(compare_info, FullCompareInfo)
     return compare_info

@@ -7,6 +7,7 @@ from const import REPORTS_FOLDER
 from utils import modify_settings, run_check, run_util
 
 from codeplag.consts import CONFIG_PATH, UTIL_NAME, UTIL_VERSION
+from codeplag.types import ShortOutput
 
 CWD = os.getcwd()
 CPP_FILES = [
@@ -31,7 +32,8 @@ PY_GITHUB_DIR = f"{REPO_URL}/blob/main/src/codeplag/pyplag"
 
 @pytest.fixture(scope="module", autouse=True)
 def setup_module(create_reports_folder_module: None):
-    first_cond = not modify_settings(environment=".env", reports=REPORTS_FOLDER).cmd_res.returncode
+    modify_settings(reports=REPORTS_FOLDER).assert_success()
+    first_cond = not modify_settings(environment=".env").cmd_res.returncode
     second_cond = os.environ.get("ACCESS_TOKEN", "") != ""
 
     assert first_cond or second_cond
@@ -125,6 +127,22 @@ def test_compare_py_files(cmd: list[str], out: bytes, found_plag: bool):
     assert out in result.cmd_res.stdout
 
 
+def test_check_short_output() -> None:
+    cmd = ["--directories", CPP_DIR]
+    if len(list(REPORTS_FOLDER.iterdir())):
+        next(REPORTS_FOLDER.glob("*")).unlink()
+    modify_settings(short_output=ShortOutput.SHOW_ALL).assert_success()
+    result = run_check(cmd, extension="cpp")
+    result.assert_found_similarity()
+    first_check_stdout_lines = result.cmd_res.stdout.decode("utf-8").split("\n")
+
+    modify_settings(short_output=ShortOutput.SHOW_NEW).assert_success()
+    result = run_check(cmd, extension="cpp")
+    result.assert_found_similarity()
+    assert len(first_check_stdout_lines) != len(result.cmd_res.stdout.decode("utf-8").split("\n"))
+    modify_settings(short_output=ShortOutput.SHOW_ALL).assert_success()
+
+
 @pytest.mark.parametrize(
     "cmd",
     [
@@ -139,8 +157,7 @@ def test_check_failed_when_repo_regexp_provided_without_required_args(
 ):
     result = run_check(cmd + ["--repo-regexp", "something"])
 
-    result.assert_failed()
-    assert result.cmd_res.returncode == 2
+    result.assert_argparse_error()
 
 
 @pytest.mark.parametrize(
@@ -155,5 +172,4 @@ def test_check_failed_when_path_regexp_provided_without_required_args(
 ):
     result = run_check(cmd + ["--path-regexp", "something"])
 
-    result.assert_failed()
-    assert result.cmd_res.returncode == 2
+    result.assert_argparse_error()

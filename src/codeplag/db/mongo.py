@@ -9,7 +9,7 @@ from codeplag.consts import DEFAULT_MONGO_HOST, DEFAULT_MONGO_PASS, DEFAULT_MONG
 from codeplag.featurescache import AbstractFeaturesCache, serialize_features_to_dict
 from codeplag.logger import codeplag_logger as logger
 from codeplag.reporters import AbstractReporter, serialize_compare_result_to_dict
-from codeplag.types import ASTFeatures, CompareInfo
+from codeplag.types import ASTFeatures, FullCompareInfo
 
 HOST = DEFAULT_MONGO_HOST
 USER = DEFAULT_MONGO_USER
@@ -91,7 +91,7 @@ class ReportRepository:
         self.collection: Collection = collection
 
     def write_compare_info(
-        self: Self, work1: ASTFeatures, work2: ASTFeatures, compare_info: CompareInfo
+        self: Self, work1: ASTFeatures, work2: ASTFeatures, compare_info: FullCompareInfo
     ) -> None:
         """Insert or update a document in the compare_info collection.
 
@@ -171,7 +171,7 @@ class MongoReporter(AbstractReporter):
         self: Self,
         first_work: ASTFeatures,
         second_work: ASTFeatures,
-        compare_info: CompareInfo,
+        compare_info: FullCompareInfo,
     ) -> None:
         """Updates the cache with new comparisons and writes it to the MongoDB.
 
@@ -184,10 +184,8 @@ class MongoReporter(AbstractReporter):
         self.repository.write_compare_info(first_work, second_work, compare_info)
 
     def get_result(
-        self: Self,
-        first_work: ASTFeatures,
-        second_work: ASTFeatures,
-    ) -> CompareInfo | None:
+        self: Self, work1: ASTFeatures, work2: ASTFeatures,
+    ) -> FullCompareInfo | None:
         return None
 
 

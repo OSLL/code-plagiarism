@@ -109,9 +109,13 @@ class CodeplagCLI(argparse.ArgumentParser):
         settings_modify.add_argument(
             "-r",
             "--reports",
-            help=_("If defined, then saves reports about suspect works into provided path."),
-            metavar="DIRECTORY",
-            type=DirPath,
+            help=_(
+                "If defined, then saves reports about suspect works into provided file or "
+                "directory. If directory by provided path doesn't exists than saves reports "
+                "as a file."
+            ),
+            metavar="PATH",
+            type=Path,
         )
         settings_modify.add_argument(
             "-re",
@@ -130,9 +134,13 @@ class CodeplagCLI(argparse.ArgumentParser):
         settings_modify.add_argument(
             "-so",
             "--short-output",
-            help=_("Do not show check works results in the stdout."),
+            help=_(
+                "When provided '0' show all check works results in the stdout. "
+                "When provided '1' show only new found check works results in the stdout. "
+                "When provided '2' do not show check works result in the stdout."
+            ),
             type=int,
-            choices=[0, 1],
+            choices=[0, 1, 2],
         )
         settings_modify.add_argument(
             "-t",

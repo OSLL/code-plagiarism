@@ -1,19 +1,22 @@
 from pathlib import Path
 from unittest.mock import MagicMock
 
-import pandas as pd
 import pytest
 from pytest_mock import MockerFixture
 from typing_extensions import Self
 
-from codeplag.consts import CSV_REPORT_COLUMNS, CSV_REPORT_FILENAME
+from codeplag.consts import CSV_REPORT_COLUMNS
 from codeplag.handlers.report import deserialize_compare_result
 from codeplag.reporters import (
     CSVReporter,
+    read_df,
     deserialize_compare_result_from_dict,
     serialize_compare_result_to_dict,
 )
-from codeplag.types import ASTFeatures, CompareInfo
+from codeplag.types import (
+    ASTFeatures,
+    FullCompareInfo,
+)
 
 
 @pytest.fixture
@@ -34,7 +37,7 @@ class TestCSVReporter:
         mock_default_logger: MagicMock,
         first_features: ASTFeatures,
         second_features: ASTFeatures,
-        first_compare_result: CompareInfo,
+        first_compare_result: FullCompareInfo,
     ) -> None:
         # First ok test
         self.REPORTER.save_result(first_features, second_features, first_compare_result)
@@ -47,9 +50,8 @@ class TestCSVReporter:
         assert "Saving" in mock_default_logger.debug.mock_calls[-1].args[0]
         self.REPORTER._write_df_to_fs()
         assert "Nothing" in mock_default_logger.debug.mock_calls[-1].args[0]
-        report_path = self.REPORTER.reports / CSV_REPORT_FILENAME
-        df = pd.read_csv(report_path, sep=";", index_col=0)
-        report_path.unlink()
+        df = read_df(self.REPORTER.reports_path)
+        self.REPORTER.reports_path.unlink()
 
         # Check deserialization
         assert df.shape[0] == 1
@@ -72,7 +74,7 @@ class TestCSVReporter:
         )
 
 
-def test_compare_info_serialize_deserialize(first_compare_result: CompareInfo) -> None:
+def test_compare_info_serialize_deserialize(first_compare_result: FullCompareInfo) -> None:
     compare_info_dict = serialize_compare_result_to_dict(first_compare_result)
     deserialize = deserialize_compare_result_from_dict(compare_info_dict)
 

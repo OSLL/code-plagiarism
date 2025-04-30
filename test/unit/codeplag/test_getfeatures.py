@@ -68,9 +68,30 @@ def test_get_files_path_from_directory(
     assert files == expected
 
 
-def test_set_sha256():
-    features = ASTFeatures("foo/bar")
-    features.tokens = [1, 2, 3, 4, 5]
-    features = set_sha256(lambda: features)()
+class TestASTFeatures:
+    def test_astfeatures_equal(self) -> None:
+        assert ASTFeatures("foo/bar") == ASTFeatures("foo/bar")
 
-    assert features.sha256 == "0c049903ce2330190375d4c1f2e489888c9ebe39daf75b2564e591e8bc1afe72"
+    def test_astfeatures_different(self) -> None:
+        assert ASTFeatures("foo/bar") != ASTFeatures("foo/bar2")
+
+    def test_astfeatures_less(self) -> None:
+        assert ASTFeatures("foo/bar") < ASTFeatures("foo/bbr")
+
+    def test_astfeatures_invalid_compares(self) -> None:
+        with pytest.raises(NotImplementedError):
+            assert ASTFeatures("foo/bar") == 1
+        with pytest.raises(NotImplementedError):
+            assert ASTFeatures("foo/bar") < 1
+
+    def test_set_sha256(self, tmp_path: Path) -> None:
+        filepath = tmp_path / "foo_bar"
+        filepath.touch()
+        features = ASTFeatures(filepath)
+        features.tokens = [1, 2, 3, 4, 5]
+        features = set_sha256(lambda: features)()
+
+        assert (
+            features.sha256 == "0c049903ce2330190375d4c1f2e489888c9ebe39daf75b2564e591e8bc1afe72"
+        )
+        assert features.modify_date

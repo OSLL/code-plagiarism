@@ -18,6 +18,8 @@ docker-base-image: substitute-sources substitute-docker
 		export DOCKER_BUILDKIT=1 && \
 		docker image build \
 			--tag "$(BASE_DOCKER_TAG)" \
+			--build-arg PYTHON_REQUIRED_LIBS="$(PYTHON_REQUIRED_LIBS)" \
+			--build-arg UTIL_NAME="$(UTIL_NAME)" \
 			--file docker/base_ubuntu2204.dockerfile \
 			. \
 	)
@@ -26,6 +28,11 @@ docker-test-image: docker-base-image
 	@docker image inspect $(TEST_DOCKER_TAG) > /dev/null 2>&1 || \
 	docker image build \
 		--tag  "$(TEST_DOCKER_TAG)" \
+		--build-arg BASE_DOCKER_TAG="$(BASE_DOCKER_TAG)" \
+		--build-arg PYTHON_TEST_LIBS="$(PYTHON_TEST_LIBS)" \
+		--build-arg PYTHON_BUILD_LIBS="$(PYTHON_BUILD_LIBS)" \
+		--build-arg LOGS_PATH="$(LOGS_PATH)" \
+		--build-arg UTIL_NAME="$(UTIL_NAME)" \
 		--file docker/test_ubuntu2204.dockerfile \
 		.
 
@@ -67,6 +74,10 @@ docker-image: docker-base-image docker-test-image
 		make docker-build-package && \
 		docker image build \
 			--tag  "$(DOCKER_TAG)" \
+			--build-arg BASE_DOCKER_TAG="$(BASE_DOCKER_TAG)" \
+			--build-arg UTIL_NAME="$(UTIL_NAME)" \
+			--build-arg DEBIAN_PACKAGES_PATH="$(DEBIAN_PACKAGES_PATH)" \
+			--build-arg DEB_PKG_NAME="$(DEB_PKG_NAME)" \
 			--file docker/ubuntu2204.dockerfile \
 			. \
 	)

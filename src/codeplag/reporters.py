@@ -14,61 +14,65 @@ from codeplag.consts import CSV_REPORT_COLUMNS, CSV_REPORT_FILENAME, CSV_SAVE_TI
 from codeplag.logger import codeplag_logger as logger
 from codeplag.types import (
     ASTFeatures,
-    CompareInfo,
-    FastMetrics,
-    StructuresInfo,
+    FastCompareInfo,
+    FullCompareInfo,
+    StructureCompareInfo,
 )
 
 
 class AbstractReporter(ABC):
     @abstractmethod
+    def __init__(self: Self) -> None: ...
+
+    @abstractmethod
     def save_result(
-        self: Self,
-        first_work: ASTFeatures,
-        second_work: ASTFeatures,
-        compare_info: CompareInfo,
+            self: Self,
+            first_work: ASTFeatures,
+            second_work: ASTFeatures,
+            compare_info: FullCompareInfo,
     ) -> None: ...
 
     @abstractmethod
     def get_result(
-        self: Self,
-        first_work: ASTFeatures,
-        second_work: ASTFeatures,
-    ) -> CompareInfo | None: ...
+            self: Self, work1: ASTFeatures, work2: ASTFeatures
+    ) -> FullCompareInfo | None: ...
 
 
 class CSVReporter(AbstractReporter):
     def __init__(self: Self, reports: Path) -> None:
-        self.reports = reports
-        self.reports_path = self.reports / CSV_REPORT_FILENAME
+        if reports.is_dir():
+            self.reports_path = reports / CSV_REPORT_FILENAME
+        else:
+            self.reports_path = reports
         self.__need_update: bool = False
-        if self.reports_path.is_file():
+        if self.reports_path.exists():
             self.__df_report = read_df(self.reports_path)
         else:
             self.__df_report = pd.DataFrame(columns=np.array(CSV_REPORT_COLUMNS), dtype=object)
+            write_df(self.__df_report, self.reports_path)
         self.__csv_last_save = monotonic()
 
     def save_result(
-        self: Self,
-        first_work: ASTFeatures,
-        second_work: ASTFeatures,
-        compare_info: CompareInfo,
+            self: Self,
+            first_work: ASTFeatures,
+            second_work: ASTFeatures,
+            compare_info: FullCompareInfo,
     ) -> None:
         """Updates the cache with new comparisons and writes it to the filesystem periodically.
 
         Args:
             first_work (ASTFeatures): Contains the first work metadata.
             second_work (ASTFeatures): Contains the second work metadata.
-            compare_info (CompareInfo): Contains information about comparisons
+            compare_info (FullCompareInfo): Contains information about comparisons
               between the first and second works.
         """
-        if not self.reports.is_dir():
-            logger.error("The folder for reports isn't exists.")
+        if not self.reports_path.exists():
+            logger.error("The file '%s' for reports is no longer exists.", self.reports_path)
             return
         cache_val = self.__df_report[
             (self.__df_report.first_path == str(first_work.filepath))
             & (self.__df_report.second_path == str(second_work.filepath))
-        ]
+            ]
         if isinstance(cache_val, pd.DataFrame):
             self.__df_report.drop(cache_val.index, inplace=True)  # type: ignore
         self.__df_report = pd.concat(
@@ -90,19 +94,19 @@ class CSVReporter(AbstractReporter):
             return
 
         logger.debug(f"Saving report to the file '{self.reports_path}'")
-        self.__df_report.to_csv(self.reports_path, sep=";")
+        write_df(self.__df_report, self.reports_path)
         self.__need_update = False
 
-    def get_result(self: Self, work1: ASTFeatures, work2: ASTFeatures) -> CompareInfo | None:
+    def get_result(self: Self, work1: ASTFeatures, work2: ASTFeatures) -> FullCompareInfo | None:
         cache_val = self.__df_report[
             (self.__df_report.first_path == str(work1.filepath))
             & (self.__df_report.second_path == str(work2.filepath))
-        ]
+            ]
         assert cache_val is not None
         if (
-            cache_val.shape[0]
-            and cache_val.iloc[0].first_sha256 == work1.sha256
-            and cache_val.iloc[0].second_sha256 == work2.sha256
+                cache_val.shape[0]
+                and cache_val.iloc[0].first_sha256 == work1.sha256
+                and cache_val.iloc[0].second_sha256 == work2.sha256
         ):
             return deserialize_compare_result(cache_val.iloc[0])
 
@@ -111,13 +115,15 @@ def read_df(path: Path) -> pd.DataFrame:
     return pd.read_csv(path, sep=";", index_col=0, dtype=object)  # type: ignore
 
 
-def serialize_compare_result(
-    first_work: ASTFeatures,
-    second_work: ASTFeatures,
-    compare_info: CompareInfo,
-) -> pd.DataFrame:
-    assert compare_info.structure is not None
+def write_df(df: pd.DataFrame, path: Path) -> None:
+    df.to_csv(path, sep=";")
 
+
+def serialize_compare_result(
+        first_work: ASTFeatures,
+        second_work: ASTFeatures,
+        compare_info: FullCompareInfo,
+) -> pd.DataFrame:
     return pd.DataFrame(
         {
             "date": _get_current_date(),
@@ -141,21 +147,21 @@ def serialize_compare_result(
     )
 
 
-def deserialize_compare_result(compare_result: pd.Series) -> CompareInfo:
+def deserialize_compare_result(compare_result: pd.Series) -> FullCompareInfo:
     if isinstance(compare_result.compliance_matrix, str):
         similarity_matrix = np.array(json.loads(compare_result.compliance_matrix))
     else:
         similarity_matrix = np.array(compare_result.compliance_matrix)
 
-    compare_info = CompareInfo(
-        fast=FastMetrics(
+    compare_info = FullCompareInfo(
+        fast=FastCompareInfo(
             jakkar=float(compare_result.jakkar),
             operators=float(compare_result.operators),
             keywords=float(compare_result.keywords),
             literals=float(compare_result.literals),
             weighted_average=float(compare_result.weighted_average),
         ),
-        structure=StructuresInfo(
+        structure=StructureCompareInfo(
             compliance_matrix=similarity_matrix,
             similarity=float(compare_result.struct_similarity),
         ),
@@ -168,7 +174,7 @@ def _get_current_date() -> str:
     return datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
 
-def serialize_compare_result_to_dict(compare_info: CompareInfo) -> dict:
+def serialize_compare_result_to_dict(compare_info: FullCompareInfo) -> dict:
     assert compare_info.structure is not None
 
     data = {
@@ -188,22 +194,22 @@ def serialize_compare_result_to_dict(compare_info: CompareInfo) -> dict:
     return data
 
 
-def deserialize_compare_result_from_dict(compare_result: dict) -> CompareInfo:
+def deserialize_compare_result_from_dict(compare_result: dict) -> FullCompareInfo:
     assert compare_result is not None
     structure_d = dict(compare_result["structure"])
     assert structure_d is not None
     fast_d = dict(compare_result["fast"])
     assert fast_d is not None
 
-    compare_info = CompareInfo(
-        fast=FastMetrics(
+    compare_info = FullCompareInfo(
+        fast=FastCompareInfo(
             jakkar=float(fast_d["jakkar"]),
             operators=float(fast_d["operators"]),
             keywords=float(fast_d["keywords"]),
             literals=float(fast_d["literals"]),
             weighted_average=float(fast_d["weighted_average"]),
         ),
-        structure=StructuresInfo(
+        structure=StructureCompareInfo(
             similarity=float(structure_d["similarity"]),
             compliance_matrix=np.array(structure_d["compliance_matrix"]),
         ),

@@ -46,14 +46,16 @@ from codeplag.pyplag.utils import PyFeaturesGetter
 from codeplag.reporters import AbstractReporter, CSVReporter
 from codeplag.types import (
     ASTFeatures,
-    CompareInfo,
     ExitCode,
     Extension,
+    FastCompareInfo,
     Flag,
+    FullCompareInfo,
     MaxDepth,
     Mode,
     NgramsLength,
     ProcessingWorks,
+    ShortOutput,
     Threshold,
 )
 from webparsers.github_parser import GitHubParser
@@ -114,7 +116,7 @@ class WorksComparator:
 
         settings_conf = read_settings_conf()
         self.show_progress: Flag = settings_conf["show_progress"]
-        self.short_output: Flag = settings_conf["short_output"]
+        self.short_output = ShortOutput(settings_conf["short_output"])
         self.threshold: Threshold | None = settings_conf["threshold"]
         self.workers: int = settings_conf["workers"]
         self.ngrams_length: NgramsLength = settings_conf.get(
@@ -333,7 +335,8 @@ class WorksComparator:
             futures.add(future)
             processing.append(ProcessingWorks(work1, work2))
             return ExitCode.EXIT_SUCCESS
-        self._handle_compare_result(work1, work2, metrics)
+        if self.short_output is ShortOutput.SHOW_ALL:
+            self._handle_compare_result(work1, work2, metrics)
         _print_pretty_progress_if_need_and_increase(self.progress, self.workers)
         return ExitCode.EXIT_FOUND_SIM
 
@@ -341,14 +344,14 @@ class WorksComparator:
         self: Self,
         work1: ASTFeatures,
         work2: ASTFeatures,
-        metrics: CompareInfo,
+        metrics: FullCompareInfo | FastCompareInfo,
         save: bool = False,
     ) -> ExitCode:
-        if metrics.structure is None:
+        if isinstance(metrics, FastCompareInfo):
             return ExitCode.EXIT_SUCCESS
         if self.reporter and save:
             self.reporter.save_result(work1, work2, metrics)
-        if self.short_output:
+        if self.short_output is ShortOutput.NO_SHOW:
             return ExitCode.EXIT_FOUND_SIM
 
         if self.threshold and (metrics.structure.similarity * 100) <= self.threshold:
@@ -373,7 +376,7 @@ class WorksComparator:
     ) -> ExitCode:
         exit_code = ExitCode.EXIT_SUCCESS
         for future in as_completed(futures):
-            metrics: CompareInfo = future.result()
+            metrics: FullCompareInfo | FastCompareInfo = future.result()
             proc_works_info = processing[future.id]  # type: ignore
             exit_code = ExitCode(
                 exit_code
