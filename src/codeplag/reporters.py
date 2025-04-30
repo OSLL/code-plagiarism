@@ -72,7 +72,7 @@ class CSVReporter(AbstractReporter):
         cache_val = self.__df_report[
             (self.__df_report.first_path == str(first_work.filepath))
             & (self.__df_report.second_path == str(second_work.filepath))
-            ]
+        ]
         if isinstance(cache_val, pd.DataFrame):
             self.__df_report.drop(cache_val.index, inplace=True)  # type: ignore
         self.__df_report = pd.concat(
@@ -101,12 +101,12 @@ class CSVReporter(AbstractReporter):
         cache_val = self.__df_report[
             (self.__df_report.first_path == str(work1.filepath))
             & (self.__df_report.second_path == str(work2.filepath))
-            ]
+        ]
         assert cache_val is not None
         if (
-                cache_val.shape[0]
-                and cache_val.iloc[0].first_sha256 == work1.sha256
-                and cache_val.iloc[0].second_sha256 == work2.sha256
+            cache_val.shape[0]
+            and cache_val.iloc[0].first_sha256 == work1.sha256
+            and cache_val.iloc[0].second_sha256 == work2.sha256
         ):
             return deserialize_compare_result(cache_val.iloc[0])
 
@@ -120,9 +120,9 @@ def write_df(df: pd.DataFrame, path: Path) -> None:
 
 
 def serialize_compare_result(
-        first_work: ASTFeatures,
-        second_work: ASTFeatures,
-        compare_info: FullCompareInfo,
+    first_work: ASTFeatures,
+    second_work: ASTFeatures,
+    compare_info: FullCompareInfo,
 ) -> pd.DataFrame:
     return pd.DataFrame(
         {
