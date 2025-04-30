@@ -18,7 +18,7 @@ from codeplag.handlers.report import (
     calculate_sources_total_similarity,
 )
 from codeplag.reporters import serialize_compare_result
-from codeplag.types import ASTFeatures, CompareInfo, SameHead
+from codeplag.types import ASTFeatures, FullCompareInfo, SameHead
 
 
 @pytest.mark.parametrize(
@@ -171,7 +171,7 @@ def test__get_same_funcs(
 def test__get_parsed_line(
     first_features: ASTFeatures,
     second_features: ASTFeatures,
-    first_compare_result: CompareInfo,
+    first_compare_result: FullCompareInfo,
 ):
     compare_df = serialize_compare_result(first_features, second_features, first_compare_result)
     compare_df.iloc[0].first_heads = str(compare_df.iloc[0].first_heads)

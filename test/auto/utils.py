@@ -1,4 +1,5 @@
 import subprocess
+from enum import Enum
 from pathlib import Path
 from typing import Any, Literal
 
@@ -14,6 +15,7 @@ from codeplag.types import (
     NgramsLength,
     ReportsExtension,
     ReportType,
+    ShortOutput,
     Threshold,
 )
 
@@ -27,6 +29,9 @@ class CmdResult:
 
     def assert_failed(self: Self) -> None:
         assert self.cmd_res.returncode, str(self.cmd_res)
+
+    def assert_argparse_error(self: Self) -> None:
+        assert self.cmd_res.returncode == ExitCode.EXIT_PARSER, str(self.cmd_res)
 
     def assert_found_similarity(self: Self) -> None:
         assert self.cmd_res.returncode == ExitCode.EXIT_FOUND_SIM, str(self.cmd_res)
@@ -50,7 +55,11 @@ def run_check(cmd: list[str], extension: str = "py") -> CmdResult:
 
 
 def create_opt(key: str, value: Any | None) -> list[str]:
-    return [f"--{key}", str(value)] if value is not None else []
+    if value is None:
+        return []
+    if isinstance(value, Enum):
+        return [f"--{key}", str(value.value)]
+    return [f"--{key}", str(value)]
 
 
 def create_report(
@@ -74,7 +83,7 @@ def modify_settings(
     max_depth: MaxDepth | None = None,
     ngrams_length: NgramsLength | None = None,
     show_progress: Flag | None = None,
-    short_output: Flag | None = None,
+    short_output: ShortOutput | None = None,
     reports_extension: ReportsExtension | None = None,
     language: Language | None = None,
     log_level: LogLevel | None = None,

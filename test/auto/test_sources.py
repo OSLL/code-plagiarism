@@ -8,7 +8,6 @@ assert PACKAGE_PATH.exists()
 
 
 def test_no_py_files():
-    # checks
     for path in PACKAGE_PATH.glob("**/*"):
         if path.is_dir():
             continue

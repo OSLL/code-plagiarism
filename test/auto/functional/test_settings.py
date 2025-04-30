@@ -7,7 +7,7 @@ from typing_extensions import Self
 from utils import MaxDepth, NgramsLength, modify_settings
 
 from codeplag.consts import CONFIG_PATH, NGRAMS_LENGTH_CHOICE, UTIL_NAME
-from codeplag.types import Flag, Language, LogLevel, ReportsExtension, Threshold
+from codeplag.types import Flag, Language, LogLevel, ReportsExtension, ShortOutput, Threshold
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -35,7 +35,7 @@ class TestSettingsModify:
         max_depth: MaxDepth,
         ngrams_length: NgramsLength,
         show_progress: Flag,
-        short_output: Flag,
+        short_output: ShortOutput,
         reports_extension: ReportsExtension,
         language: Language,
         log_level: LogLevel,
@@ -73,15 +73,13 @@ class TestSettingsModify:
     @pytest.mark.parametrize(
         "env,reports,threshold,log_level,short_output",
         [
-            (".env", "src", 101, "debug", 0),
-            ("setup.py", "test983hskdfue", 67, "info", 0),
-            (f"src/{UTIL_NAME}/utils.pyjlsieuow0", "debian", 93, "warning", 0),
-            (f"src/{UTIL_NAME}/types.py", "src", 83, "foobar", 0),
-            (f"src/{UTIL_NAME}/types.py", "src", 83, "info", 2),
+            (".env", "src", 101, "debug", ShortOutput.NO_SHOW),
+            (f"src/{UTIL_NAME}/utils.pyjlsieuow0", "debian", 93, "warning", ShortOutput.SHOW_ALL),
+            (f"src/{UTIL_NAME}/types.py", "src", 83, "foobar", ShortOutput.SHOW_NEW),
+            (f"src/{UTIL_NAME}/types.py", "src", 83, "info", 3),
         ],
         ids=[
             "Incorrect threshold.",
-            "Path to reports doesn't exists.",
             "Path to environment doesn't exists.",
             "Invalid log level.",
             "Invalid short-output.",
@@ -93,7 +91,7 @@ class TestSettingsModify:
         reports: str,
         threshold: Threshold,
         log_level: LogLevel,
-        short_output: Flag,
+        short_output: ShortOutput,
     ) -> None:
         modify_settings(
             environment=env,

@@ -7,11 +7,11 @@ from codeplag.algorithms.tokenbased import value_jakkar_coef
 from codeplag.consts import DEFAULT_MAX_DEPTH, DEFAULT_NGRAMS_LENGTH, DEFAULT_WEIGHTS
 from codeplag.types import (
     ASTFeatures,
-    CompareInfo,
-    FastMetrics,
+    FastCompareInfo,
+    FullCompareInfo,
     MaxDepth,
     NgramsLength,
-    StructuresInfo,
+    StructureCompareInfo,
     Threshold,
 )
 
@@ -21,11 +21,11 @@ def fast_compare(
     features_s: ASTFeatures,
     ngrams_length: NgramsLength = DEFAULT_NGRAMS_LENGTH,
     weights: tuple[float, float, float, float] = DEFAULT_WEIGHTS,
-) -> FastMetrics:
+) -> FastCompareInfo:
     """Returns comparison result of two works compared by fast algorithms.
 
     Calculates the similarity of features of two programs using four algorithms, calculates their
-    weighted average, and returns all of this  in 'FastMetrics' structure.
+    weighted average, and returns all of this  in 'FastCompareInfo' structure.
 
     Args:
     ----
@@ -48,7 +48,7 @@ def fast_compare(
         np.array([jakkar_coef, ops_res, kw_res, lits_res]), weights=weights
     )
 
-    fast_metrics = FastMetrics(
+    fast_metrics = FastCompareInfo(
         jakkar=jakkar_coef,
         operators=ops_res,
         keywords=kw_res,
@@ -65,7 +65,7 @@ def compare_works(
     ngrams_length: NgramsLength = DEFAULT_NGRAMS_LENGTH,
     max_depth: MaxDepth = DEFAULT_MAX_DEPTH,
     threshold: Threshold | None = None,
-) -> CompareInfo:
+) -> FastCompareInfo | FullCompareInfo:
     """The function returns the complex result of comparing two works.
 
     Args:
@@ -79,18 +79,18 @@ def compare_works(
 
     Returns:
     -------
-        CompareInfo, which is the result of comparing works.
+        FastCompareInfo or FullCompareInfo, which is the result of comparing works.
         This can consist of fast metrics and, if the threshold
         value has been crossed, structure metric.
         If the threshold value is not set, it returns the structure
-        metric anywhere.
+        metric anywhere (FullCompareInfo).
 
     """
-    fast_metrics = fast_compare(
+    fast_compare_info = fast_compare(
         features_f=features1, features_s=features2, ngrams_length=ngrams_length
     )
-    if threshold and (fast_metrics.weighted_average * 100.0) < threshold:
-        return CompareInfo(fast=fast_metrics)
+    if threshold and (fast_compare_info.weighted_average * 100.0) < threshold:
+        return fast_compare_info
 
     compliance_matrix = np.empty(
         (len(features1.head_nodes), len(features2.head_nodes), 2), dtype=np.int64
@@ -102,6 +102,8 @@ def compare_works(
     )
     struct_res = struct_res[0] / struct_res[1]
 
-    structure_info = StructuresInfo(similarity=struct_res, compliance_matrix=compliance_matrix)
+    structure_info = StructureCompareInfo(
+        similarity=struct_res, compliance_matrix=compliance_matrix
+    )
 
-    return CompareInfo(fast=fast_metrics, structure=structure_info)
+    return FullCompareInfo(fast=fast_compare_info, structure=structure_info)

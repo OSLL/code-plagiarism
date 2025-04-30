@@ -1,4 +1,5 @@
 LOCALES_DIR                 := locales/
+TRANSLATIONS_DIR            := ${LOCALES_DIR}/translations
 
 
 translate-help:
@@ -20,22 +21,26 @@ translate-extract:
 		--copyright-holder "Codeplag Development Team" \
 		--last-translator "Artyom Semidolin" \
 		--output-file ${LOCALES_DIR}/${UTIL_NAME}.pot .
+	sed -ri '2 s/[0-9]{4}/2024-2025/' ${LOCALES_DIR}/${UTIL_NAME}.pot
+	sed -i -e '4d;10d;$$ d' ${LOCALES_DIR}/${UTIL_NAME}.pot
 
 translate-update: translate-extract
 	pybabel update --input-file ${LOCALES_DIR}/${UTIL_NAME}.pot \
 		--update-header-comment \
 		--domain ${UTIL_NAME} \
 		--ignore-pot-creation-date \
-		--output-dir ${LOCALES_DIR}/translations
+		--output-dir ${TRANSLATIONS_DIR}
+	sed -i -e '8d;$$ d' ${TRANSLATIONS_DIR}/en/LC_MESSAGES/${UTIL_NAME}.po
+	sed -i -e '8d;$$ d' ${TRANSLATIONS_DIR}/ru/LC_MESSAGES/${UTIL_NAME}.po
 
 translate-compile:
-	pybabel compile --directory ${LOCALES_DIR}/translations \
+	pybabel compile --directory ${TRANSLATIONS_DIR} \
 		--domain ${UTIL_NAME}
 
 translate-init:
 	@if [ -n "$(LANGUAGE)" ]; then \
 		pybabel init --input-file ${LOCALES_DIR}/${UTIL_NAME}.pot \
-			--output-dir ${LOCALES_DIR}/translations \
+			--output-dir ${TRANSLATIONS_DIR} \
 			--domain ${UTIL_NAME} \
 			--locale ${LANGUAGE}; \
 	else \

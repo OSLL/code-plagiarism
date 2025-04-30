@@ -1,40 +1,10 @@
 # Code Plagiarism Analysis
 
+Program for finding plagiarism in the source code written in Python 3, C, and C++ based on comparing AST metadata.
+
 ## 1. Install
 
-### 1.1 Manual installation on the local system from sources
-
-  First of all, clone the repository and moved into this.
-
-  ```
-  sudo apt install git # if not installed
-  git clone https://github.com/OSLL/code-plagiarism.git
-  cd code-plagiarism/
-  ```
-
-- OS Ubuntu Linux == 22.04
-
-- Python version == 3.10
-
-- Run these commands:
-
-  ```
-  sudo apt update
-  sudo apt install python3 python3-pip
-  sudo apt install clang libncurses5
-
-  # Optional
-  sudo apt install python3-venv
-  pip3 install virtualenv
-  python3 -m venv venv
-  source venv/bin/activate
-
-  pip3 install -U pip # pip3 version >= 19.0
-  pip3 install argparse-manpage==3 requests==2.31.0
-  pip3 install --upgrade setuptools # Ensure that an up-to-date version of setuptools is installed
-  make
-  ```
-### 1.2 Build and run local Docker container
+### 1.1 Build and run local Docker container
 
 - Create a code-plagiarism docker image
 
@@ -60,7 +30,7 @@
   $ make help
   ```
 
-### 1.3 Pull the Docker Image from Docker Hub
+### 1.2 Pull the Docker Image from Docker Hub
 
 - Pull an image from Docker Hub
   ```
@@ -73,11 +43,18 @@
   $ docker run --rm --tty --interactive --volume <absolute_local_path_with_data>:/usr/src/works "artanias/codeplag-ubuntu22.04:latest" /bin/bash
   ```
 
-### 1.4 Install with package manager apt-get
+### 1.3 Install with package manager apt-get
+
+- Requirements:
+  - OS Ubuntu Linux == 22.04
+  - Python version == 3.10
 
 - For this purpose, you need to get installing package from releases [tab](https://github.com/OSLL/code-plagiarism/releases) with extension .deb;
-- The next step is run command on the target system:
+- The next step is run commands on the target system:
   ```
+  $ sudo apt update
+  $ sudo apt install python3 python3-pip
+  $ sudo apt install clang libncurses5
   $ sudo apt-get install <path_to_the_package>/<package_name>.deb
   ```
 
@@ -91,6 +68,7 @@
   $ python3 -m pip install --requirement docs/notebooks/requirements.txt
   $ python3 -m pip install $(python3 -m setup.py --build-requirements)
   $ python3 -m pip install $(python3 -m setup.py --install-requirements)
+  $ python3 -m pip install pre-commit==4.1.0
   $ make pre-commit
   ```
 
