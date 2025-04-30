@@ -34,7 +34,7 @@ class AbstractReporter(ABC):
 
     @abstractmethod
     def get_result(
-            self: Self, work1: ASTFeatures, work2: ASTFeatures
+        self: Self, work1: ASTFeatures, work2: ASTFeatures
     ) -> FullCompareInfo | None: ...
 
 
@@ -53,10 +53,10 @@ class CSVReporter(AbstractReporter):
         self.__csv_last_save = monotonic()
 
     def save_result(
-            self: Self,
-            first_work: ASTFeatures,
-            second_work: ASTFeatures,
-            compare_info: FullCompareInfo,
+        self: Self,
+        first_work: ASTFeatures,
+        second_work: ASTFeatures,
+        compare_info: FullCompareInfo,
     ) -> None:
         """Updates the cache with new comparisons and writes it to the filesystem periodically.
 
