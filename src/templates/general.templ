@@ -79,10 +79,12 @@
             <table align="center">
                 <caption>{{ _("Metrics information") }}</caption>
                 <tr class="table__header">
+                    <th>{{ _("Type of compare") }}</th>
                     <th>{{ _("Metric") }}</th>
                     <th>{{ _("Value") }}, %</th>
                 </tr>
                 <tr class="table__row">
+                    <td rowspan="5">{{ _("Fast") }}</td>
                     <td>{{ _("Jaccard Coefficient") }}</td>
                     <td>{{ round(cmp_res.fast.jakkar * 100, 2) }}</td>
                 </tr>
@@ -101,6 +103,7 @@
                     <td>{{ _("Weighted average by fast metrics") }}</td>
                     <td>{{ round(cmp_res.fast.weighted_average * 100, 2) }}</td>
                 <tr class="table__row">
+                    <td>{{ _("Structure") }}</td>
                     <td>{{ _("Similarity of structures") }}</td>
                     <td>{{ round(cmp_res.structure.similarity * 100, 2) }}</td>
                 <tr>
