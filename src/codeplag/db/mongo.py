@@ -90,7 +90,9 @@ class ReportRepository:
             raise Exception('Mongo collection "%s" not found', self.COLLECTION_NAME)
         self.collection: Collection = collection
 
-    def get_compare_result(self: Self, work1: ASTFeatures, work2: ASTFeatures) -> FullCompareInfo | None:
+    def get_compare_result(
+            self: Self, work1: ASTFeatures, work2: ASTFeatures
+    ) -> FullCompareInfo | None:
         """
         Retrieve comparison result between two files from the compare_info collection.
 
@@ -226,7 +228,8 @@ class FeaturesRepository:
         # Validate SHA-256 hashes
         if document.get("sha256") != work.sha256:
             logger.warning(
-                f"SHA-256 mismatch for {document_id}: expected {work.sha256}, got {document.get('sha256')}"
+                f"SHA-256 mismatch for {document_id}: "
+                f"expected {work.sha256}, got {document.get('sha256')}"
             )
             return None
 
