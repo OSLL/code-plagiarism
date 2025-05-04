@@ -6,9 +6,9 @@ from pymongo.errors import ConnectionFailure
 from typing_extensions import Self
 
 from codeplag.consts import DEFAULT_MONGO_HOST, DEFAULT_MONGO_PASS, DEFAULT_MONGO_USER
-from codeplag.featurescache import AbstractFeaturesCache, serialize_features_to_dict
+from codeplag.featurescache import AbstractFeaturesCache, serialize_features_to_dict, deserialize_features_from_dict
 from codeplag.logger import codeplag_logger as logger
-from codeplag.reporters import AbstractReporter, serialize_compare_result_to_dict
+from codeplag.reporters import AbstractReporter, serialize_compare_result_to_dict, deserialize_compare_result_from_dict
 from codeplag.types import ASTFeatures, FullCompareInfo
 
 HOST = DEFAULT_MONGO_HOST
@@ -90,6 +90,46 @@ class ReportRepository:
             raise Exception('Mongo collection "%s" not found', self.COLLECTION_NAME)
         self.collection: Collection = collection
 
+    def get_compare_result(self: Self, work1: ASTFeatures, work2: ASTFeatures) -> FullCompareInfo | None:
+        """
+        Retrieve comparison result between two files from the compare_info collection.
+
+        The document is identified by sorted file paths:
+        _id = {"first": min(filepath), "second": max(filepath)}.
+        Returns None if SHA-256 hashes of either file do not match stored values.
+
+        Args:
+            work1 (ASTFeatures): First file metadata.
+            work2 (ASTFeatures): Second file metadata.
+
+        Returns:
+            FullCompareInfo | None: Deserialized comparison result if found and valid.
+        """
+        # Sort works by filepath to form the unique key
+        work1, work2 = sorted([work1, work2])
+        first_path, second_path = [str(work1.filepath), str(work2.filepath)]
+        document_id = {"first": first_path, "second": second_path}
+
+        # Find document in collection
+        document = self.collection.find_one(document_id)
+        if not document:
+            return None
+
+        # Validate SHA-256 hashes
+        if (
+                document["first_sha256"] != work1.sha256 or
+                document["second_sha256"] != work2.sha256
+        ):
+            return None
+
+        # Deserialize and return compare_info
+        try:
+            compare_info = deserialize_compare_result_from_dict(document["compare_info"])
+            return compare_info
+        except (AssertionError, KeyError, TypeError) as e:
+            logger.warning("Deserialization failed for document %s: %s", document_id, e)
+            return None
+
     def write_compare_info(
         self: Self, work1: ASTFeatures, work2: ASTFeatures, compare_info: FullCompareInfo
     ) -> None:
@@ -161,6 +201,42 @@ class FeaturesRepository:
         # Insert or update the document
         self.collection.update_one({"_id": document_id}, {"$set": document}, upsert=True)
         logger.debug(f"Document for path {document_id} successfully inserted/updated.")
+
+    def get_features(self: Self, work: ASTFeatures) -> ASTFeatures | None:
+        """
+        Retrieve AST features for a file from the features collection.
+
+        The document is identified by its file path (_id = filepath).
+        Returns None if the file's SHA-256 hash does not match the stored value.
+
+        Args:
+            work (ASTFeatures): File metadata used to search and validate the data.
+
+        Returns:
+            ASTFeatures | None: Deserialized AST features if found and valid.
+        """
+        document_id = str(work.filepath)
+
+        # Find document in collection
+        document = self.collection.find_one({"_id": document_id})
+        if not document:
+            logger.debug(f"No document found for file path: {document_id}")
+            return None
+
+        # Validate SHA-256 hashes
+        if document.get("sha256") != work.sha256:
+            logger.warning(
+                f"SHA-256 mismatch for {document_id}: expected {work.sha256}, got {document.get('sha256')}"
+            )
+            return None
+
+        # Deserialize and return features
+        try:
+            features = deserialize_features_from_dict(document["features"])
+            return features
+        except Exception as e:
+            logger.warning(f"Failed to deserialize features for {document_id}: {e}")
+            return None
 
 
 class MongoReporter(AbstractReporter):
