@@ -1,4 +1,6 @@
 import atexit
+from datetime import datetime
+from typing import NamedTuple
 
 from pymongo import MongoClient
 from pymongo.collection import Collection
@@ -58,7 +60,7 @@ class MongoDBConnection:
         Raises an exception if the connection fails.
         """
         try:
-            self.client = MongoClient(self.url, serverSelectionTimeoutMS=5000)
+            self.client = MongoClient(self.url, serverSelectionTimeoutMS=3000)
             self.client.admin.command("ping")  # Checking the connection
             logger.debug("Successfully connected to MongoDB!")
             self.db = self.client[self.db_name]
@@ -88,6 +90,15 @@ class MongoDBConnection:
 
 
 class ReportRepository:
+    class CompareInfoDocument(NamedTuple):
+        """Compare Info Document structure."""
+
+        first_sha256: str
+        second_sha256: str
+        first_modify_date: datetime
+        second_modify_date: datetime
+        compare_info: FullCompareInfo
+
     COLLECTION_NAME: str = "compare_info"
 
     def __init__(self: Self, mongo_connection: MongoDBConnection) -> None:
@@ -100,7 +111,7 @@ class ReportRepository:
 
     def get_compare_info(
         self: Self, work1: ASTFeatures, work2: ASTFeatures
-    ) -> FullCompareInfo | None:
+    ) -> CompareInfoDocument | None:
         """Retrieve comparison result between two files from the compare_info collection.
 
         The document is identified by sorted file paths:
@@ -112,7 +123,7 @@ class ReportRepository:
             work2 (ASTFeatures): Second file metadata.
 
         Returns:
-            FullCompareInfo | None: Deserialized comparison result if found and valid.
+            ReportType | None: Deserialized comparison result if found and valid.
         """
         # Sort works by filepath to form the unique key
         work1, work2 = sorted([work1, work2])
@@ -126,7 +137,13 @@ class ReportRepository:
 
         # Deserialize and return compare_info
         compare_info = deserialize_compare_result_from_dict(document["compare_info"])
-        return compare_info
+        return self.CompareInfoDocument(
+            first_sha256=document["first_sha256"],
+            second_sha256=document["second_sha256"],
+            first_modify_date=document["first_modify_date"],
+            second_modify_date=document["second_modify_date"],
+            compare_info=compare_info,
+        )
 
     def write_compare_info(
         self: Self, work1: ASTFeatures, work2: ASTFeatures, compare_info: FullCompareInfo
@@ -250,7 +267,22 @@ class MongoReporter(AbstractReporter):
         work1: ASTFeatures,
         work2: ASTFeatures,
     ) -> FullCompareInfo | None:
-        return None
+        """Get compare info from MongoDB cache if relevant.
+
+        Args:
+            work1 (ASTFeatures): Contains the first work metadata.
+            work2 (ASTFeatures): Contains the second work metadata.
+        """
+        cache_val = self.repository.get_compare_info(work1, work2)
+
+        if (
+            cache_val
+            and cache_val.first_sha256 == work1.sha256
+            and cache_val.second_sha256 == work2.sha256
+        ):
+            return cache_val.compare_info
+        else:
+            return None
 
 
 class MongoFeaturesCache(AbstractFeaturesCache):
@@ -266,4 +298,14 @@ class MongoFeaturesCache(AbstractFeaturesCache):
         self.repository.write_features(features)
 
     def get_features(self: Self, work: ASTFeatures) -> ASTFeatures | None:
-        return None
+        """Get work metadata from MongoDB cache if relevant.
+
+        Args:
+            work (ASTFeatures): Contains work metadata.
+        """
+        features = self.repository.get_features(work)
+
+        if features and features.sha256 == work.sha256:
+            return features
+        else:
+            return None
