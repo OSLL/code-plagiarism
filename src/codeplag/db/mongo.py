@@ -120,7 +120,7 @@ class ReportRepository:
         document_id = {"first": first_path, "second": second_path}
 
         # Find document in collection
-        document = self.collection.find_one(document_id)
+        document = self.collection.find_one({"_id": document_id})
         if not document:
             return None
 
