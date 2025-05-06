@@ -5,8 +5,8 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: codeplag 0.5.19\n"
-"POT-Creation-Date: 2025-04-20 19:57+0300\n"
+"Project-Id-Version: codeplag 0.5.21\n"
+"POT-Creation-Date: 2025-05-04 14:26+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Artyom Semidolin\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -268,55 +268,67 @@ msgid "Metrics information"
 msgstr ""
 
 #: src/templates/general.templ:82
-msgid "Metric"
+msgid "Type of compare"
 msgstr ""
 
 #: src/templates/general.templ:83
+msgid "Metric"
+msgstr ""
+
+#: src/templates/general.templ:84
 msgid "Value"
 msgstr ""
 
-#: src/templates/general.templ:86
+#: src/templates/general.templ:87
+msgid "Fast"
+msgstr ""
+
+#: src/templates/general.templ:88
 msgid "Jaccard Coefficient"
 msgstr ""
 
-#: src/templates/general.templ:90
+#: src/templates/general.templ:92
 msgid "Similarity of operators"
 msgstr ""
 
-#: src/templates/general.templ:94
+#: src/templates/general.templ:96
 msgid "Similarity of keywords"
 msgstr ""
 
-#: src/templates/general.templ:98
+#: src/templates/general.templ:100
 msgid "Similarity of literals"
 msgstr ""
 
-#: src/templates/general.templ:101
+#: src/templates/general.templ:103
 msgid "Weighted average by fast metrics"
 msgstr ""
 
-#: src/templates/general.templ:104
+#: src/templates/general.templ:106
+msgid "Structure"
+msgstr ""
+
+#: src/templates/general.templ:107
 msgid "Similarity of structures"
 msgstr ""
 
-#: src/templates/general.templ:110
+#: src/templates/general.templ:113
 msgid "Similar parts of the second program relative to the first"
 msgstr ""
 
-#: src/templates/general.templ:112 src/templates/general.templ:144
+#: src/templates/general.templ:115 src/templates/general.templ:147
 msgid "Part of the first program"
 msgstr ""
 
-#: src/templates/general.templ:113 src/templates/general.templ:143
+#: src/templates/general.templ:116 src/templates/general.templ:146
 msgid "Part of the second program"
 msgstr ""
 
-#: src/templates/general.templ:114 src/templates/general.templ:145
+#: src/templates/general.templ:117 src/templates/general.templ:148
 #: src/templates/sources.templ:88
 msgid "Similarity"
 msgstr ""
 
-#: src/templates/general.templ:141
+#: src/templates/general.templ:144
 msgid "Similar parts of the first program relative to the second"
 msgstr ""
 
