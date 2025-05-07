@@ -26,6 +26,7 @@ USER = DEFAULT_MONGO_USER
 PASSWORD = DEFAULT_MONGO_PASS
 PORT = 27017
 
+
 class MongoDBConnection:
     def __init__(
         self: Self,
@@ -39,6 +40,7 @@ class MongoDBConnection:
 
         Args:
             host (str): MongoDB host address.
+            port (int): MongoDB port number. Defaults to 27017.
             user (str): MongoDB username for authentication.
             password (str): MongoDB password for authentication.
             db_name (str): Name of the database to connect to.
