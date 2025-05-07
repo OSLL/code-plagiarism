@@ -24,12 +24,13 @@ from codeplag.types import ASTFeatures, FullCompareInfo
 HOST = DEFAULT_MONGO_HOST
 USER = DEFAULT_MONGO_USER
 PASSWORD = DEFAULT_MONGO_PASS
-
+PORT = 27017
 
 class MongoDBConnection:
     def __init__(
         self: Self,
         host: str = HOST,
+        port: int = PORT,
         user: str = USER,
         password: str = PASSWORD,
         db_name: str = "new_database",
@@ -42,7 +43,7 @@ class MongoDBConnection:
             password (str): MongoDB password for authentication.
             db_name (str): Name of the database to connect to.
         """
-        self.url = f"mongodb://{user}:{password}@{host}:27017/"
+        self.url = f"mongodb://{user}:{password}@{host}:{port}/"
         self.db_name = db_name
         self.client = None
         self.db = None
@@ -60,7 +61,7 @@ class MongoDBConnection:
         Raises an exception if the connection fails.
         """
         try:
-            self.client = MongoClient(self.url, serverSelectionTimeoutMS=3000)
+            self.client = MongoClient(self.url, serverSelectionTimeoutMS=10000)
             self.client.admin.command("ping")  # Checking the connection
             logger.debug("Successfully connected to MongoDB!")
             self.db = self.client[self.db_name]
