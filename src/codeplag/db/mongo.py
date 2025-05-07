@@ -7,7 +7,12 @@ from pymongo.collection import Collection
 from pymongo.errors import ConnectionFailure
 from typing_extensions import Self
 
-from codeplag.consts import DEFAULT_MONGO_HOST, DEFAULT_MONGO_PASS, DEFAULT_MONGO_USER
+from codeplag.consts import (
+    DEFAULT_MONGO_HOST,
+    DEFAULT_MONGO_PASS,
+    DEFAULT_MONGO_PORT,
+    DEFAULT_MONGO_USER,
+)
 from codeplag.featurescache import (
     AbstractFeaturesCache,
     deserialize_features_from_dict,
@@ -24,7 +29,7 @@ from codeplag.types import ASTFeatures, FullCompareInfo
 HOST = DEFAULT_MONGO_HOST
 USER = DEFAULT_MONGO_USER
 PASSWORD = DEFAULT_MONGO_PASS
-PORT = 27017
+PORT = DEFAULT_MONGO_PORT
 
 
 class MongoDBConnection:
