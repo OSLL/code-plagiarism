@@ -1,6 +1,7 @@
+import time
+
 import pytest
 from testcontainers.mongodb import MongoDbContainer
-import time
 
 from codeplag.db.mongo import (
     DEFAULT_MONGO_PASS,
@@ -23,7 +24,7 @@ def mongo_container():
     ) as mongo:
         mongo.start()
         # Фиксированная задержка для инициализации MongoDB
-        time.sleep(5)
+        time.sleep(10)
         yield mongo
 
 
