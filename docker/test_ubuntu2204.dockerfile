@@ -7,7 +7,6 @@ ARG LOGS_PATH
 ARG UTIL_NAME
 
 ENV DEBIAN_FRONTEND=noninteractive
-ENV TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal
 
 RUN apt-get update
 RUN apt-get install -y debhelper
