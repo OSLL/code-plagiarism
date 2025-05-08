@@ -1,5 +1,6 @@
 import pytest
 from testcontainers.mongodb import MongoDbContainer
+import time
 
 from codeplag.db.mongo import (
     DEFAULT_MONGO_PASS,
@@ -21,6 +22,8 @@ def mongo_container():
         "mongo:6.0", username=DEFAULT_MONGO_USER, password=DEFAULT_MONGO_PASS
     ) as mongo:
         mongo.start()
+        # Фиксированная задержка для инициализации MongoDB
+        time.sleep(5)
         yield mongo
 
 

@@ -68,7 +68,7 @@ class MongoDBConnection:
         Raises an exception if the connection fails.
         """
         try:
-            self.client = MongoClient(self.url, serverSelectionTimeoutMS=10000)
+            self.client = MongoClient(self.url, serverSelectionTimeoutMS=3000)
             self.client.admin.command("ping")  # Checking the connection
             logger.debug("Successfully connected to MongoDB!")
             self.db = self.client[self.db_name]
