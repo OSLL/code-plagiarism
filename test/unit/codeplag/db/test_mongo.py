@@ -1,7 +1,6 @@
 import pytest
 from testcontainers.mongodb import MongoDbContainer
 
-from codeplag.algorithms.compare import compare_works
 from codeplag.db.mongo import (
     DEFAULT_MONGO_PASS,
     DEFAULT_MONGO_USER,
@@ -89,8 +88,12 @@ class TestReportRepository:
         assert result is not None, "Результат сравнения не должен быть None"
         assert result.first_sha256 == first_features.sha256, "Хеш первого файла не совпадает"
         assert result.second_sha256 == second_features.sha256, "Хеш второго файла не совпадает"
-        assert result.first_modify_date == first_features.modify_date, "Дата изменения первого файла не совпадает"
-        assert result.second_modify_date == second_features.modify_date, "Дата изменения второго файла не совпадает"
+        assert result.first_modify_date == first_features.modify_date, (
+            "Дата изменения первого файла не совпадает"
+        )
+        assert result.second_modify_date == second_features.modify_date, (
+            "Дата изменения второго файла не совпадает"
+        )
         # Дополнительная проверка структуры сравнения
         assert isinstance(result.compare_info, FullCompareInfo), (
             "Результат сравнения должен быть FullCompareInfo"
@@ -119,10 +122,9 @@ class TestReportRepository:
         )
 
         # Сравниваем взвешенное среднее - обобщенную оценку схожести с учетом весов
-        assert result.compare_info.fast.weighted_average == first_compare_result.fast.weighted_average, (
-            "Взвешенное среднее не соответствует исходному значению"
-        )
-
+        assert (
+            result.compare_info.fast.weighted_average == first_compare_result.fast.weighted_average
+        ), "Взвешенное среднее не соответствует исходному значению"
 
     def test_report_repository_nonexistent_comparison(
         self,
@@ -160,19 +162,24 @@ class TestFeaturesRepository:
         assert result is not None, "Результат не должен быть None"
         assert result.sha256 == first_features.sha256, "Хеш файла не совпадает"
         assert str(result.filepath) == str(first_features.filepath), "Путь к файлу не совпадает"
-        assert result.modify_date == first_features.modify_date, "Дата изменения файла не совпадает"
-        assert result.count_of_nodes == first_features.count_of_nodes, "Количество узлов AST не совпадает"
+        assert result.modify_date == first_features.modify_date, (
+            "Дата изменения файла не совпадает"
+        )
+        assert result.count_of_nodes == first_features.count_of_nodes, (
+            "Количество узлов AST не совпадает"
+        )
         assert result.head_nodes == first_features.head_nodes, "Список головных узлов не совпадает"
         assert result.operators == first_features.operators, "Операторы AST не совпадают"
         assert result.keywords == first_features.keywords, "Ключевые слова AST не совпадают"
         assert result.literals == first_features.literals, "Литералы AST не совпадают"
         assert result.unodes == first_features.unodes, "Уникальные узлы AST не совпадают"
         assert result.from_num == first_features.from_num, "from_num отображение не совпадает"
-        assert result.count_unodes == first_features.count_unodes, "Количество уникальных узлов не совпадает"
+        assert result.count_unodes == first_features.count_unodes, (
+            "Количество уникальных узлов не совпадает"
+        )
         assert result.structure == first_features.structure, "Структура AST не совпадает"
         assert result.tokens == first_features.tokens, "Список токенов не совпадает"
         assert result.tokens_pos == first_features.tokens_pos, "Позиции токенов не совпадают"
-
 
     def test_features_repository_nonexistent_file(
         self, features_repository: FeaturesRepository, third_features: ASTFeatures
