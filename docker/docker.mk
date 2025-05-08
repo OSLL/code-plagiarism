@@ -39,7 +39,7 @@ docker-test-image: docker-base-image
 docker-test: docker-test-image
 	docker run --rm \
 		--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
-		--volume /var/run/docker.sock.raw:/var/run/docker.sock \
+		--volume /var/run/docker.sock:/var/run/docker.sock \
 		"$(TEST_DOCKER_TAG)"
 
 docker-autotest: docker-test-image docker-build-package
