@@ -78,7 +78,7 @@ def test_file_path_bad(path: str):
         ],
         ["check", "--extension", "py", "--files", "setup.py", "setup.py"],
         ["check", "--extension", "pypy"],
-        ["check", "--extension", "py", "--db-enabled", "True", "--mongo-host", "test_host"],
+        ["check", "--extension", "py", "--db-enabled", "1", "--mongo-host", "test_host"],
     ],
     ids=[
         "Twice repeated directory.",
@@ -142,7 +142,7 @@ def test_get_parsed_args_failed(args: list[str]):
                 "--extension",
                 "py",
                 "--db-enabled",
-                "True",
+                "1",
                 "--mongo-host",
                 "test_host",
                 "--mongo-user",
@@ -153,7 +153,7 @@ def test_get_parsed_args_failed(args: list[str]):
             {
                 "root": "check",
                 "extension": "py",
-                "db_enabled": True,
+                "db_enabled": 1,
                 "mongo_host": "test_host",
                 "mongo_user": "test_user",
                 "mongo_pass": "test_pass"
