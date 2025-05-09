@@ -36,22 +36,16 @@ def mongo_connection(mongo_container: MongoDbContainer) -> MongoDBConnection:
     """
     host = mongo_container.get_container_host_ip()
     port = int(mongo_container.get_exposed_port(27017))
-
-    conn = MongoDBConnection(host=host, port=port)
+    mongo_user = DEFAULT_MONGO_USER
+    mongo_pass = DEFAULT_MONGO_PASS
+    conn = MongoDBConnection(
+        host=host,
+        port=port,
+        user=mongo_user,
+        password=mongo_pass,
+    )
     yield conn
     conn.disconnect()
-
-
-@pytest.fixture
-def report_repository(mongo_connection: MongoDbContainer):
-    """Фикстура создает репозиторий для работы с отчетами сравнений."""
-    return ReportRepository(mongo_connection)
-
-
-@pytest.fixture
-def features_repository(mongo_connection: MongoDbContainer):
-    """Фикстура создает репозиторий для работы с фичами AST."""
-    return FeaturesRepository(mongo_connection)
 
 
 class TestMongoDBInfrastructure:
@@ -68,6 +62,11 @@ class TestMongoDBInfrastructure:
 
 class TestReportRepository:
     """Тесты для ReportRepository."""
+
+    @pytest.fixture
+    def report_repository(self, mongo_connection: MongoDbContainer):
+        """Фикстура создает репозиторий для работы с отчетами сравнений."""
+        return ReportRepository(mongo_connection)
 
     def test_report_repository_write_and_get(
         self,
@@ -105,27 +104,22 @@ class TestReportRepository:
 
         # Полное сравнение результатов быстрого сравнения (FastCompareInfo)
         # -----------------------------------------------------------------
-        # Сравниваем коэффициент Жаккара (Jaccard similarity) - меру схожести множеств
         assert result.compare_info.fast.jakkar == first_compare_result.fast.jakkar, (
             "Коэффициент Жаккара не совпадает с исходным значением"
         )
 
-        # Сравниваем схожесть операторов - процент совпадения операторов между файлами
         assert result.compare_info.fast.operators == first_compare_result.fast.operators, (
             "Процент совпадения операторов не соответствует исходному"
         )
 
-        # Сравниваем схожесть ключевых слов - процент совпадения ключевых слов языка
         assert result.compare_info.fast.keywords == first_compare_result.fast.keywords, (
             "Процент совпадения ключевых слов не соответствует исходному"
         )
 
-        # Сравниваем схожесть литералов - процент совпадения литеральных значений
         assert result.compare_info.fast.literals == first_compare_result.fast.literals, (
             "Процент совпадения литералов не соответствует исходному"
         )
 
-        # Сравниваем взвешенное среднее - обобщенную оценку схожести с учетом весов
         assert (
             result.compare_info.fast.weighted_average == first_compare_result.fast.weighted_average
         ), "Взвешенное среднее не соответствует исходному значению"
@@ -146,6 +140,11 @@ class TestReportRepository:
 
 class TestFeaturesRepository:
     """Тесты для FeaturesRepository."""
+
+    @pytest.fixture
+    def features_repository(self, mongo_connection: MongoDbContainer):
+        """Фикстура создает репозиторий для работы с фичами AST."""
+        return FeaturesRepository(mongo_connection)
 
     def test_features_repository_write_and_get(
         self, features_repository: FeaturesRepository, first_features: ASTFeatures
