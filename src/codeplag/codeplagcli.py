@@ -22,8 +22,8 @@ from codeplag.consts import (
     UTIL_NAME,
     UTIL_VERSION,
     WORKERS_CHOICE,
-    DEFAULT_DB_ENABLED,
     DEFAULT_MONGO_HOST,
+    DEFAULT_MONGO_PORT,
     DEFAULT_MONGO_USER,
     DEFAULT_MONGO_PASS,
 )
@@ -202,19 +202,19 @@ class CodeplagCLI(argparse.ArgumentParser):
             choices=WORKERS_CHOICE,
         )
         settings_modify.add_argument(
-            "-dbe",
-            "--db-enabled",
-            help=_("Enable or disable the database."),
-            type=int,
-            choices=[0, 1],
-            default=DEFAULT_DB_ENABLED,
-        )
-        settings_modify.add_argument(
             "-mh",
             "--mongo-host",
             help=_("The host address of the MongoDB server."),
             type=str,
             default=DEFAULT_MONGO_HOST,
+        )
+        settings_modify.add_argument(
+            "-mp",
+            "--mongo-port",
+            help=_("The port of the MongoDB."),
+            type=int,
+            choices=range(0, 65535),
+            default=DEFAULT_MONGO_PORT,
         )
         settings_modify.add_argument(
             "-mu",
@@ -282,35 +282,6 @@ class CodeplagCLI(argparse.ArgumentParser):
             "--ignore-threshold",
             action="store_true",
             help=_("Ignore the threshold when checking of works."),
-        )
-        check.add_argument(
-            "-dbe",
-            "--db-enabled",
-            help=_("Enable or disable the database."),
-            type=int,
-            choices=[0, 1],
-            default=DEFAULT_DB_ENABLED,
-        )
-        check.add_argument(
-            "-mh",
-            "--mongo-host",
-            help=_("The host address of the MongoDB server."),
-            type=str,
-            default=DEFAULT_MONGO_HOST,
-        )
-        check.add_argument(
-            "-mu",
-            "--mongo-user",
-            help=_("The username for connecting to the MongoDB server."),
-            type=str,
-            default=DEFAULT_MONGO_USER,
-        )
-        check.add_argument(
-            "-mp",
-            "--mongo-pass",
-            help=_("The password for connecting to the MongoDB server."),
-            type=str,
-            default=DEFAULT_MONGO_PASS,
         )
 
         check_required = check.add_argument_group("required options")
@@ -488,6 +459,15 @@ class CodeplagCLI(argparse.ArgumentParser):
             and any([parsed_args.first_root_path, parsed_args.second_root_path])
         ):
             self.error(_("All paths must be provided."))
+        elif (
+            root == "settings"
+            and command == "modify"
+        ):
+            if parsed_args.mongo_port is not None and (parsed_args.mongo_port < 0 or parsed_args.mongo_port > 65535):
+                self.error(_("Mongo port must be between 0 and 65535."))
+            if (parsed_args.mongo_user is not None or parsed_args.mongo_pass is not None) and \
+               (parsed_args.mongo_user is None or parsed_args.mongo_pass is None):
+                self.error(_("Both mongo user and password must be provided."))
 
     def parse_args(self: Self, args: list[str] | None = None) -> argparse.Namespace:
         parsed_args = super(CodeplagCLI, self).parse_args(args)

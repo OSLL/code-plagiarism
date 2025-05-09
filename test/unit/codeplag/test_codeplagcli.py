@@ -56,6 +56,37 @@ def test_file_path_bad(path: str):
         FilePath(path)
 
 
+# @pytest.mark.parametrize(
+#     "args",
+#     [
+#         ["check", "--extension", "py", "--directories", "src/", "src/"],
+#         [
+#             "check",
+#             "--extension",
+#             "py",
+#             "--github-project-folders",
+#             "https://github.com/OSLL/code-plagiarism/tree/main/src",
+#             "https://github.com/OSLL/code-plagiarism/tree/main/src",
+#         ],
+#         [
+#             "check",
+#             "--extension",
+#             "py",
+#             "--github-files",
+#             "https://github.com/OSLL/code-plagiarism/blob/main/setup.py",
+#             "https://github.com/OSLL/code-plagiarism/blob/main/setup.py",
+#         ],
+#         ["check", "--extension", "py", "--files", "setup.py", "setup.py"],
+#         ["check", "--extension", "pypy"],
+#     ],
+#     ids=[
+#         "Twice repeated directory.",
+#         "Twice repeated GitHub project folder.",
+#         "Twice repeated GitHub file.",
+#         "Twice repeated file.",
+#         "Invalid extension.",
+#     ],
+# )
 @pytest.mark.parametrize(
     "args",
     [
@@ -78,7 +109,10 @@ def test_file_path_bad(path: str):
         ],
         ["check", "--extension", "py", "--files", "setup.py", "setup.py"],
         ["check", "--extension", "pypy"],
-        ["check", "--extension", "py", "--db-enabled", "0", "--mongo-host", "test_host"],
+        ["settings", "modify", "--mongo-port", "-1"],
+        ["settings", "modify", "--mongo-port", "65536"],
+        ["settings", "modify", "--mongo-user", "test"],
+        ["settings", "modify", "--mongo-pass", "test"],
     ],
     ids=[
         "Twice repeated directory.",
@@ -86,7 +120,10 @@ def test_file_path_bad(path: str):
         "Twice repeated GitHub file.",
         "Twice repeated file.",
         "Invalid extension.",
-        "Incorrect db-enabled and mongo-host arguments."
+        "Mongo port less than 0",
+        "Mongo port more than 65535",
+        "Mongo user without mongo pass",
+        "Mongo pass without mongo user",
     ],
 )
 def test_get_parsed_args_failed(args: list[str]):
@@ -95,6 +132,55 @@ def test_get_parsed_args_failed(args: list[str]):
         codeplagcli.parse_args(args=args)
 
 
+# @pytest.mark.parametrize(
+#     "args,expected",
+#     [
+#         (["check", "--extension", "cpp"], {"extension": "cpp", "root": "check"}),
+#         (
+#             ["check", "--extension", "py", "--files", "setup.py"],
+#             {"extension": "py", "root": "check", "files": [Path("setup.py").absolute()]},
+#         ),
+#         (
+#             ["report", "create", "--path", "./", "--type", "general"],
+#             {
+#                 "root": "report",
+#                 "report": "create",
+#                 "type": "general",
+#                 "path": Path("./"),
+#                 "first_root_path": None,
+#                 "second_root_path": None,
+#             },
+#         ),
+#         (
+#             [
+#                 "report",
+#                 "create",
+#                 "--path",
+#                 "./",
+#                 "--type",
+#                 "general",
+#                 "--first-root-path",
+#                 "codeplag",
+#                 "--second-root-path",
+#                 "webparsers",
+#             ],
+#             {
+#                 "root": "report",
+#                 "report": "create",
+#                 "type": "general",
+#                 "path": Path("./"),
+#                 "first_root_path": "codeplag",
+#                 "second_root_path": "webparsers",
+#             },
+#         ),
+#     ],
+#     ids=[
+#         "Only extension provided.",
+#         "Extension and one file provided.",
+#         "Create general report from all records.",
+#         "Create general report from selected records.",
+#     ],
+# )
 @pytest.mark.parametrize(
     "args,expected",
     [
@@ -138,25 +224,35 @@ def test_get_parsed_args_failed(args: list[str]):
         ),
         (
             [
-                "check",
-                "--extension",
-                "py",
-                "--db-enabled",
-                "1",
+                "settings",
+                "modify",
                 "--mongo-host",
                 "test_host",
+                "--mongo-port",
+                "1234",
                 "--mongo-user",
                 "test_user",
                 "--mongo-pass",
-                "test_pass"
+                "test_pass",
             ],
             {
-                "root": "check",
-                "extension": "py",
-                "db_enabled": 1,
+                "root": "settings",
+                "settings": "modify",
+                "environment": None,
+                "reports": None,
+                "reports_extension": None,
+                "show_progress": None,
+                "short_output": None,
+                "threshold": None,
+                "max_depth": None,
+                "ngrams_length": None,
+                "language": None,
+                "log_level": None,
+                "workers": None,
                 "mongo_host": "test_host",
+                "mongo_port": 1234,
                 "mongo_user": "test_user",
-                "mongo_pass": "test_pass"
+                "mongo_pass": "test_pass",
             },
         ),
     ],
@@ -165,7 +261,7 @@ def test_get_parsed_args_failed(args: list[str]):
         "Extension and one file provided.",
         "Create general report from all records.",
         "Create general report from selected records.",
-        "Check with db enabled and credentials",
+        "Modify mongo settings",
     ],
 )
 def test_get_parsed_args(args: list[str], expected: argparse.Namespace):
