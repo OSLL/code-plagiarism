@@ -171,6 +171,10 @@ class Settings(TypedDict):
     ngrams_length: NgramsLength
     threshold: Threshold
     workers: int
+    db_enabled: bool
+    mongo_host: str
+    mongo_user: str
+    mongo_pass: str
 
 
 class SameHead(NamedTuple):

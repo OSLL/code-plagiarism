@@ -22,6 +22,10 @@ from codeplag.consts import (
     UTIL_NAME,
     UTIL_VERSION,
     WORKERS_CHOICE,
+    DEFAULT_DB_ENABLED,
+    DEFAULT_MONGO_HOST,
+    DEFAULT_MONGO_USER,
+    DEFAULT_MONGO_PASS,
 )
 from codeplag.types import Settings
 from webparsers.types import GitHubContentUrl
@@ -196,6 +200,35 @@ class CodeplagCLI(argparse.ArgumentParser):
             help=_("The maximum number of processes that can be used to compare works."),
             type=int,
             choices=WORKERS_CHOICE,
+        )
+        settings_modify.add_argument(
+            "-dbe",
+            "--db-enabled",
+            help=_("Enable or disable the database."),
+            type=int,
+            choices=[0, 1],
+            default=DEFAULT_DB_ENABLED,
+        )
+        settings_modify.add_argument(
+            "-mh",
+            "--mongo-host",
+            help=_("The host address of the MongoDB server."),
+            type=str,
+            default=DEFAULT_MONGO_HOST,
+        )
+        settings_modify.add_argument(
+            "-mu",
+            "--mongo-user",
+            help=_("The username for connecting to the MongoDB server."),
+            type=str,
+            default=DEFAULT_MONGO_USER,
+        )
+        settings_modify.add_argument(
+            "-mp",
+            "--mongo-pass",
+            help=_("The password for connecting to the MongoDB server."),
+            type=str,
+            default=DEFAULT_MONGO_PASS,
         )
 
         # settings show

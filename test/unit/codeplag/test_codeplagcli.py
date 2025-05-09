@@ -78,6 +78,7 @@ def test_file_path_bad(path: str):
         ],
         ["check", "--extension", "py", "--files", "setup.py", "setup.py"],
         ["check", "--extension", "pypy"],
+        ["check", "--extension", "py", "--db-enabled", "True", "--mongo-host", "test_host"],
     ],
     ids=[
         "Twice repeated directory.",
@@ -85,6 +86,7 @@ def test_file_path_bad(path: str):
         "Twice repeated GitHub file.",
         "Twice repeated file.",
         "Invalid extension.",
+        "Incorrect db-enabled and mongo-host arguments."
     ],
 )
 def test_get_parsed_args_failed(args: list[str]):
@@ -134,12 +136,36 @@ def test_get_parsed_args_failed(args: list[str]):
                 "second_root_path": "webparsers",
             },
         ),
+        (
+            [
+                "check",
+                "--extension",
+                "py",
+                "--db-enabled",
+                "True",
+                "--mongo-host",
+                "test_host",
+                "--mongo-user",
+                "test_user",
+                "--mongo-pass",
+                "test_pass"
+            ],
+            {
+                "root": "check",
+                "extension": "py",
+                "db_enabled": True,
+                "mongo_host": "test_host",
+                "mongo_user": "test_user",
+                "mongo_pass": "test_pass"
+            },
+        ),
     ],
     ids=[
         "Only extension provided.",
         "Extension and one file provided.",
         "Create general report from all records.",
         "Create general report from selected records.",
+        "Check with db enabled and credentials",
     ],
 )
 def test_get_parsed_args(args: list[str], expected: argparse.Namespace):

@@ -11,6 +11,10 @@ from codeplag.consts import (
     DEFAULT_REPORT_EXTENSION,
     DEFAULT_THRESHOLD,
     DEFAULT_WORKERS,
+    DEFAULT_DB_ENABLED,
+    DEFAULT_MONGO_HOST,
+    DEFAULT_MONGO_USER,
+    DEFAULT_MONGO_PASS
 )
 from codeplag.logger import codeplag_logger as logger
 from codeplag.types import Settings, ShortOutput
@@ -90,4 +94,8 @@ DefaultSettingsConfig = Settings(
     language=DEFAULT_LANGUAGE,
     log_level=DEFAULT_LOG_LEVEL,
     workers=DEFAULT_WORKERS,
+    db_enabled=DEFAULT_DB_ENABLED,
+    mongo_host=DEFAULT_MONGO_HOST,
+    mongo_user=DEFAULT_MONGO_USER,
+    mongo_pass=DEFAULT_MONGO_PASS,
 )
