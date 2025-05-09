@@ -46,6 +46,7 @@ DEFAULT_DB_ENABLED: Final[bool] = True
 DEFAULT_MONGO_HOST: Final[str] = "host.docker.internal"
 DEFAULT_MONGO_USER: Final[str] = "root"
 DEFAULT_MONGO_PASS: Final[str] = "example"
+DEFAULT_MONGO_PORT: Final[int] = 27017
 # =============
 
 GET_FRAZE: Final[str] = "Getting works features from"

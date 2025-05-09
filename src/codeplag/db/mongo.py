@@ -7,7 +7,12 @@ from pymongo.collection import Collection
 from pymongo.errors import ConnectionFailure
 from typing_extensions import Self
 
-from codeplag.consts import DEFAULT_MONGO_HOST, DEFAULT_MONGO_PASS, DEFAULT_MONGO_USER
+from codeplag.consts import (
+    DEFAULT_MONGO_HOST,
+    DEFAULT_MONGO_PASS,
+    DEFAULT_MONGO_PORT,
+    DEFAULT_MONGO_USER,
+)
 from codeplag.featurescache import (
     AbstractFeaturesCache,
     deserialize_features_from_dict,
@@ -24,12 +29,14 @@ from codeplag.types import ASTFeatures, FullCompareInfo
 HOST = DEFAULT_MONGO_HOST
 USER = DEFAULT_MONGO_USER
 PASSWORD = DEFAULT_MONGO_PASS
+PORT = DEFAULT_MONGO_PORT
 
 
 class MongoDBConnection:
     def __init__(
         self: Self,
         host: str = HOST,
+        port: int = PORT,
         user: str = USER,
         password: str = PASSWORD,
         db_name: str = "new_database",
@@ -38,11 +45,12 @@ class MongoDBConnection:
 
         Args:
             host (str): MongoDB host address.
+            port (int): MongoDB port number. Defaults to 27017.
             user (str): MongoDB username for authentication.
             password (str): MongoDB password for authentication.
             db_name (str): Name of the database to connect to.
         """
-        self.url = f"mongodb://{user}:{password}@{host}:27017/"
+        self.url = f"mongodb://{user}:{password}@{host}:{port}/"
         self.db_name = db_name
         self.client = None
         self.db = None

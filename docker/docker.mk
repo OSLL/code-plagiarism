@@ -39,6 +39,7 @@ docker-test-image: docker-base-image
 docker-test: docker-test-image
 	docker run --rm \
 		--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
+		--volume /var/run/docker.sock:/var/run/docker.sock \
 		"$(TEST_DOCKER_TAG)"
 
 docker-autotest: docker-test-image docker-build-package
@@ -48,6 +49,7 @@ docker-autotest: docker-test-image docker-build-package
 	else \
 		docker run --rm \
 			--volume $(PWD)/$(DEBIAN_PACKAGES_PATH):/usr/src/$(UTIL_NAME)/$(DEBIAN_PACKAGES_PATH) \
+		    --volume /var/run/docker.sock:/var/run/docker.sock \
 			--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
 			--env-file .env \
 			"$(TEST_DOCKER_TAG)" bash -c \
@@ -57,6 +59,7 @@ docker-autotest: docker-test-image docker-build-package
 docker-build-package: docker-test-image
 	docker run --rm \
 		--volume $(PWD)/$(DEBIAN_PACKAGES_PATH):/usr/src/$(UTIL_NAME)/$(DEBIAN_PACKAGES_PATH) \
+		--volume /var/run/docker.sock:/var/run/docker.sock \
 		--env IS_DEVELOPED=$(IS_DEVELOPED) \
 		--env USER_UID=$(USER_UID) \
 		--env USER_GID=$(USER_GID) \
@@ -85,6 +88,7 @@ docker-image: docker-base-image docker-test-image
 docker-run: docker-image
 	@touch .env
 	docker run --rm --tty --interactive \
+		--volume /var/run/docker.sock:/var/run/docker.sock \
 		--env-file .env \
 		"$(DOCKER_TAG)"
 
