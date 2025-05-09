@@ -28,7 +28,7 @@ def mongo_container():
         yield mongo
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def mongo_connection(mongo_container: MongoDbContainer) -> MongoDBConnection:
     """Фикстура создает подключение к тестовой MongoDB.
 
@@ -43,7 +43,6 @@ def mongo_connection(mongo_container: MongoDbContainer) -> MongoDBConnection:
         password=mongo_container.password,
     )
     yield conn
-    conn.disconnect()
 
 
 class TestMongoDBInfrastructure:
