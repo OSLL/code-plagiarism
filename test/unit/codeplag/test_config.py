@@ -17,6 +17,10 @@ from codeplag.consts import (
     DEFAULT_REPORT_EXTENSION,
     DEFAULT_THRESHOLD,
     UTIL_NAME,
+    DEFAULT_DB_ENABLED,
+    DEFAULT_MONGO_HOST,
+    DEFAULT_MONGO_USER,
+    DEFAULT_MONGO_PASS
 )
 from codeplag.types import Settings
 
@@ -130,6 +134,10 @@ def test_read_default_settings_conf(settings_config: Settings | None):
                 "language": DEFAULT_LANGUAGE,
                 "log_level": DEFAULT_LOG_LEVEL,
                 "workers": os.cpu_count() or 1,
+                "db_enabled": DEFAULT_DB_ENABLED,
+                "mongo_host": DEFAULT_MONGO_HOST,
+                "mongo_user": DEFAULT_MONGO_USER,
+                "mongo_pass": DEFAULT_MONGO_PASS,
             },
         ],
         [
@@ -144,6 +152,10 @@ def test_read_default_settings_conf(settings_config: Settings | None):
                 "language": "ru",
                 "log_level": "error",
                 "workers": 128,
+                "db_enabled": 1,
+                "mongo_host": "localhost",
+                "mongo_user": "user",
+                "mongo_pass": "password",
             },
             {
                 "threshold": 99,
@@ -156,6 +168,10 @@ def test_read_default_settings_conf(settings_config: Settings | None):
                 "language": "ru",
                 "log_level": "error",
                 "workers": 128,
+                "db_enabled": 1,
+                "mongo_host": "localhost",
+                "mongo_user": "user",
+                "mongo_pass": "password",
             },
         ],
         [
@@ -175,6 +191,10 @@ def test_read_default_settings_conf(settings_config: Settings | None):
                 "language": DEFAULT_LANGUAGE,
                 "log_level": DEFAULT_LOG_LEVEL,
                 "workers": os.cpu_count() or 1,
+                "db_enabled": 0,
+                "mongo_host": "host.docker.internal",
+                "mongo_user": "root",
+                "mongo_pass": "example",
             },
         ],
     ],

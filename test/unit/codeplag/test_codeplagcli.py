@@ -78,7 +78,7 @@ def test_file_path_bad(path: str):
         ],
         ["check", "--extension", "py", "--files", "setup.py", "setup.py"],
         ["check", "--extension", "pypy"],
-        ["check", "--extension", "py", "--db-enabled", "1", "--mongo-host", "test_host"],
+        ["check", "--extension", "py", "--db-enabled", "0", "--mongo-host", "test_host"],
     ],
     ids=[
         "Twice repeated directory.",

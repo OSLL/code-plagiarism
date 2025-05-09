@@ -171,7 +171,7 @@ class Settings(TypedDict):
     ngrams_length: NgramsLength
     threshold: Threshold
     workers: int
-    db_enabled: bool
+    db_enabled: int
     mongo_host: str
     mongo_user: str
     mongo_pass: str
