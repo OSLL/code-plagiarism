@@ -106,10 +106,10 @@ def modify_settings(
         + create_opt("language", language)
         + create_opt("log-level", log_level)
         + create_opt("workers", workers)
-        + create_opt("db_enabled", db_enabled),
+        + create_opt("db_enabled", db_enabled)
         + create_opt("mongo_host", mongo_host)
         + create_opt("mongo_user", mongo_user)
-        + create_opt("mongo_pass", mongo_pass)
+        + create_opt("mongo_pass", mongo_pass),
         root="settings",
     )
 
