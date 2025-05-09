@@ -36,13 +36,11 @@ def mongo_connection(mongo_container: MongoDbContainer) -> MongoDBConnection:
     """
     host = mongo_container.get_container_host_ip()
     port = int(mongo_container.get_exposed_port(27017))
-    mongo_user = DEFAULT_MONGO_USER
-    mongo_pass = DEFAULT_MONGO_PASS
     conn = MongoDBConnection(
         host=host,
         port=port,
-        user=mongo_user,
-        password=mongo_pass,
+        user=mongo_container.username,
+        password=mongo_container.password,
     )
     yield conn
     conn.disconnect()
