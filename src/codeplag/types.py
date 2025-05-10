@@ -25,7 +25,7 @@ NgramsLength = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 ReportsExtension = Literal["csv"]
 ReportType = Literal["general", "sources"]
 Language = Literal["en", "ru"]
-LogLevel = Literal["debug", "info", "warning", "error"]
+LogLevel = Literal["trace", "debug", "info", "warning", "error"]
 # fmt: off
 Threshold = Literal[
     50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
