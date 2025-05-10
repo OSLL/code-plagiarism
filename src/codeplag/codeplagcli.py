@@ -213,7 +213,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             "--mongo-port",
             help=_("The port of the MongoDB."),
             type=int,
-            choices=range(0, 65535),
+            choices=range(1, 65536),
             default=DEFAULT_MONGO_PORT,
         )
         settings_modify.add_argument(
