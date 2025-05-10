@@ -93,25 +93,28 @@ def modify_settings(
     mongo_user: str | None = None,
     mongo_pass: str | None = None,
 ) -> CmdResult:
-    return run_util(
-        ["modify"]
-        + create_opt("reports", reports)
-        + create_opt("environment", environment)
-        + create_opt("threshold", threshold)
-        + create_opt("max-depth", max_depth)
-        + create_opt("ngrams-length", ngrams_length)
-        + create_opt("show_progress", show_progress)
-        + create_opt("short-output", short_output)
-        + create_opt("reports_extension", reports_extension)
-        + create_opt("language", language)
-        + create_opt("log-level", log_level)
-        + create_opt("workers", workers)
-        + create_opt("mongo_host", mongo_host)
-        + create_opt("mongo_port", mongo_port)
-        + create_opt("mongo_user", mongo_user)
-        + create_opt("mongo_pass", mongo_pass),
-        root="settings",
-    )
+    cmd = ["modify"]
+    cmd += create_opt("reports", reports)
+    cmd += create_opt("environment", environment)
+    cmd += create_opt("threshold", threshold)
+    cmd += create_opt("max-depth", max_depth)
+    cmd += create_opt("ngrams-length", ngrams_length)
+    cmd += create_opt("show_progress", show_progress)
+    cmd += create_opt("short-output", short_output)
+    cmd += create_opt("reports_extension", reports_extension)
+    cmd += create_opt("language", language)
+    cmd += create_opt("log-level", log_level)
+    cmd += create_opt("workers", workers)
+    if mongo_host is not None:
+        cmd += ["--mongo-host", str(mongo_host)]
+    if mongo_port is not None:
+        cmd += ["--mongo-port", str(mongo_port)]
+    if mongo_user is not None:
+        cmd += ["--mongo-user", str(mongo_user)]
+    if mongo_pass is not None:
+        cmd += ["--mongo-pass", str(mongo_pass)]
+
+    return run_util(cmd, root="settings")
 
 
 def show_settings() -> CmdResult:

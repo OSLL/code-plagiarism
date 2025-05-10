@@ -206,7 +206,6 @@ class CodeplagCLI(argparse.ArgumentParser):
             "--mongo-host",
             help=_("The host address of the MongoDB server."),
             type=str,
-            default=DEFAULT_MONGO_HOST,
         )
         settings_modify.add_argument(
             "-mpt",
@@ -214,7 +213,6 @@ class CodeplagCLI(argparse.ArgumentParser):
             help=_("The port of the MongoDB."),
             type=int,
             choices=range(0, 65536),
-            default=DEFAULT_MONGO_PORT,
         )
         settings_modify.add_argument(
             "-mu",
