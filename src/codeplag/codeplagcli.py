@@ -213,7 +213,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             "--mongo-port",
             help=_("The port of the MongoDB."),
             type=int,
-            choices=range(1, 65536),
+            choices=range(0, 65536),
             default=DEFAULT_MONGO_PORT,
         )
         settings_modify.add_argument(
@@ -461,7 +461,8 @@ class CodeplagCLI(argparse.ArgumentParser):
             root == "settings"
             and command == "modify"
         ):
-            if parsed_args.mongo_port is not None and (parsed_args.mongo_port < 0 or parsed_args.mongo_port > 65535):
+            if parsed_args.mongo_port is not None and \
+                    (parsed_args.mongo_port < 0 or parsed_args.mongo_port > 65535):
                 self.error(_("Mongo port must be between 0 and 65535."))
             if (parsed_args.mongo_user is not None or parsed_args.mongo_pass is not None) and \
                (parsed_args.mongo_user is None or parsed_args.mongo_pass is None):
