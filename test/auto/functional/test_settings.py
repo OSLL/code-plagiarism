@@ -134,7 +134,7 @@ class TestSettingsModify:
         "env,reports,threshold,log_level,short_output,reports_extension",
         [
             (".env", "src", 101, "debug", ShortOutput.NO_SHOW, "csv"),
-            (f"src/{UTIL_NAME}/utils.pyjlsieuow0", "debian", 93, "warning", ShortOutput.SHOW_ALL, "csv"),
+            (f"src/{UTIL_NAME}/utils.pyjl0", "debian", 93, "warning", ShortOutput.SHOW_ALL, "csv"),
             (f"src/{UTIL_NAME}/types.py", "src", 83, "foobar", ShortOutput.SHOW_NEW, "mongo"),
             (f"src/{UTIL_NAME}/types.py", "src", 83, "info", 3, "mongo"),
             (f"src/{UTIL_NAME}/types.py", "src", 83, "error", ShortOutput.SHOW_NEW, "json"),
@@ -144,7 +144,7 @@ class TestSettingsModify:
             "Path to environment doesn't exists.",
             "Invalid log level.",
             "Invalid short-output.",
-            "Invalid reports extension"
+            "Invalid reports extension",
         ],
     )
     def test_modify_settings_with_invalid_arguments(
@@ -154,7 +154,7 @@ class TestSettingsModify:
         threshold: Threshold,
         log_level: LogLevel,
         short_output: ShortOutput,
-        reports_extension: ReportsExtension
+        reports_extension: ReportsExtension,
     ) -> None:
         modify_settings(
             environment=env,
@@ -162,7 +162,7 @@ class TestSettingsModify:
             threshold=threshold,
             log_level=log_level,
             short_output=short_output,
-            reports_extension=reports_extension
+            reports_extension=reports_extension,
         ).assert_failed()
 
     @pytest.mark.parametrize(
