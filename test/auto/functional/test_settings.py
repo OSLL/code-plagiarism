@@ -25,7 +25,7 @@ class TestSettingsModify:
             (f"src/{UTIL_NAME}/types.py", "src", 83, 6, 2, 0, 0, "csv", "en", "debug", 1, "localhost", 27017, "user", "password"),
             ("setup.py", "test", 67, 7, 3, 1, 1, "csv", "ru", "info", os.cpu_count() or 1, "127.0.0.1", 27018, "admin", "secret"),
             (f"src/{UTIL_NAME}/utils.py", "debian", 93, 8, 4, 0, 1, "csv", "en", "warning", 1, "mongodb", 27019, "guest", "12345"),
-            
+            (f"src/{UTIL_NAME}/utils.py", "debian", 93, 8, 4, 0, 1, "mongo", "en", "warning", 1, "mongodb", 27019, "guest", "12345"),
         ],
     )
     def test_modify_settings(

@@ -171,10 +171,10 @@ class Settings(TypedDict):
     ngrams_length: NgramsLength
     threshold: Threshold
     workers: int
-    mongo_host: NotRequired[str]
-    mongo_port: NotRequired[int]
-    mongo_user: NotRequired[str]
-    mongo_pass: NotRequired[str]
+    mongo_host: str
+    mongo_port: int
+    mongo_user: str
+    mongo_pass: str
 
 
 class SameHead(NamedTuple):
