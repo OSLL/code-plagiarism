@@ -209,7 +209,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             help=_("The port of the MongoDB."),
             type=int,
             choices=range(1, 65536),
-            metavar="{1, 2, ..., 65355}",
+            metavar="{1, 2, ..., 65535}",
         )
         settings_modify.add_argument(
             "-mu",

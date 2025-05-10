@@ -173,7 +173,7 @@ class TestSettingsModify:
 
     @pytest.mark.parametrize(
         "mongo_port",
-        [0, 65356],
+        [0, 65536],
         ids=["Less than minimal value.", "More than minimal value."],
     )
     def test_modify_settings_with_invalid_mongo_port(self: Self, mongo_port: int) -> None:
