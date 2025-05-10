@@ -114,7 +114,25 @@ def modify_settings(
     if mongo_pass is not None:
         cmd += ["--mongo-pass", str(mongo_pass)]
 
-    return run_util(cmd, root="settings")
+    return run_util(
+        ["modify"]
+        + create_opt("reports", reports)
+        + create_opt("environment", environment)
+        + create_opt("threshold", threshold)
+        + create_opt("max-depth", max_depth)
+        + create_opt("ngrams-length", ngrams_length)
+        + create_opt("show_progress", show_progress)
+        + create_opt("short-output", short_output)
+        + create_opt("reports_extension", reports_extension)
+        + create_opt("language", language)
+        + create_opt("log-level", log_level)
+        + create_opt("workers", workers)
+        + create_opt("mongo-host", mongo_host)
+        + create_opt("mongo-port", mongo_port)
+        + create_opt("mongo-user", mongo_user)
+        + create_opt("mongo-pass", mongo_pass),
+        root="settings",
+    )
 
 
 def show_settings() -> CmdResult:

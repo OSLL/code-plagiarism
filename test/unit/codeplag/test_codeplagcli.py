@@ -78,10 +78,6 @@ def test_file_path_bad(path: str):
         ],
         ["check", "--extension", "py", "--files", "setup.py", "setup.py"],
         ["check", "--extension", "pypy"],
-        ["settings", "modify", "--mongo-port", "-1"],
-        ["settings", "modify", "--mongo-port", "65536"],
-        ["settings", "modify", "--mongo-user", "test"],
-        ["settings", "modify", "--mongo-pass", "test"],
     ],
     ids=[
         "Twice repeated directory.",
@@ -89,10 +85,6 @@ def test_file_path_bad(path: str):
         "Twice repeated GitHub file.",
         "Twice repeated file.",
         "Invalid extension.",
-        "Mongo port less than 0",
-        "Mongo port more than 65535",
-        "Mongo user without mongo pass",
-        "Mongo pass without mongo user",
     ],
 )
 def test_get_parsed_args_failed(args: list[str]):

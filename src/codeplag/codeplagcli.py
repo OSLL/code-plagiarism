@@ -451,15 +451,6 @@ class CodeplagCLI(argparse.ArgumentParser):
             and any([parsed_args.first_root_path, parsed_args.second_root_path])
         ):
             self.error(_("All paths must be provided."))
-        elif root == "settings" and command == "modify":
-            if parsed_args.mongo_port is not None and (
-                parsed_args.mongo_port < 0 or parsed_args.mongo_port > 65535
-            ):
-                self.error(_("Mongo port must be between 0 and 65535."))
-            if (parsed_args.mongo_user is not None or parsed_args.mongo_pass is not None) and (
-                parsed_args.mongo_user is None or parsed_args.mongo_pass is None
-            ):
-                self.error(_("Both mongo user and password must be provided."))
 
     def parse_args(self: Self, args: list[str] | None = None) -> argparse.Namespace:
         parsed_args = super(CodeplagCLI, self).parse_args(args)
