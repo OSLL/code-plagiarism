@@ -197,6 +197,31 @@ class CodeplagCLI(argparse.ArgumentParser):
             type=int,
             choices=WORKERS_CHOICE,
         )
+        settings_modify.add_argument(
+            "-mh",
+            "--mongo-host",
+            help=_("The host address of the MongoDB server."),
+            type=str,
+        )
+        settings_modify.add_argument(
+            "-mpt",
+            "--mongo-port",
+            help=_("The port of the MongoDB."),
+            type=int,
+            choices=range(0, 65536),
+        )
+        settings_modify.add_argument(
+            "-mu",
+            "--mongo-user",
+            help=_("The username for connecting to the MongoDB server."),
+            type=str,
+        )
+        settings_modify.add_argument(
+            "-mps",
+            "--mongo-pass",
+            help=_("The password for connecting to the MongoDB server."),
+            type=str,
+        )
 
         # settings show
         settings_commands.add_parser(

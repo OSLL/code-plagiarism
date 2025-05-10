@@ -20,11 +20,76 @@ def teardown():
 
 class TestSettingsModify:
     @pytest.mark.parametrize(
-        "env,reports,threshold,max_depth,ngrams_length,show_progress,short_output,reports_extension,language,log_level,workers",
+        "env,reports,threshold,max_depth,ngrams_length,show_progress,short_output,reports_extension,language,log_level,workers,mongo_host,mongo_port,mongo_user,mongo_pass",
         [
-            (f"src/{UTIL_NAME}/types.py", "src", 83, 6, 2, 0, 0, "csv", "en", "debug", 1),
-            ("setup.py", "test", 67, 7, 3, 1, 1, "csv", "ru", "info", os.cpu_count() or 1),
-            (f"src/{UTIL_NAME}/utils.py", "debian", 93, 8, 4, 0, 1, "csv", "en", "warning", 1),
+            (
+                f"src/{UTIL_NAME}/types.py",
+                "src",
+                83,
+                6,
+                2,
+                0,
+                0,
+                "csv",
+                "en",
+                "debug",
+                1,
+                "localhost",
+                27017,
+                "user",
+                "password",
+            ),
+            (
+                "setup.py",
+                "test",
+                67,
+                7,
+                3,
+                1,
+                1,
+                "csv",
+                "ru",
+                "info",
+                os.cpu_count() or 1,
+                "127.0.0.1",
+                27018,
+                "admin",
+                "secret",
+            ),
+            (
+                f"src/{UTIL_NAME}/utils.py",
+                "debian",
+                93,
+                8,
+                4,
+                0,
+                1,
+                "csv",
+                "en",
+                "warning",
+                1,
+                "mongodb",
+                27019,
+                "guest",
+                "12345",
+            ),
+            (
+                f"src/{UTIL_NAME}/utils.py",
+                "debian",
+                93,
+                8,
+                4,
+                0,
+                1,
+                "mongo",
+                "en",
+                "warning",
+                1,
+                "mongodb",
+                27019,
+                "guest",
+                "12345",
+            ),
         ],
     )
     def test_modify_settings(
@@ -40,6 +105,10 @@ class TestSettingsModify:
         language: Language,
         log_level: LogLevel,
         workers: int,
+        mongo_host: str,
+        mongo_port: int,
+        mongo_user: str,
+        mongo_pass: str,
     ) -> None:
         result = modify_settings(
             environment=env,
@@ -53,6 +122,10 @@ class TestSettingsModify:
             language=language,
             log_level=log_level,
             workers=workers,
+            mongo_host=mongo_host,
+            mongo_port=mongo_port,
+            mongo_user=mongo_user,
+            mongo_pass=mongo_pass,
         )
         result.assert_success()
 
@@ -68,6 +141,10 @@ class TestSettingsModify:
             "language": language,
             "log_level": log_level,
             "reports_extension": reports_extension,
+            "mongo_host": mongo_host,
+            "mongo_port": mongo_port,
+            "mongo_user": mongo_user,
+            "mongo_pass": mongo_pass,
         }
 
     @pytest.mark.parametrize(

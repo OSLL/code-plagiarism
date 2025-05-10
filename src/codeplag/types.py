@@ -22,7 +22,7 @@ Flag = Literal[0, 1]
 MaxDepth = Literal[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 999]
 Mode = Literal["many_to_many", "one_to_one"]
 NgramsLength = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-ReportsExtension = Literal["csv"]
+ReportsExtension = Literal["csv", "mongo"]
 ReportType = Literal["general", "sources"]
 Language = Literal["en", "ru"]
 LogLevel = Literal["debug", "info", "warning", "error"]
@@ -171,6 +171,10 @@ class Settings(TypedDict):
     ngrams_length: NgramsLength
     threshold: Threshold
     workers: int
+    mongo_host: str
+    mongo_port: int
+    mongo_user: str
+    mongo_pass: str
 
 
 class SameHead(NamedTuple):
