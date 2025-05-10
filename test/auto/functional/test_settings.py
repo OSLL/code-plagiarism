@@ -25,6 +25,7 @@ class TestSettingsModify:
             (f"src/{UTIL_NAME}/types.py", "src", 83, 6, 2, 0, 0, "csv", "en", "debug", 1),
             ("setup.py", "test", 67, 7, 3, 1, 1, "csv", "ru", "info", os.cpu_count() or 1),
             (f"src/{UTIL_NAME}/utils.py", "debian", 93, 8, 4, 0, 1, "csv", "en", "warning", 1),
+            (f"src/{UTIL_NAME}/utils.py", "debian", 75, 5, 3, 1, 2, "csv", "ru", "trace", 1),
         ],
     )
     def test_modify_settings(
