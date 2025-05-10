@@ -52,26 +52,9 @@ class TestSettingsModify:
                 "info",
                 os.cpu_count() or 1,
                 "127.0.0.1",
-                27018,
+                65355,
                 "admin",
                 "secret",
-            ),
-            (
-                f"src/{UTIL_NAME}/utils.py",
-                "debian",
-                93,
-                8,
-                4,
-                0,
-                1,
-                "csv",
-                "en",
-                "warning",
-                1,
-                "mongodb",
-                27019,
-                "guest",
-                "12345",
             ),
             (
                 f"src/{UTIL_NAME}/utils.py",
@@ -85,8 +68,8 @@ class TestSettingsModify:
                 "en",
                 "warning",
                 1,
-                "mongodb",
-                27019,
+                "host.docker.internal",
+                1,
                 "guest",
                 "12345",
             ),
@@ -187,6 +170,14 @@ class TestSettingsModify:
         self: Self, ngrams_length: NgramsLength
     ) -> None:
         modify_settings(ngrams_length=ngrams_length).assert_failed()
+
+    @pytest.mark.parametrize(
+        "mongo_port",
+        [0, 65356],
+        ids=["Less than minimal value.", "More than minimal value."],
+    )
+    def test_modify_settings_with_invalid_mongo_port(self: Self, mongo_port: int) -> None:
+        modify_settings(mongo_port=mongo_port).assert_failed()
 
     def test_modify_settings_with_no_arguments_failed(self: Self) -> None:
         modify_settings().assert_failed()
