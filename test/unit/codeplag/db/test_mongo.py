@@ -2,6 +2,7 @@ import time
 
 import pytest
 from testcontainers.mongodb import MongoDbContainer
+from typing_extensions import Self
 
 from codeplag.db.mongo import (
     DEFAULT_MONGO_PASS,
@@ -14,179 +15,123 @@ from codeplag.types import ASTFeatures, FullCompareInfo
 
 
 @pytest.fixture(scope="module")
-def mongo_container():
-    """Фикстура создает временный контейнер MongoDB для тестов.
-
-    Контейнер живет в течение всего модуля тестов (scope='module')
-    """
+def mongo_container() -> MongoDbContainer:
     with MongoDbContainer(
         "mongo:6.0", username=DEFAULT_MONGO_USER, password=DEFAULT_MONGO_PASS
     ) as mongo:
         mongo.start()
-        # Фиксированная задержка для инициализации MongoDB
-        time.sleep(10)
+        time.sleep(7)
         yield mongo
 
 
 @pytest.fixture(scope="module")
 def mongo_connection(mongo_container: MongoDbContainer) -> MongoDBConnection:
-    """Фикстура создает подключение к тестовой MongoDB.
-
-    Подключение автоматически закрывается после каждого теста.
-    """
     host = mongo_container.get_container_host_ip()
     port = int(mongo_container.get_exposed_port(27017))
+    user = mongo_container.username
+    password = mongo_container.password
+
     conn = MongoDBConnection(
         host=host,
         port=port,
-        user=mongo_container.username,
-        password=mongo_container.password,
+        user=user,
+        password=password,
     )
     yield conn
 
 
+@pytest.fixture(autouse=True)
+def clear_db(mongo_connection: MongoDBConnection) -> None:
+    mongo_connection.clear_db()
+
+    yield
+
+
 class TestMongoDBInfrastructure:
-    """Тесты инфраструктуры MongoDB (контейнер и подключение)."""
-
-    def test_mongodb_connection(self, mongo_connection: MongoDbContainer):
-        """Тест проверяет успешное подключение к MongoDB.
-
-        Проверяет, что клиент и база данных инициализированы.
-        """
+    def test_mongodb_connection(self: Self, mongo_connection: MongoDBConnection):
         assert mongo_connection.client is not None
         assert mongo_connection.db is not None
+        assert mongo_connection.get_collection("test").insert_one({"0": 1}).inserted_id is not None
 
 
 class TestReportRepository:
-    """Тесты для ReportRepository."""
-
     @pytest.fixture
-    def report_repository(self, mongo_connection: MongoDbContainer):
-        """Фикстура создает репозиторий для работы с отчетами сравнений."""
+    def report_repository(self: Self, mongo_connection: MongoDBConnection):
         return ReportRepository(mongo_connection)
 
     def test_report_repository_write_and_get(
-        self,
+        self: Self,
         report_repository: ReportRepository,
         first_features: ASTFeatures,
         second_features: ASTFeatures,
         first_compare_result: FullCompareInfo,
     ):
-        """Тест проверяет базовые операции ReportRepository.
-
-        1. Запись результатов сравнения в БД.
-        2. Чтение ранее сохраненных результатов.
-        3. Корректность сохраненных данных (хеши, структура).
-        """
-        # Записываем данные сравнения
+        # Write compare info
         report_repository.write_compare_info(first_features, second_features, first_compare_result)
 
-        # Читаем данные сравнения
+        # Read compare info
         result = report_repository.get_compare_info(first_features, second_features)
 
-        # Проверяем результаты
-        assert result is not None, "Результат сравнения не должен быть None"
-        assert result.first_sha256 == first_features.sha256, "Хеш первого файла не совпадает"
-        assert result.second_sha256 == second_features.sha256, "Хеш второго файла не совпадает"
-        assert result.first_modify_date == first_features.modify_date, (
-            "Дата изменения первого файла не совпадает"
-        )
-        assert result.second_modify_date == second_features.modify_date, (
-            "Дата изменения второго файла не совпадает"
-        )
-        # Дополнительная проверка структуры сравнения
-        assert isinstance(result.compare_info, FullCompareInfo), (
-            "Результат сравнения должен быть FullCompareInfo"
-        )
+        # Compare metadata
+        assert result is not None
+        assert result.first_sha256 == first_features.sha256
+        assert result.second_sha256 == second_features.sha256
+        assert result.first_modify_date == first_features.modify_date
+        assert result.second_modify_date == second_features.modify_date
 
-        # Полное сравнение результатов быстрого сравнения (FastCompareInfo)
-        # -----------------------------------------------------------------
-        assert result.compare_info.fast.jakkar == first_compare_result.fast.jakkar, (
-            "Коэффициент Жаккара не совпадает с исходным значением"
-        )
+        compare_info = result.compare_info
 
-        assert result.compare_info.fast.operators == first_compare_result.fast.operators, (
-            "Процент совпадения операторов не соответствует исходному"
-        )
-
-        assert result.compare_info.fast.keywords == first_compare_result.fast.keywords, (
-            "Процент совпадения ключевых слов не соответствует исходному"
-        )
-
-        assert result.compare_info.fast.literals == first_compare_result.fast.literals, (
-            "Процент совпадения литералов не соответствует исходному"
-        )
-
-        assert (
-            result.compare_info.fast.weighted_average == first_compare_result.fast.weighted_average
-        ), "Взвешенное среднее не соответствует исходному значению"
+        # Compare result with compare info
+        assert compare_info is not None
+        assert compare_info.fast.jakkar == first_compare_result.fast.jakkar
+        assert compare_info.fast.operators == first_compare_result.fast.operators
+        assert compare_info.fast.keywords == first_compare_result.fast.keywords
+        assert compare_info.fast.literals == first_compare_result.fast.literals
+        assert compare_info.fast.weighted_average == first_compare_result.fast.weighted_average
 
     def test_report_repository_nonexistent_comparison(
-        self,
+        self: Self,
         report_repository: ReportRepository,
         first_features: ASTFeatures,
         third_features: ASTFeatures,
     ):
-        """Тест проверяет поведение при запросе несуществующего сравнения.
-
-        Ожидается возврат None.
-        """
         result = report_repository.get_compare_info(first_features, third_features)
-        assert result is None, "Для несуществующего сравнения должен возвращаться None"
+        assert result is None
 
 
 class TestFeaturesRepository:
-    """Тесты для FeaturesRepository."""
-
     @pytest.fixture
-    def features_repository(self, mongo_connection: MongoDbContainer):
-        """Фикстура создает репозиторий для работы с фичами AST."""
+    def features_repository(self: Self, mongo_connection: MongoDBConnection):
         return FeaturesRepository(mongo_connection)
 
     def test_features_repository_write_and_get(
-        self, features_repository: FeaturesRepository, first_features: ASTFeatures
+        self: Self, features_repository: FeaturesRepository, first_features: ASTFeatures
     ):
-        """Тест проверяет базовые операции FeaturesRepository.
-
-        1. Запись фич в БД.
-        2. Чтение ранее сохраненных фич.
-        3. Корректность сохраненных данных (хеш, путь к файлу).
-        """
-        # Записываем фичи
+        # Write features
         features_repository.write_features(first_features)
 
-        # Читаем фичи
+        # Read features
         result = features_repository.get_features(first_features)
 
-        # Проверяем результаты
-        assert result is not None, "Результат не должен быть None"
-        assert result.sha256 == first_features.sha256, "Хеш файла не совпадает"
-        assert str(result.filepath) == str(first_features.filepath), "Путь к файлу не совпадает"
-        assert result.modify_date == first_features.modify_date, (
-            "Дата изменения файла не совпадает"
-        )
-        assert result.count_of_nodes == first_features.count_of_nodes, (
-            "Количество узлов AST не совпадает"
-        )
-        assert result.head_nodes == first_features.head_nodes, "Список головных узлов не совпадает"
-        assert result.operators == first_features.operators, "Операторы AST не совпадают"
-        assert result.keywords == first_features.keywords, "Ключевые слова AST не совпадают"
-        assert result.literals == first_features.literals, "Литералы AST не совпадают"
-        assert result.unodes == first_features.unodes, "Уникальные узлы AST не совпадают"
-        assert result.from_num == first_features.from_num, "from_num отображение не совпадает"
-        assert result.count_unodes == first_features.count_unodes, (
-            "Количество уникальных узлов не совпадает"
-        )
-        assert result.structure == first_features.structure, "Структура AST не совпадает"
-        assert result.tokens == first_features.tokens, "Список токенов не совпадает"
-        assert result.tokens_pos == first_features.tokens_pos, "Позиции токенов не совпадают"
+        # Compare result with features
+        assert result is not None
+        assert result == first_features
+        assert result.sha256 == first_features.sha256
+        assert result.modify_date == first_features.modify_date
+        assert result.count_of_nodes == first_features.count_of_nodes
+        assert result.head_nodes == first_features.head_nodes
+        assert result.operators == first_features.operators
+        assert result.keywords == first_features.keywords
+        assert result.literals == first_features.literals
+        assert result.unodes == first_features.unodes
+        assert result.from_num == first_features.from_num
+        assert result.count_unodes == first_features.count_unodes
+        assert result.structure == first_features.structure
+        assert result.tokens == first_features.tokens
+        assert result.tokens_pos == first_features.tokens_pos
 
     def test_features_repository_nonexistent_file(
-        self, features_repository: FeaturesRepository, third_features: ASTFeatures
+        self: Self, features_repository: FeaturesRepository, third_features: ASTFeatures
     ):
-        """Тест проверяет поведение при запросе несуществующих фич.
-
-        Ожидается возврат None.
-        """
         result = features_repository.get_features(third_features)
-        assert result is None, "Для несуществующего файла должен возвращаться None"
+        assert result is None
