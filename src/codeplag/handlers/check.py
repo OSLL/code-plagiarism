@@ -20,9 +20,12 @@ from typing_extensions import Self
 from codeplag.algorithms.compare import compare_works
 from codeplag.config import read_settings_conf
 from codeplag.consts import (
-    DEFAULT_DB_ENABLED,
     DEFAULT_MAX_DEPTH,
     DEFAULT_MODE,
+    DEFAULT_MONGO_HOST,
+    DEFAULT_MONGO_PASS,
+    DEFAULT_MONGO_PORT,
+    DEFAULT_MONGO_USER,
     DEFAULT_NGRAMS_LENGTH,
     SUPPORTED_EXTENSIONS,
 )
@@ -40,6 +43,7 @@ from codeplag.display import (
     print_compare_result,
     print_pretty_progress,
 )
+from codeplag.featurescache import AbstractFeaturesCache
 from codeplag.getfeatures import AbstractGetter
 from codeplag.logger import codeplag_logger as logger
 from codeplag.pyplag.utils import PyFeaturesGetter
@@ -85,13 +89,6 @@ class WorksComparator:
               searches on all branches of the repository.
 
         """
-        self.connection: MongoDBConnection | None = None
-        if DEFAULT_DB_ENABLED:
-            try:
-                self.connection = MongoDBConnection()
-            except ConnectionFailure:
-                logger.debug("Can't connect to MongoDB")
-
         if extension == "py":
             FeaturesGetter = PyFeaturesGetter
         elif extension == "cpp":
@@ -99,18 +96,6 @@ class WorksComparator:
         else:
             raise Exception(f"Unsupported extension '{extension}'.")
 
-        features_cache = None
-        if self.connection is not None:
-            repository = FeaturesRepository(self.connection)
-
-            features_cache = MongoFeaturesCache(repository)
-
-        self.features_getter: AbstractGetter = FeaturesGetter(
-            logger=logger,
-            repo_regexp=repo_regexp,
-            path_regexp=path_regexp,
-            features_cache=features_cache,
-        )
         self.mode: Mode = mode
         self.progress: Progress | None = None
 
@@ -127,13 +112,29 @@ class WorksComparator:
             DEFAULT_MAX_DEPTH,
         )
         reports = settings_conf.get("reports")
+        reports_extension = settings_conf["reports_extension"]
         self.reporter: AbstractReporter | None = None
-        if self.connection is not None:
-            repository = ReportRepository(self.connection)
+        features_cache: AbstractFeaturesCache | None = None
+        if reports_extension == "mongo":
+            host = settings_conf.get("mongo_host", DEFAULT_MONGO_HOST)
+            port = settings_conf.get("mongo_port", DEFAULT_MONGO_PORT)
+            user = settings_conf.get("mongo_user", DEFAULT_MONGO_USER)
+            password = settings_conf.get("mongo_pass", DEFAULT_MONGO_PASS)
 
-            self.reporter = MongoReporter(repository)
+            try:
+                connection = MongoDBConnection(host=host, port=port, user=user, password=password)
+
+                features_cache_repo = FeaturesRepository(connection)
+                compare_info_repo = ReportRepository(connection)
+
+                features_cache = MongoFeaturesCache(features_cache_repo)
+                self.reporter = MongoReporter(compare_info_repo)
+            except ConnectionFailure as err:
+                raise Exception(
+                    "Can't connect to MongoDB with selected 'mongo'. Check your settings. "
+                    "Please note if the application is running in Docker, the host may change."
+                ) from err
         elif reports is not None:
-            reports_extension = settings_conf["reports_extension"]
             if reports_extension == "csv":
                 Reporter = CSVReporter
             else:
@@ -141,6 +142,13 @@ class WorksComparator:
             self.reporter = Reporter(reports)
         else:
             self.reporter = None
+
+        self.features_getter: AbstractGetter = FeaturesGetter(
+            logger=logger,
+            repo_regexp=repo_regexp,
+            path_regexp=path_regexp,
+            features_cache=features_cache,
+        )
 
         if set_github_parser:
             self.set_github_parser(all_branches, settings_conf.get("environment"))

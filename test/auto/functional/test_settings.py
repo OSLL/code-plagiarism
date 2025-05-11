@@ -52,26 +52,9 @@ class TestSettingsModify:
                 "info",
                 os.cpu_count() or 1,
                 "127.0.0.1",
-                27018,
+                65355,
                 "admin",
                 "secret",
-            ),
-            (
-                f"src/{UTIL_NAME}/utils.py",
-                "debian",
-                93,
-                8,
-                4,
-                0,
-                1,
-                "csv",
-                "en",
-                "warning",
-                1,
-                "mongodb",
-                27019,
-                "guest",
-                "12345",
             ),
             (
                 f"src/{UTIL_NAME}/utils.py",
@@ -85,8 +68,8 @@ class TestSettingsModify:
                 "en",
                 "warning",
                 1,
-                "mongodb",
-                27019,
+                "host.docker.internal",
+                1,
                 "guest",
                 "12345",
             ),
@@ -148,18 +131,20 @@ class TestSettingsModify:
         }
 
     @pytest.mark.parametrize(
-        "env,reports,threshold,log_level,short_output",
+        "env,reports,threshold,log_level,short_output,reports_extension",
         [
-            (".env", "src", 101, "debug", ShortOutput.NO_SHOW),
-            (f"src/{UTIL_NAME}/utils.pyjlsieuow0", "debian", 93, "warning", ShortOutput.SHOW_ALL),
-            (f"src/{UTIL_NAME}/types.py", "src", 83, "foobar", ShortOutput.SHOW_NEW),
-            (f"src/{UTIL_NAME}/types.py", "src", 83, "info", 3),
+            (".env", "src", 101, "debug", ShortOutput.NO_SHOW, "csv"),
+            (f"src/{UTIL_NAME}/utils.pyjl0", "debian", 93, "warning", ShortOutput.SHOW_ALL, "csv"),
+            (f"src/{UTIL_NAME}/types.py", "src", 83, "foobar", ShortOutput.SHOW_NEW, "mongo"),
+            (f"src/{UTIL_NAME}/types.py", "src", 83, "info", 3, "mongo"),
+            (f"src/{UTIL_NAME}/types.py", "src", 83, "error", ShortOutput.SHOW_NEW, "json"),
         ],
         ids=[
             "Incorrect threshold.",
             "Path to environment doesn't exists.",
             "Invalid log level.",
             "Invalid short-output.",
+            "Invalid reports extension",
         ],
     )
     def test_modify_settings_with_invalid_arguments(
@@ -169,6 +154,7 @@ class TestSettingsModify:
         threshold: Threshold,
         log_level: LogLevel,
         short_output: ShortOutput,
+        reports_extension: ReportsExtension,
     ) -> None:
         modify_settings(
             environment=env,
@@ -176,6 +162,7 @@ class TestSettingsModify:
             threshold=threshold,
             log_level=log_level,
             short_output=short_output,
+            reports_extension=reports_extension,
         ).assert_failed()
 
     @pytest.mark.parametrize(
@@ -187,6 +174,14 @@ class TestSettingsModify:
         self: Self, ngrams_length: NgramsLength
     ) -> None:
         modify_settings(ngrams_length=ngrams_length).assert_failed()
+
+    @pytest.mark.parametrize(
+        "mongo_port",
+        [0, 65536],
+        ids=["Less than minimal value.", "More than minimal value."],
+    )
+    def test_modify_settings_with_invalid_mongo_port(self: Self, mongo_port: int) -> None:
+        modify_settings(mongo_port=mongo_port).assert_failed()
 
     def test_modify_settings_with_no_arguments_failed(self: Self) -> None:
         modify_settings().assert_failed()

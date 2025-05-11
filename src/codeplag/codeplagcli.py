@@ -120,7 +120,7 @@ class CodeplagCLI(argparse.ArgumentParser):
         settings_modify.add_argument(
             "-re",
             "--reports_extension",
-            help=_("Extension of saved report files."),
+            help=_("Extension of saved report files. Or Mongo using if 'mongo'"),
             type=str,
             choices=REPORTS_EXTENSION_CHOICE,
         )
@@ -208,7 +208,8 @@ class CodeplagCLI(argparse.ArgumentParser):
             "--mongo-port",
             help=_("The port of the MongoDB."),
             type=int,
-            choices=range(0, 65536),
+            choices=range(1, 65536),
+            metavar="{1, 2, ..., 65535}",
         )
         settings_modify.add_argument(
             "-mu",

@@ -50,23 +50,10 @@ class MongoDBConnection:
             password (str): MongoDB password for authentication.
             db_name (str): Name of the database to connect to.
         """
-        self.url = f"mongodb://{user}:{password}@{host}:{port}/"
-        self.db_name = db_name
-        self.client = None
-        self.db = None
+        self.url: str = f"mongodb://{user}:{password}@{host}:{port}/"
+        self.db_name: str = db_name
 
         # Connecting to MongoDB
-        self.connect()
-
-        # Registering the disconnect method for execution upon program termination
-        atexit.register(self.disconnect)
-
-    def connect(self: Self) -> None:
-        """Establish a connection to MongoDB.
-
-        Attempts to connect to the MongoDB server and logs the result.
-        Raises an exception if the connection fails.
-        """
         try:
             self.client = MongoClient(self.url, serverSelectionTimeoutMS=3000)
             self.client.admin.command("ping")  # Checking the connection
@@ -75,6 +62,9 @@ class MongoDBConnection:
         except ConnectionFailure as e:
             logger.error(f"Failed to connect to MongoDB: {e}")
             raise
+
+        # Registering the disconnect method for execution upon program termination
+        atexit.register(self.disconnect)
 
     def disconnect(self: Self) -> None:
         """Close the connection to MongoDB.
@@ -95,6 +85,11 @@ class MongoDBConnection:
             Collection: The MongoDB collection object.
         """
         return self.db[collection_name] if self.db is not None else None
+
+    def clear_db(self: Self) -> None:
+        """Clears all collections."""
+        for collection in self.db.list_collection_names():
+            self.db[collection].delete_many({})
 
 
 class ReportRepository:
