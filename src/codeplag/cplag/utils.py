@@ -97,7 +97,7 @@ class CFeaturesGetter(AbstractGetter):
         features = None
 
         if self.features_cache is not None:
-            features = self.features_cache.get_features_from_filepath(work_info.link)
+            features = self.features_cache.get_features_from_work_info(work_info)
 
         if features is None:
             with open(FILE_DOWNLOAD_PATH, "w", encoding="utf-8") as out_file:

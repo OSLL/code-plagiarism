@@ -308,7 +308,7 @@ class MongoFeaturesCache(AbstractFeaturesCache):
         """
         features = self.repository.get_features(work)
 
-        if features and features.sha256 == work.sha256:
+        if features and features.modify_date == work.modify_date:
             return features
         else:
             return None
