@@ -146,7 +146,7 @@ class PyFeaturesGetter(AbstractGetter):
         features = None
 
         if self.features_cache is not None:
-            features = self.features_cache.get_features_from_filepath(work_info.link)
+            features = self.features_cache.get_features_from_work_info(work_info)
 
         if features is None:
             tree = get_ast_from_content(work_info.code, work_info.link)

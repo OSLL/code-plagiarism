@@ -5,13 +5,7 @@ from pathlib import Path
 from typing_extensions import Self
 
 from codeplag.types import ASTFeatures, NodeCodePlace, NodeStructurePlace
-
-
-def get_work_info(filepath: Path | str) -> ASTFeatures:
-    features = ASTFeatures(filepath)
-    features.sha256 = features.get_sha256()
-
-    return features
+from webparsers.types import WorkInfo
 
 
 class AbstractFeaturesCache(ABC):
@@ -21,10 +15,17 @@ class AbstractFeaturesCache(ABC):
     @abstractmethod
     def get_features(self: Self, work: ASTFeatures) -> ASTFeatures | None: ...
 
-    def get_features_from_filepath(self: Self, filepath: str | Path) -> ASTFeatures | None:
-        features = get_work_info(filepath)
+    def get_features_from_filepath(self: Self, filepath: Path) -> ASTFeatures | None:
+        work = ASTFeatures(filepath)
+        work.sha256 = work.get_sha256()
 
-        return self.get_features(features)
+        return self.get_features(work)
+
+    def get_features_from_work_info(self: Self, work_info: WorkInfo) -> ASTFeatures | None:
+        work = ASTFeatures(work_info.link)
+        work.modify_date = work_info.commit.date
+
+        return self.get_features(work)
 
 
 def serialize_node_structure_place_to_dict(nsp: NodeStructurePlace) -> dict:

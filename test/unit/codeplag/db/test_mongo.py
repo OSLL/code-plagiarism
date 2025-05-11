@@ -55,7 +55,7 @@ class TestMongoDBInfrastructure:
 
 
 class TestReportRepository:
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     def report_repository(self: Self, mongo_connection: MongoDBConnection):
         return ReportRepository(mongo_connection)
 
@@ -100,7 +100,7 @@ class TestReportRepository:
 
 
 class TestFeaturesRepository:
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     def features_repository(self: Self, mongo_connection: MongoDBConnection):
         return FeaturesRepository(mongo_connection)
 
