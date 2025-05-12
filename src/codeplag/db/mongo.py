@@ -136,7 +136,9 @@ class ReportRepository:
         # Find document in collection
         document = self.collection.find_one({"_id": document_id})
         if not document:
+            logger.debug(f"No compare_info found for file path: ({first_path}, {second_path})")
             return None
+        logger.debug(f"Compare_info found for file path: ({first_path}, {second_path})")
 
         # Deserialize and return compare_info
         compare_info = deserialize_compare_result_from_dict(document["compare_info"])
@@ -237,8 +239,9 @@ class FeaturesRepository:
         # Find document in collection
         document = self.collection.find_one({"_id": document_id})
         if not document:
-            logger.debug(f"No document found for file path: {document_id}")
+            logger.debug(f"No features found for file path: {document_id}")
             return None
+        logger.debug(f"Features found for file path: {document_id}")
 
         # Deserialize and return features
         features = deserialize_features_from_dict(document["features"])
