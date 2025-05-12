@@ -1,21 +1,20 @@
-import time
-
 import dataclasses
-from typing_extensions import Self
-from codeplag.db.mongo import MongoFeaturesCache, MongoReporter
-from codeplag.db.testkit import FeaturesRepositoryStub, ReportRepositoryStub
-from codeplag.types import ASTFeatures, FullCompareInfo
+import time
 
 import pytest
 from testcontainers.mongodb import MongoDbContainer
+from typing_extensions import Self
 
 from codeplag.db.mongo import (
     DEFAULT_MONGO_PASS,
     DEFAULT_MONGO_USER,
     FeaturesRepository,
     MongoDBConnection,
+    MongoFeaturesCache,
+    MongoReporter,
     ReportRepository,
 )
+from codeplag.db.testkit import FeaturesRepositoryStub, ReportRepositoryStub
 from codeplag.types import ASTFeatures, FullCompareInfo
 
 
@@ -140,8 +139,6 @@ class TestFeaturesRepository:
     ):
         result = features_repository.get_features(third_features)
         assert result is None
-
-
 
 
 class TestMongoReporter:
