@@ -1,8 +1,13 @@
 import time
 
+import dataclasses
+from typing_extensions import Self
+from codeplag.db.mongo import MongoFeaturesCache, MongoReporter
+from codeplag.db.testkit import FeaturesRepositoryStub, ReportRepositoryStub
+from codeplag.types import ASTFeatures, FullCompareInfo
+
 import pytest
 from testcontainers.mongodb import MongoDbContainer
-from typing_extensions import Self
 
 from codeplag.db.mongo import (
     DEFAULT_MONGO_PASS,
@@ -254,7 +259,7 @@ class TestMongoFeaturesCache:
         mongo_features_cache.save_features(first_features)
 
         modified_features = dataclasses.replace(first_features)
-        modified_features.sha256 = "new_sha256"
+        modified_features.modify_date = "new_sha256"
 
         result = mongo_features_cache.get_features(modified_features)
 
