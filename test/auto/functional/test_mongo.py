@@ -20,13 +20,32 @@ CWD = os.getcwd()
 PY_SIM_FILES = f"{CWD}/test/unit/codeplag/data/test1.py", f"{CWD}/test/unit/codeplag/data/test2.py"
 PY_FILES = f"{CWD}/test/unit/codeplag/data/test1.py", f"{CWD}/test/unit/codeplag/data/test3.py"
 CPP_SIM_FILES = (
-    f"{CWD}/test/unit/codeplag/cplag/data/sample3.cpp",
     f"{CWD}/test/unit/codeplag/cplag/data/sample4.cpp",
+    f"{CWD}/test/unit/codeplag/cplag/data/sample3.cpp",
 )
 CPP_FILES = (
     f"{CWD}/test/unit/codeplag/cplag/data/sample1.cpp",
     f"{CWD}/test/unit/codeplag/cplag/data/sample2.cpp",
 )
+
+REPO_URL = "https://github.com/OSLL/code-plagiarism"
+PY_GITHUB_FILES = [
+    f"{REPO_URL}/blob/main/test/unit/codeplag/data/test1.py",
+    f"{REPO_URL}/blob/main/test/unit/codeplag/data/test3.py",
+]
+CPP_GITHUB_SIM_FILES = [
+    f"{REPO_URL}/blob/main/test/unit/codeplag/cplag/data/sample3.cpp",
+    f"{REPO_URL}/blob/main/test/unit/codeplag/cplag/data/sample4.cpp",
+]
+
+
+def del_lines(file: str, count: int):
+    with open(file, "r+") as f:
+        lines = f.readlines()
+        f.seek(0)
+        f.truncate()
+        f.writelines(lines[: -count - 1])
+        f.writelines(lines[-count - 1][:-1])
 
 
 @pytest.fixture(scope="module")
@@ -65,6 +84,10 @@ def setup_module(mongo_connection: MongoDBConnection) -> None:
         mongo_user=mongo_connection.user,
         mongo_pass=mongo_connection.password,
     ).assert_success()
+    first_cond = not modify_settings(environment=".env").cmd_res.returncode
+    second_cond = os.environ.get("ACCESS_TOKEN", "") != ""
+
+    assert first_cond or second_cond
 
     yield
 
@@ -80,16 +103,20 @@ def clear_db(mongo_connection: MongoDBConnection) -> None:
 
 
 @pytest.mark.parametrize(
-    "extension, files, found_plag",
+    "cmd, files, extension, found_plag",
     [
-        ("py", PY_FILES, False),
-        ("py", PY_SIM_FILES, True),
-        ("cpp", CPP_FILES, False),
-        ("cpp", CPP_SIM_FILES, True),
+        ("--files", PY_FILES, "py", False),
+        ("--files", PY_SIM_FILES, "py", True),
+        ("--files", CPP_FILES, "cpp", False),
+        ("--files", CPP_SIM_FILES, "cpp", True),
+        ("--github-files", PY_GITHUB_FILES, "py", False),
+        ("--github-files", CPP_GITHUB_SIM_FILES, "cpp", True),
     ],
 )
-def test_correct_mongo_connection(extension: str, files: Tuple[str, str], found_plag: bool):
-    result = run_check(["--files", *files], extension=extension)
+def test_correct_mongo_connection(
+    cmd: str, files: Tuple[str, str], extension: str, found_plag: bool
+):
+    result = run_check([cmd, *files], extension=extension)
 
     if found_plag:
         result.assert_found_similarity()
@@ -99,21 +126,27 @@ def test_correct_mongo_connection(extension: str, files: Tuple[str, str], found_
 
 
 @pytest.mark.parametrize(
-    "extension, files, found_plag",
+    "cmd, files, extension, found_plag",
     [
-        ("py", PY_FILES, False),
-        ("py", PY_SIM_FILES, True),
-        ("cpp", CPP_FILES, False),
-        ("cpp", CPP_SIM_FILES, True),
+        ("--files", PY_FILES, "py", False),
+        ("--files", PY_SIM_FILES, "py", True),
+        ("--files", CPP_FILES, "cpp", False),
+        ("--files", CPP_SIM_FILES, "cpp", True),
+        ("--github-files", PY_GITHUB_FILES, "py", False),
+        ("--github-files", CPP_GITHUB_SIM_FILES, "cpp", True),
     ],
 )
 def test_saving_metadata_and_reports(
-    extension: str, files: Tuple[str, str], found_plag: bool, mongo_connection: MongoDBConnection
+    cmd: str,
+    files: Tuple[str, str],
+    extension: str,
+    found_plag: bool,
+    mongo_connection: MongoDBConnection,
 ):
     features_repo = FeaturesRepository(mongo_connection)
     compare_info_repo = ReportRepository(mongo_connection)
 
-    run_check(["--files", *files], extension=extension)
+    run_check([cmd, *files], extension=extension)
 
     for file in files:
         assert features_repo.get_features(ASTFeatures(file)) is not None
@@ -126,18 +159,20 @@ def test_saving_metadata_and_reports(
 
 
 @pytest.mark.parametrize(
-    "extension, files, found_plag",
+    "cmd, files, extension, found_plag",
     [
-        ("py", PY_FILES, False),
-        ("py", PY_SIM_FILES, True),
-        ("cpp", CPP_FILES, False),
-        ("cpp", CPP_SIM_FILES, True),
+        ("--files", PY_FILES, "py", False),
+        ("--files", PY_SIM_FILES, "py", True),
+        ("--files", CPP_FILES, "cpp", False),
+        ("--files", CPP_SIM_FILES, "cpp", True),
+        ("--github-files", PY_GITHUB_FILES, "py", False),
+        ("--github-files", CPP_GITHUB_SIM_FILES, "cpp", True),
     ],
 )
 def test_reading_metadata_and_reports_after_saving(
-    extension: str, files: Tuple[str, str], found_plag: bool, mongo_connection: MongoDBConnection
+    cmd: str, files: Tuple[str, str], extension: str, found_plag: bool
 ):
-    run_check(["--files", *files], extension=extension)
+    run_check([cmd, *files], extension=extension)
     result = run_check(["--files", *files], extension=extension)
     logs = result.cmd_res.stdout
 
@@ -167,9 +202,7 @@ def test_reading_metadata_and_reports_after_saving(
         ("cpp", CPP_SIM_FILES, True),
     ],
 )
-def test_saving_after_file_minor_change(
-    extension: str, files: Tuple[str, str], found_plag: bool, mongo_connection: MongoDBConnection
-):
+def test_saving_after_file_minor_change(extension: str, files: Tuple[str, str], found_plag: bool):
     run_check(["--files", *files], extension=extension)
 
     with open(files[0], "a") as f:
@@ -192,12 +225,7 @@ def test_saving_after_file_minor_change(
         if found_plag:
             assert not write_cmp
     finally:
-        with open(files[0], "r+") as f:
-            lines = f.readlines()
-            f.seek(0)
-            f.truncate()
-            f.writelines(lines[:-1])
-            f.writelines(lines[-1][:-1])
+        del_lines(files[0], 0)
 
 
 @pytest.mark.parametrize(
@@ -210,7 +238,7 @@ def test_saving_after_file_minor_change(
     ],
 )
 def test_saving_after_file_significant_change(
-    extension: str, files: Tuple[str, str], found_plag: bool, mongo_connection: MongoDBConnection
+    extension: str, files: Tuple[str, str], found_plag: bool
 ):
     run_check(["--files", *files], extension=extension)
 
@@ -231,9 +259,4 @@ def test_saving_after_file_significant_change(
         if found_plag:
             assert write_cmp
     finally:
-        with open(files[0], "r+") as f:
-            lines = f.readlines()
-            f.seek(0)
-            f.truncate()
-            f.writelines(lines[:-2])
-            f.writelines(lines[-2][:-1])
+        del_lines(files[0], 1)
