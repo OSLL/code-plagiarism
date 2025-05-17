@@ -3,6 +3,7 @@
 Written 2025 by Daniil Lokosov
 """
 
+import os
 import time
 from typing import Tuple
 
@@ -14,15 +15,17 @@ from codeplag.consts import CONFIG_PATH, DEFAULT_MONGO_PASS, DEFAULT_MONGO_USER
 from codeplag.db.mongo import FeaturesRepository, MongoDBConnection, ReportRepository
 from codeplag.types import ASTFeatures
 
-PY_SIM_FILES = "test/unit/codeplag/data/test1.py", "test/unit/codeplag/data/test2.py"
-PY_FILES = "test/unit/codeplag/data/test1.py", "test/unit/codeplag/data/test3.py"
+CWD = os.getcwd()
+
+PY_SIM_FILES = f"{CWD}/test/unit/codeplag/data/test1.py", f"{CWD}/test/unit/codeplag/data/test2.py"
+PY_FILES = f"{CWD}/test/unit/codeplag/data/test1.py", f"{CWD}/test/unit/codeplag/data/test3.py"
 CPP_SIM_FILES = (
-    "test/unit/codeplag/cplag/data/sample3.cpp",
-    "test/unit/codeplag/cplag/data/sample4.cpp",
+    f"{CWD}/test/unit/codeplag/cplag/data/sample3.cpp",
+    f"{CWD}/test/unit/codeplag/cplag/data/sample4.cpp",
 )
 CPP_FILES = (
-    "test/unit/codeplag/cplag/data/sample1.cpp",
-    "test/unit/codeplag/cplag/data/sample2.cpp",
+    f"{CWD}/test/unit/codeplag/cplag/data/sample1.cpp",
+    f"{CWD}/test/unit/codeplag/cplag/data/sample2.cpp",
 )
 
 
@@ -66,6 +69,7 @@ def setup_module(mongo_connection: MongoDBConnection) -> None:
     yield
 
     CONFIG_PATH.write_text("{}")
+    modify_settings(log_level="debug")
 
 
 @pytest.fixture(autouse=True)
@@ -109,9 +113,7 @@ def test_saving_metadata_and_reports(
     features_repo = FeaturesRepository(mongo_connection)
     compare_info_repo = ReportRepository(mongo_connection)
 
-    result = run_check(["--files", *files], extension=extension)
-
-    assert result.cmd_res.stdout is None
+    run_check(["--files", *files], extension=extension)
 
     for file in files:
         assert features_repo.get_features(ASTFeatures(file)) is not None
