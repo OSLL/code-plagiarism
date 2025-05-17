@@ -1,22 +1,24 @@
 import time
+from typing import Tuple
 
 import pytest
 from testcontainers.mongodb import MongoDbContainer
 from utils import modify_settings, run_check
 
 from codeplag.consts import CONFIG_PATH, DEFAULT_MONGO_PASS, DEFAULT_MONGO_USER
-from codeplag.db.mongo import MongoDBConnection
+from codeplag.db.mongo import FeaturesRepository, MongoDBConnection, ReportRepository
+from codeplag.types import ASTFeatures
 
-PY_SIM_FILES = ["test/unit/codeplag/data/test1.py", "test/unit/codeplag/data/test2.py"]
-PY_FILES = ["test/unit/codeplag/data/test1.py", "test/unit/codeplag/data/test3.py"]
-CPP_SIM_FILES = [
+PY_SIM_FILES = "test/unit/codeplag/data/test1.py", "test/unit/codeplag/data/test2.py"
+PY_FILES = "test/unit/codeplag/data/test1.py", "test/unit/codeplag/data/test3.py"
+CPP_SIM_FILES = (
     "test/unit/codeplag/cplag/data/sample3.cpp",
     "test/unit/codeplag/cplag/data/sample4.cpp",
-]
-CPP_FILES = [
+)
+CPP_FILES = (
     "test/unit/codeplag/cplag/data/sample1.cpp",
     "test/unit/codeplag/cplag/data/sample2.cpp",
-]
+)
 
 
 @pytest.fixture(scope="module")
@@ -77,7 +79,7 @@ def clear_db(mongo_connection: MongoDBConnection) -> None:
         ("cpp", CPP_SIM_FILES, True),
     ],
 )
-def test_py_correct_mongo_connection(extension: str, files: list[str], found_plag: bool):
+def test_correct_mongo_connection(extension: str, files: Tuple[str, str], found_plag: bool):
     result = run_check(["--files", *files], extension=extension)
 
     if found_plag:
@@ -85,3 +87,30 @@ def test_py_correct_mongo_connection(extension: str, files: list[str], found_pla
     else:
         result.assert_success()
     assert b"Successfully connected to MongoDB!" in result.cmd_res.stdout
+
+
+@pytest.mark.parametrize(
+    "extension, files, found_plag",
+    [
+        ("py", PY_FILES, False),
+        ("py", PY_SIM_FILES, True),
+        ("cpp", CPP_FILES, False),
+        ("cpp", CPP_SIM_FILES, True),
+    ],
+)
+def test_saving_metadata_and_reports(
+    extension: str, files: Tuple[str, str], found_plag: bool, mongo_connection: MongoDBConnection
+):
+    features_repo = FeaturesRepository(mongo_connection)
+    compare_info_repo = ReportRepository(mongo_connection)
+
+    run_check(["--files", *files], extension=extension)
+
+    for file in files:
+        assert features_repo.get_features(ASTFeatures(file)) is not None
+    compare_info = compare_info_repo.get_compare_info(ASTFeatures(files[0]), ASTFeatures(files[1]))
+
+    if found_plag:
+        assert compare_info is not None
+    else:
+        assert compare_info is None
