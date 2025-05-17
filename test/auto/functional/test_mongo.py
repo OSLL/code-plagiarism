@@ -1,10 +1,11 @@
 import time
 
 import pytest
-from consts import CONFIG_PATH, DEFAULT_MONGO_PASS, DEFAULT_MONGO_USER
-from db.mongo import MongoDBConnection
 from testcontainers.mongodb import MongoDbContainer
 from utils import modify_settings, run_check
+
+from codeplag.consts import CONFIG_PATH, DEFAULT_MONGO_PASS, DEFAULT_MONGO_USER
+from codeplag.db.mongo import MongoDBConnection
 
 PY_SIM_FILES = ["unit/data/test1.py", "unit/data/test2.py"]
 PY_FILES = ["unit/data/test1.py", "unit/data/test3.py"]
@@ -16,7 +17,7 @@ def mongo_container() -> MongoDbContainer:
         "mongo:6.0", username=DEFAULT_MONGO_USER, password=DEFAULT_MONGO_PASS
     ) as mongo:
         mongo.start()
-        time.sleep(10)
+        time.sleep(8)
         yield mongo
 
 
