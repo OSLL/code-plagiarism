@@ -355,8 +355,14 @@ class WorksComparator:
         metrics: FullCompareInfo | FastCompareInfo,
         save: bool = False,
     ) -> ExitCode:
+        logger.trace(  # type: ignore
+            "Compare '%s' with '%s' finished.", work1.filepath, work2.filepath
+        )
         if isinstance(metrics, FastCompareInfo):
             return ExitCode.EXIT_SUCCESS
+        logger.trace(  # type: ignore
+            "Found similarity '%s' with '%s'.", work1.filepath, work2.filepath
+        )
         if self.reporter and save:
             self.reporter.save_result(work1, work2, metrics)
         if self.short_output is ShortOutput.NO_SHOW:
@@ -401,6 +407,7 @@ class WorksComparator:
         work1: ASTFeatures,
         work2: ASTFeatures,
     ) -> Future:
+        logger.trace("Creating future compare '%s' with '%s'.", work1.filepath, work2.filepath)  # type: ignore
         return executor.submit(
             compare_works, work1, work2, self.ngrams_length, self.max_depth, self.threshold
         )
