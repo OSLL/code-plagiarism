@@ -9,6 +9,14 @@ from codeplag.db.mongo import MongoDBConnection
 
 PY_SIM_FILES = ["test/unit/codeplag/data/test1.py", "test/unit/codeplag/data/test2.py"]
 PY_FILES = ["test/unit/codeplag/data/test1.py", "test/unit/codeplag/data/test3.py"]
+CPP_SIM_FILES = [
+    "test/unit/codeplag/cplag/data/sample3.cpp",
+    "test/unit/codeplag/cplag/data/sample4.cpp",
+]
+CPP_FILES = [
+    "test/unit/codeplag/cplag/data/sample1.cpp",
+    "test/unit/codeplag/cplag/data/sample2.cpp",
+]
 
 
 @pytest.fixture(scope="module")
@@ -61,14 +69,16 @@ def clear_db(mongo_connection: MongoDBConnection) -> None:
 
 
 @pytest.mark.parametrize(
-    "cmd, found_plag",
+    "extension, files, found_plag",
     [
-        (["--files", *PY_FILES], False),
-        (["--files", *PY_SIM_FILES], True),
+        ("py", PY_FILES, False),
+        ("py", PY_SIM_FILES, True),
+        ("cpp", CPP_FILES, False),
+        ("cpp", CPP_SIM_FILES, True),
     ],
 )
-def test_py_correct_mongo_connection(cmd: list[str], found_plag: bool):
-    result = run_check(cmd, extension="py")
+def test_py_correct_mongo_connection(extension: str, files: list[str], found_plag: bool):
+    result = run_check(["--files", *files], extension=extension)
 
     if found_plag:
         result.assert_found_similarity()
