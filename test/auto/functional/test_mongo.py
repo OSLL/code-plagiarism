@@ -1,3 +1,8 @@
+"""MIT License.
+
+Written 2025 by Daniil Lokosov
+"""
+
 import time
 from typing import Tuple
 
@@ -104,7 +109,9 @@ def test_saving_metadata_and_reports(
     features_repo = FeaturesRepository(mongo_connection)
     compare_info_repo = ReportRepository(mongo_connection)
 
-    run_check(["--files", *files], extension=extension)
+    result = run_check(["--files", *files], extension=extension)
+
+    assert result.cmd_res.stdout is None
 
     for file in files:
         assert features_repo.get_features(ASTFeatures(file)) is not None
