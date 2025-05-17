@@ -139,17 +139,56 @@ def test_reading_metadata_and_reports_after_saving(
 ):
     run_check(["--files", *files], extension=extension)
     result = run_check(["--files", *files], extension=extension)
-
     logs = result.cmd_res.stdout
+
+    found_cmp = (
+        f"Compare_info found for file path: ({files[0]}, {files[1]})".encode("utf-8") in logs
+        or f"Compare_info found for file path: ({files[1]}, {files[0]})".encode("utf-8") in logs
+    )
+    not_found_cmp = (
+        f"No compare_info found for file path: ({files[0]}, {files[1]})".encode("utf-8") in logs
+        or f"No compare_info found for file path: ({files[1]}, {files[0]})".encode("utf-8") in logs
+    )
 
     for file in files:
         assert f"Features found for file path: {file}".encode("utf-8") in logs
+    if found_plag:
+        assert found_cmp and not not_found_cmp
+    else:
+        assert not_found_cmp and not found_cmp
+
+
+@pytest.mark.parametrize(
+    "extension, files, found_plag",
+    [
+        ("py", PY_FILES, False),
+        ("py", PY_SIM_FILES, True),
+        ("cpp", CPP_FILES, False),
+        ("cpp", CPP_SIM_FILES, True),
+    ],
+)
+def test_saving_after_file_small_change(
+    extension: str, files: Tuple[str, str], found_plag: bool, mongo_connection: MongoDBConnection
+):
+    run_check(["--files", *files], extension=extension)
+
+    with open(files[0], "w") as f:
+        f.write("\n")
+
+    result = run_check(["--files", *files], extension=extension)
+    logs = result.cmd_res.stdout
+
     found_cmp = (
         f"Compare_info found for file path: ({files[0]}, {files[1]})".encode("utf-8") in logs
         or f"Compare_info found for file path: ({files[1]}, {files[0]})".encode("utf-8") in logs
     )
 
-    if found_plag:
-        assert found_cmp
-    else:
-        assert not found_cmp
+    try:
+        assert f"No features found for file path: {files[0]}".encode("utf-8") in logs
+        if found_plag:
+            assert found_cmp
+    finally:
+        with open(files[0], "r+") as f:
+            lines = f.readlines()
+            f.seek(0)
+            f.writelines(lines[:-1])
