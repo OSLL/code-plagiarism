@@ -167,12 +167,12 @@ def test_reading_metadata_and_reports_after_saving(
         ("cpp", CPP_SIM_FILES, True),
     ],
 )
-def test_saving_after_file_small_change(
+def test_saving_after_file_minor_change(
     extension: str, files: Tuple[str, str], found_plag: bool, mongo_connection: MongoDBConnection
 ):
     run_check(["--files", *files], extension=extension)
 
-    with open(files[0], "w") as f:
+    with open(files[0], "a") as f:
         f.write("\n")
 
     result = run_check(["--files", *files], extension=extension)
@@ -195,4 +195,45 @@ def test_saving_after_file_small_change(
         with open(files[0], "r+") as f:
             lines = f.readlines()
             f.seek(0)
+            f.truncate()
             f.writelines(lines[:-1])
+            f.writelines(lines[-1][:-1])
+
+
+@pytest.mark.parametrize(
+    "extension, files, found_plag",
+    [
+        ("py", PY_FILES, False),
+        ("py", PY_SIM_FILES, True),
+        ("cpp", CPP_FILES, False),
+        ("cpp", CPP_SIM_FILES, True),
+    ],
+)
+def test_saving_after_file_significant_change(
+    extension: str, files: Tuple[str, str], found_plag: bool, mongo_connection: MongoDBConnection
+):
+    run_check(["--files", *files], extension=extension)
+
+    with open(files[0], "a") as f:
+        f.write("\na += 1030")
+
+    result = run_check(["--files", *files], extension=extension)
+    logs = result.cmd_res.stdout
+
+    write_cmp = (
+        f"Document for ({files[0]}, {files[1]}) successfully inserted/updated.".encode("utf-8")
+        in logs
+        or f"Document for ({files[1]}, {files[0]}) successfully inserted/updated.".encode("utf-8")
+        in logs
+    )
+
+    try:
+        if found_plag:
+            assert write_cmp
+    finally:
+        with open(files[0], "r+") as f:
+            lines = f.readlines()
+            f.seek(0)
+            f.truncate()
+            f.writelines(lines[:-2])
+            f.writelines(lines[-2][:-1])
