@@ -123,3 +123,33 @@ def test_saving_metadata_and_reports(
         assert compare_info is not None
     else:
         assert compare_info is None
+
+
+@pytest.mark.parametrize(
+    "extension, files, found_plag",
+    [
+        ("py", PY_FILES, False),
+        ("py", PY_SIM_FILES, True),
+        ("cpp", CPP_FILES, False),
+        ("cpp", CPP_SIM_FILES, True),
+    ],
+)
+def test_reading_metadata_and_reports_after_saving(
+    extension: str, files: Tuple[str, str], found_plag: bool, mongo_connection: MongoDBConnection
+):
+    run_check(["--files", *files], extension=extension)
+    result = run_check(["--files", *files], extension=extension)
+
+    logs = result.cmd_res.stdout
+
+    for file in files:
+        assert f"Features found for file path: {file}".encode("utf-8") in logs
+    found_cmp = (
+        f"Compare_info found for file path: ({files[0]}, {files[1]})".encode("utf-8") in logs
+        or f"Compare_info found for file path: ({files[1]}, {files[0]})".encode("utf-8") in logs
+    )
+
+    if found_plag:
+        assert found_cmp
+    else:
+        assert not found_cmp
