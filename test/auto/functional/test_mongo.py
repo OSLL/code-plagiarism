@@ -178,15 +178,19 @@ def test_saving_after_file_small_change(
     result = run_check(["--files", *files], extension=extension)
     logs = result.cmd_res.stdout
 
-    found_cmp = (
-        f"Compare_info found for file path: ({files[0]}, {files[1]})".encode("utf-8") in logs
-        or f"Compare_info found for file path: ({files[1]}, {files[0]})".encode("utf-8") in logs
+    write_cmp = (
+        f"Document for ({files[0]}, {files[1]}) successfully inserted/updated.".encode("utf-8")
+        in logs
+        or f"Document for ({files[1]}, {files[0]}) successfully inserted/updated.".encode("utf-8")
+        in logs
     )
 
     try:
-        assert f"No features found for file path: {files[0]}".encode("utf-8") in logs
+        assert (
+            f"Document for path {files[0]} successfully inserted/updated.".encode("utf-8") in logs
+        )
         if found_plag:
-            assert found_cmp
+            assert not write_cmp
     finally:
         with open(files[0], "r+") as f:
             lines = f.readlines()
