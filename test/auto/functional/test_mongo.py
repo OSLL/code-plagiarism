@@ -173,7 +173,7 @@ def test_reading_metadata_and_reports_after_saving(
     cmd: str, files: Tuple[str, str], extension: str, found_plag: bool
 ):
     run_check([cmd, *files], extension=extension)
-    result = run_check(["--files", *files], extension=extension)
+    result = run_check([cmd, *files], extension=extension)
     logs = result.cmd_res.stdout
 
     found_cmp = (
@@ -243,7 +243,7 @@ def test_saving_after_file_significant_change(
     run_check(["--files", *files], extension=extension)
 
     with open(files[0], "a") as f:
-        f.write("\na += 1030")
+        f.write("\nfoo += 1030" if extension == "py" else "\nint foo() { return 2; }")
 
     result = run_check(["--files", *files], extension=extension)
     logs = result.cmd_res.stdout
