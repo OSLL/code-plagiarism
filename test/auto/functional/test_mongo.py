@@ -74,4 +74,4 @@ def test_py_correct_mongo_connection(cmd: list[str], found_plag: bool):
         result.assert_found_similarity()
     else:
         result.assert_success()
-    assert "Successfully connected to MongoDB!" in result.cmd_res.stdout
+    assert b"Successfully connected to MongoDB!" in result.cmd_res.stdout
