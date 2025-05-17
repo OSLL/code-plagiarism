@@ -73,6 +73,23 @@ class TestSettingsModify:
                 "guest",
                 "12345",
             ),
+            (
+                f"src/{UTIL_NAME}/utils.py",
+                "debian",
+                75,
+                5,
+                3,
+                1,
+                2,
+                "csv",
+                "ru",
+                "trace",
+                1,
+                "db",
+                27018,
+                "user",
+                "password",
+            ),
         ],
     )
     def test_modify_settings(
