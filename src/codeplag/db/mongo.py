@@ -50,6 +50,10 @@ class MongoDBConnection:
             password (str): MongoDB password for authentication.
             db_name (str): Name of the database to connect to.
         """
+        self.host = host
+        self.port = port
+        self.user = user
+        self.password = password
         self.url: str = f"mongodb://{user}:{password}@{host}:{port}/"
         self.db_name: str = db_name
 
