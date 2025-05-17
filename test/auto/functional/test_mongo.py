@@ -7,8 +7,8 @@ from utils import modify_settings, run_check
 from codeplag.consts import CONFIG_PATH, DEFAULT_MONGO_PASS, DEFAULT_MONGO_USER
 from codeplag.db.mongo import MongoDBConnection
 
-PY_SIM_FILES = ["test/unit/data/test1.py", "test/unit/data/test2.py"]
-PY_FILES = ["test/unit/data/test1.py", "test/unit/data/test3.py"]
+PY_SIM_FILES = ["test/unit/codeplag/data/test1.py", "test/unit/codeplag/data/test2.py"]
+PY_FILES = ["test/unit/codeplag/data/test1.py", "test/unit/codeplag/data/test3.py"]
 
 
 @pytest.fixture(scope="module")
