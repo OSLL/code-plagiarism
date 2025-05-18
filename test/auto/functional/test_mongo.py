@@ -54,7 +54,7 @@ def mongo_container() -> MongoDbContainer:
         "mongo:6.0", username=DEFAULT_MONGO_USER, password=DEFAULT_MONGO_PASS
     ) as mongo:
         mongo.start()
-        time.sleep(8)
+        time.sleep(7)
         yield mongo
 
 

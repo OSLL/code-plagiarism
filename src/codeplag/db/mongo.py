@@ -1,3 +1,8 @@
+"""MIT License.
+
+Written 2025 by Stepan Pahomov, Daniil Lokosov
+"""
+
 import atexit
 from datetime import datetime
 from typing import NamedTuple
