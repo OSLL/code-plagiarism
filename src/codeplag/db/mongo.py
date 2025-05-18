@@ -1,3 +1,8 @@
+"""MIT License.
+
+Written 2025 by Stepan Pahomov, Daniil Lokosov
+"""
+
 import atexit
 from datetime import datetime
 from typing import NamedTuple
@@ -26,19 +31,14 @@ from codeplag.reporters import (
 )
 from codeplag.types import ASTFeatures, FullCompareInfo
 
-HOST = DEFAULT_MONGO_HOST
-USER = DEFAULT_MONGO_USER
-PASSWORD = DEFAULT_MONGO_PASS
-PORT = DEFAULT_MONGO_PORT
-
 
 class MongoDBConnection:
     def __init__(
         self: Self,
-        host: str = HOST,
-        port: int = PORT,
-        user: str = USER,
-        password: str = PASSWORD,
+        host: str = DEFAULT_MONGO_HOST,
+        port: int = DEFAULT_MONGO_PORT,
+        user: str = DEFAULT_MONGO_USER,
+        password: str = DEFAULT_MONGO_PASS,
         db_name: str = "new_database",
     ) -> None:
         """Initialize the connection to MongoDB.
@@ -50,6 +50,10 @@ class MongoDBConnection:
             password (str): MongoDB password for authentication.
             db_name (str): Name of the database to connect to.
         """
+        self.host: str = host
+        self.port: int = port
+        self.user: str = user
+        self.password: str = password
         self.url: str = f"mongodb://{user}:{password}@{host}:{port}/"
         self.db_name: str = db_name
 

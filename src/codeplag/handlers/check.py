@@ -329,7 +329,7 @@ class WorksComparator:
         work1: ASTFeatures,
         work2: ASTFeatures,
     ) -> ExitCode:
-        if str(work1.filepath) == str(work2.filepath):
+        if work1 == work2:
             _print_pretty_progress_if_need_and_increase(self.progress, self.workers)
             return ExitCode.EXIT_SUCCESS
 
