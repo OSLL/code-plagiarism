@@ -51,7 +51,7 @@ def del_lines(file: str, count: int):
 @pytest.fixture(scope="module")
 def mongo_container() -> MongoDbContainer:
     with MongoDbContainer(
-        "mongo:6.0", username=DEFAULT_MONGO_USER, password=DEFAULT_MONGO_PASS
+        "mongo:8.0", username=DEFAULT_MONGO_USER, password=DEFAULT_MONGO_PASS
     ) as mongo:
         mongo.start()
         time.sleep(7)
