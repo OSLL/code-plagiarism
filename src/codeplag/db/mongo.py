@@ -140,9 +140,9 @@ class ReportRepository:
         # Find document in collection
         document = self.collection.find_one({"_id": document_id})
         if not document:
-            logger.trace("No compare_info found for file path:", first_path, second_path)  # type: ignore
+            logger.trace("No compare_info found for file path: (%s, %s)", first_path, second_path)  # type: ignore
             return None
-        logger.trace("Compare_info found for file path::", first_path, second_path)  # type: ignore
+        logger.trace("Compare_info found for file path: (%s, %s)", first_path, second_path)  # type: ignore
 
         # Deserialize and return compare_info
         compare_info = deserialize_compare_result_from_dict(document["compare_info"])
@@ -187,7 +187,11 @@ class ReportRepository:
 
         # Insert or update the document
         self.collection.update_one({"_id": document_id}, {"$set": document}, upsert=True)
-        logger.trace("Document successfully inserted/updated for:", first_path, second_path)  # type: ignore
+        logger.trace(
+            "Document successfully inserted/updated for: (%s, %s)",
+            first_path,
+            second_path
+        )  # type: ignore
 
 
 class FeaturesRepository:
@@ -224,7 +228,7 @@ class FeaturesRepository:
 
         # Insert or update the document
         self.collection.update_one({"_id": document_id}, {"$set": document}, upsert=True)
-        logger.trace("Document successfully inserted/updated for path:", document_id)  # type: ignore
+        logger.trace("Document successfully inserted/updated for path: %s", document_id)  # type: ignore
 
     def get_features(self: Self, work: ASTFeatures) -> ASTFeatures | None:
         """Retrieve AST features for a file from the features collection.
@@ -243,9 +247,9 @@ class FeaturesRepository:
         # Find document in collection
         document = self.collection.find_one({"_id": document_id})
         if not document:
-            logger.trace("No features found for file path:", document_id)  # type: ignore
+            logger.trace("No features found for file path: %s", document_id)  # type: ignore
             return None
-        logger.trace("Features found for file path:", document_id)  # type: ignore
+        logger.trace("Features found for file path: %s", document_id)  # type: ignore
 
         # Deserialize and return features
         features = deserialize_features_from_dict(document["features"])
@@ -319,4 +323,3 @@ class MongoFeaturesCache(AbstractFeaturesCache):
             return features
         else:
             return None
-
