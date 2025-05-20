@@ -61,7 +61,7 @@ class MongoDBConnection:
         try:
             self.client = MongoClient(self.url, serverSelectionTimeoutMS=3000)
             self.client.admin.command("ping")  # Checking the connection
-            logger.trace("Successfully connected to MongoDB!")
+            logger.debug("Successfully connected to MongoDB!")
             self.db = self.client[self.db_name]
         except ConnectionFailure as e:
             logger.error(f"Failed to connect to MongoDB: {e}")
@@ -77,7 +77,7 @@ class MongoDBConnection:
         """
         if self.client:
             self.client.close()
-            logger.trace("MongoDB connection closed.")
+            logger.debug("MongoDB connection closed.")
 
     def get_collection(self: Self, collection_name: str) -> Collection | None:
         """Get a collection by name from the current database.
