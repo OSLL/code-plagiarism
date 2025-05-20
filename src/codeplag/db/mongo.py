@@ -61,7 +61,7 @@ class MongoDBConnection:
         try:
             self.client = MongoClient(self.url, serverSelectionTimeoutMS=3000)
             self.client.admin.command("ping")  # Checking the connection
-            logger.debug("Successfully connected to MongoDB!")
+            logger.trace("Successfully connected to MongoDB!")
             self.db = self.client[self.db_name]
         except ConnectionFailure as e:
             logger.error(f"Failed to connect to MongoDB: {e}")
@@ -77,7 +77,7 @@ class MongoDBConnection:
         """
         if self.client:
             self.client.close()
-            logger.debug("MongoDB connection closed.")
+            logger.trace("MongoDB connection closed.")
 
     def get_collection(self: Self, collection_name: str) -> Collection | None:
         """Get a collection by name from the current database.
@@ -140,9 +140,9 @@ class ReportRepository:
         # Find document in collection
         document = self.collection.find_one({"_id": document_id})
         if not document:
-            logger.debug(f"No compare_info found for file path: ({first_path}, {second_path})")
+            logger.trace(f"No compare_info found for file path: ({first_path}, {second_path})")
             return None
-        logger.debug(f"Compare_info found for file path: ({first_path}, {second_path})")
+        logger.trace(f"Compare_info found for file path: ({first_path}, {second_path})")
 
         # Deserialize and return compare_info
         compare_info = deserialize_compare_result_from_dict(document["compare_info"])
@@ -187,7 +187,7 @@ class ReportRepository:
 
         # Insert or update the document
         self.collection.update_one({"_id": document_id}, {"$set": document}, upsert=True)
-        logger.debug(f"Document for ({first_path}, {second_path}) successfully inserted/updated.")
+        logger.trace(f"Document for ({first_path}, {second_path}) successfully inserted/updated.")
 
 
 class FeaturesRepository:
@@ -224,7 +224,7 @@ class FeaturesRepository:
 
         # Insert or update the document
         self.collection.update_one({"_id": document_id}, {"$set": document}, upsert=True)
-        logger.debug(f"Document for path {document_id} successfully inserted/updated.")
+        logger.trace(f"Document for path {document_id} successfully inserted/updated.")
 
     def get_features(self: Self, work: ASTFeatures) -> ASTFeatures | None:
         """Retrieve AST features for a file from the features collection.
@@ -243,9 +243,9 @@ class FeaturesRepository:
         # Find document in collection
         document = self.collection.find_one({"_id": document_id})
         if not document:
-            logger.debug(f"No features found for file path: {document_id}")
+            logger.trace(f"No features found for file path: {document_id}")
             return None
-        logger.debug(f"Features found for file path: {document_id}")
+        logger.trace(f"Features found for file path: {document_id}")
 
         # Deserialize and return features
         features = deserialize_features_from_dict(document["features"])
