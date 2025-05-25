@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import builtins
 from pathlib import Path
+import getpass
 
 from typing_extensions import Self
 
@@ -75,6 +76,19 @@ class FilePath(Path):
             )
 
         return Path.__new__(Path, *args, **kwargs).resolve()
+
+
+class Password:
+
+    DEFAULT = 'Password if not specified'
+
+    def __init__(self, value):
+        if value == self.DEFAULT:
+            value = getpass.getpass('Enter MongoDB password: ')
+        self.value = value
+
+    def __str__(self):
+        return self.value
 
 
 class CodeplagCLI(argparse.ArgumentParser):
@@ -221,7 +235,8 @@ class CodeplagCLI(argparse.ArgumentParser):
             "-mps",
             "--mongo-pass",
             help=_("The password for connecting to the MongoDB server."),
-            type=str,
+            type=Password,
+            default=Password.DEFAULT
         )
 
         # settings show
