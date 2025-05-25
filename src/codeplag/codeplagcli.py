@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import argparse
 import builtins
-from pathlib import Path
 import getpass
+from pathlib import Path
 
 from typing_extensions import Self
 
@@ -81,7 +81,7 @@ class FilePath(Path):
 class Password:
     def __init__(self, value):
         if value == "":
-            value = getpass.getpass('Enter MongoDB password: ')
+            value = getpass.getpass("Enter MongoDB password: ")
         self.value = value
 
     def __str__(self):
