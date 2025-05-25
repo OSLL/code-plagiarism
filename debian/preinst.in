@@ -1,5 +1,0 @@
-#!/bin/sh
-
-echo "Pre installation ($@) ..."
-
-pip3 install @PYTHON_REQUIRED_LIBS@
