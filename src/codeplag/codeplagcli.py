@@ -57,7 +57,7 @@ class PasswordPromptAction(argparse.Action):
         self: Self,
         _parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
-        values: list[str] | None = None,
+        values: str | None = None,
         _option_string: str | None = None,
     ):
         if values:
