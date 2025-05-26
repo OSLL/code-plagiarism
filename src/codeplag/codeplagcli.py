@@ -63,7 +63,7 @@ class PasswordPromptAction(argparse.Action):
         if values:
             setattr(namespace, self.dest, values)
         else:
-            setattr(namespace, self.dest, getpass.getpass())
+            setattr(namespace, self.dest, getpass.getpass("Enter MongoDB password: "))
 
 
 class DirPath(Path):
