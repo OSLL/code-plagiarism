@@ -1,3 +1,8 @@
+"""MIT License.
+
+Written 2025 by Daniil Lokosov, Ivan Volkov
+"""
+
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from pathlib import Path

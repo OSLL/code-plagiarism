@@ -88,6 +88,7 @@ docker-run: docker-image
 	@touch .env
 	docker run --rm --tty --interactive \
 		--env-file .env \
+		--add-host=host.docker.internal:host-gateway \
 		"$(DOCKER_TAG)"
 
 docker-rmi:

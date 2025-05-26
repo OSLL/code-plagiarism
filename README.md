@@ -4,6 +4,22 @@ Program for finding plagiarism in the source code written in Python 3, C, and C+
 
 ## 1. Install
 
+### 1.0 MongoDB cache
+
+If you want to use MongoDB cache for saving reports and works metadata, complete steps:
+
+- Run MongoDB (you can configure DB params)
+
+  ```
+  $ docker compose -f docker/compose.yml up -d
+  ```
+  
+- Configure codeplag settings if DB params have been changed
+
+  ```
+  $ codeplag settings modify --mongo-port <mongo-port> --mongo-user <mongo-user> --mongo-pass <mongo-pass> --mongo-host <mongo-host>
+  ```
+
 ### 1.1 Build and run local Docker container
 
 - Create a code-plagiarism docker image
@@ -39,8 +55,10 @@ Program for finding plagiarism in the source code written in Python 3, C, and C+
 
 - Run container based on pulled image and connect volume with your data
   > The docker image has volume '/usr/src/works' which is the directory with your data.
+
+  > --add-host=host.docker.internal:host-gateway is needed if Mongo is used with localhost
   ```
-  $ docker run --rm --tty --interactive --volume <absolute_local_path_with_data>:/usr/src/works "artanias/codeplag-ubuntu22.04:latest" /bin/bash
+  $ docker run --rm --tty --interactive --volume <absolute_local_path_with_data>:/usr/src/works --add-host=host.docker.internal:host-gateway "artanias/codeplag-ubuntu22.04:latest" /bin/bash
   ```
 
 ### 1.3 Install with package manager apt-get

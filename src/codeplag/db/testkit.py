@@ -1,3 +1,8 @@
+"""MIT License.
+
+Written 2025 by Daniil Lokosov
+"""
+
 from typing_extensions import Self
 
 from codeplag.db.mongo import (
