@@ -78,6 +78,10 @@ class FilePath(Path):
         return Path.__new__(Path, *args, **kwargs).resolve()
 
 
+def password(value: str):
+    return value if value != "" else getpass.getpass()
+
+
 class CodeplagCLI(argparse.ArgumentParser):
     """The argument parser of the codeplag util."""
 
@@ -222,7 +226,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             "-mps",
             "--mongo-pass",
             help=_("The password for connecting to the MongoDB server."),
-            type=lambda x: x if x != "" else getpass.getpass("Enter MongoDB password: "),
+            type=password,
         )
 
         # settings show
