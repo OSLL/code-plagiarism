@@ -79,7 +79,7 @@ class FilePath(Path):
 
 
 def password(value: str):
-    return value if value != "" else getpass.getpass()
+    return value if value.strip() != "" else getpass.getpass()
 
 
 class CodeplagCLI(argparse.ArgumentParser):
