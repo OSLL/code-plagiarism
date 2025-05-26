@@ -78,20 +78,6 @@ class FilePath(Path):
         return Path.__new__(Path, *args, **kwargs).resolve()
 
 
-# class Password(str):
-#     def __init__(self, value: str):
-#         if value == "":
-#             value = getpass.getpass("Enter MongoDB password: ")
-#         self.value = value
-
-#     def __str__(self):
-#         return self.value
-
-
-# def password(value: str):
-#     return value if value != '' else getpass.getpass("Enter MongoDB password: ")
-
-
 class CodeplagCLI(argparse.ArgumentParser):
     """The argument parser of the codeplag util."""
 
