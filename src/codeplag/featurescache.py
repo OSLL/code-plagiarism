@@ -1,6 +1,6 @@
 """MIT License.
 
-Written 2025 by Daniil Lokosov, Ivan Volkov
+Written 2025 by Ivan Volkov, Daniil Lokosov
 """
 
 from abc import ABC, abstractmethod
