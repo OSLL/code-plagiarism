@@ -52,6 +52,20 @@ class CheckUniqueStore(argparse.Action):
         setattr(namespace, self.dest, values)
 
 
+class PasswordPromptAction(argparse.Action):
+    def __call__(
+        self: Self,
+        _parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: list[str],
+        _option_string: str | None = None,
+    ):
+        if values:
+            setattr(namespace, self.dest, values)
+        else:
+            setattr(namespace, self.dest, getpass.getpass())
+
+
 class DirPath(Path):
     """Raises `argparse.ArgumentTypeError` if the directory doesn't exist."""
 
@@ -76,10 +90,6 @@ class FilePath(Path):
             )
 
         return Path.__new__(Path, *args, **kwargs).resolve()
-
-
-def password(value: str):
-    return value if value.strip() != "" else getpass.getpass()
 
 
 class CodeplagCLI(argparse.ArgumentParser):
@@ -226,8 +236,8 @@ class CodeplagCLI(argparse.ArgumentParser):
             "-mps",
             "--mongo-pass",
             help=_("The password for connecting to the MongoDB server. If empty - hide input."),
-            type=password,
-            const="",
+            type=str,
+            action=PasswordPromptAction,
             nargs="?",
         )
 
