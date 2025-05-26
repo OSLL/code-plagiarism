@@ -1,3 +1,8 @@
+"""MIT License.
+
+Written 2025 by Ivan Volkov
+"""
+
 from typing_extensions import Self
 
 from codeplag.featurescache import deserialize_features_from_dict, serialize_features_to_dict

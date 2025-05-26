@@ -1,3 +1,8 @@
+"""MIT License.
+
+Written 2025 by Konstantin Rogozhin, Nikolai Myshkin
+"""
+
 import dataclasses
 import time
 
