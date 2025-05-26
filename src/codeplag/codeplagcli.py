@@ -225,8 +225,10 @@ class CodeplagCLI(argparse.ArgumentParser):
         settings_modify.add_argument(
             "-mps",
             "--mongo-pass",
-            help=_("The password for connecting to the MongoDB server."),
+            help=_("The password for connecting to the MongoDB server. If empty - hide input."),
             type=password,
+            const="",
+            nargs="?",
         )
 
         # settings show
