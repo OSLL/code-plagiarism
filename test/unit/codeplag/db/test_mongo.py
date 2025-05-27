@@ -10,9 +10,8 @@ import pytest
 from testcontainers.mongodb import MongoDbContainer
 from typing_extensions import Self
 
+from codeplag.consts import DEFAULT_MONGO_PASS, DEFAULT_MONGO_USER
 from codeplag.db.mongo import (
-    DEFAULT_MONGO_PASS,
-    DEFAULT_MONGO_USER,
     FeaturesRepository,
     MongoDBConnection,
     MongoFeaturesCache,

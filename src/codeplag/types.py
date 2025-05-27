@@ -174,7 +174,7 @@ class Settings(TypedDict):
     mongo_host: str
     mongo_port: int
     mongo_user: str
-    mongo_pass: str
+    mongo_pass: NotRequired[str]
 
 
 class SameHead(NamedTuple):

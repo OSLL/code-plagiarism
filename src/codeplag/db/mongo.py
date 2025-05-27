@@ -5,7 +5,7 @@ Written 2025 by Stepan Pahomov, Daniil Lokosov
 
 import atexit
 from datetime import datetime
-from typing import NamedTuple
+from typing import Final, NamedTuple
 
 from pymongo import MongoClient
 from pymongo.collection import Collection
@@ -14,7 +14,6 @@ from typing_extensions import Self
 
 from codeplag.consts import (
     DEFAULT_MONGO_HOST,
-    DEFAULT_MONGO_PASS,
     DEFAULT_MONGO_PORT,
     DEFAULT_MONGO_USER,
 )
@@ -33,13 +32,14 @@ from codeplag.types import ASTFeatures, FullCompareInfo
 
 
 class MongoDBConnection:
+    DB_NAME: Final[str] = "codeplag_cache"
+
     def __init__(
         self: Self,
+        password: str,
         host: str = DEFAULT_MONGO_HOST,
         port: int = DEFAULT_MONGO_PORT,
         user: str = DEFAULT_MONGO_USER,
-        password: str = DEFAULT_MONGO_PASS,
-        db_name: str = "new_database",
     ) -> None:
         """Initialize the connection to MongoDB.
 
@@ -48,21 +48,19 @@ class MongoDBConnection:
             port (int): MongoDB port number. Defaults to 27017.
             user (str): MongoDB username for authentication.
             password (str): MongoDB password for authentication.
-            db_name (str): Name of the database to connect to.
         """
         self.host: str = host
         self.port: int = port
         self.user: str = user
         self.password: str = password
         self.url: str = f"mongodb://{user}:{password}@{host}:{port}/"
-        self.db_name: str = db_name
 
         # Connecting to MongoDB
         try:
             self.client = MongoClient(self.url, serverSelectionTimeoutMS=3000)
             self.client.admin.command("ping")  # Checking the connection
             logger.debug("Successfully connected to MongoDB!")
-            self.db = self.client[self.db_name]
+            self.db = self.client[self.DB_NAME]
         except ConnectionFailure as e:
             logger.error(f"Failed to connect to MongoDB: {e}")
             raise

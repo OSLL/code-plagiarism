@@ -23,7 +23,6 @@ from codeplag.consts import (
     DEFAULT_MAX_DEPTH,
     DEFAULT_MODE,
     DEFAULT_MONGO_HOST,
-    DEFAULT_MONGO_PASS,
     DEFAULT_MONGO_PORT,
     DEFAULT_MONGO_USER,
     DEFAULT_NGRAMS_LENGTH,
@@ -119,7 +118,10 @@ class WorksComparator:
             host = settings_conf.get("mongo_host", DEFAULT_MONGO_HOST)
             port = settings_conf.get("mongo_port", DEFAULT_MONGO_PORT)
             user = settings_conf.get("mongo_user", DEFAULT_MONGO_USER)
-            password = settings_conf.get("mongo_pass", DEFAULT_MONGO_PASS)
+            password = settings_conf.get("mongo_pass")
+
+            if password is None:
+                raise Exception("'mongo' reports_exception provided, but mongo-pass is missing")
 
             try:
                 connection = MongoDBConnection(host=host, port=port, user=user, password=password)

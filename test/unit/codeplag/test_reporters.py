@@ -6,9 +6,9 @@ from pytest_mock import MockerFixture
 from typing_extensions import Self
 
 from codeplag.consts import CSV_REPORT_COLUMNS
-from codeplag.handlers.report import deserialize_compare_result
 from codeplag.reporters import (
     CSVReporter,
+    deserialize_compare_result,
     deserialize_compare_result_from_dict,
     read_df,
     serialize_compare_result_to_dict,

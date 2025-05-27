@@ -4,22 +4,6 @@ Program for finding plagiarism in the source code written in Python 3, C, and C+
 
 ## 1. Install
 
-### 1.0 MongoDB cache
-
-If you want to use MongoDB cache for saving reports and works metadata, complete steps:
-
-- Run MongoDB (you can configure DB params)
-
-  ```
-  $ docker compose -f docker/compose.yml up -d
-  ```
-  
-- Configure codeplag settings if DB params have been changed
-
-  ```
-  $ codeplag settings modify --mongo-port <mongo-port> --mongo-user <mongo-user> --mongo-pass <mongo-pass> --mongo-host <mongo-host>
-  ```
-
 ### 1.1 Build and run local Docker container
 
 - Create a code-plagiarism docker image
@@ -55,8 +39,10 @@ If you want to use MongoDB cache for saving reports and works metadata, complete
 
 - Run container based on pulled image and connect volume with your data
   > The docker image has volume '/usr/src/works' which is the directory with your data.
-
-  > --add-host=host.docker.internal:host-gateway is needed if Mongo is used with localhost
+  ```
+  $ docker run --rm --tty --interactive --volume <absolute_local_path_with_data>:/usr/src/works "artanias/codeplag-ubuntu22.04:latest" /bin/bash
+  ```
+  or if Mongo is used on localhost
   ```
   $ docker run --rm --tty --interactive --volume <absolute_local_path_with_data>:/usr/src/works --add-host=host.docker.internal:host-gateway "artanias/codeplag-ubuntu22.04:latest" /bin/bash
   ```
@@ -74,6 +60,16 @@ If you want to use MongoDB cache for saving reports and works metadata, complete
   $ sudo apt install python3 python3-pip
   $ sudo apt install clang libncurses5
   $ sudo apt-get install <path_to_the_package>/<package_name>.deb
+  ```
+
+### 1.4 MongoDB cache
+
+If you want to use MongoDB cache for saving reports and works metadata, complete steps:
+
+- Run MongoDB (you can configure DB params in [compose](docker/compose.yml))
+
+  ```
+  $ docker compose --file docker/compose.yml up --detach
   ```
 
 ## 2. Tests
@@ -145,6 +141,10 @@ If you want to use MongoDB cache for saving reports and works metadata, complete
   # Reports path to '/usr/src/works'
   # Path to environment variables '/usr/src/works/.env'
   $ codeplag settings modify --threshold 70 --language en --show_progress 1 --reports_extension csv --reports /usr/src/works --environment /usr/src/works/.env --ngrams-length 2 --workers 4
+  ```
+- If you use MongoDB with custom settings configure util
+  ```
+  $ codeplag settings modify --mongo-port <mongo-port> --mongo-user <mongo-user> --mongo-pass <mongo-pass> --mongo-host <mongo-host>
   ```
 - Python analyzer:
   ```

@@ -8,7 +8,6 @@ from codeplag.consts import (
     DEFAULT_LOG_LEVEL,
     DEFAULT_MAX_DEPTH,
     DEFAULT_MONGO_HOST,
-    DEFAULT_MONGO_PASS,
     DEFAULT_MONGO_PORT,
     DEFAULT_MONGO_USER,
     DEFAULT_NGRAMS_LENGTH,
@@ -97,5 +96,4 @@ DefaultSettingsConfig = Settings(
     mongo_host=DEFAULT_MONGO_HOST,
     mongo_port=DEFAULT_MONGO_PORT,
     mongo_user=DEFAULT_MONGO_USER,
-    mongo_pass=DEFAULT_MONGO_PASS,
 )

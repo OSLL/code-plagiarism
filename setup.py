@@ -30,7 +30,7 @@ INSTALL_REQUIREMENTS: tuple[str, ...] = (
     "Jinja2~=3.1.5",
     "cachetools==5.5.2",
     "gidgethub~=5.3.0",
-    "pymongo~=4.6.1",
+    "pymongo~=4.12.1",
 )
 UTIL_NAME = os.getenv("UTIL_NAME")
 UTIL_VERSION = os.getenv("UTIL_VERSION")

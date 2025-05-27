@@ -63,7 +63,7 @@ class PasswordPromptAction(argparse.Action):
         if values:
             setattr(namespace, self.dest, values)
         else:
-            setattr(namespace, self.dest, getpass.getpass("Enter MongoDB password: "))
+            setattr(namespace, self.dest, getpass.getpass(_("Enter MongoDB password: ")))
 
 
 class DirPath(Path):
@@ -135,7 +135,11 @@ class CodeplagCLI(argparse.ArgumentParser):
         settings_modify.add_argument(
             "-re",
             "--reports_extension",
-            help=_("Extension of saved report files. Or Mongo using if 'mongo'"),
+            help=_(
+                "When provided 'csv' saves similar works compare info into csv file. "
+                "When provided 'mongo' saves similar works compare info "
+                "and works metadata into MongoDB."
+            ),
             type=str,
             choices=REPORTS_EXTENSION_CHOICE,
         )
