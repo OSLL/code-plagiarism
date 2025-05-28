@@ -1,12 +1,12 @@
 import logging
-import os
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import Final
 
 from clang.cindex import Config, Cursor, Index, TranslationUnit
 from typing_extensions import Self
 
-from codeplag.consts import FILE_DOWNLOAD_PATH, GET_FRAZE, SUPPORTED_EXTENSIONS
+from codeplag.consts import GET_FRAZE, SUPPORTED_EXTENSIONS
 from codeplag.cplag.const import COMPILE_ARGS
 from codeplag.cplag.tree import get_features
 from codeplag.featurescache import AbstractFeaturesCache
@@ -100,9 +100,10 @@ class CFeaturesGetter(AbstractGetter):
             features = self.features_cache.get_features_from_work_info(work_info)
 
         if features is None:
-            with open(FILE_DOWNLOAD_PATH, "w", encoding="utf-8") as out_file:
-                out_file.write(work_info.code)
-            cursor = get_cursor_from_file(FILE_DOWNLOAD_PATH, COMPILE_ARGS)
+            with NamedTemporaryFile(mode="w", encoding="utf-8", suffix=".out", delete=False) as tf:
+                tf.write(work_info.code)
+                tf_path = Path(tf.name)
+            cursor = get_cursor_from_file(tf_path, COMPILE_ARGS)
             if cursor is None:
                 self.logger.error(
                     "Unsuccessfully attempt to get AST from the file %s.", work_info.link
@@ -110,8 +111,8 @@ class CFeaturesGetter(AbstractGetter):
                 return
 
             # hook for correct filtering info while parsing source code
-            features = get_features(cursor, FILE_DOWNLOAD_PATH)
-            os.remove(FILE_DOWNLOAD_PATH)
+            features = get_features(cursor, tf_path)
+            tf_path.unlink()
             features.filepath = work_info.link
             features.modify_date = work_info.commit.date
             if self.features_cache is not None:

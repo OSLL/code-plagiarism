@@ -64,6 +64,9 @@ msgid ""
 "provided 'mongo' saves similar works compare info and works metadata into"
 " MongoDB."
 msgstr ""
+"When provided 'csv' saves similar works compare info into csv file. When "
+"provided 'mongo' saves similar works compare info and works metadata into"
+" MongoDB."
 
 #: src/codeplag/codeplagcli.py:149
 msgid "Show progress of searching plagiarism."

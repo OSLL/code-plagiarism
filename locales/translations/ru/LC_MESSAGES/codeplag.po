@@ -67,6 +67,9 @@ msgid ""
 "provided 'mongo' saves similar works compare info and works metadata into"
 " MongoDB."
 msgstr ""
+"При заданном значении 'csv' сохраняет результаты сравнения схожих работ "
+"в csv файл. При заданном значении 'mongo' сохраняет результаты сравнения "
+"схожих работ и метаданные работ в MongoDB."
 
 #: src/codeplag/codeplagcli.py:149
 msgid "Show progress of searching plagiarism."
