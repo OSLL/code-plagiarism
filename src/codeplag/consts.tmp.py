@@ -21,7 +21,6 @@ UTIL_VERSION: Final[str] = "@UTIL_VERSION@"
 
 # Paths
 CONFIG_PATH: Final[Path] = Path("@CONFIG_PATH@")
-FILE_DOWNLOAD_PATH: Final[Path] = Path(f"/tmp/{UTIL_NAME}_download.out")
 LOG_PATH: Final[Path] = Path("@CODEPLAG_LOG_PATH@")
 LIB_PATH: Final[Path] = Path("@LIB_PATH@")
 GENERAL_TEMPLATE_PATH: Final[Path] = LIB_PATH / "general.templ"

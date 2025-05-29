@@ -109,6 +109,33 @@ class ASTFeatures:
         return hashlib.sha256(str(self.tokens).encode("utf-8")).hexdigest()
 
 
+class NodeStructurePlaceDict(TypedDict):
+    depth: int
+    uid: int
+
+
+class NodeCodePlaceDict(TypedDict):
+    lineno: int
+    col_offset: int
+
+
+class ASTFeaturesDict(TypedDict):
+    filepath: str
+    sha256: str
+    count_of_nodes: int
+    head_nodes: list[str]
+    operators: dict[str, int]
+    keywords: dict[str, int]
+    literals: dict[str, int]
+    unodes: dict[str, int]
+    from_num: dict[str, str]
+    count_unodes: int
+    structure: list[NodeStructurePlaceDict]
+    tokens: list[int]
+    tokens_pos: list[NodeCodePlaceDict]
+    modify_date: str
+
+
 # ----------------------------------------------------------------------------
 # Compare information
 

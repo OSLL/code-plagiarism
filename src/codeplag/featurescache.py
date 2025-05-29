@@ -9,7 +9,14 @@ from pathlib import Path
 
 from typing_extensions import Self
 
-from codeplag.types import ASTFeatures, NodeCodePlace, NodeStructurePlace
+from codeplag.types import (
+    ASTFeatures,
+    ASTFeaturesDict,
+    NodeCodePlace,
+    NodeCodePlaceDict,
+    NodeStructurePlace,
+    NodeStructurePlaceDict,
+)
 from webparsers.types import WorkInfo
 
 
@@ -33,22 +40,22 @@ class AbstractFeaturesCache(ABC):
         return self.get_features(work)
 
 
-def serialize_node_structure_place_to_dict(nsp: NodeStructurePlace) -> dict:
+def serialize_node_structure_place_to_dict(nsp: NodeStructurePlace) -> NodeStructurePlaceDict:
     return {
         "depth": nsp.depth,
         "uid": nsp.uid,
     }
 
 
-def serialize_node_code_place_to_dict(ncp: NodeCodePlace) -> dict:
+def serialize_node_code_place_to_dict(ncp: NodeCodePlace) -> NodeCodePlaceDict:
     return {
         "lineno": ncp.lineno,
         "col_offset": ncp.col_offset,
     }
 
 
-def serialize_features_to_dict(work: ASTFeatures) -> dict:
-    serialized_dict = {
+def serialize_features_to_dict(work: ASTFeatures) -> ASTFeaturesDict:
+    return {
         "filepath": str(work.filepath),
         "sha256": work.sha256,
         "modify_date": work.modify_date,
@@ -65,18 +72,16 @@ def serialize_features_to_dict(work: ASTFeatures) -> dict:
         "tokens_pos": list(map(serialize_node_code_place_to_dict, work.tokens_pos)),
     }
 
-    return serialized_dict
 
-
-def deserialize_node_structure_place_from_dict(nsp: dict) -> NodeStructurePlace:
+def deserialize_node_structure_place_from_dict(nsp: NodeStructurePlaceDict) -> NodeStructurePlace:
     return NodeStructurePlace(nsp["depth"], nsp["uid"])
 
 
-def deserialize_node_code_place_from_dict(ncp: dict) -> NodeCodePlace:
+def deserialize_node_code_place_from_dict(ncp: NodeCodePlaceDict) -> NodeCodePlace:
     return NodeCodePlace(ncp["lineno"], ncp["col_offset"])
 
 
-def deserialize_features_from_dict(work_dict: dict) -> ASTFeatures:
+def deserialize_features_from_dict(work_dict: ASTFeaturesDict) -> ASTFeatures:
     features = ASTFeatures(
         filepath=work_dict["filepath"],
         sha256=work_dict["sha256"],

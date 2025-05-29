@@ -49,7 +49,7 @@ docker-autotest: docker-test-image docker-build-package
 	else \
 		docker run --rm \
 			--volume $(PWD)/$(DEBIAN_PACKAGES_PATH):/usr/src/$(UTIL_NAME)/$(DEBIAN_PACKAGES_PATH) \
-		    --volume /var/run/docker.sock:/var/run/docker.sock \
+			--volume /var/run/docker.sock:/var/run/docker.sock \
 			--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
 			--env-file .env \
 			"$(TEST_DOCKER_TAG)" bash -c \

@@ -18,8 +18,8 @@ from codeplag.db.mongo import (
     MongoReporter,
     ReportRepository,
 )
-from codeplag.db.testkit import FeaturesRepositoryStub, ReportRepositoryStub
 from codeplag.types import ASTFeatures, FullCompareInfo
+from unit.codeplag.db.testkit import FeaturesRepositoryStub, ReportRepositoryStub
 
 
 @pytest.fixture(scope="module")

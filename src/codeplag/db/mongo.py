@@ -16,6 +16,7 @@ from codeplag.consts import (
     DEFAULT_MONGO_HOST,
     DEFAULT_MONGO_PORT,
     DEFAULT_MONGO_USER,
+    UTIL_NAME,
 )
 from codeplag.featurescache import (
     AbstractFeaturesCache,
@@ -32,7 +33,7 @@ from codeplag.types import ASTFeatures, FullCompareInfo
 
 
 class MongoDBConnection:
-    DB_NAME: Final[str] = "codeplag_cache"
+    DB_NAME: Final[str] = f"{UTIL_NAME}_cache"
 
     def __init__(
         self: Self,
@@ -59,11 +60,11 @@ class MongoDBConnection:
         try:
             self.client = MongoClient(self.url, serverSelectionTimeoutMS=3000)
             self.client.admin.command("ping")  # Checking the connection
-            logger.debug("Successfully connected to MongoDB!")
-            self.db = self.client[self.DB_NAME]
-        except ConnectionFailure as e:
-            logger.error(f"Failed to connect to MongoDB: {e}")
-            raise
+        except ConnectionFailure as err:
+            logger.error("Failed to connect to MongoDB: %s", err)
+            raise err
+        logger.debug("Successfully connected to MongoDB!")
+        self.db = self.client[self.DB_NAME]
 
         # Registering the disconnect method for execution upon program termination
         atexit.register(self.disconnect)
@@ -138,9 +139,9 @@ class ReportRepository:
         # Find document in collection
         document = self.collection.find_one({"_id": document_id})
         if not document:
-            logger.trace(f"No compare_info found for file path: ({first_path}, {second_path})")  # type: ignore
+            logger.trace("No compare_info found for file path: (%s, %s)", first_path, second_path)  # type: ignore
             return None
-        logger.trace(f"Compare_info found for file path: ({first_path}, {second_path})")  # type: ignore
+        logger.trace("Compare_info found for file path: (%s, %s)", first_path, second_path)  # type: ignore
 
         # Deserialize and return compare_info
         compare_info = deserialize_compare_result_from_dict(document["compare_info"])
@@ -185,7 +186,9 @@ class ReportRepository:
 
         # Insert or update the document
         self.collection.update_one({"_id": document_id}, {"$set": document}, upsert=True)
-        logger.trace(f"Document for ({first_path}, {second_path}) successfully inserted/updated.")  # type: ignore
+        logger.trace(  # type: ignore
+            "Document for (%s, %s) successfully inserted/updated.", first_path, second_path
+        )
 
 
 class FeaturesRepository:
@@ -222,7 +225,7 @@ class FeaturesRepository:
 
         # Insert or update the document
         self.collection.update_one({"_id": document_id}, {"$set": document}, upsert=True)
-        logger.trace(f"Document for path {document_id} successfully inserted/updated.")  # type: ignore
+        logger.trace("Document for path %s successfully inserted/updated.", document_id)  # type: ignore
 
     def get_features(self: Self, work: ASTFeatures) -> ASTFeatures | None:
         """Retrieve AST features for a file from the features collection.
@@ -241,9 +244,9 @@ class FeaturesRepository:
         # Find document in collection
         document = self.collection.find_one({"_id": document_id})
         if not document:
-            logger.trace(f"No features found for file path: {document_id}")  # type: ignore
+            logger.trace("No features found for file path: %s", document_id)  # type: ignore
             return None
-        logger.trace(f"Features found for file path: {document_id}")  # type: ignore
+        logger.trace("Features found for file path: %s", document_id)  # type: ignore
 
         # Deserialize and return features
         features = deserialize_features_from_dict(document["features"])

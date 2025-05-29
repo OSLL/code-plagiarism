@@ -126,7 +126,7 @@ def serialize_compare_result(
 ) -> pd.DataFrame:
     return pd.DataFrame(
         {
-            "date": _get_current_date(),
+            "date": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
             "first_modify_date": first_work.modify_date,
             "first_sha256": first_work.sha256,
             "second_modify_date": second_work.modify_date,
@@ -170,13 +170,7 @@ def deserialize_compare_result(compare_result: pd.Series) -> FullCompareInfo:
     return compare_info
 
 
-def _get_current_date() -> str:
-    return datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-
-
 def serialize_compare_result_to_dict(compare_info: FullCompareInfo) -> dict:
-    assert compare_info.structure is not None
-
     data = {
         "fast": dict(
             zip(
