@@ -142,9 +142,9 @@ If you want to use MongoDB cache for saving reports and works metadata, complete
   # Path to environment variables '/usr/src/works/.env'
   $ codeplag settings modify --threshold 70 --language en --show_progress 1 --reports_extension csv --reports /usr/src/works --environment /usr/src/works/.env --ngrams-length 2 --workers 4
   ```
-- If you use MongoDB with custom settings configure util
+- If you use MongoDB with custom settings configure util (don't forget to provide password (`example` by default))
   ```
-  $ codeplag settings modify --mongo-port <mongo-port> --mongo-user <mongo-user> --mongo-pass <mongo-pass> --mongo-host <mongo-host>
+  $ codeplag settings modify --mongo-pass <mongo-pass> --mongo-port <mongo-port> --mongo-user <mongo-user> --mongo-host <mongo-host>
   ```
 - Python analyzer:
   ```

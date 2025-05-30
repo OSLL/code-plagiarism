@@ -10,7 +10,7 @@ import pytest
 from testcontainers.mongodb import MongoDbContainer
 from typing_extensions import Self
 
-from codeplag.consts import DEFAULT_MONGO_PASS, DEFAULT_MONGO_USER
+from codeplag.consts import DEFAULT_MONGO_USER
 from codeplag.db.mongo import (
     FeaturesRepository,
     MongoDBConnection,
@@ -24,9 +24,7 @@ from unit.codeplag.db.testkit import FeaturesRepositoryStub, ReportRepositoryStu
 
 @pytest.fixture(scope="module")
 def mongo_container() -> MongoDbContainer:
-    with MongoDbContainer(
-        "mongo:8.0", username=DEFAULT_MONGO_USER, password=DEFAULT_MONGO_PASS
-    ) as mongo:
+    with MongoDbContainer("mongo:8.0", username=DEFAULT_MONGO_USER) as mongo:
         mongo.start()
         time.sleep(7)
         yield mongo

@@ -43,7 +43,6 @@ DEFAULT_MAX_DEPTH: Final[MaxDepth] = 999
 DEFAULT_REPORT_TYPE: Final[ReportType] = "general"
 DEFAULT_MONGO_HOST: Final[str] = "host.docker.internal"
 DEFAULT_MONGO_USER: Final[str] = "root"
-DEFAULT_MONGO_PASS: Final[str] = "example"
 DEFAULT_MONGO_PORT: Final[int] = 27017
 # =============
 

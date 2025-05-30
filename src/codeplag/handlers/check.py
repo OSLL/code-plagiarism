@@ -13,7 +13,6 @@ import numpy as np
 import pandas as pd
 from decouple import Config, RepositoryEnv
 from numpy.typing import NDArray
-from pymongo.errors import ConnectionFailure
 from requests import Session
 from typing_extensions import Self
 
@@ -123,19 +122,13 @@ class WorksComparator:
             if password is None:
                 raise Exception("'mongo' reports_exception provided, but mongo-pass is missing")
 
-            try:
-                connection = MongoDBConnection(host=host, port=port, user=user, password=password)
+            connection = MongoDBConnection(host=host, port=port, user=user, password=password)
 
-                features_cache_repo = FeaturesRepository(connection)
-                compare_info_repo = ReportRepository(connection)
+            features_cache_repo = FeaturesRepository(connection)
+            compare_info_repo = ReportRepository(connection)
 
-                features_cache = MongoFeaturesCache(features_cache_repo)
-                self.reporter = MongoReporter(compare_info_repo)
-            except ConnectionFailure as err:
-                raise Exception(
-                    "Can't connect to MongoDB with selected 'mongo'. Check your settings. "
-                    "Please note if the application is running in Docker, the host may change."
-                ) from err
+            features_cache = MongoFeaturesCache(features_cache_repo)
+            self.reporter = MongoReporter(compare_info_repo)
         elif reports is not None:
             if reports_extension == "csv":
                 Reporter = CSVReporter

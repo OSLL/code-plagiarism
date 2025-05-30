@@ -62,7 +62,10 @@ class MongoDBConnection:
             self.client.admin.command("ping")  # Checking the connection
         except ConnectionFailure as err:
             logger.error("Failed to connect to MongoDB: %s", err)
-            raise err
+            raise Exception(
+                "Can't connect to MongoDB with selected 'mongo'. Check your settings. "
+                "Please note if the application is running in Docker, the host may change."
+            ) from err
         logger.debug("Successfully connected to MongoDB!")
         self.db = self.client[self.DB_NAME]
 
