@@ -21,20 +21,31 @@ from codeplag.config import read_settings_conf
 from codeplag.consts import (
     DEFAULT_MAX_DEPTH,
     DEFAULT_MODE,
+    DEFAULT_MONGO_HOST,
+    DEFAULT_MONGO_PORT,
+    DEFAULT_MONGO_USER,
     DEFAULT_NGRAMS_LENGTH,
     SUPPORTED_EXTENSIONS,
 )
 from codeplag.cplag.utils import CFeaturesGetter
+from codeplag.db.mongo import (
+    FeaturesRepository,
+    MongoDBConnection,
+    MongoFeaturesCache,
+    MongoReporter,
+    ReportRepository,
+)
 from codeplag.display import (
     ComplexProgress,
     Progress,
     print_compare_result,
     print_pretty_progress,
 )
+from codeplag.featurescache import AbstractFeaturesCache
 from codeplag.getfeatures import AbstractGetter
 from codeplag.logger import codeplag_logger as logger
 from codeplag.pyplag.utils import PyFeaturesGetter
-from codeplag.reporters import CSVReporter
+from codeplag.reporters import AbstractReporter, CSVReporter
 from codeplag.types import (
     ASTFeatures,
     ExitCode,
@@ -83,11 +94,6 @@ class WorksComparator:
         else:
             raise Exception(f"Unsupported extension '{extension}'.")
 
-        self.features_getter: AbstractGetter = FeaturesGetter(
-            logger=logger,
-            repo_regexp=repo_regexp,
-            path_regexp=path_regexp,
-        )
         self.mode: Mode = mode
         self.progress: Progress | None = None
 
@@ -104,8 +110,26 @@ class WorksComparator:
             DEFAULT_MAX_DEPTH,
         )
         reports = settings_conf.get("reports")
-        if reports is not None:
-            reports_extension = settings_conf["reports_extension"]
+        reports_extension = settings_conf["reports_extension"]
+        self.reporter: AbstractReporter | None = None
+        features_cache: AbstractFeaturesCache | None = None
+        if reports_extension == "mongo":
+            host = settings_conf.get("mongo_host", DEFAULT_MONGO_HOST)
+            port = settings_conf.get("mongo_port", DEFAULT_MONGO_PORT)
+            user = settings_conf.get("mongo_user", DEFAULT_MONGO_USER)
+            password = settings_conf.get("mongo_pass")
+
+            if password is None:
+                raise Exception("'mongo' reports_exception provided, but mongo-pass is missing")
+
+            connection = MongoDBConnection(host=host, port=port, user=user, password=password)
+
+            features_cache_repo = FeaturesRepository(connection)
+            compare_info_repo = ReportRepository(connection)
+
+            features_cache = MongoFeaturesCache(features_cache_repo)
+            self.reporter = MongoReporter(compare_info_repo)
+        elif reports is not None:
             if reports_extension == "csv":
                 Reporter = CSVReporter
             else:
@@ -113,6 +137,13 @@ class WorksComparator:
             self.reporter = Reporter(reports)
         else:
             self.reporter = None
+
+        self.features_getter: AbstractGetter = FeaturesGetter(
+            logger=logger,
+            repo_regexp=repo_regexp,
+            path_regexp=path_regexp,
+            features_cache=features_cache,
+        )
 
         if set_github_parser:
             self.set_github_parser(all_branches, settings_conf.get("environment"))
@@ -293,13 +324,13 @@ class WorksComparator:
         work1: ASTFeatures,
         work2: ASTFeatures,
     ) -> ExitCode:
-        if work1.filepath == work2.filepath:
+        if work1 == work2:
             _print_pretty_progress_if_need_and_increase(self.progress, self.workers)
             return ExitCode.EXIT_SUCCESS
 
         work1, work2 = sorted([work1, work2])
         metrics = None
-        if isinstance(self.reporter, CSVReporter):
+        if self.reporter is not None:
             metrics = self.reporter.get_result(work1, work2)
         if metrics is None:
             future = self._create_future_compare(executor, work1, work2)

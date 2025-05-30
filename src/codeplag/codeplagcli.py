@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import builtins
+import getpass
 from pathlib import Path
 
 from typing_extensions import Self
@@ -49,6 +50,20 @@ class CheckUniqueStore(argparse.Action):
                 ).format(values=str_values),
             )
         setattr(namespace, self.dest, values)
+
+
+class PasswordPromptAction(argparse.Action):
+    def __call__(
+        self: Self,
+        _parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: str | None = None,
+        _option_string: str | None = None,
+    ):
+        if values:
+            setattr(namespace, self.dest, values)
+        else:
+            setattr(namespace, self.dest, getpass.getpass(_("Enter MongoDB password: ")))
 
 
 class DirPath(Path):
@@ -120,7 +135,11 @@ class CodeplagCLI(argparse.ArgumentParser):
         settings_modify.add_argument(
             "-re",
             "--reports_extension",
-            help=_("Extension of saved report files."),
+            help=_(
+                "When provided 'csv' saves similar works compare info into csv file. "
+                "When provided 'mongo' saves similar works compare info "
+                "and works metadata into MongoDB."
+            ),
             type=str,
             choices=REPORTS_EXTENSION_CHOICE,
         )
@@ -196,6 +215,34 @@ class CodeplagCLI(argparse.ArgumentParser):
             help=_("The maximum number of processes that can be used to compare works."),
             type=int,
             choices=WORKERS_CHOICE,
+        )
+        settings_modify.add_argument(
+            "-mh",
+            "--mongo-host",
+            help=_("The host address of the MongoDB server."),
+            type=str,
+        )
+        settings_modify.add_argument(
+            "-mpt",
+            "--mongo-port",
+            help=_("The port of the MongoDB."),
+            type=int,
+            choices=range(1, 65536),
+            metavar="{1, 2, ..., 65535}",
+        )
+        settings_modify.add_argument(
+            "-mu",
+            "--mongo-user",
+            help=_("The username for connecting to the MongoDB server."),
+            type=str,
+        )
+        settings_modify.add_argument(
+            "-mps",
+            "--mongo-pass",
+            help=_("The password for connecting to the MongoDB server. If empty - hide input."),
+            type=str,
+            action=PasswordPromptAction,
+            nargs="?",
         )
 
         # settings show
