@@ -88,6 +88,10 @@ def modify_settings(
     language: Language | None = None,
     log_level: LogLevel | None = None,
     workers: int | None = None,
+    mongo_host: str | None = None,
+    mongo_port: int | None = None,
+    mongo_user: str | None = None,
+    mongo_pass: str | None = None,
 ) -> CmdResult:
     return run_util(
         ["modify"]
@@ -101,7 +105,11 @@ def modify_settings(
         + create_opt("reports_extension", reports_extension)
         + create_opt("language", language)
         + create_opt("log-level", log_level)
-        + create_opt("workers", workers),
+        + create_opt("workers", workers)
+        + create_opt("mongo-host", mongo_host)
+        + create_opt("mongo-port", mongo_port)
+        + create_opt("mongo-user", mongo_user)
+        + create_opt("mongo-pass", mongo_pass),
         root="settings",
     )
 

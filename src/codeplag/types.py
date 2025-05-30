@@ -22,7 +22,7 @@ Flag = Literal[0, 1]
 MaxDepth = Literal[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 999]
 Mode = Literal["many_to_many", "one_to_one"]
 NgramsLength = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-ReportsExtension = Literal["csv"]
+ReportsExtension = Literal["csv", "mongo"]
 ReportType = Literal["general", "sources"]
 Language = Literal["en", "ru"]
 LogLevel = Literal["trace", "debug", "info", "warning", "error"]
@@ -109,6 +109,33 @@ class ASTFeatures:
         return hashlib.sha256(str(self.tokens).encode("utf-8")).hexdigest()
 
 
+class NodeStructurePlaceDict(TypedDict):
+    depth: int
+    uid: int
+
+
+class NodeCodePlaceDict(TypedDict):
+    lineno: int
+    col_offset: int
+
+
+class ASTFeaturesDict(TypedDict):
+    filepath: str
+    sha256: str
+    count_of_nodes: int
+    head_nodes: list[str]
+    operators: dict[str, int]
+    keywords: dict[str, int]
+    literals: dict[str, int]
+    unodes: dict[str, int]
+    from_num: dict[str, str]
+    count_unodes: int
+    structure: list[NodeStructurePlaceDict]
+    tokens: list[int]
+    tokens_pos: list[NodeCodePlaceDict]
+    modify_date: str
+
+
 # ----------------------------------------------------------------------------
 # Compare information
 
@@ -171,6 +198,10 @@ class Settings(TypedDict):
     ngrams_length: NgramsLength
     threshold: Threshold
     workers: int
+    mongo_host: str
+    mongo_port: int
+    mongo_user: str
+    mongo_pass: NotRequired[str]
 
 
 class SameHead(NamedTuple):

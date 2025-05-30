@@ -21,7 +21,6 @@ UTIL_VERSION: Final[str] = "@UTIL_VERSION@"
 
 # Paths
 CONFIG_PATH: Final[Path] = Path("@CONFIG_PATH@")
-FILE_DOWNLOAD_PATH: Final[Path] = Path(f"/tmp/{UTIL_NAME}_download.out")
 LOG_PATH: Final[Path] = Path("@CODEPLAG_LOG_PATH@")
 LIB_PATH: Final[Path] = Path("@LIB_PATH@")
 GENERAL_TEMPLATE_PATH: Final[Path] = LIB_PATH / "general.templ"
@@ -42,6 +41,9 @@ DEFAULT_WORKERS: Final[int] = os.cpu_count() or 1
 DEFAULT_MODE: Final[Mode] = "many_to_many"
 DEFAULT_MAX_DEPTH: Final[MaxDepth] = 999
 DEFAULT_REPORT_TYPE: Final[ReportType] = "general"
+DEFAULT_MONGO_HOST: Final[str] = "host.docker.internal"
+DEFAULT_MONGO_USER: Final[str] = "root"
+DEFAULT_MONGO_PORT: Final[int] = 27017
 # =============
 
 GET_FRAZE: Final[str] = "Getting works features from"

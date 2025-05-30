@@ -126,7 +126,7 @@ def serialize_compare_result(
 ) -> pd.DataFrame:
     return pd.DataFrame(
         {
-            "date": _get_current_date(),
+            "date": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
             "first_modify_date": first_work.modify_date,
             "first_sha256": first_work.sha256,
             "second_modify_date": second_work.modify_date,
@@ -170,5 +170,43 @@ def deserialize_compare_result(compare_result: pd.Series) -> FullCompareInfo:
     return compare_info
 
 
-def _get_current_date() -> str:
-    return datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+def serialize_compare_result_to_dict(compare_info: FullCompareInfo) -> dict:
+    data = {
+        "fast": dict(
+            zip(
+                list(compare_info.fast.__annotations__.keys()),
+                list(compare_info.fast),
+                strict=False,
+            )
+        ),
+        "structure": {
+            "similarity": compare_info.structure.similarity,
+            "compliance_matrix": compare_info.structure.compliance_matrix.tolist(),
+        },
+    }
+
+    return data
+
+
+def deserialize_compare_result_from_dict(compare_result: dict) -> FullCompareInfo:
+    assert compare_result is not None
+    structure_d = dict(compare_result["structure"])
+    assert structure_d is not None
+    fast_d = dict(compare_result["fast"])
+    assert fast_d is not None
+
+    compare_info = FullCompareInfo(
+        fast=FastCompareInfo(
+            jakkar=float(fast_d["jakkar"]),
+            operators=float(fast_d["operators"]),
+            keywords=float(fast_d["keywords"]),
+            literals=float(fast_d["literals"]),
+            weighted_average=float(fast_d["weighted_average"]),
+        ),
+        structure=StructureCompareInfo(
+            similarity=float(structure_d["similarity"]),
+            compliance_matrix=np.array(structure_d["compliance_matrix"]),
+        ),
+    )
+
+    return compare_info

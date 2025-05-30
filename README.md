@@ -42,6 +42,10 @@ Program for finding plagiarism in the source code written in Python 3, C, and C+
   ```
   $ docker run --rm --tty --interactive --volume <absolute_local_path_with_data>:/usr/src/works "artanias/codeplag-ubuntu22.04:latest" /bin/bash
   ```
+  or if Mongo is used on localhost
+  ```
+  $ docker run --rm --tty --interactive --volume <absolute_local_path_with_data>:/usr/src/works --add-host=host.docker.internal:host-gateway "artanias/codeplag-ubuntu22.04:latest" /bin/bash
+  ```
 
 ### 1.3 Install with package manager apt-get
 
@@ -56,6 +60,16 @@ Program for finding plagiarism in the source code written in Python 3, C, and C+
   $ sudo apt install python3 python3-pip
   $ sudo apt install clang libncurses5
   $ sudo apt-get install <path_to_the_package>/<package_name>.deb
+  ```
+
+### 1.4 MongoDB cache
+
+If you want to use MongoDB cache for saving reports and works metadata, complete steps:
+
+- Run MongoDB (you can configure DB params in [compose](docker/compose.yml))
+
+  ```
+  $ docker compose --file docker/compose.yml up --detach
   ```
 
 ## 2. Tests
@@ -127,6 +141,10 @@ Program for finding plagiarism in the source code written in Python 3, C, and C+
   # Reports path to '/usr/src/works'
   # Path to environment variables '/usr/src/works/.env'
   $ codeplag settings modify --threshold 70 --language en --show_progress 1 --reports_extension csv --reports /usr/src/works --environment /usr/src/works/.env --ngrams-length 2 --workers 4
+  ```
+- If you use MongoDB with custom settings configure util (don't forget to provide password (`example` by default))
+  ```
+  $ codeplag settings modify --mongo-pass <mongo-pass> --mongo-port <mongo-port> --mongo-user <mongo-user> --mongo-host <mongo-host>
   ```
 - Python analyzer:
   ```
