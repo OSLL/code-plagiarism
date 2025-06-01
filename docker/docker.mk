@@ -1,3 +1,7 @@
+MONGO_DOCKER_TAG        := mongo:8.0.9
+MONGO_CONTAINER_NAME    := mongo-$(UTIL_NAME)-test
+
+
 docker-help:
 	@echo "Docker:"
 	@echo "  docker-run             Runs docker container with installed util;"
@@ -5,6 +9,8 @@ docker-help:
 	@echo "      ALL=[1|0] REBUILD=[1|0]"
 	@echo "  docker-base-image      Builds a basic docker image from which to build other images;"
 	@echo "  docker-test-image      Builds a docker image for running tests and building package;"
+	@echo "  docker-test-mongo-run  Runs the MongoDB docker container (${MONGO_CONTAINER_NAME}) for the unit test purpose;"
+	@echo "  docker-test-mongo-stop Stops and removes the MongoDB docker container (${MONGO_CONTAINER_NAME});"
 	@echo "  docker-test            Runs unit tests with pytest framework in the docker container;"
 	@echo "  docker-autotest        Runs autotests in docker container;"
 	@echo "  docker-build-package   Builds the debian package in special docker image;"
@@ -36,11 +42,24 @@ docker-test-image: docker-base-image
 		--file docker/test_ubuntu2204.dockerfile \
 		.
 
-docker-test: docker-test-image
-	docker run --rm \
+docker-test-mongo-run:
+	@docker run \
+		--env MONGO_INITDB_ROOT_USERNAME=root \
+		--env MONGO_INITDB_ROOT_PASSWORD=root \
+		--detach \
+		--name $(MONGO_CONTAINER_NAME) \
+		$(MONGO_DOCKER_TAG)
+
+docker-test-mongo-stop:
+	@docker container stop $(MONGO_CONTAINER_NAME)
+	@docker container rm $(MONGO_CONTAINER_NAME)
+
+docker-test: docker-test-image docker-test-mongo-run
+	@docker run --rm \
+		--env MONGO_HOST=$(shell docker inspect --format '{{ .NetworkSettings.IPAddress }}' $(MONGO_CONTAINER_NAME)) \
 		--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
-		--volume /var/run/docker.sock:/var/run/docker.sock \
-		"$(TEST_DOCKER_TAG)"
+		"$(TEST_DOCKER_TAG)" || (make docker-test-mongo-stop && exit 200)
+	@make docker-test-mongo-stop
 
 docker-autotest: docker-test-image docker-build-package
 	@if [ $(shell find . -maxdepth 1 -type f -name .env | wc --lines) != 1 ]; then \

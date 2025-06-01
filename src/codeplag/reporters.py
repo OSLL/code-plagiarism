@@ -189,11 +189,8 @@ def serialize_compare_result_to_dict(compare_info: FullCompareInfo) -> dict:
 
 
 def deserialize_compare_result_from_dict(compare_result: dict) -> FullCompareInfo:
-    assert compare_result is not None
     structure_d = dict(compare_result["structure"])
-    assert structure_d is not None
     fast_d = dict(compare_result["fast"])
-    assert fast_d is not None
 
     compare_info = FullCompareInfo(
         fast=FastCompareInfo(
