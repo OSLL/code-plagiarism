@@ -1,16 +1,15 @@
 """MIT License.
 
-Written 2025 by Konstantin Rogozhin, Nikolai Myshkin
+Written 2025 by Konstantin Rogozhin, Nikolai Myshkin, Semidolin Artyom.
 """
 
 import dataclasses
-import time
+import os
 
 import pytest
-from testcontainers.mongodb import MongoDbContainer
 from typing_extensions import Self
 
-from codeplag.consts import DEFAULT_MONGO_USER
+from codeplag.consts import DEFAULT_MONGO_PORT, DEFAULT_MONGO_USER
 from codeplag.db.mongo import (
     FeaturesRepository,
     MongoDBConnection,
@@ -23,25 +22,19 @@ from unit.codeplag.db.testkit import FeaturesRepositoryStub, ReportRepositoryStu
 
 
 @pytest.fixture(scope="module")
-def mongo_container() -> MongoDbContainer:
-    with MongoDbContainer("mongo:8.0", username=DEFAULT_MONGO_USER) as mongo:
-        mongo.start()
-        time.sleep(7)
-        yield mongo
+def mongo_host() -> str:
+    host = os.environ.get("MONGO_HOST")
+    assert host, f"Invalid MONGO_HOST environment '{host}'."
+    return host
 
 
 @pytest.fixture(scope="module")
-def mongo_connection(mongo_container: MongoDbContainer) -> MongoDBConnection:
-    host = mongo_container.get_container_host_ip()
-    port = int(mongo_container.get_exposed_port(27017))
-    user = mongo_container.username
-    password = mongo_container.password
-
+def mongo_connection(mongo_host: str) -> MongoDBConnection:
     conn = MongoDBConnection(
-        host=host,
-        port=port,
-        user=user,
-        password=password,
+        host=mongo_host,
+        port=DEFAULT_MONGO_PORT,
+        user=DEFAULT_MONGO_USER,
+        password=DEFAULT_MONGO_USER,
     )
     yield conn
 
