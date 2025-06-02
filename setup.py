@@ -13,7 +13,6 @@ TEST_REQUIREMENTS: tuple[str, ...] = (
     "pytest~=8.3.4",
     "pytest-mock~=3.14.0",
     "pytest-cov~=6.0.0",
-    "testcontainers[mongodb]~=4.10.0",
 )
 INSTALL_REQUIREMENTS: tuple[str, ...] = (
     "argcomplete~=3.5.3",

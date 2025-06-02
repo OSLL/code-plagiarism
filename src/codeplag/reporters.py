@@ -176,7 +176,7 @@ def serialize_compare_result_to_dict(compare_info: FullCompareInfo) -> dict:
             zip(
                 list(compare_info.fast.__annotations__.keys()),
                 list(compare_info.fast),
-                strict=False,
+                strict=True,
             )
         ),
         "structure": {

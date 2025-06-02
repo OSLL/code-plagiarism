@@ -1,83 +1,82 @@
 """MIT License.
 
-Written 2025 by Daniil Lokosov
+Written 2025 by Daniil Lokosov, Semidolin Artyom.
 """
 
 import os
-import time
-from typing import Tuple
+from pathlib import Path
+from typing import Generator, Tuple
 
 import pytest
-from testcontainers.mongodb import MongoDbContainer
 from utils import modify_settings, run_check
 
-from codeplag.consts import CONFIG_PATH, DEFAULT_MONGO_USER
+from codeplag.consts import CONFIG_PATH, DEFAULT_MONGO_PORT, DEFAULT_MONGO_USER
 from codeplag.db.mongo import FeaturesRepository, MongoDBConnection, ReportRepository
 from codeplag.types import ASTFeatures
 
-CWD = os.getcwd()
+CWD = Path.cwd()
 
-PY_SIM_FILES = f"{CWD}/test/unit/codeplag/data/test1.py", f"{CWD}/test/unit/codeplag/data/test2.py"
-PY_FILES = f"{CWD}/test/unit/codeplag/data/test1.py", f"{CWD}/test/unit/codeplag/data/test3.py"
+PY_SIM_FILES = (
+    CWD / "test/unit/codeplag/data/test1.py",
+    CWD / "test/unit/codeplag/data/test2.py",
+)
+PY_FILES = (
+    CWD / "test/unit/codeplag/data/test1.py",
+    CWD / "test/unit/codeplag/data/test3.py",
+)
 CPP_SIM_FILES = (
-    f"{CWD}/test/unit/codeplag/cplag/data/sample4.cpp",
-    f"{CWD}/test/unit/codeplag/cplag/data/sample3.cpp",
+    CWD / "test/unit/codeplag/cplag/data/sample4.cpp",
+    CWD / "test/unit/codeplag/cplag/data/sample3.cpp",
 )
 CPP_FILES = (
-    f"{CWD}/test/unit/codeplag/cplag/data/sample1.cpp",
-    f"{CWD}/test/unit/codeplag/cplag/data/sample2.cpp",
+    CWD / "test/unit/codeplag/cplag/data/sample1.cpp",
+    CWD / "test/unit/codeplag/cplag/data/sample2.cpp",
 )
 
 REPO_URL = "https://github.com/OSLL/code-plagiarism"
-PY_GITHUB_FILES = [
+PY_GITHUB_FILES = (
     f"{REPO_URL}/blob/main/test/unit/codeplag/data/test1.py",
     f"{REPO_URL}/blob/main/test/unit/codeplag/data/test3.py",
-]
-CPP_GITHUB_SIM_FILES = [
+)
+CPP_GITHUB_SIM_FILES = (
     f"{REPO_URL}/blob/main/test/unit/codeplag/cplag/data/sample3.cpp",
     f"{REPO_URL}/blob/main/test/unit/codeplag/cplag/data/sample4.cpp",
-]
+)
 
 
-def save_and_append_to_file(file: str, content: str) -> str:
-    with open(file, "r") as f:
+def save_and_append_to_file(file: Path, content: str) -> str:
+    with file.open("r") as f:
         data = f.read()
-    with open(file, "a") as f:
+    with file.open("a") as f:
         f.write(content)
     return data
 
 
-def recover_file(file: str, old_content: str) -> None:
-    with open(file, "w") as f:
+def recover_file(file: Path, old_content: str) -> None:
+    with file.open("w") as f:
         f.write(old_content)
 
 
 @pytest.fixture(scope="module")
-def mongo_container() -> MongoDbContainer:
-    with MongoDbContainer("mongo:8.0", username=DEFAULT_MONGO_USER) as mongo:
-        mongo.start()
-        time.sleep(7)
-        yield mongo
+def mongo_host() -> str:
+    host = os.environ.get("MONGO_HOST")
+    assert host, f"Invalid MONGO_HOST environment '{host}'."
+    return host
 
 
 @pytest.fixture(scope="module")
-def mongo_connection(mongo_container: MongoDbContainer) -> MongoDBConnection:
-    host = mongo_container.get_container_host_ip()
-    port = int(mongo_container.get_exposed_port(27017))
-    user = mongo_container.username
-    password = mongo_container.password
-
+def mongo_connection(mongo_host: str) -> Generator[MongoDBConnection, None, None]:
     conn = MongoDBConnection(
-        host=host,
-        port=port,
-        user=user,
-        password=password,
+        host=mongo_host,
+        port=DEFAULT_MONGO_PORT,
+        user=DEFAULT_MONGO_USER,
+        password=DEFAULT_MONGO_USER,
     )
     yield conn
 
 
 @pytest.fixture(scope="module", autouse=True)
-def setup_module(mongo_connection: MongoDBConnection) -> None:
+def setup_module(mongo_connection: MongoDBConnection) -> Generator[None, None, None]:
     modify_settings(
         log_level="trace",
         reports_extension="mongo",
@@ -98,7 +97,7 @@ def setup_module(mongo_connection: MongoDBConnection) -> None:
 
 
 @pytest.fixture(autouse=True)
-def clear_db(mongo_connection: MongoDBConnection) -> None:
+def clear_db(mongo_connection: MongoDBConnection) -> Generator[None, None, None]:
     mongo_connection.clear_db()
 
     yield
@@ -116,7 +115,7 @@ def clear_db(mongo_connection: MongoDBConnection) -> None:
     ],
 )
 def test_correct_mongo_connection(
-    cmd: str, files: Tuple[str, str], extension: str, found_plag: bool
+    cmd: str, files: Tuple[Path, Path], extension: str, found_plag: bool
 ):
     result = run_check([cmd, *files], extension=extension)
 
@@ -140,7 +139,7 @@ def test_correct_mongo_connection(
 )
 def test_saving_metadata_and_reports(
     cmd: str,
-    files: Tuple[str, str],
+    files: Tuple[Path, Path],
     extension: str,
     found_plag: bool,
     mongo_connection: MongoDBConnection,
@@ -172,7 +171,7 @@ def test_saving_metadata_and_reports(
     ],
 )
 def test_reading_metadata_and_reports_after_saving(
-    cmd: str, files: Tuple[str, str], extension: str, found_plag: bool
+    cmd: str, files: Tuple[Path, Path], extension: str, found_plag: bool
 ):
     run_check([cmd, *files], extension=extension)
     result = run_check([cmd, *files], extension=extension)
@@ -196,15 +195,15 @@ def test_reading_metadata_and_reports_after_saving(
 
 
 @pytest.mark.parametrize(
-    "extension, files, found_plag",
+    "extension, files",
     [
-        ("py", PY_FILES, False),
-        ("py", PY_SIM_FILES, True),
-        ("cpp", CPP_FILES, False),
-        ("cpp", CPP_SIM_FILES, True),
+        ("py", PY_FILES),
+        ("py", PY_SIM_FILES),
+        ("cpp", CPP_FILES),
+        ("cpp", CPP_SIM_FILES),
     ],
 )
-def test_saving_after_file_minor_change(extension: str, files: Tuple[str, str], found_plag: bool):
+def test_saving_after_file_minor_change(extension: str, files: Tuple[Path, Path]):
     run_check(["--files", *files], extension=extension)
 
     old = save_and_append_to_file(files[0], "\n")
@@ -234,7 +233,7 @@ def test_saving_after_file_minor_change(extension: str, files: Tuple[str, str], 
     ],
 )
 def test_saving_after_file_significant_change(
-    extension: str, files: Tuple[str, str], found_plag: bool
+    extension: str, files: Tuple[Path, Path], found_plag: bool
 ):
     run_check(["--files", *files], extension=extension)
 
