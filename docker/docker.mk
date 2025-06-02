@@ -61,18 +61,19 @@ docker-test: docker-test-image docker-test-mongo-run
 		"$(TEST_DOCKER_TAG)" || (make docker-test-mongo-stop && exit 200)
 	@make docker-test-mongo-stop
 
-docker-autotest: docker-test-image docker-build-package
+docker-autotest: docker-test-image docker-build-package docker-test-mongo-run
 	@if [ $(shell find . -maxdepth 1 -type f -name .env | wc --lines) != 1 ]; then \
 		echo "Requires '.env' file with provided GitHub token for running autotests."; \
 		exit 200; \
 	else \
 		docker run --rm \
 			--volume $(PWD)/$(DEBIAN_PACKAGES_PATH):/usr/src/$(UTIL_NAME)/$(DEBIAN_PACKAGES_PATH) \
-			--volume /var/run/docker.sock:/var/run/docker.sock \
 			--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
+			--env MONGO_HOST=$(shell docker inspect --format '{{ .NetworkSettings.IPAddress }}' $(MONGO_CONTAINER_NAME)) \
 			--env-file .env \
 			"$(TEST_DOCKER_TAG)" bash -c \
 			"apt-get install -y /usr/src/${UTIL_NAME}/${DEBIAN_PACKAGES_PATH}/${DEB_PKG_NAME}.deb && make autotest"; \
+		make docker-test-mongo-stop; \
 	fi
 
 docker-build-package: docker-test-image

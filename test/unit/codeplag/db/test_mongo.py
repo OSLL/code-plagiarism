@@ -5,6 +5,7 @@ Written 2025 by Konstantin Rogozhin, Nikolai Myshkin, Semidolin Artyom.
 
 import dataclasses
 import os
+from typing import Generator
 
 import pytest
 from typing_extensions import Self
@@ -29,7 +30,7 @@ def mongo_host() -> str:
 
 
 @pytest.fixture(scope="module")
-def mongo_connection(mongo_host: str) -> MongoDBConnection:
+def mongo_connection(mongo_host: str) -> Generator[MongoDBConnection, None, None]:
     conn = MongoDBConnection(
         host=mongo_host,
         port=DEFAULT_MONGO_PORT,
@@ -40,7 +41,7 @@ def mongo_connection(mongo_host: str) -> MongoDBConnection:
 
 
 @pytest.fixture(autouse=True)
-def clear_db(mongo_connection: MongoDBConnection) -> None:
+def clear_db(mongo_connection: MongoDBConnection) -> Generator[None, None, None]:
     mongo_connection.clear_db()
 
     yield
@@ -55,7 +56,7 @@ class TestMongoDBInfrastructure:
 
 class TestReportRepository:
     @pytest.fixture(scope="class")
-    def report_repository(self: Self, mongo_connection: MongoDBConnection):
+    def report_repository(self: Self, mongo_connection: MongoDBConnection) -> ReportRepository:
         return ReportRepository(mongo_connection)
 
     def test_report_repository_write_and_get(
@@ -100,7 +101,7 @@ class TestReportRepository:
 
 class TestFeaturesRepository:
     @pytest.fixture(scope="class")
-    def features_repository(self: Self, mongo_connection: MongoDBConnection):
+    def features_repository(self: Self, mongo_connection: MongoDBConnection) -> FeaturesRepository:
         return FeaturesRepository(mongo_connection)
 
     def test_features_repository_write_and_get(

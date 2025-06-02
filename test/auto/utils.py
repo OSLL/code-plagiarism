@@ -37,12 +37,21 @@ class CmdResult:
         assert self.cmd_res.returncode == ExitCode.EXIT_FOUND_SIM, str(self.cmd_res)
 
 
-def run_cmd(cmd: list[str]) -> CmdResult:
-    return CmdResult(subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+CmdList = list[str] | list[str | Path]
+
+
+def run_cmd(cmd: CmdList) -> CmdResult:
+    return CmdResult(
+        subprocess.run(
+            list(map(str, cmd)),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+    )
 
 
 def run_util(
-    cmd: list[str],
+    cmd: CmdList,
     root: Literal["check", "settings", "report"] | None = None,
 ) -> CmdResult:
     root_cmd = [] if root is None else [root]
@@ -50,7 +59,7 @@ def run_util(
     return run_cmd([UTIL_NAME] + root_cmd + cmd)
 
 
-def run_check(cmd: list[str], extension: str = "py") -> CmdResult:
+def run_check(cmd: CmdList, extension: str = "py") -> CmdResult:
     return run_util(["--extension", extension] + cmd, root="check")
 
 
@@ -69,7 +78,7 @@ def create_report(
     second_root_path: str | None = None,
 ) -> CmdResult:
     return run_util(
-        ["create", "--path", str(path), "--type", report_type]
+        ["create", "--path", path, "--type", report_type]
         + create_opt("first-root-path", first_root_path)
         + create_opt("second-root-path", second_root_path),
         root="report",
