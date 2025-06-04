@@ -3,7 +3,7 @@
 from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
-from typing import Generator, TypedDict
+from typing import Generator, TypedDict, Literal
 
 import jinja2
 import numpy as np
@@ -30,6 +30,7 @@ from codeplag.types import (
     ReportType,
     SameFuncs,
     SameHead,
+    Threshold,
 )
 
 
@@ -49,7 +50,7 @@ def html_report_create(
     report_type: ReportType,
     first_root_path: Path | str | None = None,
     second_root_path: Path | str | None = None,
-) -> ExitCode:
+) -> Literal[ExitCode.EXIT_INVAL] | Literal[ExitCode.EXIT_SUCCESS]:
     """Creates an HTML report based on the configuration settings.
 
     Args:
@@ -61,7 +62,8 @@ def html_report_create(
 
     Returns:
     -------
-        ExitCode: 0 if the report was successfully created, 1 otherwise.
+        ExitCode: 'EXIT_SUCCESS' if the report was successfully created or another value when
+          an error occurred.
 
     Raises:
     -------
@@ -70,50 +72,41 @@ def html_report_create(
     Example usage:
         >>> from pathlib import Path
         >>> html_report_create(Path('/path/to/report'), 'general')
-        0
+        <ExitCode.EXIT_SUCCESS: 0>
 
     """
     settings_config = read_settings_conf()
-    reports_path = settings_config.get("reports")
-    if not reports_path:
-        logger.error("Can't create general report without provided in settings 'report' path.")
+    reports_extension = settings_config["reports_extension"]
+    if reports_extension == "csv":
+        reports_path = settings_config.get("reports")
+        if not reports_path:
+            logger.error(
+                "Can't create general report without provided in settings 'report' path."
+            )
+            return ExitCode.EXIT_INVAL
+        if reports_path.is_dir():
+            reports_path = reports_path / CSV_REPORT_FILENAME
+        if not reports_path.exists():
+            logger.error(f"There is nothing in '{reports_path}' to create a basic html report from.")
+            return ExitCode.EXIT_INVAL
+        return __html_report_create_from_csv(
+            report_path,
+            reports_path,
+            report_type,
+            settings_config["threshold"],
+            settings_config["language"],
+            first_root_path,
+            second_root_path
+        )
+    elif reports_extension == "mongo":
+        logger.error("Not implemented 'mongo' reports.")
         return ExitCode.EXIT_INVAL
-    if settings_config["reports_extension"] != "csv":
-        logger.error("Can create report only when 'reports_extension' is csv.")
-        return ExitCode.EXIT_INVAL
-    if reports_path.is_dir():
-        reports_path = reports_path / CSV_REPORT_FILENAME
-    if not reports_path.exists():
-        logger.error(f"There is nothing in '{reports_path}' to create a basic html report from.")
-        return ExitCode.EXIT_INVAL
-    if report_type == "general":
-        create_report_function = _create_general_report
-    elif report_type == "sources":
-        create_report_function = _create_sources_report
     else:
-        raise ValueError(_("Invalid report type."))
-    all_paths_provided = all([first_root_path, second_root_path])
-    if not all_paths_provided and any([first_root_path, second_root_path]):
-        raise ValueError(_("All paths must be provided."))
-
-    df = read_df(reports_path)
-    if all_paths_provided:
-        paths = tuple(sorted([str(first_root_path), str(second_root_path)]))
-        df = df[df["first_path"].str.startswith(paths[0])]  # type: ignore
-        df = df[df["second_path"].str.startswith(paths[1])]  # type: ignore
-    else:
-        paths = None
-    environment = jinja2.Environment(extensions=["jinja2.ext.i18n"])
-    environment.install_gettext_translations(get_translations())  # type: ignore
-    create_report_function(
-        df,  # type:ignore
-        report_path,
-        environment,
-        settings_config["threshold"],
-        settings_config["language"],
-        paths,  # type: ignore
-    )
-    return ExitCode.EXIT_SUCCESS
+        logger.error(
+            f"Can create report only when 'reports_extension' in ('csv', 'mongo'). "
+            f"Provided '{reports_extension}'."
+        )
+        return ExitCode.EXIT_INVAL
 
 
 def calculate_general_total_similarity(
@@ -312,7 +305,7 @@ def _create_general_report(
     df: pd.DataFrame,
     save_path: Path,
     environment: jinja2.Environment,
-    threshold: int = DEFAULT_THRESHOLD,
+    threshold: Threshold = DEFAULT_THRESHOLD,
     language: Language = DEFAULT_LANGUAGE,
     paths: tuple[str, str] | None = None,
 ) -> None:
@@ -352,7 +345,7 @@ def _create_sources_report(
     df: pd.DataFrame,
     save_path: Path,
     environment: jinja2.Environment,
-    threshold: int = DEFAULT_THRESHOLD,
+    threshold: Threshold = DEFAULT_THRESHOLD,
     language: Language = DEFAULT_LANGUAGE,
     paths: tuple[str, str] | None = None,
 ) -> None:
@@ -383,3 +376,42 @@ def _create_sources_report(
             paths=paths,
         )
     )
+
+
+def __html_report_create_from_csv(
+    report_path: Path,
+    reports_path: Path,
+    report_type: ReportType,
+    threshold: Threshold,
+    language: Language,
+    first_root_path: Path | str | None = None,
+    second_root_path: Path | str | None = None,
+) -> Literal[ExitCode.EXIT_SUCCESS]:
+    if report_type == "general":
+        create_report_function = _create_general_report
+    elif report_type == "sources":
+        create_report_function = _create_sources_report
+    else:
+        raise ValueError(_("Invalid report type."))
+    all_paths_provided = all([first_root_path, second_root_path])
+    if not all_paths_provided and any([first_root_path, second_root_path]):
+        raise ValueError(_("All paths must be provided."))
+
+    df = read_df(reports_path)
+    if all_paths_provided:
+        paths = tuple(sorted([str(first_root_path), str(second_root_path)]))
+        df = df[df["first_path"].str.startswith(paths[0])]  # type: ignore
+        df = df[df["second_path"].str.startswith(paths[1])]  # type: ignore
+    else:
+        paths = None
+    environment = jinja2.Environment(extensions=["jinja2.ext.i18n"])
+    environment.install_gettext_translations(get_translations())  # type: ignore
+    create_report_function(
+        df,  # type:ignore
+        report_path,
+        environment,
+        threshold,
+        language,
+        paths,  # type: ignore
+    )
+    return ExitCode.EXIT_SUCCESS
