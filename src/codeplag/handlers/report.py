@@ -3,7 +3,7 @@
 from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
-from typing import Generator, TypedDict, Literal
+from typing import Generator, Literal, TypedDict
 
 import jinja2
 import numpy as np
@@ -80,14 +80,14 @@ def html_report_create(
     if reports_extension == "csv":
         reports_path = settings_config.get("reports")
         if not reports_path:
-            logger.error(
-                "Can't create general report without provided in settings 'report' path."
-            )
+            logger.error("Can't create general report without provided in settings 'report' path.")
             return ExitCode.EXIT_INVAL
         if reports_path.is_dir():
             reports_path = reports_path / CSV_REPORT_FILENAME
         if not reports_path.exists():
-            logger.error(f"There is nothing in '{reports_path}' to create a basic html report from.")
+            logger.error(
+                f"There is nothing in '{reports_path}' to create a basic html report from."
+            )
             return ExitCode.EXIT_INVAL
         return __html_report_create_from_csv(
             report_path,
@@ -96,7 +96,7 @@ def html_report_create(
             settings_config["threshold"],
             settings_config["language"],
             first_root_path,
-            second_root_path
+            second_root_path,
         )
     elif reports_extension == "mongo":
         logger.error("Not implemented 'mongo' reports.")
