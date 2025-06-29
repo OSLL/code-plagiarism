@@ -57,7 +57,7 @@
             </table>
         </div>
     {% endif %}
-    {% for line, cmp_res, same_parts_of_second, same_parts_of_first in data %}
+    {% for cmp_res, same_parts_of_second, same_parts_of_first in data %}
         <div style="border: 0.2rem solid black; padding: 1rem; margin: 0.5rem;">
             <table align="center">
                 <caption>{{ _("General information") }}</caption>
@@ -67,13 +67,13 @@
                     <th>{{ _("Check date") }}</th>
                 </tr>
                 <tr class="table__row">
-                    <td>{{ line.first_path }}</td>
-                    <td>{{ line.first_modify_date or "—" }}</td>
-                    <td rowspan="2">{{ line.date }}</th>
+                    <td>{{ cmp_res.first_path }}</td>
+                    <td>{{ cmp_res.first_modify_date or "—" }}</td>
+                    <td rowspan="2">{{ cmp_res.date }}</th>
                 </tr>
                 <tr class="table__row">
-                    <td>{{ line.second_path }}</td>
-                    <td>{{ line.second_modify_date or "—" }}</td>
+                    <td>{{ cmp_res.second_path }}</td>
+                    <td>{{ cmp_res.second_modify_date or "—" }}</td>
                 </tr>
             </table>
             <table align="center">

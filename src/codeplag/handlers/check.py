@@ -21,9 +21,6 @@ from codeplag.config import read_settings_conf
 from codeplag.consts import (
     DEFAULT_MAX_DEPTH,
     DEFAULT_MODE,
-    DEFAULT_MONGO_HOST,
-    DEFAULT_MONGO_PORT,
-    DEFAULT_MONGO_USER,
     DEFAULT_NGRAMS_LENGTH,
     SUPPORTED_EXTENSIONS,
 )
@@ -114,16 +111,7 @@ class WorksComparator:
         self.reporter: AbstractReporter | None = None
         features_cache: AbstractFeaturesCache | None = None
         if reports_extension == "mongo":
-            host = settings_conf.get("mongo_host", DEFAULT_MONGO_HOST)
-            port = settings_conf.get("mongo_port", DEFAULT_MONGO_PORT)
-            user = settings_conf.get("mongo_user", DEFAULT_MONGO_USER)
-            password = settings_conf.get("mongo_pass")
-
-            if password is None:
-                raise Exception("'mongo' reports_exception provided, but mongo-pass is missing")
-
-            connection = MongoDBConnection(host=host, port=port, user=user, password=password)
-
+            connection = MongoDBConnection.from_settings(settings_conf)
             features_cache_repo = FeaturesRepository(connection)
             compare_info_repo = ReportRepository(connection)
 
@@ -359,16 +347,14 @@ class WorksComparator:
             "Found similarity '%s' with '%s'.", work1.filepath, work2.filepath
         )
         if self.reporter and save:
-            self.reporter.save_result(work1, work2, metrics)
+            self.reporter.save_result(metrics)
         if self.short_output is ShortOutput.NO_SHOW:
             return ExitCode.EXIT_FOUND_SIM
 
         if self.threshold and (metrics.structure.similarity * 100) <= self.threshold:
-            print_compare_result(work1, work2, metrics)
+            print_compare_result(metrics)
         else:
             print_compare_result(
-                work1,
-                work2,
                 metrics,
                 compliance_matrix_to_df(
                     metrics.structure.compliance_matrix,

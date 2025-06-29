@@ -8,6 +8,8 @@ from typing_extensions import Self
 from codeplag.consts import CSV_REPORT_COLUMNS
 from codeplag.reporters import (
     CSVReporter,
+    _deserialize_head_nodes,
+    _deserialize_path,
     deserialize_compare_result,
     deserialize_compare_result_from_dict,
     read_df,
@@ -40,12 +42,12 @@ class TestCSVReporter:
         first_compare_result: FullCompareInfo,
     ) -> None:
         # First ok test
-        self.REPORTER.save_result(first_features, second_features, first_compare_result)
+        self.REPORTER.save_result(first_compare_result)
         self.REPORTER._write_df_to_fs()
         assert "Saving" in mock_default_logger.debug.mock_calls[-1].args[0]
 
         # Second ok test
-        self.REPORTER.save_result(first_features, second_features, first_compare_result)
+        self.REPORTER.save_result(first_compare_result)
         self.REPORTER._write_df_to_fs()
         assert "Saving" in mock_default_logger.debug.mock_calls[-1].args[0]
         self.REPORTER._write_df_to_fs()
@@ -66,7 +68,6 @@ class TestCSVReporter:
         )
         deser_compare_info = deserialize_compare_result(df.iloc[0])
         assert deser_compare_info.fast == first_compare_result.fast
-        assert deser_compare_info.structure is not None
         assert deser_compare_info.structure.similarity == first_compare_result.structure.similarity
         assert (
             deser_compare_info.structure.compliance_matrix.tolist()
@@ -78,10 +79,52 @@ def test_compare_info_serialize_deserialize(first_compare_result: FullCompareInf
     compare_info_dict = serialize_compare_result_to_dict(first_compare_result)
     deserialize = deserialize_compare_result_from_dict(compare_info_dict)
 
+    assert deserialize.date == first_compare_result.date
+    assert deserialize.first_heads == first_compare_result.first_heads
+    assert deserialize.first_modify_date == first_compare_result.first_modify_date
+    assert deserialize.first_path == first_compare_result.first_path
+    assert deserialize.first_sha256 == first_compare_result.first_sha256
+    assert deserialize.second_heads == first_compare_result.second_heads
+    assert deserialize.second_modify_date == first_compare_result.second_modify_date
+    assert deserialize.second_sha256 == first_compare_result.second_sha256
+    assert deserialize.second_path == first_compare_result.second_path
     assert deserialize.fast == first_compare_result.fast
-    assert deserialize.structure is not None
     assert deserialize.structure.similarity == first_compare_result.structure.similarity
     assert (
         deserialize.structure.compliance_matrix.tolist()
         == first_compare_result.structure.compliance_matrix.tolist()
     )
+
+
+@pytest.mark.parametrize(
+    ("str_head_nodes", "list_head_nodes"),
+    [
+        (
+            "['_GH_URL[23]', 'AsyncGithubParser[26]']",
+            ["_GH_URL[23]", "AsyncGithubParser[26]"],
+        ),
+        (
+            "['Expr[1]', 'Expr[14]', 'application[16]']",
+            ["Expr[1]", "Expr[14]", "application[16]"],
+        ),
+    ],
+)
+def test__deserialize_head_nodes(str_head_nodes: str, list_head_nodes: list[str]) -> None:
+    assert _deserialize_head_nodes(str_head_nodes) == list_head_nodes
+
+
+@pytest.mark.parametrize(
+    ("path", "expected"),
+    [
+        (
+            "https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/codeplagcli.py",
+            "https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/codeplagcli.py",
+        ),
+        (
+            "/usr/src/codeplag/handlers/check.py",
+            Path("/usr/src/codeplag/handlers/check.py"),
+        ),
+    ],
+)
+def test__deserialize_path(path: str, expected: str | Path) -> None:
+    assert _deserialize_path(path) == expected

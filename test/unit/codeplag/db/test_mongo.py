@@ -1,6 +1,6 @@
 """MIT License.
 
-Written 2025 by Konstantin Rogozhin, Nikolai Myshkin, Semidolin Artyom.
+Written 2025 by Konstantin Rogozhin, Nikolai Myshkin, Artyom Semidolin.
 """
 
 import dataclasses
@@ -19,7 +19,6 @@ from codeplag.db.mongo import (
     ReportRepository,
 )
 from codeplag.types import ASTFeatures, FullCompareInfo
-from unit.codeplag.db.testkit import FeaturesRepositoryStub, ReportRepositoryStub
 
 
 @pytest.fixture(scope="module")
@@ -42,9 +41,9 @@ def mongo_connection(mongo_host: str) -> Generator[MongoDBConnection, None, None
 
 @pytest.fixture(autouse=True)
 def clear_db(mongo_connection: MongoDBConnection) -> Generator[None, None, None]:
-    mongo_connection.clear_db()
-
     yield
+
+    mongo_connection.clear_db()
 
 
 class TestMongoDBInfrastructure:
@@ -66,20 +65,22 @@ class TestReportRepository:
         second_features: ASTFeatures,
         first_compare_result: FullCompareInfo,
     ):
-        # Write compare info
-        report_repository.write_compare_info(first_features, second_features, first_compare_result)
-
-        # Read compare info
-        result = report_repository.get_compare_info(first_features, second_features)
+        report_repository.write_compare_info(first_compare_result)
+        compare_info = report_repository.get_compare_info(
+            first_features.filepath, second_features.filepath
+        )
 
         # Compare metadata
-        assert result is not None
-        assert result.first_sha256 == first_features.sha256
-        assert result.second_sha256 == second_features.sha256
-        assert result.first_modify_date == first_features.modify_date
-        assert result.second_modify_date == second_features.modify_date
-
-        compare_info = result.compare_info
+        assert compare_info is not None
+        assert compare_info.date
+        assert compare_info.first_sha256 == first_compare_result.first_sha256
+        assert compare_info.second_sha256 == first_compare_result.second_sha256
+        assert compare_info.first_modify_date == first_compare_result.first_modify_date
+        assert compare_info.second_modify_date == first_compare_result.second_modify_date
+        assert compare_info.first_path == first_compare_result.first_path
+        assert compare_info.second_path == first_compare_result.second_path
+        assert compare_info.first_heads == first_compare_result.first_heads
+        assert compare_info.second_heads == first_compare_result.second_heads
 
         # Compare result with compare info
         assert compare_info is not None
@@ -95,7 +96,9 @@ class TestReportRepository:
         first_features: ASTFeatures,
         third_features: ASTFeatures,
     ):
-        result = report_repository.get_compare_info(first_features, third_features)
+        result = report_repository.get_compare_info(
+            first_features.filepath, third_features.filepath
+        )
         assert result is None
 
 
@@ -139,8 +142,8 @@ class TestFeaturesRepository:
 
 class TestMongoReporter:
     @pytest.fixture
-    def mongo_reporter(self: Self) -> MongoReporter:
-        repository = ReportRepositoryStub()
+    def mongo_reporter(self: Self, mongo_connection: MongoDBConnection) -> MongoReporter:
+        repository = ReportRepository(mongo_connection)
         return MongoReporter(repository)
 
     def test_write_read_report(
@@ -150,8 +153,7 @@ class TestMongoReporter:
         second_features: ASTFeatures,
         first_compare_result: FullCompareInfo,
     ):
-        mongo_reporter.save_result(first_features, second_features, first_compare_result)
-
+        mongo_reporter.save_result(first_compare_result)
         result = mongo_reporter.get_result(first_features, second_features)
 
         assert result is not None
@@ -178,7 +180,7 @@ class TestMongoReporter:
         second_features: ASTFeatures,
         first_compare_result: FullCompareInfo,
     ):
-        mongo_reporter.save_result(first_features, second_features, first_compare_result)
+        mongo_reporter.save_result(first_compare_result)
 
         work1 = dataclasses.replace(first_features)
         work1.sha256 = "new_sha256"
@@ -194,7 +196,7 @@ class TestMongoReporter:
         second_features: ASTFeatures,
         first_compare_result: FullCompareInfo,
     ):
-        mongo_reporter.save_result(first_features, second_features, first_compare_result)
+        mongo_reporter.save_result(first_compare_result)
 
         work2 = dataclasses.replace(second_features)
         work2.sha256 = "new_sha256"
@@ -206,8 +208,10 @@ class TestMongoReporter:
 
 class TestMongoFeaturesCache:
     @pytest.fixture
-    def mongo_features_cache(self: Self) -> MongoFeaturesCache:
-        repository = FeaturesRepositoryStub()
+    def mongo_features_cache(
+        self: Self, mongo_connection: MongoDBConnection
+    ) -> MongoFeaturesCache:
+        repository = FeaturesRepository(mongo_connection)
         return MongoFeaturesCache(repository)
 
     def test_write_read_features(
@@ -216,7 +220,6 @@ class TestMongoFeaturesCache:
         first_features: ASTFeatures,
     ):
         mongo_features_cache.save_features(first_features)
-
         result = mongo_features_cache.get_features(first_features)
 
         assert result is not None
