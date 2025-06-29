@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from typing_extensions import Self
 
-from codeplag.types import ASTFeatures, FullCompareInfo, NodeCodePlace
+from codeplag.types import FullCompareInfo, NodeCodePlace
 
 CHARS_CNT: Final[int] = 40
 USEFUL_CHARS: Final[int] = 100
@@ -155,8 +155,6 @@ def clear_line() -> None:
 
 
 def print_compare_result(
-    features1: ASTFeatures,
-    features2: ASTFeatures,
     compare_info: FullCompareInfo,
     compliance_matrix_df: pd.DataFrame | None = None,
 ) -> None:
@@ -164,8 +162,6 @@ def print_compare_result(
 
     Args:
     ----
-        features1 (ASTFeatures): The features of the first  source file.
-        features2 (ASTFeatures): The features of the second  source file.
         compare_info (FullCompareInfo): The compare metrics of two works.
         compliance_matrix_df (pd.DataFrame | None, optional): DataFrame consisting
           structures similarity information of two works.
@@ -175,9 +171,9 @@ def print_compare_result(
     print("+" * CHARS_CNT)
     message = (
         "-----\n"
-        f"{features1.filepath}\n{features1.modify_date}\n"
+        f"{compare_info.first_path}\n{compare_info.first_modify_date}\n"
         "-----\n"
-        f"{features2.filepath}\n{features2.modify_date}\n"
+        f"{compare_info.first_path}\n{compare_info.first_modify_date}\n"
         "-----\n"
     )
 

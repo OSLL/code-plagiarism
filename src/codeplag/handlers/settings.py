@@ -10,6 +10,8 @@ from codeplag.types import Settings
 
 def settings_show() -> None:
     settings_config = read_settings_conf()
+    if "mongo_pass" in settings_config:
+        del settings_config["mongo_pass"]
     table = pd.DataFrame(
         list(settings_config.values()),
         index=np.array(settings_config),

@@ -1,6 +1,6 @@
 """MIT License.
 
-Written 2025 by Daniil Lokosov, Semidolin Artyom.
+Written 2025 by Daniil Lokosov, Artyom Semidolin.
 """
 
 import os
@@ -104,7 +104,7 @@ def clear_db(mongo_connection: MongoDBConnection) -> Generator[None, None, None]
 
 
 @pytest.mark.parametrize(
-    "cmd, files, extension, found_plag",
+    ("cmd", "files", "extension", "found_plag"),
     [
         ("--files", PY_FILES, "py", False),
         ("--files", PY_SIM_FILES, "py", True),
@@ -123,7 +123,7 @@ def test_correct_mongo_connection(
         result.assert_found_similarity()
     else:
         result.assert_success()
-    assert b"Successfully connected to MongoDB!" in result.cmd_res.stdout
+    assert b"Successfully connected to the MongoDB" in result.cmd_res.stdout
 
 
 @pytest.mark.parametrize(
@@ -151,16 +151,16 @@ def test_saving_metadata_and_reports(
 
     for file in files:
         assert features_repo.get_features(ASTFeatures(file)) is not None
-    compare_info = compare_info_repo.get_compare_info(ASTFeatures(files[0]), ASTFeatures(files[1]))
+    compare_info = compare_info_repo.get_compare_info(files[0], files[1])
 
     if found_plag:
-        assert compare_info is not None
+        assert compare_info
     else:
         assert compare_info is None
 
 
 @pytest.mark.parametrize(
-    "cmd, files, extension, found_plag",
+    ("cmd", "files", "extension", "found_plag"),
     [
         ("--files", PY_FILES, "py", False),
         ("--files", PY_SIM_FILES, "py", True),
@@ -224,7 +224,7 @@ def test_saving_after_file_minor_change(extension: str, files: Tuple[Path, Path]
 
 
 @pytest.mark.parametrize(
-    "extension, files, found_plag",
+    ("extension", "files", "found_plag"),
     [
         ("py", PY_FILES, False),
         ("py", PY_SIM_FILES, True),
@@ -234,7 +234,7 @@ def test_saving_after_file_minor_change(extension: str, files: Tuple[Path, Path]
 )
 def test_saving_after_file_significant_change(
     extension: str, files: Tuple[Path, Path], found_plag: bool
-):
+) -> None:
     run_check(["--files", *files], extension=extension)
 
     old = save_and_append_to_file(

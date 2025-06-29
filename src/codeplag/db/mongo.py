@@ -1,11 +1,11 @@
 """MIT License.
 
-Written 2025 by Stepan Pahomov, Daniil Lokosov
+Written 2025 by Stepan Pahomov, Daniil Lokosov, Artyom Semidolin.
 """
 
 import atexit
-from datetime import datetime
-from typing import Final, NamedTuple
+from pathlib import Path
+from typing import Final
 
 from pymongo import MongoClient
 from pymongo.collection import Collection
@@ -29,11 +29,11 @@ from codeplag.reporters import (
     deserialize_compare_result_from_dict,
     serialize_compare_result_to_dict,
 )
-from codeplag.types import ASTFeatures, FullCompareInfo
+from codeplag.types import ASTFeatures, FullCompareInfo, Settings
 
 
 class MongoDBConnection:
-    DB_NAME: Final[str] = f"{UTIL_NAME}_cache"
+    DB_NAME: Final = f"{UTIL_NAME}_cache"
 
     def __init__(
         self: Self,
@@ -56,21 +56,33 @@ class MongoDBConnection:
         self.password: str = password
         self.url: str = f"mongodb://{user}:{password}@{host}:{port}/"
 
-        # Connecting to MongoDB
         try:
             self.client = MongoClient(self.url, serverSelectionTimeoutMS=3000)
-            self.client.admin.command("ping")  # Checking the connection
+            self.client.admin.command("ping")
         except ConnectionFailure as err:
             logger.error("Failed to connect to MongoDB: %s", err)
             raise Exception(
                 "Can't connect to MongoDB with selected 'mongo'. Check your settings. "
                 "Please note if the application is running in Docker, the host may change."
             ) from err
-        logger.debug("Successfully connected to MongoDB!")
+        logger.debug("Successfully connected to the MongoDB.")
         self.db = self.client[self.DB_NAME]
 
         # Registering the disconnect method for execution upon program termination
         atexit.register(self.disconnect)
+
+    @classmethod
+    def from_settings(
+        cls: type["MongoDBConnection"], settings_conf: Settings
+    ) -> "MongoDBConnection":
+        host = settings_conf.get("mongo_host", DEFAULT_MONGO_HOST)
+        port = settings_conf.get("mongo_port", DEFAULT_MONGO_PORT)
+        user = settings_conf.get("mongo_user", DEFAULT_MONGO_USER)
+        password = settings_conf.get("mongo_pass")
+        if password is None:
+            raise ValueError("'mongo' reports_exception provided, but 'mongo-pass' is missing")
+
+        return cls(host=host, port=port, user=user, password=password)
 
     def disconnect(self: Self) -> None:
         """Close the connection to MongoDB.
@@ -99,16 +111,7 @@ class MongoDBConnection:
 
 
 class ReportRepository:
-    class CompareInfoDocument(NamedTuple):
-        """Compare Info Document structure."""
-
-        first_sha256: str
-        second_sha256: str
-        first_modify_date: datetime
-        second_modify_date: datetime
-        compare_info: FullCompareInfo
-
-    COLLECTION_NAME: str = "compare_info"
+    COLLECTION_NAME: Final = "compare_info"
 
     def __init__(self: Self, mongo_connection: MongoDBConnection) -> None:
         """Initialization of the repository for the compare_info collection."""
@@ -119,83 +122,59 @@ class ReportRepository:
         self.collection: Collection = collection
 
     def get_compare_info(
-        self: Self, work1: ASTFeatures, work2: ASTFeatures
-    ) -> CompareInfoDocument | None:
+        self: Self, first_filepath: str | Path, second_filepath: str | Path
+    ) -> FullCompareInfo | None:
         """Retrieve comparison result between two files from the compare_info collection.
 
-        The document is identified by sorted file paths:
-        _id = {"first": min(filepath), "second": max(filepath)}.
+        The document is identified by sorted file paths.
+
         Returns None if SHA-256 hashes of either file do not match stored values.
 
         Args:
-            work1 (ASTFeatures): First file metadata.
-            work2 (ASTFeatures): Second file metadata.
+            first_filepath (str | Path): First filepath.
+            second_filepath (str | path): Second filepath.
 
         Returns:
-            ReportType | None: Deserialized comparison result if found and valid.
+            FullCompareInfo | None: Deserialized comparison result if found and valid.
         """
         # Sort works by filepath to form the unique key
-        work1, work2 = sorted([work1, work2])
-        first_path, second_path = [str(work1.filepath), str(work2.filepath)]
+        first_path, second_path = sorted([str(first_filepath), str(second_filepath)])
         document_id = {"first": first_path, "second": second_path}
-
-        # Find document in collection
         document = self.collection.find_one({"_id": document_id})
         if not document:
             logger.trace("No compare_info found for file path: (%s, %s)", first_path, second_path)  # type: ignore
             return None
         logger.trace("Compare_info found for file path: (%s, %s)", first_path, second_path)  # type: ignore
 
-        # Deserialize and return compare_info
-        compare_info = deserialize_compare_result_from_dict(document["compare_info"])
-        return self.CompareInfoDocument(
-            first_sha256=document["first_sha256"],
-            second_sha256=document["second_sha256"],
-            first_modify_date=document["first_modify_date"],
-            second_modify_date=document["second_modify_date"],
-            compare_info=compare_info,
-        )
+        compare_result = deserialize_compare_result_from_dict(document)
+        return compare_result
 
-    def write_compare_info(
-        self: Self, work1: ASTFeatures, work2: ASTFeatures, compare_info: FullCompareInfo
-    ) -> None:
+    def write_compare_info(self: Self, compare_info: FullCompareInfo) -> None:
         """Insert or update a document in the compare_info collection.
 
         The primary key (_id) is formed as a dictionary with sorted file paths.
 
         Args:
-            work1 (ASTFeatures): The first file for comparison.
-            work2 (ASTFeatures): The second file for comparison.
             compare_info (CompareInfo): Information about the comparison results.
         """
-        # Sorting paths to create a unique primary key
-        work1, work2 = sorted([work1, work2])
-        first_path, second_path = [str(work1.filepath), str(work2.filepath)]
-
-        # Forming _id as a string of sorted paths
-        document_id = {"first": first_path, "second": second_path}
-
-        # Using the serialize_compare_result_to_dict function to convert data
-        serialized_compare_info = serialize_compare_result_to_dict(compare_info)
-
-        document = {
-            "_id": document_id,
-            "first_sha256": work1.sha256,
-            "second_sha256": work2.sha256,
-            "first_modify_date": work1.modify_date,
-            "second_modify_date": work2.modify_date,
-            "compare_info": serialized_compare_info,
+        document_id = {
+            "first": str(compare_info.first_path),
+            "second": str(compare_info.second_path),
         }
+        serialized_compare_info = serialize_compare_result_to_dict(compare_info)
+        document = {"_id": document_id, **serialized_compare_info}
 
         # Insert or update the document
         self.collection.update_one({"_id": document_id}, {"$set": document}, upsert=True)
         logger.trace(  # type: ignore
-            "Document for (%s, %s) successfully inserted/updated.", first_path, second_path
+            "Document for (%s, %s) successfully inserted/updated.",
+            compare_info.first_path,
+            compare_info.second_path,
         )
 
 
 class FeaturesRepository:
-    COLLECTION_NAME: str = "features"
+    COLLECTION_NAME: Final = "features"
 
     def __init__(self: Self, mongo_connection: MongoDBConnection) -> None:
         """Initialization of the repository for the features collection."""
@@ -260,21 +239,14 @@ class MongoReporter(AbstractReporter):
     def __init__(self: Self, repository: ReportRepository) -> None:
         self.repository = repository
 
-    def save_result(
-        self: Self,
-        first_work: ASTFeatures,
-        second_work: ASTFeatures,
-        compare_info: FullCompareInfo,
-    ) -> None:
+    def save_result(self: Self, compare_info: FullCompareInfo) -> None:
         """Updates the cache with new comparisons and writes it to the MongoDB.
 
         Args:
-            first_work (ASTFeatures): Contains the first work metadata.
-            second_work (ASTFeatures): Contains the second work metadata.
             compare_info (CompareInfo): Contains information about comparisons
               between the first and second works.
         """
-        self.repository.write_compare_info(first_work, second_work, compare_info)
+        self.repository.write_compare_info(compare_info)
 
     def get_result(
         self: Self,
@@ -287,14 +259,15 @@ class MongoReporter(AbstractReporter):
             work1 (ASTFeatures): Contains the first work metadata.
             work2 (ASTFeatures): Contains the second work metadata.
         """
-        cache_val = self.repository.get_compare_info(work1, work2)
+        work1, work2 = sorted([work1, work2])
+        cache_val = self.repository.get_compare_info(work1.filepath, work2.filepath)
 
         if (
             cache_val
             and cache_val.first_sha256 == work1.sha256
             and cache_val.second_sha256 == work2.sha256
         ):
-            return cache_val.compare_info
+            return cache_val
         else:
             return None
 

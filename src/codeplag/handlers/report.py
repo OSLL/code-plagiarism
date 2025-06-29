@@ -20,8 +20,13 @@ from codeplag.consts import (
     GENERAL_TEMPLATE_PATH,
     SOURCES_TEMPLATE_PATH,
 )
+from codeplag.db.mongo import MongoDBConnection, ReportRepository
 from codeplag.logger import codeplag_logger as logger
-from codeplag.reporters import deserialize_compare_result, read_df
+from codeplag.reporters import (
+    deserialize_compare_result,
+    deserialize_compare_result_from_dict,
+    read_df,
+)
 from codeplag.translate import get_translations
 from codeplag.types import (
     ExitCode,
@@ -99,8 +104,19 @@ def html_report_create(
             second_root_path,
         )
     elif reports_extension == "mongo":
-        logger.error("Not implemented 'mongo' reports.")
-        return ExitCode.EXIT_INVAL
+        connection = MongoDBConnection.from_settings(settings_config)
+        compare_info_repo = ReportRepository(connection)
+        exit_code = __html_report_create_from_mongo(
+            report_path,
+            compare_info_repo,
+            report_type,
+            settings_config["threshold"],
+            settings_config["language"],
+            first_root_path,
+            second_root_path,
+        )
+        connection.disconnect()
+        return exit_code
     else:
         logger.error(
             f"Can create report only when 'reports_extension' in ('csv', 'mongo'). "
@@ -157,10 +173,6 @@ def _convert_similarity_matrix_to_percent_matrix(matrix: NDArray) -> NDArray:
     return percent_matrix
 
 
-def _deserialize_head_nodes(head_nodes: str) -> list[str]:
-    return [head[1:-1] for head in head_nodes[1:-1].split(", ")]
-
-
 def _replace_minimal_value(same_parts: dict, new_key: str, new_value: float) -> None:
     min_key = next(iter(same_parts))
     min_value = same_parts[min_key]
@@ -214,33 +226,38 @@ def _get_same_funcs(
 
 
 def _get_parsed_line(
-    df: pd.DataFrame,
+    compare_results: pd.DataFrame | ReportRepository,
     threshold: int = DEFAULT_THRESHOLD,
     include_funcs_less_threshold: bool = True,
-) -> Generator[tuple[pd.Series, FullCompareInfo, SameFuncs, SameFuncs], None, None]:
-    for _, line in df.iterrows():
-        cmp_res = deserialize_compare_result(line)
-        first_heads = _deserialize_head_nodes(line.first_heads)
-        second_heads = _deserialize_head_nodes(line.second_heads)
-        assert cmp_res.structure is not None
+) -> Generator[tuple[FullCompareInfo, SameFuncs, SameFuncs], None, None]:
+    if isinstance(compare_results, ReportRepository):
+        extract_func = lambda: compare_results.collection.find({})  # noqa: E731
+        handle_result_func = lambda result: result  # noqa: E731
+        deserialize_func = deserialize_compare_result_from_dict
+    else:
+        extract_func = compare_results.iterrows
+        handle_result_func = lambda result: result[1]  # noqa: E731
+        deserialize_func = deserialize_compare_result
+    for result in extract_func():
+        cmp_res = deserialize_func(handle_result_func(result))
         percent_matrix = _convert_similarity_matrix_to_percent_matrix(
             cmp_res.structure.compliance_matrix
         )
         same_parts_of_second = _get_same_funcs(
-            first_heads,
-            second_heads,
+            cmp_res.first_heads,
+            cmp_res.second_heads,
             percent_matrix,
             threshold,
             include_funcs_less_threshold,
         )
         same_parts_of_first = _get_same_funcs(
-            second_heads,
-            first_heads,
+            cmp_res.second_heads,
+            cmp_res.first_heads,
             percent_matrix.T,
             threshold,
             include_funcs_less_threshold,
         )
-        yield line, cmp_res, same_parts_of_second, same_parts_of_first
+        yield cmp_res, same_parts_of_second, same_parts_of_first
 
 
 def _get_resulting_same_percentages(
@@ -263,25 +280,28 @@ def _get_resulting_same_percentages(
 
 
 def _search_sources(
-    df: pd.DataFrame, threshold: int = DEFAULT_THRESHOLD
+    compare_results: pd.DataFrame | ReportRepository, threshold: int = DEFAULT_THRESHOLD
 ) -> tuple[SamePartsOfAll, CntHeadNodes]:
     same_parts_of_all: SamePartsOfAll = defaultdict(lambda: {})
     cnt_head_nodes: CntHeadNodes = {}
-    for line, _, same_parts_of_second, same_parts_of_first in _get_parsed_line(
-        df, threshold, include_funcs_less_threshold=False
+    for compare_info, same_parts_of_second, same_parts_of_first in _get_parsed_line(
+        compare_results, threshold, include_funcs_less_threshold=False
     ):
         for path, heads in zip(
-            (line.first_path, line.second_path),
-            (line.first_heads, line.second_heads),
+            (compare_info.first_path, compare_info.second_path),
+            (compare_info.first_heads, compare_info.second_heads),
             strict=True,
         ):
+            path = str(path)
             if path in cnt_head_nodes:
                 continue
-            cnt_head_nodes[path] = len(_deserialize_head_nodes(heads))
+            cnt_head_nodes[path] = len(heads)
         for first_path, second_path, same_parts in (
-            (line.first_path, line.second_path, same_parts_of_second),
-            (line.second_path, line.first_path, same_parts_of_first),
+            (compare_info.first_path, compare_info.second_path, same_parts_of_second),
+            (compare_info.second_path, compare_info.first_path, same_parts_of_first),
         ):
+            first_path = str(first_path)
+            second_path = str(second_path)
             element = same_parts_of_all[first_path][second_path] = Elements(
                 cnt_elements=0,
                 same_parts=deepcopy(same_parts),
@@ -302,7 +322,7 @@ def _search_sources(
 
 
 def _create_general_report(
-    df: pd.DataFrame,
+    compare_results: pd.DataFrame | ReportRepository,
     save_path: Path,
     environment: jinja2.Environment,
     threshold: Threshold = DEFAULT_THRESHOLD,
@@ -310,15 +330,19 @@ def _create_general_report(
     paths: tuple[str, str] | None = None,
 ) -> None:
     if paths is not None:
-        unique_first_paths = pd.unique(df["first_path"])
-        unique_second_paths = pd.unique(df["second_path"])
+        if isinstance(compare_results, ReportRepository):
+            raise NotImplementedError(
+                "Creating general html report with MongoDB with provided paths is not implemented."
+            )
+        unique_first_paths = pd.unique(compare_results["first_path"])
+        unique_second_paths = pd.unique(compare_results["second_path"])
         assert isinstance(unique_first_paths, np.ndarray)
         assert isinstance(unique_second_paths, np.ndarray)
         first_root_path_sim = calculate_general_total_similarity(
-            df, unique_first_paths, unique_second_paths
+            compare_results, unique_first_paths, unique_second_paths
         )
         second_root_path_sim = calculate_general_total_similarity(
-            df, unique_second_paths, unique_first_paths
+            compare_results, unique_second_paths, unique_first_paths
         )
     else:
         first_root_path_sim = None
@@ -328,7 +352,7 @@ def _create_general_report(
         save_path = save_path / DEFAULT_GENERAL_REPORT_NAME
     save_path.write_text(
         template.render(
-            data=_get_parsed_line(df),
+            data=_get_parsed_line(compare_results),
             list=list,
             len=len,
             round=round,
@@ -342,14 +366,14 @@ def _create_general_report(
 
 
 def _create_sources_report(
-    df: pd.DataFrame,
+    compare_results: pd.DataFrame | ReportRepository,
     save_path: Path,
     environment: jinja2.Environment,
     threshold: Threshold = DEFAULT_THRESHOLD,
     language: Language = DEFAULT_LANGUAGE,
     paths: tuple[str, str] | None = None,
 ) -> None:
-    data, cnt_head_nodes = _search_sources(df, threshold)
+    data, cnt_head_nodes = _search_sources(compare_results, threshold)
     same_percentages = _get_resulting_same_percentages(data, cnt_head_nodes)
     if paths is not None:
         first_root_path_sim = calculate_sources_total_similarity(same_percentages, paths[0])
@@ -376,6 +400,37 @@ def _create_sources_report(
             paths=paths,
         )
     )
+
+
+def __html_report_create_from_mongo(
+    report_path: Path,
+    compare_info_repo: ReportRepository,
+    report_type: ReportType,
+    threshold: Threshold,
+    language: Language,
+    first_root_path: Path | str | None = None,
+    second_root_path: Path | str | None = None,
+) -> Literal[ExitCode.EXIT_SUCCESS]:
+    if report_type == "general":
+        create_report_function = _create_general_report
+    elif report_type == "sources":
+        create_report_function = _create_sources_report
+    else:
+        raise ValueError(_("Invalid report type."))
+    all_paths_provided = all([first_root_path, second_root_path])
+    if not all_paths_provided and any([first_root_path, second_root_path]):
+        raise ValueError(_("All paths must be provided."))
+
+    environment = jinja2.Environment(extensions=["jinja2.ext.i18n"])
+    environment.install_gettext_translations(get_translations())  # type: ignore
+    create_report_function(
+        compare_info_repo,  # type:ignore
+        report_path,
+        environment,
+        threshold,
+        language,
+    )
+    return ExitCode.EXIT_SUCCESS
 
 
 def __html_report_create_from_csv(
