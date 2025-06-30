@@ -59,21 +59,14 @@ def setup_custom_reports():
 
 
 class TestCreateReport:
-
-    @pytest.mark.parametrize(
-        "reports_extension",
-        ["csv", "mongo"]
-    )
+    @pytest.mark.parametrize("reports_extension", ["csv", "mongo"])
     def test_create_general_report(self: Self, reports_extension: ReportsExtension) -> None:
         modify_settings(reports_extension=reports_extension)
         create_report(REPORTS_FOLDER, "general").assert_success()
         assert DEFAULT_GENERAL_REPORT_PATH.exists()
         DEFAULT_GENERAL_REPORT_PATH.unlink()
 
-    @pytest.mark.parametrize(
-        "reports_extension",
-        ["csv", "mongo"]
-    )
+    @pytest.mark.parametrize("reports_extension", ["csv", "mongo"])
     def test_create_general_report_with_custom_report(
         self: Self, setup_custom_reports: None, reports_extension: ReportsExtension
     ) -> None:
@@ -82,20 +75,14 @@ class TestCreateReport:
         assert DEFAULT_GENERAL_REPORT_PATH.exists()
         DEFAULT_GENERAL_REPORT_PATH.unlink()
 
-    @pytest.mark.parametrize(
-        "reports_extension",
-        ["csv", "mongo"]
-    )
+    @pytest.mark.parametrize("reports_extension", ["csv", "mongo"])
     def test_create_sources_report(self: Self, reports_extension: ReportsExtension) -> None:
         modify_settings(reports_extension=reports_extension)
         create_report(REPORTS_FOLDER, "sources").assert_success()
         assert DEFAULT_SOURCES_REPORT_PATH.exists()
         DEFAULT_SOURCES_REPORT_PATH.unlink()
 
-    @pytest.mark.parametrize(
-        "reports_extension",
-        ["csv", "mongo"]
-    )
+    @pytest.mark.parametrize("reports_extension", ["csv", "mongo"])
     def test_create_sources_report_with_custom_report(
         self: Self, setup_custom_reports: None, reports_extension: ReportsExtension
     ) -> None:
@@ -111,7 +98,9 @@ class TestCreateReport:
             ("sources", "mongo"),
         ],
     )
-    def test_content_same_between_calls(self: Self, report_type: ReportType, reports_extension: ReportsExtension) -> None:
+    def test_content_same_between_calls(
+        self: Self, report_type: ReportType, reports_extension: ReportsExtension
+    ) -> None:
         first_report_path = REPORTS_FOLDER / "report1.html"
         second_report_path = REPORTS_FOLDER / "report2.html"
 
@@ -128,7 +117,9 @@ class TestCreateReport:
             ("sources", "mongo"),
         ],
     )
-    def test_content_different_between_calls(self: Self, report_type: ReportType, reports_extension: ReportsExtension) -> None:
+    def test_content_different_between_calls(
+        self: Self, report_type: ReportType, reports_extension: ReportsExtension
+    ) -> None:
         first_report_path = REPORTS_FOLDER / "report1.html"
         second_report_path = REPORTS_FOLDER / "report2.html"
 
