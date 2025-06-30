@@ -146,8 +146,7 @@ class ReportRepository:
             return None
         logger.trace("Compare_info found for file path: (%s, %s)", first_path, second_path)  # type: ignore
 
-        compare_result = deserialize_compare_result_from_dict(document)
-        return compare_result
+        return deserialize_compare_result_from_dict(document)
 
     def write_compare_info(self: Self, compare_info: FullCompareInfo) -> None:
         """Insert or update a document in the compare_info collection.
@@ -161,8 +160,7 @@ class ReportRepository:
             "first": str(compare_info.first_path),
             "second": str(compare_info.second_path),
         }
-        serialized_compare_info = serialize_compare_result_to_dict(compare_info)
-        document = {"_id": document_id, **serialized_compare_info}
+        document = {"_id": document_id, **serialize_compare_result_to_dict(compare_info)}
 
         # Insert or update the document
         self.collection.update_one({"_id": document_id}, {"$set": document}, upsert=True)
@@ -259,7 +257,6 @@ class MongoReporter(AbstractReporter):
             work1 (ASTFeatures): Contains the first work metadata.
             work2 (ASTFeatures): Contains the second work metadata.
         """
-        work1, work2 = sorted([work1, work2])
         cache_val = self.repository.get_compare_info(work1.filepath, work2.filepath)
 
         if (
