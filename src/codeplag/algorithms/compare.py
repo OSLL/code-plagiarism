@@ -1,5 +1,7 @@
 """This module consists of complex algorithms for comparing two works."""
 
+from datetime import datetime
+
 import numpy as np
 
 from codeplag.algorithms.featurebased import counter_metric, struct_compare
@@ -17,8 +19,8 @@ from codeplag.types import (
 
 
 def fast_compare(
-    features_f: ASTFeatures,
-    features_s: ASTFeatures,
+    features1: ASTFeatures,
+    features2: ASTFeatures,
     ngrams_length: NgramsLength = DEFAULT_NGRAMS_LENGTH,
     weights: tuple[float, float, float, float] = DEFAULT_WEIGHTS,
 ) -> FastCompareInfo:
@@ -29,21 +31,21 @@ def fast_compare(
 
     Args:
     ----
-        features_f: The features of the first  source file.
-        features_s: The features of the second  source file.
+        features1 (ASTFeatures): The features of the first  source file.
+        features2 (ASTFeatures): The features of the second  source file.
         ngrams_length (NgramsLength): N-grams length.
         weights: Weights of fast metrics that participate in
           counting total similarity coefficient.
 
     """
     jakkar_coef = value_jakkar_coef(
-        tokens_first=features_f.tokens,
-        tokens_second=features_s.tokens,
+        tokens_first=features1.tokens,
+        tokens_second=features2.tokens,
         ngrams_length=ngrams_length,
     )
-    ops_res = counter_metric(features_f.operators, features_s.operators)
-    kw_res = counter_metric(features_f.keywords, features_s.keywords)
-    lits_res = counter_metric(features_f.literals, features_s.literals)
+    ops_res = counter_metric(features1.operators, features2.operators)
+    kw_res = counter_metric(features1.keywords, features2.keywords)
+    lits_res = counter_metric(features1.literals, features2.literals)
     weighted_average = np.average(
         np.array([jakkar_coef, ops_res, kw_res, lits_res]), weights=weights
     )
@@ -86,12 +88,11 @@ def compare_works(
         metric anywhere (FullCompareInfo).
 
     """
-    fast_compare_info = fast_compare(
-        features_f=features1, features_s=features2, ngrams_length=ngrams_length
-    )
+    fast_compare_info = fast_compare(features1, features2, ngrams_length)
     if threshold and (fast_compare_info.weighted_average * 100.0) < threshold:
         return fast_compare_info
 
+    features1, features2 = sorted([features1, features2])
     compliance_matrix = np.empty(
         (len(features1.head_nodes), len(features2.head_nodes), 2), dtype=np.int64
     )
@@ -106,4 +107,16 @@ def compare_works(
         similarity=struct_res, compliance_matrix=compliance_matrix
     )
 
-    return FullCompareInfo(fast=fast_compare_info, structure=structure_info)
+    return FullCompareInfo(
+        date=datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+        first_heads=features1.head_nodes,
+        first_modify_date=features1.modify_date,
+        first_sha256=features1.sha256,
+        first_path=features1.filepath,
+        second_heads=features2.head_nodes,
+        second_modify_date=features2.modify_date,
+        second_sha256=features2.sha256,
+        second_path=features2.filepath,
+        fast=fast_compare_info,
+        structure=structure_info,
+    )

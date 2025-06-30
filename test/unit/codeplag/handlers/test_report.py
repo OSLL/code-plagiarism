@@ -9,7 +9,6 @@ from codeplag.handlers.report import (
     ResultingSamePercentages,
     SamePartsOfAll,
     _convert_similarity_matrix_to_percent_matrix,
-    _deserialize_head_nodes,
     _get_parsed_line,
     _get_resulting_same_percentages,
     _get_same_funcs,
@@ -18,11 +17,11 @@ from codeplag.handlers.report import (
     calculate_sources_total_similarity,
 )
 from codeplag.reporters import serialize_compare_result
-from codeplag.types import ASTFeatures, FullCompareInfo, SameHead
+from codeplag.types import FullCompareInfo, SameHead
 
 
 @pytest.mark.parametrize(
-    "same_percentages,pattern,expected",
+    ("same_percentages", "pattern", "expected"),
     [
         ({}, "pattern", 0.0),
         (
@@ -43,7 +42,7 @@ def test_calculate_sources_total_similarity(
 
 
 @pytest.mark.parametrize(
-    "df,unique_first_paths,unique_second_paths,expected",
+    ("df", "unique_first_paths", "unique_second_paths", "expected"),
     [
         (pd.DataFrame({}), np.array([]), np.array([]), 0.0),
         (
@@ -84,7 +83,7 @@ def test_calculate_general_total_similarity(
 
 
 @pytest.mark.parametrize(
-    "same_parts,new_key,new_value,expected",
+    ("same_parts", "new_key", "new_value", "expected"),
     [
         ({"foo": 10.1, "bar": 20.5}, "foorbar", 30.5, {"bar": 20.5, "foorbar": 30.5}),
         ({"foo": 30.1, "bar": 20.5}, "foobar", 5.5, {"foo": 30.1, "bar": 20.5}),
@@ -106,7 +105,7 @@ def test__replace_minimal_value(
 
 
 @pytest.mark.parametrize(
-    "first_heads,second_heads,threshold,include_funcs_less_threshold,n,expected",
+    ("first_heads", "second_heads", "threshold", "include_funcs_less_threshold", "n", "expected"),
     [
         (
             ["foo", "bar", "foobar", "barfoo"],
@@ -168,33 +167,29 @@ def test__get_same_funcs(
     assert expected == result
 
 
-def test__get_parsed_line(
-    first_features: ASTFeatures,
-    second_features: ASTFeatures,
-    first_compare_result: FullCompareInfo,
-):
-    compare_df = serialize_compare_result(first_features, second_features, first_compare_result)
+def test__get_parsed_line(first_compare_result: FullCompareInfo) -> None:
+    compare_df = serialize_compare_result(first_compare_result)
     compare_df.iloc[0].first_heads = str(compare_df.iloc[0].first_heads)
     compare_df.iloc[0].second_heads = str(compare_df.iloc[0].second_heads)
 
     result = list(_get_parsed_line(compare_df))
 
-    assert result[0][1].fast == first_compare_result.fast
-    assert result[0][1].structure
-    assert result[0][1].structure.similarity == first_compare_result.structure.similarity
-    assert result[0][1].structure.similarity == first_compare_result.structure.similarity
+    assert result[0][0].fast == first_compare_result.fast
+    assert result[0][0].structure
+    assert result[0][0].structure.similarity == first_compare_result.structure.similarity
+    assert result[0][0].structure.similarity == first_compare_result.structure.similarity
     assert np.array_equal(
-        result[0][1].structure.compliance_matrix,
+        result[0][0].structure.compliance_matrix,
         first_compare_result.structure.compliance_matrix,
     )
-    assert result[0][2] == {
+    assert result[0][1] == {
         "my_func[1]": [SameHead(name="my_func[1]", percent=79.17)],
         "If[7]": [
             SameHead(name="If[7]", percent=88.89),
             SameHead(name="my_func[1]", percent=18.52),
         ],
     }
-    assert result[0][3] == {
+    assert result[0][2] == {
         "my_func[1]": [SameHead(name="my_func[1]", percent=79.17)],
         "If[7]": [
             SameHead(name="If[7]", percent=88.89),
@@ -204,7 +199,7 @@ def test__get_parsed_line(
 
 
 @pytest.mark.parametrize(
-    "same_parts_of_all,cnt_head_nodes,expected",
+    ("same_parts_of_all", "cnt_head_nodes", "expected"),
     [
         (
             {
@@ -271,23 +266,6 @@ def test__get_resulting_same_percentages(
     expected: ResultingSamePercentages,
 ):
     assert _get_resulting_same_percentages(same_parts_of_all, cnt_head_nodes) == expected
-
-
-@pytest.mark.parametrize(
-    "str_head_nodes,list_head_nodes",
-    [
-        (
-            "['_GH_URL[23]', 'AsyncGithubParser[26]']",
-            ["_GH_URL[23]", "AsyncGithubParser[26]"],
-        ),
-        (
-            "['Expr[1]', 'Expr[14]', 'application[16]']",
-            ["Expr[1]", "Expr[14]", "application[16]"],
-        ),
-    ],
-)
-def test__deserialize_head_nodes(str_head_nodes: str, list_head_nodes: list[str]):
-    assert _deserialize_head_nodes(str_head_nodes) == list_head_nodes
 
 
 def test__convert_similarity_matrix_to_percent_matrix():

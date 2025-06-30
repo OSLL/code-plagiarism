@@ -154,6 +154,15 @@ class StructureCompareInfo(NamedTuple):
 
 
 class FullCompareInfo(NamedTuple):
+    date: str
+    first_modify_date: str
+    first_sha256: str
+    first_path: str | Path
+    first_heads: list[str]
+    second_modify_date: str
+    second_sha256: str
+    second_path: str | Path
+    second_heads: list[str]
     fast: FastCompareInfo
     structure: StructureCompareInfo
 

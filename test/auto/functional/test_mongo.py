@@ -1,6 +1,6 @@
 """MIT License.
 
-Written 2025 by Daniil Lokosov, Semidolin Artyom.
+Written 2025 by Daniil Lokosov, Artyom Semidolin.
 """
 
 import os
@@ -10,7 +10,7 @@ from typing import Generator, Tuple
 import pytest
 from utils import modify_settings, run_check
 
-from codeplag.consts import CONFIG_PATH, DEFAULT_MONGO_PORT, DEFAULT_MONGO_USER
+from codeplag.consts import CONFIG_PATH
 from codeplag.db.mongo import FeaturesRepository, MongoDBConnection, ReportRepository
 from codeplag.types import ASTFeatures
 
@@ -57,24 +57,6 @@ def recover_file(file: Path, old_content: str) -> None:
         f.write(old_content)
 
 
-@pytest.fixture(scope="module")
-def mongo_host() -> str:
-    host = os.environ.get("MONGO_HOST")
-    assert host, f"Invalid MONGO_HOST environment '{host}'."
-    return host
-
-
-@pytest.fixture(scope="module")
-def mongo_connection(mongo_host: str) -> Generator[MongoDBConnection, None, None]:
-    conn = MongoDBConnection(
-        host=mongo_host,
-        port=DEFAULT_MONGO_PORT,
-        user=DEFAULT_MONGO_USER,
-        password=DEFAULT_MONGO_USER,
-    )
-    yield conn
-
-
 @pytest.fixture(scope="module", autouse=True)
 def setup_module(mongo_connection: MongoDBConnection) -> Generator[None, None, None]:
     modify_settings(
@@ -96,15 +78,8 @@ def setup_module(mongo_connection: MongoDBConnection) -> Generator[None, None, N
     modify_settings(log_level="debug")
 
 
-@pytest.fixture(autouse=True)
-def clear_db(mongo_connection: MongoDBConnection) -> Generator[None, None, None]:
-    mongo_connection.clear_db()
-
-    yield
-
-
 @pytest.mark.parametrize(
-    "cmd, files, extension, found_plag",
+    ("cmd", "files", "extension", "found_plag"),
     [
         ("--files", PY_FILES, "py", False),
         ("--files", PY_SIM_FILES, "py", True),
@@ -115,7 +90,7 @@ def clear_db(mongo_connection: MongoDBConnection) -> Generator[None, None, None]
     ],
 )
 def test_correct_mongo_connection(
-    cmd: str, files: Tuple[Path, Path], extension: str, found_plag: bool
+    cmd: str, files: Tuple[Path, Path], extension: str, found_plag: bool, clear_db: None
 ):
     result = run_check([cmd, *files], extension=extension)
 
@@ -123,7 +98,7 @@ def test_correct_mongo_connection(
         result.assert_found_similarity()
     else:
         result.assert_success()
-    assert b"Successfully connected to MongoDB!" in result.cmd_res.stdout
+    assert b"Successfully connected to the MongoDB" in result.cmd_res.stdout
 
 
 @pytest.mark.parametrize(
@@ -143,6 +118,7 @@ def test_saving_metadata_and_reports(
     extension: str,
     found_plag: bool,
     mongo_connection: MongoDBConnection,
+    clear_db: None,
 ):
     features_repo = FeaturesRepository(mongo_connection)
     compare_info_repo = ReportRepository(mongo_connection)
@@ -151,16 +127,16 @@ def test_saving_metadata_and_reports(
 
     for file in files:
         assert features_repo.get_features(ASTFeatures(file)) is not None
-    compare_info = compare_info_repo.get_compare_info(ASTFeatures(files[0]), ASTFeatures(files[1]))
+    compare_info = compare_info_repo.get_compare_info(files[0], files[1])
 
     if found_plag:
-        assert compare_info is not None
+        assert compare_info
     else:
         assert compare_info is None
 
 
 @pytest.mark.parametrize(
-    "cmd, files, extension, found_plag",
+    ("cmd", "files", "extension", "found_plag"),
     [
         ("--files", PY_FILES, "py", False),
         ("--files", PY_SIM_FILES, "py", True),
@@ -171,7 +147,7 @@ def test_saving_metadata_and_reports(
     ],
 )
 def test_reading_metadata_and_reports_after_saving(
-    cmd: str, files: Tuple[Path, Path], extension: str, found_plag: bool
+    cmd: str, files: Tuple[Path, Path], extension: str, found_plag: bool, clear_db: None
 ):
     run_check([cmd, *files], extension=extension)
     result = run_check([cmd, *files], extension=extension)
@@ -203,7 +179,9 @@ def test_reading_metadata_and_reports_after_saving(
         ("cpp", CPP_SIM_FILES),
     ],
 )
-def test_saving_after_file_minor_change(extension: str, files: Tuple[Path, Path]):
+def test_saving_after_file_minor_change(
+    extension: str, files: Tuple[Path, Path], clear_db: None
+) -> None:
     run_check(["--files", *files], extension=extension)
 
     old = save_and_append_to_file(files[0], "\n")
@@ -224,7 +202,7 @@ def test_saving_after_file_minor_change(extension: str, files: Tuple[Path, Path]
 
 
 @pytest.mark.parametrize(
-    "extension, files, found_plag",
+    ("extension", "files", "found_plag"),
     [
         ("py", PY_FILES, False),
         ("py", PY_SIM_FILES, True),
@@ -233,8 +211,8 @@ def test_saving_after_file_minor_change(extension: str, files: Tuple[Path, Path]
     ],
 )
 def test_saving_after_file_significant_change(
-    extension: str, files: Tuple[Path, Path], found_plag: bool
-):
+    extension: str, files: Tuple[Path, Path], found_plag: bool, clear_db: None
+) -> None:
     run_check(["--files", *files], extension=extension)
 
     old = save_and_append_to_file(

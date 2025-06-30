@@ -2,7 +2,6 @@
 
 import json
 from abc import ABC, abstractmethod
-from datetime import datetime
 from pathlib import Path
 from time import monotonic
 
@@ -25,12 +24,7 @@ class AbstractReporter(ABC):
     def __init__(self: Self) -> None: ...
 
     @abstractmethod
-    def save_result(
-        self: Self,
-        first_work: ASTFeatures,
-        second_work: ASTFeatures,
-        compare_info: FullCompareInfo,
-    ) -> None: ...
+    def save_result(self: Self, compare_info: FullCompareInfo) -> None: ...
 
     @abstractmethod
     def get_result(
@@ -52,17 +46,10 @@ class CSVReporter(AbstractReporter):
             write_df(self.__df_report, self.reports_path)
         self.__csv_last_save = monotonic()
 
-    def save_result(
-        self: Self,
-        first_work: ASTFeatures,
-        second_work: ASTFeatures,
-        compare_info: FullCompareInfo,
-    ) -> None:
+    def save_result(self: Self, compare_info: FullCompareInfo) -> None:
         """Updates the cache with new comparisons and writes it to the filesystem periodically.
 
         Args:
-            first_work (ASTFeatures): Contains the first work metadata.
-            second_work (ASTFeatures): Contains the second work metadata.
             compare_info (FullCompareInfo): Contains information about comparisons
               between the first and second works.
         """
@@ -70,15 +57,15 @@ class CSVReporter(AbstractReporter):
             logger.error("The file '%s' for reports is no longer exists.", self.reports_path)
             return
         cache_val = self.__df_report[
-            (self.__df_report.first_path == str(first_work.filepath))
-            & (self.__df_report.second_path == str(second_work.filepath))
+            (self.__df_report.first_path == str(compare_info.first_path))
+            & (self.__df_report.second_path == str(compare_info.second_path))
         ]
         if isinstance(cache_val, pd.DataFrame):
             self.__df_report.drop(cache_val.index, inplace=True)  # type: ignore
         self.__df_report = pd.concat(
             [
                 self.__df_report,
-                serialize_compare_result(first_work, second_work, compare_info),
+                serialize_compare_result(compare_info),
             ],
             ignore_index=True,
         )
@@ -119,28 +106,24 @@ def write_df(df: pd.DataFrame, path: Path) -> None:
     df.to_csv(path, sep=";")
 
 
-def serialize_compare_result(
-    first_work: ASTFeatures,
-    second_work: ASTFeatures,
-    compare_info: FullCompareInfo,
-) -> pd.DataFrame:
+def serialize_compare_result(compare_info: FullCompareInfo) -> pd.DataFrame:
     return pd.DataFrame(
         {
-            "date": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            "first_modify_date": first_work.modify_date,
-            "first_sha256": first_work.sha256,
-            "second_modify_date": second_work.modify_date,
-            "second_sha256": second_work.sha256,
-            "first_path": first_work.filepath.__str__(),
-            "second_path": second_work.filepath.__str__(),
+            "date": compare_info.date,
+            "first_modify_date": compare_info.first_modify_date,
+            "first_sha256": compare_info.first_sha256,
+            "second_modify_date": compare_info.second_modify_date,
+            "second_sha256": compare_info.second_sha256,
+            "first_path": compare_info.first_path.__str__(),
+            "second_path": compare_info.second_path.__str__(),
             "jakkar": compare_info.fast.jakkar,
             "operators": compare_info.fast.operators,
             "keywords": compare_info.fast.keywords,
             "literals": compare_info.fast.literals,
             "weighted_average": compare_info.fast.weighted_average,
             "struct_similarity": compare_info.structure.similarity,
-            "first_heads": [first_work.head_nodes],
-            "second_heads": [second_work.head_nodes],
+            "first_heads": [compare_info.first_heads],
+            "second_heads": [compare_info.second_heads],
             "compliance_matrix": [compare_info.structure.compliance_matrix.tolist()],
         },
         dtype=object,
@@ -153,7 +136,16 @@ def deserialize_compare_result(compare_result: pd.Series) -> FullCompareInfo:
     else:
         similarity_matrix = np.array(compare_result.compliance_matrix)
 
-    compare_info = FullCompareInfo(
+    return FullCompareInfo(
+        date=compare_result.date,
+        first_modify_date=compare_result.first_modify_date,
+        first_sha256=compare_result.first_sha256,
+        first_path=_deserialize_path(compare_result.first_path),
+        first_heads=_deserialize_head_nodes(compare_result.first_heads),
+        second_modify_date=compare_result.second_modify_date,
+        second_sha256=compare_result.second_sha256,
+        second_path=_deserialize_path(compare_result.second_path),
+        second_heads=_deserialize_head_nodes(compare_result.second_heads),
         fast=FastCompareInfo(
             jakkar=float(compare_result.jakkar),
             operators=float(compare_result.operators),
@@ -167,32 +159,49 @@ def deserialize_compare_result(compare_result: pd.Series) -> FullCompareInfo:
         ),
     )
 
-    return compare_info
-
 
 def serialize_compare_result_to_dict(compare_info: FullCompareInfo) -> dict:
-    data = {
-        "fast": dict(
-            zip(
-                list(compare_info.fast.__annotations__.keys()),
-                list(compare_info.fast),
-                strict=True,
-            )
-        ),
-        "structure": {
-            "similarity": compare_info.structure.similarity,
-            "compliance_matrix": compare_info.structure.compliance_matrix.tolist(),
+    return {
+        "date": compare_info.date,
+        "first_modify_date": compare_info.first_modify_date,
+        "first_sha256": compare_info.first_sha256,
+        "first_path": str(compare_info.first_path),
+        "first_heads": compare_info.first_heads,
+        "second_modify_date": compare_info.second_modify_date,
+        "second_sha256": compare_info.second_sha256,
+        "second_path": str(compare_info.second_path),
+        "second_heads": compare_info.second_heads,
+        "compare_result": {
+            "fast": dict(
+                zip(
+                    list(compare_info.fast.__annotations__.keys()),
+                    list(compare_info.fast),
+                    strict=True,
+                )
+            ),
+            "structure": {
+                "similarity": compare_info.structure.similarity,
+                "compliance_matrix": compare_info.structure.compliance_matrix.tolist(),
+            },
         },
     }
 
-    return data
 
-
-def deserialize_compare_result_from_dict(compare_result: dict) -> FullCompareInfo:
+def deserialize_compare_result_from_dict(result: dict) -> FullCompareInfo:
+    compare_result = result["compare_result"]
     structure_d = dict(compare_result["structure"])
     fast_d = dict(compare_result["fast"])
 
-    compare_info = FullCompareInfo(
+    return FullCompareInfo(
+        date=result["date"],
+        first_modify_date=result["first_modify_date"],
+        first_sha256=result["first_sha256"],
+        first_heads=result["first_heads"],
+        first_path=_deserialize_path(result["first_path"]),
+        second_modify_date=result["second_modify_date"],
+        second_sha256=result["second_sha256"],
+        second_heads=result["second_heads"],
+        second_path=_deserialize_path(result["second_path"]),
         fast=FastCompareInfo(
             jakkar=float(fast_d["jakkar"]),
             operators=float(fast_d["operators"]),
@@ -206,4 +215,12 @@ def deserialize_compare_result_from_dict(compare_result: dict) -> FullCompareInf
         ),
     )
 
-    return compare_info
+
+def _deserialize_head_nodes(head_nodes: str) -> list[str]:
+    return [head[1:-1] for head in head_nodes[1:-1].split(", ")]
+
+
+def _deserialize_path(path: str) -> str | Path:
+    if path.startswith("http"):
+        return path
+    return Path(path)
