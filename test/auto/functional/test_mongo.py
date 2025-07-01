@@ -102,40 +102,6 @@ def test_correct_mongo_connection(
 
 
 @pytest.mark.parametrize(
-    "cmd, files, extension, found_plag",
-    [
-        ("--files", PY_FILES, "py", False),
-        ("--files", PY_SIM_FILES, "py", True),
-        ("--files", CPP_FILES, "cpp", False),
-        ("--files", CPP_SIM_FILES, "cpp", True),
-        ("--github-files", PY_GITHUB_FILES, "py", False),
-        ("--github-files", CPP_GITHUB_SIM_FILES, "cpp", True),
-    ],
-)
-def test_saving_metadata_and_reports(
-    cmd: str,
-    files: Tuple[Path, Path],
-    extension: str,
-    found_plag: bool,
-    mongo_connection: MongoDBConnection,
-    clear_db: None,
-):
-    features_repo = FeaturesRepository(mongo_connection)
-    compare_info_repo = ReportRepository(mongo_connection)
-
-    run_check([cmd, *files], extension=extension)
-
-    for file in files:
-        assert features_repo.get_features(ASTFeatures(file)) is not None
-    compare_info = compare_info_repo.get_compare_info(files[0], files[1])
-
-    if found_plag:
-        assert compare_info
-    else:
-        assert compare_info is None
-
-
-@pytest.mark.parametrize(
     ("cmd", "files", "extension", "found_plag"),
     [
         ("--files", PY_FILES, "py", False),
@@ -235,3 +201,36 @@ def test_saving_after_file_significant_change(
         assert write_cmp
     else:
         assert not write_cmp
+
+
+@pytest.mark.parametrize(
+    "cmd, files, extension, found_plag",
+    [
+        ("--files", PY_FILES, "py", False),
+        ("--files", PY_SIM_FILES, "py", True),
+        ("--files", CPP_FILES, "cpp", False),
+        ("--files", CPP_SIM_FILES, "cpp", True),
+        ("--github-files", PY_GITHUB_FILES, "py", False),
+        ("--github-files", CPP_GITHUB_SIM_FILES, "cpp", True),
+    ],
+)
+def test_saving_metadata_and_reports(
+    cmd: str,
+    files: Tuple[Path, Path],
+    extension: str,
+    found_plag: bool,
+    mongo_connection: MongoDBConnection,
+):
+    features_repo = FeaturesRepository(mongo_connection)
+    compare_info_repo = ReportRepository(mongo_connection)
+
+    run_check([cmd, *files], extension=extension)
+
+    for file in files:
+        assert features_repo.get_features(ASTFeatures(file)) is not None
+    compare_info = compare_info_repo.get_compare_info(files[0], files[1])
+
+    if found_plag:
+        assert compare_info
+    else:
+        assert compare_info is None

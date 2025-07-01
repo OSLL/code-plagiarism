@@ -172,7 +172,7 @@ def test__get_parsed_line(first_compare_result: FullCompareInfo) -> None:
     compare_df.iloc[0].first_heads = str(compare_df.iloc[0].first_heads)
     compare_df.iloc[0].second_heads = str(compare_df.iloc[0].second_heads)
 
-    result = list(_get_parsed_line(compare_df))
+    result = list(_get_parsed_line(compare_df, compare_df.iterrows))
 
     assert result[0][0].fast == first_compare_result.fast
     assert result[0][0].structure
