@@ -1,9 +1,10 @@
 """This module contains handlers for the report command of the CLI."""
 
+import re
 from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
-from typing import Generator, Literal, TypedDict
+from typing import Callable, Generator, Literal, TypedDict
 
 import jinja2
 import numpy as np
@@ -94,9 +95,10 @@ def html_report_create(
                 f"There is nothing in '{reports_path}' to create a basic html report from."
             )
             return ExitCode.EXIT_INVAL
-        return __html_report_create_from_csv(
+        df = read_df(reports_path)
+        return __html_report_create(
             report_path,
-            reports_path,
+            df,
             report_type,
             settings_config["threshold"],
             settings_config["language"],
@@ -106,7 +108,7 @@ def html_report_create(
     elif reports_extension == "mongo":
         connection = MongoDBConnection.from_settings(settings_config)
         compare_info_repo = ReportRepository(connection)
-        exit_code = __html_report_create_from_mongo(
+        exit_code = __html_report_create(
             report_path,
             compare_info_repo,
             report_type,
@@ -126,7 +128,9 @@ def html_report_create(
 
 
 def calculate_general_total_similarity(
-    df: pd.DataFrame, unique_first_paths: NDArray, unique_second_paths: NDArray
+    compare_infos: pd.DataFrame | ReportRepository,
+    unique_first_paths: NDArray,
+    unique_second_paths: NDArray,
 ) -> float:
     total_similarity = 0.0
     if unique_first_paths.size == 0:
@@ -135,13 +139,24 @@ def calculate_general_total_similarity(
         max_similarity = 0.0
         for second_path in unique_second_paths:
             sorted_paths = sorted([first_path, second_path])
-            selected = df[
-                (df["first_path"].str.startswith(sorted_paths[0]))  # type: ignore
-                & (df["second_path"].str.startswith(sorted_paths[1]))  # type: ignore
-            ]
-            if selected is None or selected.size == 0:
-                continue
-            module_similarity = float(selected.iloc[0]["weighted_average"])
+            if isinstance(compare_infos, ReportRepository):
+                selected = compare_infos.collection.find_one(
+                    {
+                        "first_path": re.compile(rf"{sorted_paths[0]}[/.\w]*"),
+                        "second_path": re.compile(rf"{sorted_paths[1]}[/.\w]*"),
+                    }
+                )
+                if selected is None:
+                    continue
+                module_similarity = selected["compare_result"]["fast"]["weighted_average"]
+            else:
+                selected = compare_infos[
+                    (compare_infos["first_path"].str.startswith(sorted_paths[0]))  # type: ignore
+                    & (compare_infos["second_path"].str.startswith(sorted_paths[1]))  # type: ignore
+                ]
+                if selected is None or selected.size == 0:
+                    continue
+                module_similarity = float(selected.iloc[0]["weighted_average"])
             if module_similarity > max_similarity:
                 max_similarity = module_similarity
         total_similarity += max_similarity
@@ -227,15 +242,14 @@ def _get_same_funcs(
 
 def _get_parsed_line(
     compare_results: pd.DataFrame | ReportRepository,
+    extract_func: Callable,
     threshold: int = DEFAULT_THRESHOLD,
     include_funcs_less_threshold: bool = True,
 ) -> Generator[tuple[FullCompareInfo, SameFuncs, SameFuncs], None, None]:
     if isinstance(compare_results, ReportRepository):
-        extract_func = lambda: compare_results.collection.find({})  # noqa: E731
         handle_result_func = lambda result: result  # noqa: E731
         deserialize_func = deserialize_compare_result_from_dict
     else:
-        extract_func = compare_results.iterrows
         handle_result_func = lambda result: result[1]  # noqa: E731
         deserialize_func = deserialize_compare_result
     for result in extract_func():
@@ -280,12 +294,14 @@ def _get_resulting_same_percentages(
 
 
 def _search_sources(
-    compare_results: pd.DataFrame | ReportRepository, threshold: int = DEFAULT_THRESHOLD
+    compare_results: pd.DataFrame | ReportRepository,
+    extract_func: Callable,
+    threshold: int = DEFAULT_THRESHOLD,
 ) -> tuple[SamePartsOfAll, CntHeadNodes]:
     same_parts_of_all: SamePartsOfAll = defaultdict(lambda: {})
     cnt_head_nodes: CntHeadNodes = {}
     for compare_info, same_parts_of_second, same_parts_of_first in _get_parsed_line(
-        compare_results, threshold, include_funcs_less_threshold=False
+        compare_results, extract_func, threshold, include_funcs_less_threshold=False
     ):
         for path, heads in zip(
             (compare_info.first_path, compare_info.second_path),
@@ -323,6 +339,7 @@ def _search_sources(
 
 def _create_general_report(
     compare_results: pd.DataFrame | ReportRepository,
+    extract_func: Callable,
     save_path: Path,
     environment: jinja2.Environment,
     threshold: Threshold = DEFAULT_THRESHOLD,
@@ -331,13 +348,13 @@ def _create_general_report(
 ) -> None:
     if paths is not None:
         if isinstance(compare_results, ReportRepository):
-            raise NotImplementedError(
-                "Creating general html report with MongoDB with provided paths is not implemented."
-            )
-        unique_first_paths = pd.unique(compare_results["first_path"])
-        unique_second_paths = pd.unique(compare_results["second_path"])
-        assert isinstance(unique_first_paths, np.ndarray)
-        assert isinstance(unique_second_paths, np.ndarray)
+            unique_first_paths = np.array(extract_func().distinct("first_path"))
+            unique_second_paths = np.array(extract_func().distinct("second_path"))
+        else:
+            unique_first_paths = pd.unique(compare_results["first_path"])
+            unique_second_paths = pd.unique(compare_results["second_path"])
+            assert isinstance(unique_first_paths, np.ndarray)
+            assert isinstance(unique_second_paths, np.ndarray)
         first_root_path_sim = calculate_general_total_similarity(
             compare_results, unique_first_paths, unique_second_paths
         )
@@ -352,7 +369,7 @@ def _create_general_report(
         save_path = save_path / DEFAULT_GENERAL_REPORT_NAME
     save_path.write_text(
         template.render(
-            data=_get_parsed_line(compare_results),
+            data=_get_parsed_line(compare_results, extract_func),
             list=list,
             len=len,
             round=round,
@@ -367,13 +384,14 @@ def _create_general_report(
 
 def _create_sources_report(
     compare_results: pd.DataFrame | ReportRepository,
+    extract_func: Callable,
     save_path: Path,
     environment: jinja2.Environment,
     threshold: Threshold = DEFAULT_THRESHOLD,
     language: Language = DEFAULT_LANGUAGE,
     paths: tuple[str, str] | None = None,
 ) -> None:
-    data, cnt_head_nodes = _search_sources(compare_results, threshold)
+    data, cnt_head_nodes = _search_sources(compare_results, extract_func, threshold)
     same_percentages = _get_resulting_same_percentages(data, cnt_head_nodes)
     if paths is not None:
         first_root_path_sim = calculate_sources_total_similarity(same_percentages, paths[0])
@@ -402,9 +420,9 @@ def _create_sources_report(
     )
 
 
-def __html_report_create_from_mongo(
+def __html_report_create(
     report_path: Path,
-    compare_info_repo: ReportRepository,
+    compare_infos: pd.DataFrame | ReportRepository,
     report_type: ReportType,
     threshold: Threshold,
     language: Language,
@@ -421,48 +439,30 @@ def __html_report_create_from_mongo(
     if not all_paths_provided and any([first_root_path, second_root_path]):
         raise ValueError(_("All paths must be provided."))
 
-    environment = jinja2.Environment(extensions=["jinja2.ext.i18n"])
-    environment.install_gettext_translations(get_translations())  # type: ignore
-    create_report_function(
-        compare_info_repo,  # type:ignore
-        report_path,
-        environment,
-        threshold,
-        language,
-    )
-    return ExitCode.EXIT_SUCCESS
-
-
-def __html_report_create_from_csv(
-    report_path: Path,
-    reports_path: Path,
-    report_type: ReportType,
-    threshold: Threshold,
-    language: Language,
-    first_root_path: Path | str | None = None,
-    second_root_path: Path | str | None = None,
-) -> Literal[ExitCode.EXIT_SUCCESS]:
-    if report_type == "general":
-        create_report_function = _create_general_report
-    elif report_type == "sources":
-        create_report_function = _create_sources_report
-    else:
-        raise ValueError(_("Invalid report type."))
-    all_paths_provided = all([first_root_path, second_root_path])
-    if not all_paths_provided and any([first_root_path, second_root_path]):
-        raise ValueError(_("All paths must be provided."))
-
-    df = read_df(reports_path)
     if all_paths_provided:
         paths = tuple(sorted([str(first_root_path), str(second_root_path)]))
-        df = df[df["first_path"].str.startswith(paths[0])]  # type: ignore
-        df = df[df["second_path"].str.startswith(paths[1])]  # type: ignore
+        if isinstance(compare_infos, pd.DataFrame):
+            compare_infos = compare_infos[compare_infos["first_path"].str.startswith(paths[0])]  # type: ignore
+            compare_infos = compare_infos[compare_infos["second_path"].str.startswith(paths[1])]  # type: ignore
+            extract_func = compare_infos.iterrows  # type: ignore
+        else:
+            extract_func = lambda: compare_infos.collection.find(  # noqa: E731
+                {
+                    "first_path": re.compile(rf"{paths[0]}[/.\w]*"),
+                    "second_path": re.compile(rf"{paths[1]}[/.\w]*"),
+                }
+            )
     else:
         paths = None
+        if isinstance(compare_infos, ReportRepository):
+            extract_func = lambda: compare_infos.collection.find({})  # noqa: E731
+        else:
+            extract_func = compare_infos.iterrows
     environment = jinja2.Environment(extensions=["jinja2.ext.i18n"])
     environment.install_gettext_translations(get_translations())  # type: ignore
     create_report_function(
-        df,  # type:ignore
+        compare_infos,
+        extract_func,
         report_path,
         environment,
         threshold,

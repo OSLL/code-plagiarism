@@ -131,14 +131,19 @@ class TestCreateReport:
         assert first_report_path.read_text() != second_report_path.read_text()
 
     @pytest.mark.parametrize(
-        "report_type",
-        ["general", "sources"],
+        ("report_type", "reports_extension"),
+        [
+            ("general", "csv"),
+            ("sources", "mongo"),
+        ],
     )
-    def test_default_report_diff_with_provided_paths(self: Self, report_type: ReportType) -> None:
+    def test_default_report_diff_with_provided_paths(
+        self: Self, report_type: ReportType, reports_extension: ReportsExtension
+    ) -> None:
         first_report_path = REPORTS_FOLDER / "report1.html"
         second_report_path = REPORTS_FOLDER / "report2.html"
 
-        modify_settings(reports_extension="csv")
+        modify_settings(reports_extension=reports_extension)
         create_report(first_report_path, report_type).assert_success()
         create_report(
             second_report_path,
