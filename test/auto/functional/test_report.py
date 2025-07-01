@@ -143,7 +143,7 @@ class TestCreateReport:
         first_report_path = REPORTS_FOLDER / "report1.html"
         second_report_path = REPORTS_FOLDER / "report2.html"
 
-        modify_settings(reports_extension="csv")
+        modify_settings(reports_extension=reports_extension)
         create_report(first_report_path, report_type).assert_success()
         create_report(
             second_report_path,
