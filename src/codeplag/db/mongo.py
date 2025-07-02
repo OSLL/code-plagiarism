@@ -91,6 +91,7 @@ class MongoDBConnection:
         """
         if self.client:
             self.client.close()
+            self.client = None
             logger.debug("MongoDB connection closed.")
 
     def get_collection(self: Self, collection_name: str) -> Collection | None:
@@ -162,7 +163,6 @@ class ReportRepository:
         }
         document = {"_id": document_id, **serialize_compare_result_to_dict(compare_info)}
 
-        # Insert or update the document
         self.collection.update_one({"_id": document_id}, {"$set": document}, upsert=True)
         logger.trace(  # type: ignore
             "Document for (%s, %s) successfully inserted/updated.",
@@ -190,10 +190,7 @@ class FeaturesRepository:
         Args:
             work (ASTFeatures): The file for which features are being saved.
         """
-        # Forming _id as the file path
         document_id = str(work.filepath)
-
-        # Using function serialize_features_to_dict to convert data
         serialized_work = serialize_features_to_dict(work)
 
         document = {
@@ -203,7 +200,6 @@ class FeaturesRepository:
             "features": serialized_work,
         }
 
-        # Insert or update the document
         self.collection.update_one({"_id": document_id}, {"$set": document}, upsert=True)
         logger.trace("Document for path %s successfully inserted/updated.", document_id)  # type: ignore
 
@@ -220,17 +216,13 @@ class FeaturesRepository:
             ASTFeatures | None: Deserialized AST features if found and valid.
         """
         document_id = str(work.filepath)
-
-        # Find document in collection
         document = self.collection.find_one({"_id": document_id})
         if not document:
             logger.trace("No features found for file path: %s", document_id)  # type: ignore
             return None
         logger.trace("Features found for file path: %s", document_id)  # type: ignore
 
-        # Deserialize and return features
-        features = deserialize_features_from_dict(document["features"])
-        return features
+        return deserialize_features_from_dict(document["features"])
 
 
 class MongoReporter(AbstractReporter):
@@ -257,6 +249,7 @@ class MongoReporter(AbstractReporter):
             work1 (ASTFeatures): Contains the first work metadata.
             work2 (ASTFeatures): Contains the second work metadata.
         """
+        work1, work2 = sorted([work1, work2])
         cache_val = self.repository.get_compare_info(work1.filepath, work2.filepath)
 
         if (
