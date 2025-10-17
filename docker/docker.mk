@@ -2,6 +2,7 @@ MONGO_DOCKER_TAG        := mongo:8.0.9
 MONGO_CONTAINER_NAME    := mongo-$(UTIL_NAME)-test
 
 
+.PHONY: docker-help
 docker-help:
 	@echo "Docker:"
 	@echo "  docker-run             Runs docker container with installed util;"
@@ -18,6 +19,7 @@ docker-help:
 	@echo "  docker-help            Displays information about available docker targets."
 	@echo
 
+.PHONY: docker-base-image
 docker-base-image: substitute-sources substitute-docker
 	@docker image inspect $(BASE_DOCKER_TAG) > /dev/null 2>&1 || ( \
 		echo "Building base docker image." && \
@@ -30,6 +32,7 @@ docker-base-image: substitute-sources substitute-docker
 			. \
 	)
 
+.PHONY: docker-test-image
 docker-test-image: docker-base-image
 	@docker image inspect $(TEST_DOCKER_TAG) > /dev/null 2>&1 || \
 	docker image build \
@@ -42,6 +45,7 @@ docker-test-image: docker-base-image
 		--file docker/test_ubuntu2204.dockerfile \
 		.
 
+.PHONY: docker-test-mongo-run
 docker-test-mongo-run:
 	@docker run \
 		--env MONGO_INITDB_ROOT_USERNAME=root \
@@ -50,10 +54,12 @@ docker-test-mongo-run:
 		--name $(MONGO_CONTAINER_NAME) \
 		$(MONGO_DOCKER_TAG)
 
+.PHONY: docker-test-mongo-stop
 docker-test-mongo-stop:
 	@docker container stop $(MONGO_CONTAINER_NAME)
 	@docker container rm $(MONGO_CONTAINER_NAME)
 
+.PHONY: docker-test
 docker-test: docker-test-image docker-test-mongo-run
 	@docker run --rm \
 		--env MONGO_HOST=$(shell docker inspect --format '{{ .NetworkSettings.IPAddress }}' $(MONGO_CONTAINER_NAME)) \
@@ -61,6 +67,7 @@ docker-test: docker-test-image docker-test-mongo-run
 		"$(TEST_DOCKER_TAG)" || (make docker-test-mongo-stop && exit 200)
 	@make docker-test-mongo-stop
 
+.PHONY: docker-autotest
 docker-autotest: docker-test-image docker-build-package docker-test-mongo-run
 	@if [ $(shell find . -maxdepth 1 -type f -name .env | wc --lines) != 1 ]; then \
 		echo "Requires '.env' file with provided GitHub token for running autotests."; \
@@ -76,6 +83,7 @@ docker-autotest: docker-test-image docker-build-package docker-test-mongo-run
 		make docker-test-mongo-stop; \
 	fi
 
+.PHONY: docker-build-package
 docker-build-package: docker-test-image
 	docker run --rm \
 		--volume $(PWD)/$(DEBIAN_PACKAGES_PATH):/usr/src/$(UTIL_NAME)/$(DEBIAN_PACKAGES_PATH) \
@@ -85,6 +93,7 @@ docker-build-package: docker-test-image
 		"$(TEST_DOCKER_TAG)" bash -c \
 		"make package"
 
+.PHONY: docker-image
 docker-image: docker-base-image docker-test-image
 	@if [ "$(REBUILD)" = "1" ]; then \
 		make clean-all docker-rmi ALL="$(ALL)"; \
@@ -104,6 +113,7 @@ docker-image: docker-base-image docker-test-image
 			. \
 	)
 
+.PHONY: docker-run
 docker-run: docker-image
 	@touch .env
 	docker run --rm --tty --interactive \
@@ -111,6 +121,7 @@ docker-run: docker-image
 		--add-host=host.docker.internal:host-gateway \
 		"$(DOCKER_TAG)"
 
+.PHONY: docker-rmi
 docker-rmi:
 	@docker rmi $(DOCKER_TAG) --force
 	@docker rmi $(TEST_DOCKER_TAG) --force
