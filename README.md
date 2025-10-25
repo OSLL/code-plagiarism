@@ -82,7 +82,7 @@ If you want to use MongoDB cache for saving reports and works metadata, complete
   $ python3 -m pip install --requirement docs/notebooks/requirements.txt
   $ python3 -m pip install $(python3 -m setup.py --build-requirements)
   $ python3 -m pip install $(python3 -m setup.py --install-requirements)
-  $ python3 -m pip install pre-commit==4.1.0
+  $ python3 -m pip install pre-commit==4.3.0
   $ make pre-commit
   ```
 
