@@ -6,6 +6,7 @@ import argparse
 import builtins
 import getpass
 from pathlib import Path
+from typing import Sequence
 
 from typing_extensions import Self
 
@@ -34,11 +35,11 @@ builtins.__dict__["_"] = builtins.__dict__.get("_", str)
 class CheckUniqueStore(argparse.Action):
     """Checks that the list of arguments contains no duplicates, then stores."""
 
-    def __call__(
+    def __call__(  # pyright: ignore[reportIncompatibleMethodOverride]
         self: Self,
         _parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
-        values: list[str],
+        values: Sequence[str],
         _option_string: str | None = None,
     ) -> None:
         if len(values) > len(set(values)):
@@ -53,7 +54,7 @@ class CheckUniqueStore(argparse.Action):
 
 
 class PasswordPromptAction(argparse.Action):
-    def __call__(
+    def __call__(  # pyright: ignore[reportIncompatibleMethodOverride]
         self: Self,
         _parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
@@ -474,7 +475,7 @@ class CodeplagCLI(argparse.ArgumentParser):
         ):
             self.error(_("All paths must be provided."))
 
-    def parse_args(self: Self, args: list[str] | None = None) -> argparse.Namespace:
+    def parse_args(self: Self, args: Sequence[str] | None = None) -> argparse.Namespace:  # pyright: ignore[reportIncompatibleMethodOverride]
         parsed_args = super(CodeplagCLI, self).parse_args(args)
         self.validate_args(parsed_args)
         return parsed_args

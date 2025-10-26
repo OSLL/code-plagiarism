@@ -95,14 +95,14 @@ class ASTFeatures:
         else:
             self.modify_date = ""
 
-    def __eq__(self: Self, other: "ASTFeatures") -> bool:
+    def __eq__(self: Self, other: object) -> bool:
         if not isinstance(other, self.__class__):
-            raise NotImplementedError
+            raise NotImplementedError(f"Can't compare '{type(other)}' with '{ASTFeatures}'.")
         return str(self.filepath) == str(other.filepath)
 
-    def __lt__(self: Self, other: "ASTFeatures") -> bool:
+    def __lt__(self: Self, other: object) -> bool:
         if not isinstance(other, self.__class__):
-            raise NotImplementedError
+            raise NotImplementedError(f"Can't compare '{type(other)}' with '{ASTFeatures}'.")
         return str(self.filepath) < str(other.filepath)
 
     def get_sha256(self: Self) -> str:

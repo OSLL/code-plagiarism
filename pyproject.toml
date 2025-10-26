@@ -57,7 +57,7 @@ executionEnvironments = [
     { root = "docs/notebooks", extraPaths = ["src"] }
 ]
 
-typeCheckingMode = "basic"
+typeCheckingMode = "standard"
 
 [build-system]
 requires = ["setuptools", "Cython"]
