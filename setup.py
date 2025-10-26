@@ -10,9 +10,9 @@ BUILD_REQUIREMENTS: tuple[str, ...] = (
     "Jinja2~=3.1.5",
 )
 TEST_REQUIREMENTS: tuple[str, ...] = (
-    "pytest~=8.3.4",
-    "pytest-mock~=3.14.0",
-    "pytest-cov~=6.0.0",
+    "pytest~=8.4.2",
+    "pytest-mock~=3.15.1",
+    "pytest-cov~=7.0.0",
 )
 INSTALL_REQUIREMENTS: tuple[str, ...] = (
     "argcomplete~=3.5.3",
