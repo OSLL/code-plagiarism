@@ -35,7 +35,7 @@ builtins.__dict__["_"] = builtins.__dict__.get("_", str)
 class CheckUniqueStore(argparse.Action):
     """Checks that the list of arguments contains no duplicates, then stores."""
 
-    def __call__( # pyright: ignore[reportIncompatibleMethodOverride]
+    def __call__(  # pyright: ignore[reportIncompatibleMethodOverride]
         self: Self,
         _parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
@@ -54,7 +54,7 @@ class CheckUniqueStore(argparse.Action):
 
 
 class PasswordPromptAction(argparse.Action):
-    def __call__( # pyright: ignore[reportIncompatibleMethodOverride]
+    def __call__(  # pyright: ignore[reportIncompatibleMethodOverride]
         self: Self,
         _parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
