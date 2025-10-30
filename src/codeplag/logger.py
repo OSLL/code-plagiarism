@@ -43,7 +43,7 @@ class CustomStreamHandler(logging.StreamHandler):
 
 def get_file_handler(filename: Path) -> logging.FileHandler:
     log_format = (
-        "%(asctime)s - [%(levelname)s] - %(name)s - "
+        "%(asctime)s - [%(levelname)s] - %(name)s[%(process)d] - "
         "(%(filename)s).%(funcName)s(%(lineno)d) - %(message)s"
     )
     file_handler = logging.FileHandler(filename)
