@@ -106,7 +106,9 @@ class ASTFeatures:
         return str(self.filepath) < str(other.filepath)
 
     def get_sha256(self: Self) -> str:
-        return hashlib.sha256(str(self.tokens).encode("utf-8")).hexdigest()
+        return hashlib.sha256(
+            str([element.uid for element in self.structure]).encode("utf-8")
+        ).hexdigest()
 
 
 class NodeStructurePlaceDict(TypedDict):
