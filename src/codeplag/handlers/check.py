@@ -321,8 +321,7 @@ class WorksComparator:
         if self.reporter is not None:
             metrics = self.reporter.get_result(work1, work2)
             if isinstance(metrics, FullCompareInfo) and (
-                metrics.first_heads != work1.head_nodes
-                or metrics.second_heads != work2.head_nodes
+                metrics.first_heads != work1.head_nodes or metrics.second_heads != work2.head_nodes
             ):
                 logger.warning(
                     "Invalid data for the '%s' and '%s' found in cache.",
