@@ -1,14 +1,10 @@
 """This module consist the CLI of the codeplag util and necessary internal classes for it."""
 
-from __future__ import annotations
-
 import argparse
 import builtins
 import getpass
 from pathlib import Path
-from typing import Sequence
-
-from typing_extensions import Self
+from typing import Sequence, Self
 
 from codeplag.consts import (
     DEFAULT_MODE,
@@ -32,7 +28,7 @@ from webparsers.types import GitHubContentUrl
 builtins.__dict__["_"] = builtins.__dict__.get("_", str)
 
 
-class CheckUniqueStore(argparse.Action):
+class CheckUniqueStoreAction(argparse.Action):
     """Checks that the list of arguments contains no duplicates, then stores."""
 
     def __call__(  # pyright: ignore[reportIncompatibleMethodOverride]
@@ -60,7 +56,7 @@ class PasswordPromptAction(argparse.Action):
         namespace: argparse.Namespace,
         values: str | None = None,
         _option_string: str | None = None,
-    ):
+    ) -> None:
         if values:
             setattr(namespace, self.dest, values)
         else:
@@ -77,7 +73,7 @@ class DirPath(Path):
                 _("Directory '{path}' not found or not a directory.").format(path=path)
             )
 
-        return Path.__new__(Path, *args, **kwargs).resolve()
+        return path.resolve()
 
 
 class FilePath(Path):
@@ -90,7 +86,7 @@ class FilePath(Path):
                 _("File '{path}' not found or not a file.").format(path=path)
             )
 
-        return Path.__new__(Path, *args, **kwargs).resolve()
+        return path.resolve()
 
 
 class CodeplagCLI(argparse.ArgumentParser):
@@ -261,7 +257,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             type=DirPath,
             help=_("Absolute or relative path to a local directories with project files."),
             nargs="+",
-            action=CheckUniqueStore,
+            action=CheckUniqueStoreAction,
             default=[],
         )
         check.add_argument(
@@ -271,7 +267,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             type=FilePath,
             help=_("Absolute or relative path to files on a computer."),
             nargs="+",
-            action=CheckUniqueStore,
+            action=CheckUniqueStoreAction,
             default=[],
         )
         check.add_argument(
@@ -329,7 +325,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             type=GitHubContentUrl,
             help=_("URL to file in a GitHub repository."),
             nargs="+",
-            action=CheckUniqueStore,
+            action=CheckUniqueStoreAction,
             default=[],
         )
         check_github.add_argument(
@@ -342,7 +338,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             type=GitHubContentUrl,
             help=_("URL to a GitHub project folder."),
             nargs="+",
-            action=CheckUniqueStore,
+            action=CheckUniqueStoreAction,
             default=[],
         )
 

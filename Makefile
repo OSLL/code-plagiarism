@@ -1,12 +1,12 @@
-UTIL_VERSION            := 0.5.30
-UTIL_NAME               := codeplag
+UTIL_VERSION            := $(shell grep -Po 'version\s*=\s*"\K[\w.]+' pyproject.toml)
+UTIL_NAME               := $(shell grep -Po 'name\s*=\s*"\K(\w.)+' pyproject.toml)
 PWD                     := $(shell pwd)
 
 USER_UID                ?= $(shell id --user)
 USER_GID                ?= $(shell id --group)
 
-BASE_DOCKER_VERSION     := 1.3
-DIST                    := ubuntu22.04
+BASE_DOCKER_VERSION     := 1.0
+DIST                    := ubuntu24.04
 BASE_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-base-${DIST}:$(BASE_DOCKER_VERSION))
 TEST_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-test-${DIST}:$(UTIL_VERSION))
 DOCKER_TAG              ?= $(shell echo $(UTIL_NAME)-${DIST}:$(UTIL_VERSION))

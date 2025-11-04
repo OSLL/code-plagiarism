@@ -2,4 +2,4 @@
 
 echo "Pre installation ($@) ..."
 
-pip3 install @PYTHON_REQUIRED_LIBS@
+pip3 install --break-system-packages @PYTHON_REQUIRED_LIBS@

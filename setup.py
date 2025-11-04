@@ -9,6 +9,11 @@ BUILD_REQUIREMENTS: tuple[str, ...] = (
     "setuptools~=75.8.1",
     "Jinja2~=3.1.5",
 )
+# fmt: off
+LINT_REQUIREMENTS: tuple[str, ...] = (
+    "pre-commit~=4.3.0",
+)
+# fmt: on
 TEST_REQUIREMENTS: tuple[str, ...] = (
     "pytest~=8.4.2",
     "pytest-mock~=3.15.1",
@@ -19,9 +24,9 @@ INSTALL_REQUIREMENTS: tuple[str, ...] = (
     "numpy~=1.26.4",
     "pandas~=2.2.3",
     "ccsyspath~=1.1.0",
-    "clang~=14.0.6",
-    "llvmlite~=0.42.0",
-    "libclang~=14.0.6",
+    "clang~=18.1.8",
+    "llvmlite~=0.45.1",
+    "libclang~=18.1.1",
     "python-decouple~=3.8",
     "requests~=2.32.3",
     "typing-extensions~=4.12.2",
@@ -38,13 +43,16 @@ UTIL_VERSION = os.getenv("UTIL_VERSION")
 if "--build-requirements" in sys.argv:
     print(" ".join(BUILD_REQUIREMENTS))
     sys.exit(0)
+if "--lint-requirements" in sys.argv:
+    print(" ".join(LINT_REQUIREMENTS))
+    sys.exit(0)
 if "--test-requirements" in sys.argv:
     print(" ".join(TEST_REQUIREMENTS))
     sys.exit(0)
-elif "--install-requirements" in sys.argv:
+if "--install-requirements" in sys.argv:
     print(" ".join(INSTALL_REQUIREMENTS))
     sys.exit(0)
-elif UTIL_NAME is None or UTIL_VERSION is None:
+if UTIL_NAME is None or UTIL_VERSION is None:
     print("Please provide UTIL_NAME and UTIL_VERSION environment variables.")
     sys.exit(1)
 try:
@@ -74,7 +82,7 @@ setup(
         "Intended Audience :: Education",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.12",
         "Topic :: Software Development :: Plagiarism Detection",
     ],
     package_dir={"": "src"},
@@ -85,7 +93,7 @@ setup(
         ],
         language_level=3,
     ),
-    python_requires=">=3.10",
+    python_requires=">=3.12",
     install_requires=INSTALL_REQUIREMENTS,
     entry_points={
         "console_scripts": [
