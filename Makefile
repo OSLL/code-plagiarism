@@ -1,5 +1,5 @@
-UTIL_VERSION            := $(shell grep -Po 'version\s*=\s*"\K[\d.]+' pyproject.toml)
-UTIL_NAME               := $(shell grep -Po 'name\s*=\s*"\K\w+' pyproject.toml)
+UTIL_VERSION            := $(shell grep -Po '^version\s*=\s*"\K[\d.]+' pyproject.toml)
+UTIL_NAME               := $(shell grep -Po '^name\s*=\s*"\K\w+' pyproject.toml)
 PWD                     := $(shell pwd)
 
 USER_UID                ?= $(shell id --user)
