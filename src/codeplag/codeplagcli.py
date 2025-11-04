@@ -4,7 +4,7 @@ import argparse
 import builtins
 import getpass
 from pathlib import Path
-from typing import Sequence, Self
+from typing import Self, Sequence
 
 from codeplag.consts import (
     DEFAULT_MODE,
