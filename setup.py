@@ -51,7 +51,7 @@ if "--install-requirements" in sys.argv:
     sys.exit(0)
 try:
     from Cython.Build import cythonize
-    from setuptools import Extension, find_packages, setup
+    from setuptools import Extension, setup
 except ModuleNotFoundError:
     print(
         "For the correct build install required build dependencies: "
@@ -61,11 +61,7 @@ except ModuleNotFoundError:
 
 
 setup(
-    long_description=Path("README.md").read_text(encoding="utf-8"),
-    long_description_content_type="text/markdown",
     platforms=["linux"],
-    package_dir={"": "src"},
-    packages=find_packages("src"),
     ext_modules=cythonize(
         [
             Extension("*", [f"src/codeplag/**/*.py"]),

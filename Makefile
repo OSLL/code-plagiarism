@@ -85,7 +85,9 @@ install: substitute-sources man translate-compile
 
 	@echo "Cleaning unnecessary files after Cython compilation in $(PY_INSTALL_PATH)"
 	find "$(DESTDIR)/$(PY_INSTALL_PATH)/$(UTIL_NAME)/" -type f -name '*.py' -exec rm --force '{}' +
+	find "$(DESTDIR)/$(PY_INSTALL_PATH)/$(UTIL_NAME)/" -type f -name '*.c' -exec rm --force '{}' +
 	find "$(DESTDIR)/$(PY_INSTALL_PATH)/$(UTIL_NAME)" -type d -iname "__pycache__" -exec rm --recursive --force '{}' +
+	find "$(DESTDIR)/$(PY_INSTALL_PATH)/webparsers" -type d -iname "__pycache__" -exec rm --recursive --force '{}' +
 
 	@echo "Cleaning unnecessary temporary Python files after installation in $(PY_INSTALL_PATH)"
 	find "$(DESTDIR)/$(PY_INSTALL_PATH)/$(UTIL_NAME)/" -type f -name '*.tmp.py' -exec rm --force '{}' +
