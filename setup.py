@@ -1,5 +1,4 @@
 import sys
-from pathlib import Path
 
 BUILD_REQUIREMENTS: tuple[str, ...] = (
     "argparse-manpage==4.6",
@@ -64,7 +63,7 @@ setup(
     platforms=["linux"],
     ext_modules=cythonize(
         [
-            Extension("*", [f"src/codeplag/**/*.py"]),
+            Extension("*", ["src/codeplag/**/*.py"]),
         ],
         language_level=3,
     ),
