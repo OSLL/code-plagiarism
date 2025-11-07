@@ -14,7 +14,7 @@ from codeplag.handlers.report import (
 )
 from codeplag.handlers.settings import settings_modify, settings_show
 from codeplag.logger import codeplag_logger as logger
-from codeplag.types import ExitCode, ReportType
+from codeplag.types import ExitCode, ReportType, Extension
 
 
 class CodeplagEngine:
@@ -34,16 +34,18 @@ class CodeplagEngine:
             self.first_root_path = parsed_args.pop("first_root_path", None)
             self.second_root_path = parsed_args.pop("second_root_path", None)
         else:
-            self.github_files: list[str] = parsed_args.pop("github_files", [])
-            self.github_project_folders: list[str] = parsed_args.pop("github_project_folders", [])
-            self.github_user: str = parsed_args.pop("github_user", "") or ""
+            files_extension: Extension = parsed_args.pop("extension")
+            github_urls: list[str] = parsed_args.pop("github_urls", [])
+            self.github_files: list[str] = list(filter(lambda url: '.' + files_extension in url, github_urls))
+            self.github_project_folders: list[str] = list(filter(lambda url: '.' + files_extension not in url, github_urls))
+            self.github_user: str = parsed_args.pop("github_user", "")
             ignore_threshold: bool = parsed_args.pop("ignore_threshold")
             if ignore_threshold:
                 comparator_class = IgnoreThresholdWorksComparator
             else:
                 comparator_class = WorksComparator
             self.comparator: WorksComparator = comparator_class(
-                extension=parsed_args.pop("extension"),
+                extension=files_extension,
                 repo_regexp=parsed_args.pop("repo_regexp", None),
                 path_regexp=parsed_args.pop("path_regexp", None),
                 mode=parsed_args.pop("mode", DEFAULT_MODE),

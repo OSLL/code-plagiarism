@@ -85,8 +85,8 @@ def setup_module(mongo_connection: MongoDBConnection) -> Generator[None, None, N
         ("--files", PY_SIM_FILES, "py", True),
         ("--files", CPP_FILES, "cpp", False),
         ("--files", CPP_SIM_FILES, "cpp", True),
-        ("--github-files", PY_GITHUB_FILES, "py", False),
-        ("--github-files", CPP_GITHUB_SIM_FILES, "cpp", True),
+        ("--github-urls", PY_GITHUB_FILES, "py", False),
+        ("--github-urls", CPP_GITHUB_SIM_FILES, "cpp", True),
     ],
 )
 def test_correct_mongo_connection(
@@ -108,8 +108,8 @@ def test_correct_mongo_connection(
         ("--files", PY_SIM_FILES, "py", True),
         ("--files", CPP_FILES, "cpp", False),
         ("--files", CPP_SIM_FILES, "cpp", True),
-        ("--github-files", PY_GITHUB_FILES, "py", False),
-        ("--github-files", CPP_GITHUB_SIM_FILES, "cpp", True),
+        ("--github-urls", PY_GITHUB_FILES, "py", False),
+        ("--github-urls", CPP_GITHUB_SIM_FILES, "cpp", True),
     ],
 )
 def test_reading_metadata_and_reports_after_saving(
@@ -210,8 +210,8 @@ def test_saving_after_file_significant_change(
         ("--files", PY_SIM_FILES, "py", True),
         ("--files", CPP_FILES, "cpp", False),
         ("--files", CPP_SIM_FILES, "cpp", True),
-        ("--github-files", PY_GITHUB_FILES, "py", False),
-        ("--github-files", CPP_GITHUB_SIM_FILES, "cpp", True),
+        ("--github-urls", PY_GITHUB_FILES, "py", False),
+        ("--github-urls", CPP_GITHUB_SIM_FILES, "cpp", True),
     ],
 )
 def test_saving_metadata_and_reports(

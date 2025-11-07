@@ -322,24 +322,14 @@ class CodeplagCLI(argparse.ArgumentParser):
             help=_("A regular expression to filter searching repositories on GitHub."),
         )
         check_github.add_argument(
-            "-gf",
-            "--github-files",
-            metavar="GITHUB_FILE",
-            type=GitHubContentUrl,
-            help=_("URL to file in a GitHub repository."),
-            nargs="+",
-            action=CheckUniqueStore,
-            default=[],
-        )
-        check_github.add_argument(
             "-gu", "--github-user", type=str, help=_("GitHub organization/user name.")
         )
         check_github.add_argument(
-            "-gp",
-            "--github-project-folders",
-            metavar="GITHUB_PROJECT_FOLDER",
+            "-gr",
+            "--github-urls",
+            metavar="GITHUB_URL",
             type=GitHubContentUrl,
-            help=_("URL to a GitHub project folder."),
+            help=_("URL to a GitHub file or folder"),
             nargs="+",
             action=CheckUniqueStore,
             default=[],
@@ -458,12 +448,12 @@ class CodeplagCLI(argparse.ArgumentParser):
             elif parsed_args.path_regexp and not (
                 parsed_args.directories
                 or parsed_args.github_user
-                or parsed_args.github_project_folders
+                or parsed_args.github_urls
             ):
                 self.error(
                     _(
                         "The'path-regexp' option requires the provided 'directories', "
-                        "'github-user', or 'github-project-folder' options."
+                        "'github-user', or 'github-urls' options."
                     )
                 )
         elif (
