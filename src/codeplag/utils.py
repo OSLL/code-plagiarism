@@ -37,16 +37,10 @@ class CodeplagEngine:
             files_extension: Extension = parsed_args.pop("extension")
             github_urls: list[str] = parsed_args.pop("github_urls", [])
             self.github_files: list[str] = list(
-                filter(
-                    lambda url: '.' + files_extension in url, 
-                    github_urls
-                )
+                filter(lambda url: "." + files_extension in url, github_urls)
             )
             self.github_project_folders: list[str] = list(
-                filter(
-                    lambda url: '.' + files_extension not in url, 
-                    github_urls
-                )
+                filter(lambda url: "." + files_extension not in url, github_urls)
             )
             self.github_user: str = parsed_args.pop("github_user", "")
             ignore_threshold: bool = parsed_args.pop("ignore_threshold")
