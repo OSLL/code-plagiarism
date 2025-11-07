@@ -56,7 +56,7 @@ jobs:
       - name: Get current util version
         id: get_version
         run: |
-          echo "::set-output name=version::$(grep --max-count 1 UTIL_VERSION Makefile | grep -Eo "[0-9]+[.][0-9]+[.][0-9]+")"
+          echo "::set-output name=version::$(grep -Po '^version\s*=\s*"\K[\d.]+' pyproject.toml)"
 
       - name: Create main docker image, run tests and save image for the next job
         run: |
