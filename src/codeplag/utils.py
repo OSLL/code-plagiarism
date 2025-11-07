@@ -14,7 +14,7 @@ from codeplag.handlers.report import (
 )
 from codeplag.handlers.settings import settings_modify, settings_show
 from codeplag.logger import codeplag_logger as logger
-from codeplag.types import ExitCode, ReportType, Extension
+from codeplag.types import ExitCode, Extension, ReportType
 
 
 class CodeplagEngine:
