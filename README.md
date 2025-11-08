@@ -50,8 +50,8 @@ Program for finding plagiarism in the source code written in Python 3, C, and C+
 ### 1.3 Install with package manager apt-get
 
 - Requirements:
-  - OS Ubuntu Linux == 22.04
-  - Python version == 3.10
+  - OS Ubuntu Linux == 24.04
+  - Python version == 3.12
 
 - For this purpose, you need to get installing package from releases [tab](https://github.com/OSLL/code-plagiarism/releases) with extension .deb;
 - The next step is run commands on the target system:
@@ -81,8 +81,8 @@ If you want to use MongoDB cache for saving reports and works metadata, complete
   # Before local checking, you need to install dependencies into your virtual environment.
   $ python3 -m pip install --requirement docs/notebooks/requirements.txt
   $ python3 -m pip install $(python3 -m setup.py --build-requirements)
+  $ python3 -m pip install $(python3 -m setup.py --lint-requirements)
   $ python3 -m pip install $(python3 -m setup.py --install-requirements)
-  $ python3 -m pip install pre-commit==4.3.0
   $ make pre-commit
   ```
 

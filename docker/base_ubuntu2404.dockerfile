@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 ARG PYTHON_REQUIRED_LIBS
 ARG UTIL_NAME
@@ -9,13 +9,18 @@ RUN if  [ "$(dpkg-divert --truename /usr/bin/man)" = "/usr/bin/man.REAL" ]; then
         dpkg-divert --quiet --remove --rename /usr/bin/man; \
     fi
 RUN apt-get update
-RUN apt-get install -y python3-pip
-RUN pip3 install --upgrade setuptools
-RUN apt-get install -y clang libncurses5
-RUN apt-get install -y man
-RUN apt-get install -y vim nano less
+RUN apt-get install -y --no-install-recommends \
+    python3-pip \
+    clang \
+    libncurses6 \
+    vim \
+    nano \
+    less
+RUN apt-get clean
 
-RUN pip3 install $PYTHON_REQUIRED_LIBS
+RUN pip3 install --break-system-packages $PYTHON_REQUIRED_LIBS
+
+RUN rm --recursive --force /tmp/* /var/tmp/*
 
 VOLUME /usr/src/works
 WORKDIR /usr/src/$UTIL_NAME

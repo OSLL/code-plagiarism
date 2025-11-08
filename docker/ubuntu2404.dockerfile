@@ -13,6 +13,9 @@ RUN apt-get install -y /usr/src/$UTIL_NAME/$DEBIAN_PACKAGES_PATH/$DEB_PKG_NAME.d
 RUN install -D -m 0644 $DEBIAN_PACKAGES_PATH/$UTIL_NAME.1 /usr/share/man/man1/
 RUN rm --recursive /usr/src/$UTIL_NAME/debian
 
+RUN apt-get clean
+RUN rm --recursive --force /tmp/* /var/tmp/*
+
 RUN register-python-argcomplete $UTIL_NAME >> ~/.bashrc
 
 CMD ["/bin/bash"]

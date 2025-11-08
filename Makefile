@@ -1,15 +1,14 @@
-UTIL_VERSION            := 0.5.30
-UTIL_NAME               := codeplag
-PWD                     := $(shell pwd)
+UTIL_VERSION            := $(shell grep -Po '^version\s*=\s*"\K[\d.]+' pyproject.toml)
+UTIL_NAME               := $(shell grep -Po '^name\s*=\s*"\K\w+' pyproject.toml)
 
 USER_UID                ?= $(shell id --user)
 USER_GID                ?= $(shell id --group)
 
-BASE_DOCKER_VERSION     := 1.3
-DIST                    := ubuntu22.04
-BASE_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-base-${DIST}:$(BASE_DOCKER_VERSION))
-TEST_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-test-${DIST}:$(UTIL_VERSION))
-DOCKER_TAG              ?= $(shell echo $(UTIL_NAME)-${DIST}:$(UTIL_VERSION))
+BASE_DOCKER_VERSION     := 1.0
+DIST                    := ubuntu24.04
+BASE_DOCKER_TAG         := "$(UTIL_NAME)-base-${DIST}:$(BASE_DOCKER_VERSION)"
+TEST_DOCKER_TAG         := "$(UTIL_NAME)-test-${DIST}:$(UTIL_VERSION)"
+DOCKER_TAG              ?= "$(UTIL_NAME)-${DIST}:$(UTIL_VERSION)"
 
 PYTHONDONTWRITEBYTECODE := "1"
 PYTHONPATH              := $(PWD)/src/:$(PWD)/test/auto
@@ -85,7 +84,9 @@ install: substitute-sources man translate-compile
 
 	@echo "Cleaning unnecessary files after Cython compilation in $(PY_INSTALL_PATH)"
 	find "$(DESTDIR)/$(PY_INSTALL_PATH)/$(UTIL_NAME)/" -type f -name '*.py' -exec rm --force '{}' +
+	find "$(DESTDIR)/$(PY_INSTALL_PATH)/$(UTIL_NAME)/" -type f -name '*.c' -exec rm --force '{}' +
 	find "$(DESTDIR)/$(PY_INSTALL_PATH)/$(UTIL_NAME)" -type d -iname "__pycache__" -exec rm --recursive --force '{}' +
+	find "$(DESTDIR)/$(PY_INSTALL_PATH)/webparsers" -type d -iname "__pycache__" -exec rm --recursive --force '{}' +
 
 	@echo "Cleaning unnecessary temporary Python files after installation in $(PY_INSTALL_PATH)"
 	find "$(DESTDIR)/$(PY_INSTALL_PATH)/$(UTIL_NAME)/" -type f -name '*.tmp.py' -exec rm --force '{}' +
