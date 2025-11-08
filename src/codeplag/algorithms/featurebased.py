@@ -94,7 +94,7 @@ def get_children_indexes(
         count_of_nodes (int): count of elements in the tree.
 
     Complexity:
-        O(len(tree))
+        O(n)
     """
     indexes = []
     count_of_children = 0
@@ -118,9 +118,7 @@ def find_max_index(array: np.ndarray) -> np.ndarray:
         array (np.ndarray): matrix of compliance (np.ndarray object).
 
     Complexity:
-        rows = array.shape[0]
-        columns = array.shape[1]
-        O(rows * columns)
+        O(n^2)
 
     """
     maximum = 0

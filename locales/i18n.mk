@@ -2,6 +2,7 @@ LOCALES_DIR                 := locales/
 TRANSLATIONS_DIR            := ${LOCALES_DIR}/translations
 
 
+.PHONY: translate-help
 translate-help:
 	@echo "Translate:"
 	@echo "  translate-extract      Extracts all lines that need to be translated;"
@@ -12,6 +13,7 @@ translate-help:
 	@echo "  translate-help         Displays information about available translation targets."
 	@echo
 
+.PHONY: translate-extract
 translate-extract:
 	pybabel extract --mapping-file ${LOCALES_DIR}/babel.cfg \
 		--keywords _ \
@@ -24,6 +26,7 @@ translate-extract:
 	sed -ri '2 s/[0-9]{4}/2024-2025/' ${LOCALES_DIR}/${UTIL_NAME}.pot
 	sed -i -e '4d;10d;$$ d' ${LOCALES_DIR}/${UTIL_NAME}.pot
 
+.PHONY: translate-update
 translate-update: translate-extract
 	pybabel update --input-file ${LOCALES_DIR}/${UTIL_NAME}.pot \
 		--update-header-comment \
@@ -33,10 +36,12 @@ translate-update: translate-extract
 	sed -i -e '8d;$$ d' ${TRANSLATIONS_DIR}/en/LC_MESSAGES/${UTIL_NAME}.po
 	sed -i -e '8d;$$ d' ${TRANSLATIONS_DIR}/ru/LC_MESSAGES/${UTIL_NAME}.po
 
+.PHONY: translate-compile
 translate-compile:
 	pybabel compile --directory ${TRANSLATIONS_DIR} \
 		--domain ${UTIL_NAME}
 
+.PHONY: translate-init
 translate-init:
 	@if [ -n "$(LANGUAGE)" ]; then \
 		pybabel init --input-file ${LOCALES_DIR}/${UTIL_NAME}.pot \

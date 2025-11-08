@@ -1,15 +1,14 @@
-UTIL_VERSION            := 0.5.25
-UTIL_NAME               := codeplag
-PWD                     := $(shell pwd)
+UTIL_VERSION            := $(shell grep -Po '^version\s*=\s*"\K[\d.]+' pyproject.toml)
+UTIL_NAME               := $(shell grep -Po '^name\s*=\s*"\K\w+' pyproject.toml)
 
 USER_UID                ?= $(shell id --user)
 USER_GID                ?= $(shell id --group)
 
-BASE_DOCKER_VERSION     := 1.3
-DIST                    := ubuntu22.04
-BASE_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-base-${DIST}:$(BASE_DOCKER_VERSION))
-TEST_DOCKER_TAG         := $(shell echo $(UTIL_NAME)-test-${DIST}:$(UTIL_VERSION))
-DOCKER_TAG              ?= $(shell echo $(UTIL_NAME)-${DIST}:$(UTIL_VERSION))
+BASE_DOCKER_VERSION     := 1.0
+DIST                    := ubuntu24.04
+BASE_DOCKER_TAG         := "$(UTIL_NAME)-base-${DIST}:$(BASE_DOCKER_VERSION)"
+TEST_DOCKER_TAG         := "$(UTIL_NAME)-test-${DIST}:$(UTIL_VERSION)"
+DOCKER_TAG              ?= "$(UTIL_NAME)-${DIST}:$(UTIL_VERSION)"
 
 PYTHONDONTWRITEBYTECODE := "1"
 PYTHONPATH              := $(PWD)/src/:$(PWD)/test/auto
@@ -57,6 +56,7 @@ substitute = @sed \
 		$(1) > $(2) \
 		&& echo "Substituted from '$(1)' to '$(2)'."
 
+.PHONY: all
 all: install
 
 # $< - %.in file, $@ desired file %
@@ -66,21 +66,27 @@ all: install
 %.py: %.tmp.py
 	$(call substitute,$<,$@)
 
+.PHONY: substitute-sources
 substitute-sources: $(SOURCE_SUB_FILES)
 	@echo "Substituted information about the utility in the source files."
 
+.PHONY: substitute-debian
 substitute-debian: $(DEBIAN_SUB_FILES)
 	@echo "Substituted information about the utility in the debian files."
 
+.PHONY: substitute-docker
 substitute-docker: $(DOCKER_SUB_FILES)
 	@echo "Substituted information about the utility in the docker files."
 
+.PHONY: install
 install: substitute-sources man translate-compile
 	python3 -m pip install --root=$(DESTDIR)/ .
 
 	@echo "Cleaning unnecessary files after Cython compilation in $(PY_INSTALL_PATH)"
 	find "$(DESTDIR)/$(PY_INSTALL_PATH)/$(UTIL_NAME)/" -type f -name '*.py' -exec rm --force '{}' +
+	find "$(DESTDIR)/$(PY_INSTALL_PATH)/$(UTIL_NAME)/" -type f -name '*.c' -exec rm --force '{}' +
 	find "$(DESTDIR)/$(PY_INSTALL_PATH)/$(UTIL_NAME)" -type d -iname "__pycache__" -exec rm --recursive --force '{}' +
+	find "$(DESTDIR)/$(PY_INSTALL_PATH)/webparsers" -type d -iname "__pycache__" -exec rm --recursive --force '{}' +
 
 	@echo "Cleaning unnecessary temporary Python files after installation in $(PY_INSTALL_PATH)"
 	find "$(DESTDIR)/$(PY_INSTALL_PATH)/$(UTIL_NAME)/" -type f -name '*.tmp.py' -exec rm --force '{}' +
@@ -104,6 +110,7 @@ install: substitute-sources man translate-compile
 
 	install -D -m 0644 man/$(UTIL_NAME).1 $(DESTDIR)/usr/share/man/man1/$(UTIL_NAME).1
 
+.PHONY: man
 man: substitute-sources
 	mkdir -p man
 	if [ ! -f man/$(UTIL_NAME).1 ]; then \
@@ -115,6 +122,7 @@ man: substitute-sources
 						--output man/$(UTIL_NAME).1; \
 	fi
 
+.PHONY: package
 package: substitute-debian
 	find $(DEBIAN_PACKAGES_PATH)/$(UTIL_NAME)* > /dev/null 2>&1 || ( \
 		dpkg-buildpackage -jauto -b \
@@ -127,22 +135,27 @@ package: substitute-debian
 		chown --recursive ${USER_UID}:${USER_GID} $(DEBIAN_PACKAGES_PATH) \
 	)
 
+.PHONY: test
 test: substitute-sources
 	pytest test/unit test/misc --cov=src/ --cov-report xml --cov-report term
 	make clean-cache
 
+.PHONY: autotest
 autotest:
 	pytest test/auto
 	make clean-cache
 
+.PHONY: pre-commit
 pre-commit:
 	python3 -m pre_commit run --all-files
 
+.PHONY: clean-cache
 clean-cache:
 	find . -maxdepth 1 -type d | grep -E "pytest_cache" | (xargs rm -r 2> /dev/null || exit 0)
 	find "src/$(UTIL_NAME)/" -type f -name '*.c' -exec rm --force '{}' +
 	rm --recursive --force $(shell find -type d -iname "__pycache__")
 
+.PHONY: clean
 clean: clean-cache
 	rm --force --recursive man/
 	rm --force --recursive build/
@@ -156,6 +169,7 @@ clean: clean-cache
 	rm --force ${DEBIAN_PATH}/$(UTIL_NAME)-util.substvars
 	rm --force --recursive src/$(UTIL_NAME).egg-info
 
+.PHONY: clean-all
 clean-all: clean
 	rm --force src/$(UTIL_NAME)/consts.py
 
@@ -165,18 +179,23 @@ clean-all: clean
 	rm --force ${DEBIAN_PATH}/preinst
 	rm --force ${DEBIAN_PATH}/copyright
 
+.PHONY: uninstall
 uninstall:
 	rm --force $(DESTDIR)/usr/share/man/man1/$(UTIL_NAME).1
 	rm --force --recursive $(DESTDIR)/$(LIB_PATH)
 	pip3 uninstall $(UTIL_NAME) -y
 
+.PHONY: reinstall
 reinstall: uninstall install
 
+.PHONY: todo-list
 todo-list: clean-all
 	@grep --color=auto -r -n 'TODO' ./* --exclude=Makefile --exclude-dir=docs
 
+.PHONY: help
 help: general-help docker-help translate-help
 
+.PHONY: general-help
 general-help:
 	@echo "Usage:"
 	@echo "  make [targets] [arguments]"
@@ -205,7 +224,6 @@ general-help:
 
 
 .EXPORT_ALL_VARIABLES:
-.PHONY: all test man
 
 include docker/docker.mk
 include locales/i18n.mk

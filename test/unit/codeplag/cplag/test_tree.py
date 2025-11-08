@@ -121,7 +121,7 @@ def test_get_features(second_cursor: Cursor) -> None:
                                101, 106, 202, 214, 100, 100,
                                101, 214, 103, 100, 101, 100,
                                101, 114, 100, 101, 100, 101]
-    assert features.sha256 == "957da24c9f9340954aaa9df303922a0fbdcea69b6d3556c2bd462d195ab89052"
+    assert features.sha256 == "e60cabdc857dad1c75022143429806e146ad5fe299528fc47426a2f0c5c2f9a7"
 
 
 def test_bad_encoding_syms(third_cursor: Cursor) -> None:
@@ -141,4 +141,4 @@ def test_bad_encoding_syms(third_cursor: Cursor) -> None:
     assert features.count_unodes == 18
     assert len(features.structure) == 167
     assert len(features.tokens) == 167
-    assert features.sha256 == "40f5feba75390d171f3e719be450989150aa232878ed4d10e0736221bad29b91"
+    assert features.sha256 == "236f1b7ea02c3f68e390c7e155fec1a198d4c9ab3d8306d613df8399189291de"

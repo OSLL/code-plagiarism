@@ -1,4 +1,5 @@
 import logging
+import sys
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Final
@@ -11,12 +12,16 @@ from codeplag.cplag.const import COMPILE_ARGS
 from codeplag.cplag.tree import get_features
 from codeplag.featurescache import AbstractFeaturesCache
 from codeplag.getfeatures import AbstractGetter, get_files_path_from_directory
-from codeplag.logger import log_err
-from codeplag.types import ASTFeatures
+from codeplag.logger import codeplag_logger, log_err
+from codeplag.types import ASTFeatures, ExitCode
 from webparsers.types import WorkInfo
 
 # FIXME: Dirty hook for finding libclang so file
-LIBCLANG_SO_FILE_PATH: Final[Path] = Path("/usr/lib/llvm-14/lib/libclang-14.so.1")
+try:
+    LIBCLANG_SO_FILE_PATH: Final[Path] = next(Path("/usr/lib/").glob("llvm-*/lib/libclang-*.so.1"))
+except StopIteration:
+    codeplag_logger.error("Failed to find libclang so file.")
+    sys.exit(ExitCode.EXIT_UNKNOWN)
 Config.set_library_file(LIBCLANG_SO_FILE_PATH)
 
 

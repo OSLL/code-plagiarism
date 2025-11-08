@@ -173,7 +173,7 @@ def print_compare_result(
         "-----\n"
         f"{compare_info.first_path}\n{compare_info.first_modify_date}\n"
         "-----\n"
-        f"{compare_info.first_path}\n{compare_info.first_modify_date}\n"
+        f"{compare_info.second_path}\n{compare_info.second_modify_date}\n"
         "-----\n"
     )
 

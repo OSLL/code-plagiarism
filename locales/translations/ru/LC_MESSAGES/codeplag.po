@@ -4,7 +4,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: codeplag 0.5.23\n"
+"Project-Id-Version: codeplag 0.6.0\n"
 "POT-Creation-Date: 2024-05-21 09:28+0300\n"
 "PO-Revision-Date: 2025-03-28 12:05+0300\n"
 "Last-Translator: Artyom Semidolin\n"
@@ -15,43 +15,49 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.15.0\n"
+"Generated-By: Babel 2.17.0\n"
 
-#: src/codeplag/codeplagcli.py:48
+#: src/codeplag/codeplagcli.py:46
+#, python-brace-format
 msgid "You cannot specify the same value multiple times. You provided '{values}'."
 msgstr ""
 "Нельзя указать одно и тоже значение несколько раз. Было указано "
 "'{values}'."
 
-#: src/codeplag/codeplagcli.py:66
+#: src/codeplag/codeplagcli.py:63
 msgid "Enter MongoDB password: "
 msgstr "Введите пароль от MongoDB: "
 
-#: src/codeplag/codeplagcli.py:76
+#: src/codeplag/codeplagcli.py:73
+#, python-brace-format
 msgid "Directory '{path}' not found or not a directory."
 msgstr "Каталог '{path}' не найден или он не является каталогом."
 
-#: src/codeplag/codeplagcli.py:89
+#: src/codeplag/codeplagcli.py:86
+#, python-brace-format
 msgid "File '{path}' not found or not a file."
 msgstr "Файл '{path}' не найден или он не является файлом."
 
-#: src/codeplag/codeplagcli.py:101
+#: src/codeplag/codeplagcli.py:98
+#, python-brace-format
 msgid "Modifies and shows static settings of the '{util_name}' util."
 msgstr "Изменение и отображение статических настроек утилиты '{util_name}'."
 
-#: src/codeplag/codeplagcli.py:107
+#: src/codeplag/codeplagcli.py:104
+#, python-brace-format
 msgid "Settings commands of the '{util_name}' util."
 msgstr "Команды настройки утилиты '{util_name}'."
 
-#: src/codeplag/codeplagcli.py:116
+#: src/codeplag/codeplagcli.py:113
+#, python-brace-format
 msgid "Manage the '{util_name}' util settings."
 msgstr "Модификация настроек утилиты '{util_name}'."
 
-#: src/codeplag/codeplagcli.py:121
+#: src/codeplag/codeplagcli.py:118
 msgid "Path to the environment file with GitHub access token."
 msgstr "Путь к файлу окружения с токеном доступа к GitHub."
 
-#: src/codeplag/codeplagcli.py:127
+#: src/codeplag/codeplagcli.py:125
 msgid ""
 "If defined, then saves reports about suspect works into provided file or "
 "directory. If directory by provided path doesn't exists than saves "
@@ -61,7 +67,7 @@ msgstr ""
 "указанный файл или папку. Если каталог по указанному пути не существует, "
 "то сохраняет отчеты в файл."
 
-#: src/codeplag/codeplagcli.py:138
+#: src/codeplag/codeplagcli.py:136
 msgid ""
 "When provided 'csv' saves similar works compare info into csv file. When "
 "provided 'mongo' saves similar works compare info and works metadata into"
@@ -71,11 +77,11 @@ msgstr ""
 " csv файл. При заданном значении 'mongo' сохраняет результаты сравнения "
 "схожих работ и метаданные работ в MongoDB."
 
-#: src/codeplag/codeplagcli.py:149
+#: src/codeplag/codeplagcli.py:146
 msgid "Show progress of searching plagiarism."
 msgstr "Показывать прогресс выполнения поиска схожих работ."
 
-#: src/codeplag/codeplagcli.py:156
+#: src/codeplag/codeplagcli.py:154
 msgid ""
 "When provided '0' show all check works results in the stdout. When "
 "provided '1' show only new found check works results in the stdout. When "
@@ -86,7 +92,7 @@ msgstr ""
 "результаты  проверок. При заданном значении '2' не показывать результаты "
 "проверок в stdout."
 
-#: src/codeplag/codeplagcli.py:167
+#: src/codeplag/codeplagcli.py:165
 msgid ""
 "Threshold of analyzer which classifies two work as same. If this number "
 "is too large, such as 99, then completely matching jobs will be found. "
@@ -99,11 +105,11 @@ msgstr ""
 "будет невелико, например, 50, то будут найдены все работы с минимальным "
 "сходством."
 
-#: src/codeplag/codeplagcli.py:181
+#: src/codeplag/codeplagcli.py:178
 msgid "The maximum depth of the AST structure which play role in calculations."
 msgstr "Максимальная глубина структуры AST, учитываемая при структурном сравнении."
 
-#: src/codeplag/codeplagcli.py:188
+#: src/codeplag/codeplagcli.py:186
 msgid ""
 "The length of N-grams generated to calculate the Jakkar coefficient. A "
 "long length of N-grams reduces the Jakkar coefficient because there are "
@@ -113,11 +119,12 @@ msgstr ""
 "Большая длина N-грамм уменьшает коэффициент Жаккара, поскольку количество"
 " одинаковых последовательностей из двух работ становится меньше."
 
-#: src/codeplag/codeplagcli.py:199
+#: src/codeplag/codeplagcli.py:196
 msgid "The language of help messages, generated reports, errors."
 msgstr "Язык справочных сообщений, сгенерированных отчетов, ошибок."
 
-#: src/codeplag/codeplagcli.py:205
+#: src/codeplag/codeplagcli.py:203
+#, python-brace-format
 msgid ""
 "Sets the threshold for the '{util_name}' util loggers'. Logging messages "
 "that are less severe than the level will be ignored."
@@ -126,45 +133,46 @@ msgstr ""
 "Сообщения, которые менее серьезны, чем это значение, будут "
 "игнорироваться."
 
-#: src/codeplag/codeplagcli.py:215
+#: src/codeplag/codeplagcli.py:212
 msgid "The maximum number of processes that can be used to compare works."
 msgstr ""
 "Максимальное количество процессов, которые можно задействовать для "
 "сравнения работ."
 
-#: src/codeplag/codeplagcli.py:222
+#: src/codeplag/codeplagcli.py:219
 msgid "The host address of the MongoDB server."
 msgstr "Адрес хоста сервера MongoDB."
 
-#: src/codeplag/codeplagcli.py:228
+#: src/codeplag/codeplagcli.py:225
 msgid "The port of the MongoDB."
 msgstr "Порт MongoDB."
 
-#: src/codeplag/codeplagcli.py:236
+#: src/codeplag/codeplagcli.py:233
 msgid "The username for connecting to the MongoDB server."
 msgstr "Имя пользователя для подключения к серверу MongoDB."
 
-#: src/codeplag/codeplagcli.py:242
+#: src/codeplag/codeplagcli.py:239
 msgid "The password for connecting to the MongoDB server. If empty - hide input."
 msgstr "Пароль для подключения к серверу MongoDB. Если пуст - скрытый ввод."
 
-#: src/codeplag/codeplagcli.py:251
+#: src/codeplag/codeplagcli.py:248
+#, python-brace-format
 msgid "Show the '{util_name}' util settings."
 msgstr "Показать настройки утилиты '{util_name}'."
 
-#: src/codeplag/codeplagcli.py:255
+#: src/codeplag/codeplagcli.py:252
 msgid "Start searching similar works."
 msgstr "Начать поиск схожих работ."
 
-#: src/codeplag/codeplagcli.py:261
+#: src/codeplag/codeplagcli.py:258
 msgid "Absolute or relative path to a local directories with project files."
 msgstr "Абсолютный или относительный путь к локальным папкам с файлами проекта."
 
-#: src/codeplag/codeplagcli.py:271
+#: src/codeplag/codeplagcli.py:268
 msgid "Absolute or relative path to files on a computer."
 msgstr "Абсолютный или относительный путь к файлам на компьютере."
 
-#: src/codeplag/codeplagcli.py:278
+#: src/codeplag/codeplagcli.py:276
 msgid ""
 "Choose one of the following modes of searching plagiarism. The "
 "'many_to_many' mode may require more free memory."
@@ -172,7 +180,7 @@ msgstr ""
 "Выберите один из следующих режимов поиска схожих работ. Режим "
 "'many_to_many' может требовать больше свободной памяти."
 
-#: src/codeplag/codeplagcli.py:289
+#: src/codeplag/codeplagcli.py:287
 msgid ""
 "A regular expression for filtering checked works by name. Used with "
 "options 'directories', 'github-user' and 'github-project-folders'."
@@ -181,35 +189,36 @@ msgstr ""
 "Используется с аргументами 'directories', 'github-user' или 'github-"
 "project-folders'."
 
-#: src/codeplag/codeplagcli.py:298
+#: src/codeplag/codeplagcli.py:295
 msgid "Ignore the threshold when checking of works."
 msgstr "Игнорировать пороговое значение при проверке работ."
 
-#: src/codeplag/codeplagcli.py:305
+#: src/codeplag/codeplagcli.py:302
 msgid "Extension responsible for the analyzed programming language."
 msgstr "Расширение проверяемых работ."
 
-#: src/codeplag/codeplagcli.py:315
+#: src/codeplag/codeplagcli.py:312
 msgid "Searching in all branches."
 msgstr "Поиск по всем веткам."
 
-#: src/codeplag/codeplagcli.py:322
+#: src/codeplag/codeplagcli.py:319
 msgid "A regular expression to filter searching repositories on GitHub."
 msgstr "Регулярное выражение для фильтрации искомых репозиториев на GitHub."
 
-#: src/codeplag/codeplagcli.py:329
+#: src/codeplag/codeplagcli.py:326
 msgid "URL to file in a GitHub repository."
 msgstr "URL до файла в репозитории на GitHub."
 
-#: src/codeplag/codeplagcli.py:335
+#: src/codeplag/codeplagcli.py:332
 msgid "GitHub organization/user name."
 msgstr "Название организации или имя пользователя на GitHub."
 
-#: src/codeplag/codeplagcli.py:342
+#: src/codeplag/codeplagcli.py:339
 msgid "URL to a GitHub project folder."
 msgstr "URL до какой-либо папки проекта на GitHub."
 
-#: src/codeplag/codeplagcli.py:352
+#: src/codeplag/codeplagcli.py:350
+#, python-brace-format
 msgid ""
 "Handling generated by the {util_name} reports as creating html report "
 "file or show it on console."
@@ -217,15 +226,16 @@ msgstr ""
 "Обработка отчетов, сгенерированных с помощью {util_name}, в виде создания"
 " файла отчета в формате html или отображения его на консоли."
 
-#: src/codeplag/codeplagcli.py:360
+#: src/codeplag/codeplagcli.py:357
+#, python-brace-format
 msgid "Report commands of the '{util_name}' util."
 msgstr "Команды для работы с отчётами утилиты '{util_name}'."
 
-#: src/codeplag/codeplagcli.py:369
+#: src/codeplag/codeplagcli.py:366
 msgid "Generate general report from created some time ago report files."
 msgstr "Создание общего отчёта из созданных ранее файлов отчётов."
 
-#: src/codeplag/codeplagcli.py:374
+#: src/codeplag/codeplagcli.py:372
 msgid ""
 "Path to save generated report. If it's a directory, then create a file in"
 " it."
@@ -233,11 +243,11 @@ msgstr ""
 "Путь для сохранения созданного отчёта. Если передан путь до папки, то "
 "создаёт отчёт в ней."
 
-#: src/codeplag/codeplagcli.py:383
+#: src/codeplag/codeplagcli.py:380
 msgid "Type of the created report file."
 msgstr "Тип создаваемого файла отчёта."
 
-#: src/codeplag/codeplagcli.py:391
+#: src/codeplag/codeplagcli.py:389
 msgid ""
 "Path to first compared works. Can be path to directory or URL to the "
 "project folder."
@@ -245,7 +255,7 @@ msgstr ""
 "Путь к первым сравниваемым файлам. Это может быть путь к директории или "
 "URL к папке проекта."
 
-#: src/codeplag/codeplagcli.py:401
+#: src/codeplag/codeplagcli.py:399
 msgid ""
 "Path to second compared works. Can be path to directory or URL to the "
 "project folder."
@@ -253,7 +263,7 @@ msgstr ""
 "Путь ко вторым сравниваемым файлам. Это может быть путь к директории или "
 "URL к папке проекта."
 
-#: src/codeplag/codeplagcli.py:413
+#: src/codeplag/codeplagcli.py:411
 msgid ""
 "Program help to find similar parts of source codes for the different "
 "languages."
@@ -261,31 +271,31 @@ msgstr ""
 "Программа помогает находить схожие части исходных кодов для разных языков"
 " программирования."
 
-#: src/codeplag/codeplagcli.py:420
+#: src/codeplag/codeplagcli.py:417
 msgid "Print current version number and exit."
 msgstr "Выводит текущую версию программы."
 
-#: src/codeplag/codeplagcli.py:426
+#: src/codeplag/codeplagcli.py:423
 msgid "Commands help."
 msgstr "Справка по командам."
 
-#: src/codeplag/codeplagcli.py:441
+#: src/codeplag/codeplagcli.py:438
 msgid "No command is provided; please choose one from the available (--help)."
 msgstr ""
 "Ни одна из команд не выбрана, пожалуйста, выбери одну из доступных команд"
 " (--help)."
 
-#: src/codeplag/codeplagcli.py:452
+#: src/codeplag/codeplagcli.py:449
 msgid "There is nothing to modify; please provide at least one argument."
 msgstr ""
 "Нечего модифицировать, пожалуйста, выберите один из параметров для "
 "модификации."
 
-#: src/codeplag/codeplagcli.py:456
+#: src/codeplag/codeplagcli.py:453
 msgid "The'repo-regexp' option requires the provided 'github-user' option."
 msgstr "Аргумент 'repo-regexp' требует заданного параметра 'github-user'."
 
-#: src/codeplag/codeplagcli.py:464
+#: src/codeplag/codeplagcli.py:462
 msgid ""
 "The'path-regexp' option requires the provided 'directories', 'github-"
 "user', or 'github-project-folder' options."
@@ -293,7 +303,7 @@ msgstr ""
 "Аргумент 'path-regexp' требует заданного параметра 'directories', "
 "'github-user' или 'github-project-folder'."
 
-#: src/codeplag/codeplagcli.py:475 src/codeplag/handlers/report.py:440
+#: src/codeplag/codeplagcli.py:472 src/codeplag/handlers/report.py:440
 msgid "All paths must be provided."
 msgstr "Необходимо указать все корневые пути или не указывать ни одного."
 
@@ -386,20 +396,20 @@ msgstr "Схожесть структур"
 msgid "Similar parts of the second program relative to the first"
 msgstr "Схожие части второй программы относительно первой"
 
-#: src/templates/general.templ:115 src/templates/general.templ:147
+#: src/templates/general.templ:115 src/templates/general.templ:149
 msgid "Part of the first program"
 msgstr "Часть первой программ"
 
-#: src/templates/general.templ:116 src/templates/general.templ:146
+#: src/templates/general.templ:116 src/templates/general.templ:148
 msgid "Part of the second program"
 msgstr "Часть второй программы"
 
-#: src/templates/general.templ:117 src/templates/general.templ:148
+#: src/templates/general.templ:117 src/templates/general.templ:150
 #: src/templates/sources.templ:88
 msgid "Similarity"
 msgstr "Схожесть"
 
-#: src/templates/general.templ:144
+#: src/templates/general.templ:146
 msgid "Similar parts of the first program relative to the second"
 msgstr "Схожие части первой программы относительно второй"
 

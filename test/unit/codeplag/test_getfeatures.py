@@ -92,6 +92,6 @@ class TestASTFeatures:
         features = set_sha256(lambda: features)()
 
         assert (
-            features.sha256 == "0c049903ce2330190375d4c1f2e489888c9ebe39daf75b2564e591e8bc1afe72"
+            features.sha256 == "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
         )
         assert features.modify_date

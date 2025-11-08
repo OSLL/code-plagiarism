@@ -4,7 +4,7 @@ First of all thank you for your desire to contribute in that project.
 
 ## Development environment
 
-Before starting work with this project you need to install [Python 3.10](https://www.python.org/), [Docker](https://www.docker.com/) (for commands like 'make docker-test').
+Before starting work with this project you need to install [Python 3.12](https://www.python.org/), [Docker](https://www.docker.com/) (for commands like 'make docker-test').
 
 After that you'll need to install and setup pre-commit hooks for checking style of source code, formatting it and checking types:
 

@@ -95,18 +95,20 @@ class ASTFeatures:
         else:
             self.modify_date = ""
 
-    def __eq__(self: Self, other: "ASTFeatures") -> bool:
+    def __eq__(self: Self, other: object) -> bool:
         if not isinstance(other, self.__class__):
-            raise NotImplementedError
+            raise NotImplementedError(f"Can't compare '{type(other)}' with '{ASTFeatures}'.")
         return str(self.filepath) == str(other.filepath)
 
-    def __lt__(self: Self, other: "ASTFeatures") -> bool:
+    def __lt__(self: Self, other: object) -> bool:
         if not isinstance(other, self.__class__):
-            raise NotImplementedError
+            raise NotImplementedError(f"Can't compare '{type(other)}' with '{ASTFeatures}'.")
         return str(self.filepath) < str(other.filepath)
 
     def get_sha256(self: Self) -> str:
-        return hashlib.sha256(str(self.tokens).encode("utf-8")).hexdigest()
+        return hashlib.sha256(
+            str([element.uid for element in self.structure]).encode("utf-8")
+        ).hexdigest()
 
 
 class NodeStructurePlaceDict(TypedDict):
