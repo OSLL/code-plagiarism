@@ -36,7 +36,7 @@ class CodeplagEngine:
         else:
             self.github_files: list[str] = parsed_args.pop("github_files", [])
             self.github_project_folders: list[str] = parsed_args.pop("github_project_folders", [])
-            self.github_user: str = parsed_args.pop("github_user", "") or ""
+            self.github_user: str = parsed_args.pop("github_user", "")
             ignore_threshold: bool = parsed_args.pop("ignore_threshold")
             if ignore_threshold:
                 comparator_class = IgnoreThresholdWorksComparator
