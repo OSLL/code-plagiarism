@@ -29,11 +29,17 @@ dependencies = [
     "requests~=2.32.3",
     "typing-extensions~=4.12.2",
     "aiohttp~=3.9.3",
-    "Jinja2~=3.1.5",
+    "Jinja2~=3.1.6",
     "cachetools==5.5.2",
     "gidgethub~=5.3.0",
     "pymongo~=4.12.1",
 ]
+
+[dependency-groups]
+test = ["pytest~=8.4.2", "pytest-mock~=3.15.1", "pytest-cov~=7.0.0"]
+lint = ["pre-commit~=4.3.0"]
+translate = ["Babel==2.17.0", "Jinja2~=3.1.6"]
+man = ["argparse-manpage==4.7"]
 
 [project.urls]
 Repository = "https://github.com/OSLL/code-plagiarism"
