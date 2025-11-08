@@ -170,23 +170,19 @@ class WorksComparator:
         self: Self,
         files: list[Path] | None = None,
         directories: list[Path] | None = None,
-        github_files: list[str] | None = None,
-        github_project_folders: list[str] | None = None,
+        github_urls: list[str] | None = None,
         github_user: str = "",
     ) -> ExitCode:
         if files is None:
             files = []
         if directories is None:
             directories = []
-        if github_files is None:
-            github_files = []
-        if github_project_folders is None:
-            github_project_folders = []
+        if github_urls is None:
+            github_urls = []
 
         logger.debug("Mode: %s; Extension: %s.", self.mode, self.features_getter.extension)
         begin_time = monotonic()
         features_from_files = self.features_getter.get_from_files(files)
-        features_from_gh_files = self.features_getter.get_from_github_files(github_files)
 
         logger.info("Starting searching for plagiarism ...")
         exit_code = ExitCode.EXIT_SUCCESS
@@ -194,16 +190,14 @@ class WorksComparator:
             exit_code = self.__many_to_many_check(
                 features_from_files,
                 directories,
-                features_from_gh_files,
-                github_project_folders,
+                github_urls,
                 github_user,
             )
         elif self.mode == "one_to_one":
             exit_code = self.__one_to_one_check(
                 features_from_files,
                 directories,
-                features_from_gh_files,
-                github_project_folders,
+                github_urls,
                 github_user,
             )
         logger.debug("Time for all %s.", timedelta(seconds=monotonic() - begin_time))
@@ -216,15 +210,13 @@ class WorksComparator:
         self: Self,
         features_from_files: list[ASTFeatures],
         directories: list[Path],
-        features_from_gh_files: list[ASTFeatures],
-        github_project_folders: list[str],
+        github_urls: list[str],
         github_user: str,
     ) -> ExitCode:
         works: list[ASTFeatures] = []
         works.extend(features_from_files)
         works.extend(self.features_getter.get_from_dirs(directories))
-        works.extend(features_from_gh_files)
-        works.extend(self.features_getter.get_from_github_project_folders(github_project_folders))
+        works.extend(self.features_getter.get_from_github_urls(github_urls))
         works.extend(self.features_getter.get_from_users_repos(github_user))
 
         if self.show_progress:
@@ -254,8 +246,7 @@ class WorksComparator:
         self: Self,
         features_from_files: list[ASTFeatures],
         directories: list[Path],
-        features_from_gh_files: list[ASTFeatures],
-        github_project_folders: list[str],
+        github_urls: list[str],
         github_user: str,
     ) -> ExitCode:
         combined_elements = filter(
@@ -263,9 +254,8 @@ class WorksComparator:
             (
                 features_from_files,
                 *self.features_getter.get_from_dirs(directories, independent=True),
-                features_from_gh_files,
-                *self.features_getter.get_from_github_project_folders(
-                    github_project_folders, independent=True
+                *self.features_getter.get_from_github_urls(
+                    github_urls, independent=True
                 ),
                 *self.features_getter.get_from_users_repos(github_user, independent=True),
             ),

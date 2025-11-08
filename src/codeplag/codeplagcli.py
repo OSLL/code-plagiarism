@@ -326,7 +326,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             "--github-urls",
             metavar="GITHUB_URL",
             type=GitHubContentUrl,
-            help=_("URL to a GitHub file or folder"),
+            help=_("URL to a GitHub file or folder."),
             nargs="+",
             action=CheckUniqueStoreAction,
             default=[],

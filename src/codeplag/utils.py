@@ -34,27 +34,20 @@ class CodeplagEngine:
             self.first_root_path = parsed_args.pop("first_root_path", None)
             self.second_root_path = parsed_args.pop("second_root_path", None)
         else:
-            files_extension: Extension = parsed_args.pop("extension")
-            github_urls: list[str] = parsed_args.pop("github_urls", [])
-            self.github_files: list[str] = list(
-                filter(lambda url: "." + files_extension in url, github_urls)
-            )
-            self.github_project_folders: list[str] = list(
-                filter(lambda url: "." + files_extension not in url, github_urls)
-            )
-            self.github_user: str = parsed_args.pop("github_user", "")
+            self.github_urls: list[str] = parsed_args.pop("github_urls", [])
+            self.github_user: str = parsed_args.pop("github_user", "") or ""
             ignore_threshold: bool = parsed_args.pop("ignore_threshold")
             if ignore_threshold:
                 comparator_class = IgnoreThresholdWorksComparator
             else:
                 comparator_class = WorksComparator
             self.comparator: WorksComparator = comparator_class(
-                extension=files_extension,
+                extension=parsed_args.pop("extension"),
                 repo_regexp=parsed_args.pop("repo_regexp", None),
                 path_regexp=parsed_args.pop("path_regexp", None),
                 mode=parsed_args.pop("mode", DEFAULT_MODE),
                 set_github_parser=bool(
-                    self.github_files or self.github_project_folders or self.github_user
+                    self.github_urls or self.github_user
                 ),
                 all_branches=parsed_args.pop("all_branches", False),
             )
@@ -79,8 +72,7 @@ class CodeplagEngine:
             return self.comparator.check(
                 self.files,
                 self.directories,
-                self.github_files,
-                self.github_project_folders,
+                self.github_urls,
                 self.github_user,
             )
         return ExitCode.EXIT_SUCCESS
