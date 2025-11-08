@@ -14,7 +14,7 @@ from codeplag.handlers.report import (
 )
 from codeplag.handlers.settings import settings_modify, settings_show
 from codeplag.logger import codeplag_logger as logger
-from codeplag.types import ExitCode, Extension, ReportType
+from codeplag.types import ExitCode, ReportType
 
 
 class CodeplagEngine:
@@ -46,9 +46,7 @@ class CodeplagEngine:
                 repo_regexp=parsed_args.pop("repo_regexp", None),
                 path_regexp=parsed_args.pop("path_regexp", None),
                 mode=parsed_args.pop("mode", DEFAULT_MODE),
-                set_github_parser=bool(
-                    self.github_urls or self.github_user
-                ),
+                set_github_parser=bool(self.github_urls or self.github_user),
                 all_branches=parsed_args.pop("all_branches", False),
             )
 

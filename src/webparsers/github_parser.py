@@ -287,9 +287,7 @@ class GitHubParser:
                 path_regexp=path_regexp,
             )
 
-    def _get_file_from_node(
-        self: Self, node: dict, file_url: GitHubContentUrl
-    ) -> WorkInfo:
+    def _get_file_from_node(self: Self, node: dict, file_url: GitHubContentUrl) -> WorkInfo:
         return self.get_file_content_by_sha(
             file_url.owner,
             file_url.repo,
@@ -299,10 +297,10 @@ class GitHubParser:
         )
 
     def _get_files_generator_from_node_list(
-        self: Self, 
-        node_list: list[dict], 
-        dir_url: GitHubContentUrl, 
-        path_regexp: re.Pattern | None = None
+        self: Self,
+        node_list: list[dict],
+        dir_url: GitHubContentUrl,
+        path_regexp: re.Pattern | None = None,
     ) -> Iterator[WorkInfo]:
         for node in node_list:
             current_path = f"/{node['path']}"
@@ -355,8 +353,6 @@ class GitHubParser:
         response_json = self.send_get_request(api_url, params=params).json()
 
         if isinstance(response_json, list):
-            yield from self._get_files_generator_from_node_list(
-                response_json, url, path_regexp
-            )
+            yield from self._get_files_generator_from_node_list(response_json, url, path_regexp)
         else:
             yield self._get_file_from_node(response_json, url)

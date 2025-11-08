@@ -254,9 +254,7 @@ class WorksComparator:
             (
                 features_from_files,
                 *self.features_getter.get_from_dirs(directories, independent=True),
-                *self.features_getter.get_from_github_urls(
-                    github_urls, independent=True
-                ),
+                *self.features_getter.get_from_github_urls(github_urls, independent=True),
                 *self.features_getter.get_from_users_repos(github_user, independent=True),
             ),
         )
