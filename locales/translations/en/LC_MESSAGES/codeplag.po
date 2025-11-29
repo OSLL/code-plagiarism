@@ -201,7 +201,6 @@ msgid "GitHub organization/user name."
 msgstr "GitHub organization/user name."
 
 #: src/codeplag/codeplagcli.py:329
-#, fuzzy
 msgid "URL to a GitHub file or folder."
 msgstr "URL to a GitHub project folder."
 
@@ -280,7 +279,6 @@ msgid "The'repo-regexp' option requires the provided 'github-user' option."
 msgstr "The'repo-regexp' option requires the provided 'github-user' option."
 
 #: src/codeplag/codeplagcli.py:450
-#, fuzzy
 msgid ""
 "The'path-regexp' option requires the provided 'directories', 'github-"
 "user', or 'github-urls' options."
@@ -425,6 +423,3 @@ msgstr "Part of the file that is being checked"
 #: src/templates/sources.templ:87
 msgid "Part of a similar file"
 msgstr "Part of a similar file"
-
-#~ msgid "URL to file in a GitHub repository."
-#~ msgstr "URL to file in a GitHub repository."

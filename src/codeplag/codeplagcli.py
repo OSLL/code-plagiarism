@@ -322,7 +322,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             "-gu", "--github-user", type=str, help=_("GitHub organization/user name.")
         )
         check_github.add_argument(
-            "-gr",
+            "-gurl",
             "--github-urls",
             metavar="GITHUB_URL",
             type=GitHubContentUrl,

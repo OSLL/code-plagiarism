@@ -354,5 +354,9 @@ class GitHubParser:
 
         if isinstance(response_json, list):
             yield from self._get_files_generator_from_node_list(response_json, url, path_regexp)
-        else:
+        elif isinstance(response_json, dict):
             yield self._get_file_from_node(response_json, url)
+        else:
+            err_msg = f"unexpected request type from {url}, expected: list or dict, got {type(response_json)}"
+            self.logger.error(err_msg)
+            raise TypeError(err_msg)

@@ -325,52 +325,23 @@ class AsyncGithubParser:
                 path_regexp=path_regexp,
             ):
                 yield file
-
-    async def get_file_from_url(self: Self, file_url: str) -> WorkInfo:
-        try:
-            file_url = GitHubContentUrl(file_url)
-        except ValueError as error:
-            self.logger.error(f"{file_url} is incorrect link to content of GitHub repository")
-            raise error
-
-        response = await self.send_get_request(
-            self.FILE_CONTENT,
-            {
-                "username": file_url.owner,
-                "repo": file_url.repo,
-                "path": file_url.path,
-                "ref": file_url.branch,
-            },
-        )
-
+    
+    async def _get_file_from_node(self: Self, node: dict, file_url: GitHubContentUrl) -> WorkInfo:
         return WorkInfo(
-            await self.get_file_content_by_sha(file_url.owner, file_url.repo, response["sha"]),
+            await self.get_file_content_by_sha(file_url.owner, file_url.repo, node["sha"]),
             file_url,
             await self._get_commit_info(
                 file_url.owner, file_url.repo, file_url.branch, file_url.path
             ),
         )
 
-    async def get_files_generator_from_dir_url(
-        self: Self, dir_url: str, path_regexp: re.Pattern | None = None
+    async def _get_files_generator_from_node_list(
+        self: Self,
+        node_list: list[dict],
+        dir_url: GitHubContentUrl,
+        path_regexp: re.Pattern | None = None,
     ) -> AsyncGenerator[WorkInfo, None]:
-        try:
-            dir_url = GitHubContentUrl(dir_url)
-        except ValueError as error:
-            self.logger.error(f"{dir_url} is incorrect link to content of GitHub repository")
-            raise error
-
-        response = await self.send_get_request(
-            self.FILE_CONTENT,
-            {
-                "username": dir_url.owner,
-                "repo": dir_url.repo,
-                "path": dir_url.path,
-                "ref": dir_url.branch,
-            },
-        )
-
-        for node in response:
+        for node in node_list:
             current_path = f"/{node['path']}"
             full_link = (
                 f"{_GH_URL}{dir_url.owner}/{dir_url.repo}/tree/{dir_url.branch}/{current_path[2:]}"
@@ -407,3 +378,33 @@ class AsyncGithubParser:
             )
 
             yield WorkInfo(file_content, full_link, commit_info)
+
+    async def get_files_generator_from_url(
+        self: Self, url: str, path_regexp: re.Pattern | None = None
+    ) -> AsyncGenerator[WorkInfo, None]:
+        try:
+            url = GitHubContentUrl(url)
+        except ValueError as error:
+            self.logger.error(f"{url} is incorrect link to content of GitHub repository")
+            raise error
+
+        response = await self.send_get_request(
+            self.FILE_CONTENT,
+            {
+                "username": url.owner,
+                "repo": url.repo,
+                "path": url.path,
+                "ref": url.branch,
+            },
+        )
+
+        if isinstance(response, list):
+            generator = self._get_files_generator_from_node_list(response, url, path_regexp)
+            async for work_info in generator:
+                yield work_info
+        elif isinstance(response, dict):
+            yield await self._get_file_from_node(response, url)
+        else:
+            err_msg = f"unexpected request type from {url}, expected: list or dict, got {type(response)}"
+            self.logger.error(err_msg)
+            raise TypeError(err_msg) 
