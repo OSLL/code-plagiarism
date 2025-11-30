@@ -62,7 +62,7 @@ docker-test-mongo-stop:
 .PHONY: docker-test
 docker-test: docker-test-image docker-test-mongo-run
 	@docker run --rm \
-		--env MONGO_HOST=$(shell docker inspect --format '{{ .NetworkSettings.IPAddress }}' $(MONGO_CONTAINER_NAME)) \
+		--env MONGO_HOST=$(shell docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(MONGO_CONTAINER_NAME)) \
 		--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
 		"$(TEST_DOCKER_TAG)" || (make docker-test-mongo-stop && exit 200)
 	@make docker-test-mongo-stop
@@ -76,7 +76,7 @@ docker-autotest: docker-test-image docker-build-package docker-test-mongo-run
 		docker run --rm \
 			--volume $(PWD)/$(DEBIAN_PACKAGES_PATH):/usr/src/$(UTIL_NAME)/$(DEBIAN_PACKAGES_PATH) \
 			--volume $(PWD)/test:/usr/src/$(UTIL_NAME)/test \
-			--env MONGO_HOST=$(shell docker inspect --format '{{ .NetworkSettings.IPAddress }}' $(MONGO_CONTAINER_NAME)) \
+			--env MONGO_HOST=$(shell docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(MONGO_CONTAINER_NAME)) \
 			--env-file .env \
 			"$(TEST_DOCKER_TAG)" bash -c \
 			"apt-get install -y /usr/src/${UTIL_NAME}/${DEBIAN_PACKAGES_PATH}/${DEB_PKG_NAME}.deb && make autotest"; \
