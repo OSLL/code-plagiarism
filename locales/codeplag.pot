@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: codeplag 0.6.1\n"
-"POT-Creation-Date: 2025-11-08 16:17+0300\n"
+"POT-Creation-Date: 2025-12-02 18:35+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Artyom Semidolin\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -154,7 +154,7 @@ msgstr ""
 #: src/codeplag/codeplagcli.py:287
 msgid ""
 "A regular expression for filtering checked works by name. Used with "
-"options 'directories', 'github-user' and 'github-project-folders'."
+"options 'directories', 'github-user' and 'github-urls'."
 msgstr ""
 
 #: src/codeplag/codeplagcli.py:295

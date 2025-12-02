@@ -183,7 +183,7 @@ msgstr ""
 #: src/codeplag/codeplagcli.py:287
 msgid ""
 "A regular expression for filtering checked works by name. Used with "
-"options 'directories', 'github-user' and 'github-project-folders'."
+"options 'directories', 'github-user' and 'github-urls'."
 msgstr ""
 "Регулярное выражение для фильтрации проверяемых работ по имени. "
 "Используется с аргументами 'directories', 'github-user' или 'github-"
@@ -297,7 +297,7 @@ msgid ""
 "user', or 'github-urls' options."
 msgstr ""
 "Аргумент 'path-regexp' требует заданного параметра 'directories', "
-"'github-user' или 'github-project-folder'."
+"'github-user' или 'github-urls'."
 
 #: src/codeplag/codeplagcli.py:460 src/codeplag/handlers/report.py:440
 msgid "All paths must be provided."

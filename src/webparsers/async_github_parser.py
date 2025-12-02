@@ -325,7 +325,7 @@ class AsyncGithubParser:
                 path_regexp=path_regexp,
             ):
                 yield file
-    
+
     async def _get_file_from_node(self: Self, node: dict, file_url: GitHubContentUrl) -> WorkInfo:
         return WorkInfo(
             await self.get_file_content_by_sha(file_url.owner, file_url.repo, node["sha"]),
@@ -405,6 +405,8 @@ class AsyncGithubParser:
         elif isinstance(response, dict):
             yield await self._get_file_from_node(response, url)
         else:
-            err_msg = f"unexpected request type from {url}, expected: list or dict, got {type(response)}"
+            err_msg = (
+                f"unexpected request type from {url}, expected: list or dict, got {type(response)}"
+            )
             self.logger.error(err_msg)
-            raise TypeError(err_msg) 
+            raise TypeError(err_msg)

@@ -350,13 +350,15 @@ class GitHubParser:
 
         api_url = f"/repos/{url.owner}/{url.repo}/contents/{url.path}"
         params = {"ref": url.branch}
-        response_json = self.send_get_request(api_url, params=params).json()
+        response = self.send_get_request(api_url, params=params).json()
 
-        if isinstance(response_json, list):
-            yield from self._get_files_generator_from_node_list(response_json, url, path_regexp)
-        elif isinstance(response_json, dict):
-            yield self._get_file_from_node(response_json, url)
+        if isinstance(response, list):
+            yield from self._get_files_generator_from_node_list(response, url, path_regexp)
+        elif isinstance(response, dict):
+            yield self._get_file_from_node(response, url)
         else:
-            err_msg = f"unexpected request type from {url}, expected: list or dict, got {type(response_json)}"
+            err_msg = (
+                f"unexpected request type from {url}, expected: list or dict, got {type(response)}"
+            )
             self.logger.error(err_msg)
             raise TypeError(err_msg)

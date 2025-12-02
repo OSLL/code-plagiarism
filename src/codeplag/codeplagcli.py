@@ -285,7 +285,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             "--path-regexp",
             help=_(
                 "A regular expression for filtering checked works by name. "
-                "Used with options 'directories', 'github-user' and 'github-project-folders'."
+                "Used with options 'directories', 'github-user' and 'github-urls'."
             ),
             type=str,
         )
