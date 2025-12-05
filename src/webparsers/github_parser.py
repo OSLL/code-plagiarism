@@ -287,39 +287,22 @@ class GitHubParser:
                 path_regexp=path_regexp,
             )
 
-    def get_file_from_url(self: Self, file_url: str) -> WorkInfo:
-        try:
-            file_url = GitHubContentUrl(file_url)
-        except ValueError as error:
-            self.logger.error(f"{file_url} is incorrect link to content of GitHub repository")
-            raise error
-
-        api_url = f"/repos/{file_url.owner}/{file_url.repo}/contents/{file_url.path}"
-        params = {"ref": file_url.branch}
-        response_json = self.send_get_request(api_url, params=params).json()
-
+    def _get_file_from_node(self: Self, node: dict, file_url: GitHubContentUrl) -> WorkInfo:
         return self.get_file_content_by_sha(
             file_url.owner,
             file_url.repo,
-            response_json["sha"],
+            node["sha"],
             self._get_commit_info(file_url.owner, file_url.repo, file_url.branch, file_url.path),
             file_url,
         )
 
-    def get_files_generator_from_dir_url(
-        self: Self, dir_url: str, path_regexp: re.Pattern | None = None
+    def _get_files_generator_from_node_list(
+        self: Self,
+        node_list: list[dict],
+        dir_url: GitHubContentUrl,
+        path_regexp: re.Pattern | None = None,
     ) -> Iterator[WorkInfo]:
-        try:
-            dir_url = GitHubContentUrl(dir_url)
-        except ValueError as error:
-            self.logger.error(f"{dir_url} is incorrect link to content of GitHub repository")
-            raise error
-
-        api_url = f"/repos/{dir_url.owner}/{dir_url.repo}/contents/{dir_url.path}"
-        params = {"ref": dir_url.branch}
-        response_json = self.send_get_request(api_url, params=params).json()
-
-        for node in response_json:
+        for node in node_list:
             current_path = f"/{node['path']}"
             full_link = (
                 f"{_GH_URL}{dir_url.owner}/{dir_url.repo}/tree/{dir_url.branch}/{current_path[2:]}"
@@ -355,3 +338,27 @@ class GitHubParser:
                 commit_info=commit_info,
                 file_path=full_link,
             )
+
+    def get_files_generator_from_url(
+        self: Self, url: str, path_regexp: re.Pattern | None = None
+    ) -> Iterator[WorkInfo]:
+        try:
+            url = GitHubContentUrl(url)
+        except ValueError as error:
+            self.logger.error(f"{url} is incorrect link to content of GitHub repository")
+            raise error
+
+        api_url = f"/repos/{url.owner}/{url.repo}/contents/{url.path}"
+        params = {"ref": url.branch}
+        response = self.send_get_request(api_url, params=params).json()
+
+        if isinstance(response, list):
+            yield from self._get_files_generator_from_node_list(response, url, path_regexp)
+        elif isinstance(response, dict):
+            yield self._get_file_from_node(response, url)
+        else:
+            err_msg = (
+                f"unexpected request type from {url}, expected: list or dict, got {type(response)}"
+            )
+            self.logger.error(err_msg)
+            raise TypeError(err_msg)

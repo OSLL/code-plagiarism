@@ -60,13 +60,8 @@ def test_check_util_version():
             True,
         ),
         (
-            ["--github-files", *CPP_GITHUB_FILES],
+            ["--github-urls", *CPP_GITHUB_FILES, CPP_GITHUB_DIR],
             b"Getting works features from GitHub urls",
-            True,
-        ),
-        (
-            ["--github-project-folders", CPP_GITHUB_DIR],
-            f"Getting works features from {CPP_GITHUB_DIR}".encode("utf-8"),
             True,
         ),
         (
@@ -96,13 +91,8 @@ def test_compare_cpp_files(cmd: list[str], out: bytes, found_plag: bool):
             True,
         ),
         (
-            ["--github-files", *PY_GITHUB_FILES],
+            ["--github-urls", *PY_GITHUB_FILES, PY_GITHUB_DIR],
             b"Getting works features from GitHub urls",
-            False,
-        ),
-        (
-            ["--github-project-folders", PY_GITHUB_DIR],
-            f"Getting works features from {PY_GITHUB_DIR}".encode("utf-8"),
             False,
         ),
         (
@@ -147,9 +137,8 @@ def test_check_short_output() -> None:
     "cmd",
     [
         ["--files", *PY_FILES],
-        ["--github-files", *PY_GITHUB_FILES],
+        ["--github-urls", *PY_GITHUB_FILES, PY_GITHUB_DIR],
         ["--directories", *PY_DIRS],
-        ["--github-project-folders", PY_GITHUB_DIR],
     ],
 )
 def test_check_failed_when_repo_regexp_provided_without_required_args(
@@ -164,7 +153,7 @@ def test_check_failed_when_repo_regexp_provided_without_required_args(
     "cmd",
     [
         ["--files", *PY_FILES],
-        ["--github-files", *PY_GITHUB_FILES],
+        ["--github-urls", *PY_GITHUB_FILES],
     ],
 )
 def test_check_failed_when_path_regexp_provided_without_required_args(

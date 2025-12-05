@@ -174,51 +174,35 @@ class AbstractGetter(ABC):
     @abstractmethod
     def get_works_from_dir(self: Self, directory: Path) -> list[ASTFeatures]: ...
 
-    def get_from_github_files(self: Self, github_files: list[str]) -> list[ASTFeatures]:
-        works: list[ASTFeatures] = []
-        if not github_files:
-            return works
-        self.check_github_parser_provided()
-        assert self.github_parser
-
-        self.logger.debug(f"{GET_FRAZE} GitHub urls")
-        for github_file in github_files:
-            work_info = self.github_parser.get_file_from_url(github_file)
-            features = self.get_from_content(work_info)
-            if features:
-                works.append(features)
-
-        return works
-
     @overload
-    def get_from_github_project_folders(
-        self: Self, github_project_folders: list[str], independent: Literal[False] = False
+    def get_from_github_urls(
+        self: Self, github_urls: list[str], independent: Literal[False] = False
     ) -> list[ASTFeatures]: ...
 
     @overload
-    def get_from_github_project_folders(
-        self: Self, github_project_folders: list[str], independent: Literal[True]
+    def get_from_github_urls(
+        self: Self, github_urls: list[str], independent: Literal[True]
     ) -> list[list[ASTFeatures]]: ...
 
     @overload
-    def get_from_github_project_folders(
-        self: Self, github_project_folders: list[str], independent: bool = False
+    def get_from_github_urls(
+        self: Self, github_urls: list[str], independent: bool = False
     ) -> list[ASTFeatures] | list[list[ASTFeatures]]: ...
 
-    def get_from_github_project_folders(
-        self: Self, github_project_folders: list[str], independent: bool = False
+    def get_from_github_urls(
+        self: Self, github_urls: list[str], independent: bool = False
     ) -> list[ASTFeatures] | list[list[ASTFeatures]]:
         works = []
-        if not github_project_folders:
+        if not github_urls:
             return works
         self.check_github_parser_provided()
         assert self.github_parser
 
-        for github_project in github_project_folders:
+        for github_url in github_urls:
             nested_works: list[ASTFeatures] = []
-            self.logger.debug(f"{GET_FRAZE} {github_project}")
-            gh_prj_files = self.github_parser.get_files_generator_from_dir_url(
-                github_project, path_regexp=self.path_regexp
+            self.logger.debug(f"{GET_FRAZE} {github_url}")
+            gh_prj_files = self.github_parser.get_files_generator_from_url(
+                github_url, path_regexp=self.path_regexp
             )
             for work_info in gh_prj_files:
                 features = self.get_from_content(work_info)

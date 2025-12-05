@@ -924,7 +924,7 @@ class TestGitHubParser(unittest.TestCase):
         test_cases = [
             {
                 "arguments": {
-                    "file_url": "https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/astfeatures.py"
+                    "url": "https://github.com/OSLL/code-plagiarism/blob/main/src/codeplag/astfeatures.py"
                 },
                 "send_se": [
                     Response({"sha": "ioujxbwurqer"}),
@@ -941,8 +941,9 @@ class TestGitHubParser(unittest.TestCase):
             mock_get_file_content_by_sha.return_value = test_case["get_file_content_rv"]
 
             with self.subTest(test_case=test_case):
-                rv = parser.get_file_from_url(**test_case["arguments"])
-                self.assertEqual(rv, test_case["expected_result"])
+                rv = list(parser.get_files_generator_from_url(**test_case["arguments"]))
+                self.assertEqual(len(rv), 1)
+                self.assertEqual(rv[0], test_case["expected_result"])
 
     @patch("webparsers.github_parser.GitHubParser.get_file_content_by_sha")
     @patch("webparsers.github_parser.GitHubParser.get_files_generator_from_sha_commit")
@@ -955,7 +956,7 @@ class TestGitHubParser(unittest.TestCase):
     ) -> None:
         test_cases = [
             {
-                "arguments": {"dir_url": "https://github.com/OSLL/code-plagiarism/tree/main/src"},
+                "arguments": {"url": "https://github.com/OSLL/code-plagiarism/tree/main/src"},
                 "send_se": [
                     Response(
                         [
@@ -984,7 +985,7 @@ class TestGitHubParser(unittest.TestCase):
             mock_get_file_content_by_sha.return_value = test_case["file_gen"]
 
             with self.subTest(test_case=test_case):
-                rv = list(parser.get_files_generator_from_dir_url(**test_case["arguments"]))
+                rv = list(parser.get_files_generator_from_url(**test_case["arguments"]))
                 self.assertEqual(rv, test_case["expected_result"])
 
 

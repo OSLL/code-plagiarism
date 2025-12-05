@@ -285,7 +285,7 @@ class CodeplagCLI(argparse.ArgumentParser):
             "--path-regexp",
             help=_(
                 "A regular expression for filtering checked works by name. "
-                "Used with options 'directories', 'github-user' and 'github-project-folders'."
+                "Used with options 'directories', 'github-user' and 'github-urls'."
             ),
             type=str,
         )
@@ -319,24 +319,14 @@ class CodeplagCLI(argparse.ArgumentParser):
             help=_("A regular expression to filter searching repositories on GitHub."),
         )
         check_github.add_argument(
-            "-gf",
-            "--github-files",
-            metavar="GITHUB_FILE",
-            type=GitHubContentUrl,
-            help=_("URL to file in a GitHub repository."),
-            nargs="+",
-            action=CheckUniqueStoreAction,
-            default=[],
-        )
-        check_github.add_argument(
             "-gu", "--github-user", type=str, help=_("GitHub organization/user name.")
         )
         check_github.add_argument(
-            "-gp",
-            "--github-project-folders",
-            metavar="GITHUB_PROJECT_FOLDER",
+            "-gurl",
+            "--github-urls",
+            metavar="GITHUB_URL",
             type=GitHubContentUrl,
-            help=_("URL to a GitHub project folder."),
+            help=_("URL to a GitHub file or folder."),
             nargs="+",
             action=CheckUniqueStoreAction,
             default=[],
@@ -453,14 +443,12 @@ class CodeplagCLI(argparse.ArgumentParser):
                     _("The'repo-regexp' option requires the provided 'github-user' option.")
                 )
             elif parsed_args.path_regexp and not (
-                parsed_args.directories
-                or parsed_args.github_user
-                or parsed_args.github_project_folders
+                parsed_args.directories or parsed_args.github_user or parsed_args.github_urls
             ):
                 self.error(
                     _(
                         "The'path-regexp' option requires the provided 'directories', "
-                        "'github-user', or 'github-project-folder' options."
+                        "'github-user', or 'github-urls' options."
                     )
                 )
         elif (
