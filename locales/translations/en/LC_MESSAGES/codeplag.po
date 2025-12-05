@@ -4,7 +4,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: codeplag 0.6.0\n"
+"Project-Id-Version: codeplag 0.6.1\n"
 "POT-Creation-Date: 2024-05-21 09:28+0300\n"
 "PO-Revision-Date: 2025-03-28 12:05+0300\n"
 "Last-Translator: Artyom Semidolin\n"
@@ -202,7 +202,7 @@ msgstr "GitHub organization/user name."
 
 #: src/codeplag/codeplagcli.py:329
 msgid "URL to a GitHub file or folder."
-msgstr "URL to a GitHub project folder."
+msgstr "URL to a GitHub file or folder."
 
 #: src/codeplag/codeplagcli.py:340
 #, python-brace-format
