@@ -32,7 +32,7 @@ class AsyncGithubParser:
         >>> import asyncio
         >>> import aiohttp
         >>> async def requests():
-        ...     timeout = ClientTimeout(total=5)
+        ...     timeout = aiohttp.ClientTimeout(total=5)
         ...     async with aiohttp.ClientSession(timeout=timeout) as session:
         ...         gh_parser = AsyncGithubParser(session, token=<token>)
         ...         tasks = []
