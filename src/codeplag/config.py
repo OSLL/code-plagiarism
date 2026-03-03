@@ -1,99 +1,83 @@
-import json
 from pathlib import Path
-from typing import Any, Literal, Mapping, overload
+from typing import Any
+
+from typing_extensions import Self
 
 from codeplag.consts import (
-    CONFIG_PATH,
-    DEFAULT_LANGUAGE,
-    DEFAULT_LOG_LEVEL,
-    DEFAULT_MAX_DEPTH,
-    DEFAULT_MONGO_HOST,
-    DEFAULT_MONGO_PORT,
-    DEFAULT_MONGO_USER,
-    DEFAULT_NGRAMS_LENGTH,
-    DEFAULT_REPORT_EXTENSION,
-    DEFAULT_THRESHOLD,
-    DEFAULT_WORKERS,
+    DEFAULT_MODE,
+    UTIL_NAME,
+    UTIL_VERSION,
 )
+from codeplag.handlers.check import IgnoreThresholdWorksComparator, WorksComparator
+from codeplag.handlers.report import (
+    html_report_create,
+)
+from codeplag.handlers.settings import settings_modify, settings_show, settings_reset
 from codeplag.logger import codeplag_logger as logger
-from codeplag.types import Settings, ShortOutput
-
-Config = dict[str, Any]
+from codeplag.types import ExitCode, ReportType
 
 
-@overload
-def read_config(file: Path, safe: Literal[False] = False) -> Config: ...
+class CodeplagEngine:
+    def __init__(self: Self, parsed_args: dict[str, Any]) -> None:
+        self.root: str = parsed_args.pop("root")
+        self.command: str | None = None
+        # TODO: tmp
+        if self.root == "settings":
+            self.command = parsed_args.pop(self.root)
+            if self.command == "reset":
+                self.key = parsed_args.pop("key", None)
+            if self.command == "show":
+                return
 
+            self.parsed_args = parsed_args
+        elif self.root == "report":
+            self.path: Path = parsed_args.pop("path")
+            self.report_type: ReportType = parsed_args.pop("type")
+            self.first_root_path = parsed_args.pop("first_root_path", None)
+            self.second_root_path = parsed_args.pop("second_root_path", None)
+        else:
+            self.github_urls: list[str] = parsed_args.pop("github_urls", [])
+            self.github_user: str = parsed_args.pop("github_user", "") or ""
+            ignore_threshold: bool = parsed_args.pop("ignore_threshold")
+            if ignore_threshold:
+                comparator_class = IgnoreThresholdWorksComparator
+            else:
+                comparator_class = WorksComparator
+            self.comparator: WorksComparator = comparator_class(
+                extension=parsed_args.pop("extension"),
+                repo_regexp=parsed_args.pop("repo_regexp", None),
+                path_regexp=parsed_args.pop("path_regexp", None),
+                mode=parsed_args.pop("mode", DEFAULT_MODE),
+                set_github_parser=bool(self.github_urls or self.github_user),
+                all_branches=parsed_args.pop("all_branches", False),
+            )
 
-@overload
-def read_config(file: Path, safe: bool = False) -> Config | None: ...
+            self.files: list[Path] = parsed_args.pop("files", [])
+            self.directories: list[Path] = parsed_args.pop("directories", [])
 
+    def run(self: Self) -> ExitCode:
+        logger.info("Starting %s util (%s) ...", UTIL_NAME, UTIL_VERSION)
 
-def read_config(file: Path, safe: bool = False) -> Config | None:
-    config = None
-    try:
-        with file.open(mode="r") as f:
-            config = json.load(f)
-    except (json.decoder.JSONDecodeError, FileNotFoundError, PermissionError):
-        if not safe:
-            raise
+        if self.root == "settings":
+            if self.command == "show":
+                settings_show()
+            elif self.command == "modify":
+                settings_modify(self.parsed_args)
+                settings_show()
+            elif self.command == "reset":
+                if not hasattr(self, 'key') or not self.key:
+                    return ExitCode.EXIT_INVAL
+                return settings_reset(self.key)
 
-    return config
-
-
-# TODO: Handle permission denied
-def write_config(file: Path, config: Mapping[str, Any]) -> None:
-    config_for_dump = dict(config)
-    for key in config_for_dump:
-        if isinstance(config_for_dump[key], Path):
-            config_for_dump[key] = str(config_for_dump[key])
-
-    with file.open(mode="w", encoding="utf-8") as f:
-        json.dump(config_for_dump, f, indent=4)
-
-
-def read_settings_conf() -> Settings:
-    loaded_settings_config = read_config(CONFIG_PATH, safe=True)
-    if loaded_settings_config is None:
-        logger.warning(
-            "Unsuccessful attempt to read config '%s'. Returning default config.",
-            CONFIG_PATH,
-        )
-        return DefaultSettingsConfig
-
-    for key in Settings.__annotations__:
-        if key not in loaded_settings_config:
-            if key in DefaultSettingsConfig:
-                loaded_settings_config[key] = DefaultSettingsConfig[key]
-            continue
-
-        if key in ["environment", "reports"]:
-            loaded_settings_config[key] = Path(loaded_settings_config[key])
-
-    return Settings(
-        **{
-            key: loaded_settings_config[key]
-            for key in Settings.__annotations__
-            if key in loaded_settings_config
-        }
-    )
-
-
-def write_settings_conf(settings: Settings) -> None:
-    write_config(CONFIG_PATH, settings)
-
-
-DefaultSettingsConfig = Settings(
-    threshold=DEFAULT_THRESHOLD,
-    max_depth=DEFAULT_MAX_DEPTH,
-    ngrams_length=DEFAULT_NGRAMS_LENGTH,
-    show_progress=0,
-    short_output=ShortOutput.SHOW_ALL,
-    reports_extension=DEFAULT_REPORT_EXTENSION,
-    language=DEFAULT_LANGUAGE,
-    log_level=DEFAULT_LOG_LEVEL,
-    workers=DEFAULT_WORKERS,
-    mongo_host=DEFAULT_MONGO_HOST,
-    mongo_port=DEFAULT_MONGO_PORT,
-    mongo_user=DEFAULT_MONGO_USER,
-)
+        elif self.root == "report":
+            return html_report_create(
+                self.path, self.report_type, self.first_root_path, self.second_root_path
+            )
+        else:
+            return self.comparator.check(
+                self.files,
+                self.directories,
+                self.github_urls,
+                self.github_user,
+            )
+        return ExitCode.EXIT_SUCCESS

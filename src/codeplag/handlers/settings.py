@@ -4,8 +4,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from codeplag.config import read_settings_conf, write_settings_conf
-from codeplag.types import Settings
+from codeplag.config import read_settings_conf, write_settings_conf, read_config, write_config, CONFIG_PATH
+from codeplag.types import Settings, ExitCode
 
 
 def settings_show() -> None:
@@ -32,3 +32,17 @@ def settings_modify(parsed_args: dict[str, Any]) -> None:
             settings_config[key] = new_value
 
         write_settings_conf(settings_config)
+
+def settings_reset(key: str) -> ExitCode:
+    config = read_config(CONFIG_PATH, safe=True)
+
+    if config is None:
+        return ExitCode.EXIT_SUCCESS
+
+    if key not in Settings.__annotations__:
+        return ExitCode.EXIT_INVAL
+
+    if key in config:
+        del config[key]
+        write_config(CONFIG_PATH, config)
+    return ExitCode.EXIT_SUCCESS
