@@ -440,14 +440,14 @@ class CodeplagCLI(argparse.ArgumentParser):
         elif root == "check":
             if parsed_args.repo_regexp and not parsed_args.github_user:
                 self.error(
-                    _("The'repo-regexp' option requires the provided 'github-user' option.")
+                    _("The 'repo-regexp' option requires the provided 'github-user' option.")
                 )
             elif parsed_args.path_regexp and not (
                 parsed_args.directories or parsed_args.github_user or parsed_args.github_urls
             ):
                 self.error(
                     _(
-                        "The'path-regexp' option requires the provided 'directories', "
+                        "The 'path-regexp' option requires the provided 'directories', "
                         "'github-user', or 'github-urls' options."
                     )
                 )

@@ -288,12 +288,12 @@ msgstr ""
 "модификации."
 
 #: src/codeplag/codeplagcli.py:443
-msgid "The'repo-regexp' option requires the provided 'github-user' option."
+msgid "The 'repo-regexp' option requires the provided 'github-user' option."
 msgstr "Аргумент 'repo-regexp' требует заданного параметра 'github-user'."
 
 #: src/codeplag/codeplagcli.py:450
 msgid ""
-"The'path-regexp' option requires the provided 'directories', 'github-"
+"The 'path-regexp' option requires the provided 'directories', 'github-"
 "user', or 'github-urls' options."
 msgstr ""
 "Аргумент 'path-regexp' требует заданного параметра 'directories', "
