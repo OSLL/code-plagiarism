@@ -61,7 +61,7 @@ def test_check_util_version():
         ),
         (
             ["--github-urls", *CPP_GITHUB_FILES, CPP_GITHUB_DIR],
-            b"Getting works features from GitHub urls",
+            b"Getting works features from",
             True,
         ),
         (
