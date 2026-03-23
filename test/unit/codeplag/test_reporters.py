@@ -107,7 +107,7 @@ def test_compare_info_serialize_deserialize(first_compare_result: FullCompareInf
             "['Expr[1]', 'Expr[14]', 'application[16]']",
             ["Expr[1]", "Expr[14]", "application[16]"],
         ),
-        ("[]", [])
+        ("[]", []),
     ],
 )
 def test__deserialize_head_nodes(str_head_nodes: str, list_head_nodes: list[str]) -> None:

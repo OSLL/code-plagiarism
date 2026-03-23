@@ -122,7 +122,9 @@ class CFeaturesGetter(AbstractGetter):
             features = get_features(cursor, tf_path)
             tf_path.unlink()
             if features.count_of_nodes == 0:
-                self.logger.debug("Skipping the file '%s' due it contains no code.", work_info.link)
+                self.logger.debug(
+                    "Skipping the file '%s' due it contains no code.", work_info.link
+                )
                 return None
             features.filepath = work_info.link
             features.modify_date = work_info.commit.date
