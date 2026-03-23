@@ -247,6 +247,16 @@ class CodeplagCLI(argparse.ArgumentParser):
             "show",
             help=_("Show the '{util_name}' util settings.").format(util_name=UTIL_NAME),
         )
+        # settings reset
+        settings_reset = settings_commands.add_parser(
+            "reset",
+            help=_("Reset the value of key to default")
+        )
+        settings_reset.add_argument(
+            "key",
+            type=str,
+            help=_("Key to value reset")
+        )
 
     def __add_check_path(self: Self, subparsers: argparse._SubParsersAction) -> None:
         check = subparsers.add_parser("check", help=_("Start searching similar works."))
