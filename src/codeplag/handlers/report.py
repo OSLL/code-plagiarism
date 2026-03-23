@@ -181,9 +181,10 @@ def calculate_sources_total_similarity(
 
 def _convert_similarity_matrix_to_percent_matrix(matrix: NDArray) -> NDArray:
     """Convert compliance matrix of size N x M x 2 to percent 2 dimensional matrix."""
-    percent_matrix = np.empty((matrix.shape[0], matrix.shape[1]), dtype=np.float64)
+    columns = 0 if len(matrix.shape) == 1 else matrix.shape[1]
+    percent_matrix = np.empty((matrix.shape[0], columns), dtype=np.float64)
     for i in range(matrix.shape[0]):
-        for j in range(matrix.shape[1]):
+        for j in range(columns):
             percent_matrix[i][j] = round(matrix[i][j][0] / matrix[i][j][1] * 100, 2)
     return percent_matrix
 

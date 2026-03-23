@@ -1,10 +1,10 @@
 # Russian translations for codeplag.
-# Copyright (C) 2024-2025 Codeplag Development Team
+# Copyright (C) 2024-2026 Codeplag Development Team
 # This file is distributed under the same license as the codeplag project.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: codeplag 0.6.1\n"
+"Project-Id-Version: codeplag 0.6.2\n"
 "POT-Creation-Date: 2024-05-21 09:28+0300\n"
 "PO-Revision-Date: 2025-03-28 12:05+0300\n"
 "Last-Translator: Artyom Semidolin\n"
@@ -288,22 +288,22 @@ msgstr ""
 "модификации."
 
 #: src/codeplag/codeplagcli.py:443
-msgid "The'repo-regexp' option requires the provided 'github-user' option."
+msgid "The 'repo-regexp' option requires the provided 'github-user' option."
 msgstr "Аргумент 'repo-regexp' требует заданного параметра 'github-user'."
 
 #: src/codeplag/codeplagcli.py:450
 msgid ""
-"The'path-regexp' option requires the provided 'directories', 'github-"
+"The 'path-regexp' option requires the provided 'directories', 'github-"
 "user', or 'github-urls' options."
 msgstr ""
 "Аргумент 'path-regexp' требует заданного параметра 'directories', "
 "'github-user' или 'github-urls'."
 
-#: src/codeplag/codeplagcli.py:460 src/codeplag/handlers/report.py:440
+#: src/codeplag/codeplagcli.py:460 src/codeplag/handlers/report.py:444
 msgid "All paths must be provided."
 msgstr "Необходимо указать все корневые пути или не указывать ни одного."
 
-#: src/codeplag/handlers/report.py:437
+#: src/codeplag/handlers/report.py:441
 msgid "Invalid report type."
 msgstr "Некорректный тип отчёта."
 

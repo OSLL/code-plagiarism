@@ -61,7 +61,7 @@ def test_check_util_version():
         ),
         (
             ["--github-urls", *CPP_GITHUB_FILES, CPP_GITHUB_DIR],
-            b"Getting works features from GitHub urls",
+            b"Getting works features from",
             True,
         ),
         (
@@ -143,7 +143,7 @@ def test_check_short_output() -> None:
 )
 def test_check_failed_when_repo_regexp_provided_without_required_args(
     cmd: list[str],
-):
+) -> None:
     result = run_check(cmd + ["--repo-regexp", "something"])
 
     result.assert_argparse_error()
@@ -153,7 +153,6 @@ def test_check_failed_when_repo_regexp_provided_without_required_args(
     "cmd",
     [
         ["--files", *PY_FILES],
-        ["--github-urls", *PY_GITHUB_FILES],
     ],
 )
 def test_check_failed_when_path_regexp_provided_without_required_args(

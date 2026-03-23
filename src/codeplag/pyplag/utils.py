@@ -119,6 +119,9 @@ def _get_works_from_filepaths(
                 continue
 
             features = get_features_from_ast(tree, filename)
+            if features.count_of_nodes == 0:
+                logger.debug("Skipping the file '%s' due it contains no code.", filename)
+                continue
             if features_cache is not None:
                 features_cache.save_features(features)
         works.append(features)
@@ -152,6 +155,11 @@ class PyFeaturesGetter(AbstractGetter):
             tree = get_ast_from_content(work_info.code, work_info.link)
             if tree is not None:
                 features = get_features_from_ast(tree, work_info.link)
+                if features.count_of_nodes == 0:
+                    self.logger.debug(
+                        "Skipping the file '%s' due it contains no code.", work_info.link
+                    )
+                    return None
                 features.modify_date = work_info.commit.date
                 if self.features_cache is not None:
                     self.features_cache.save_features(features)

@@ -89,7 +89,7 @@ def test_generic_visit(first_cursor: Cursor) -> None:
     generic_visit(first_cursor, features)
 
     assert features.filepath == _SAMPLE1_PATH
-    assert features.count_of_nodes == 0
+    assert features.count_of_nodes == len(features.structure) == 23
     assert features.head_nodes == ['gcd']
     assert features.operators == {}
     assert features.keywords == {}
@@ -97,7 +97,6 @@ def test_generic_visit(first_cursor: Cursor) -> None:
     assert len(features.unodes) == 10
     assert len(features.from_num) == 10
     assert features.count_unodes == 10
-    assert len(features.structure) == 23
     assert features.tokens == [8, 10, 10, 202, 205, 114, 100,
                                101, 106, 214, 100, 101, 214,
                                103, 100, 101, 100, 101, 114,
@@ -108,7 +107,7 @@ def test_get_features(second_cursor: Cursor) -> None:
     features = get_features(second_cursor, _SAMPLE2_PATH)
 
     assert features.filepath == _SAMPLE2_PATH
-    assert features.count_of_nodes == 0
+    assert features.count_of_nodes == len(features.structure) == 25
     assert features.head_nodes == ['gcd']
     assert features.operators == {'==': 1, '%': 1}
     assert features.keywords == {'int': 1, 'if': 1, 'return': 2, 'long': 2}
@@ -116,7 +115,6 @@ def test_get_features(second_cursor: Cursor) -> None:
     assert len(features.unodes) == 10
     assert len(features.from_num) == 10
     assert features.count_unodes == 10
-    assert len(features.structure) == 25
     assert features.tokens == [8, 10, 10, 202, 205, 114, 100,
                                101, 106, 202, 214, 100, 100,
                                101, 214, 103, 100, 101, 100,
@@ -128,7 +126,7 @@ def test_bad_encoding_syms(third_cursor: Cursor) -> None:
     features = get_features(third_cursor, _SAMPLE3_PATH)
 
     assert features.filepath == _SAMPLE3_PATH
-    assert features.count_of_nodes == 0
+    assert features.count_of_nodes == len(features.structure) == 167
     assert features.head_nodes == ['main']
     # TODO: why so many '<', '>' may be from include, ignore it
     assert features.operators == {'==': 1, '<': 5, '>': 3, '!=': 1, '&': 3, '*': 1, '=': 4}
@@ -139,6 +137,5 @@ def test_bad_encoding_syms(third_cursor: Cursor) -> None:
     assert len(features.unodes) == 18
     assert len(features.from_num) == 18
     assert features.count_unodes == 18
-    assert len(features.structure) == 167
     assert len(features.tokens) == 167
     assert features.sha256 == "236f1b7ea02c3f68e390c7e155fec1a198d4c9ab3d8306d613df8399189291de"

@@ -23,7 +23,7 @@ translate-extract:
 		--copyright-holder "Codeplag Development Team" \
 		--last-translator "Artyom Semidolin" \
 		--output-file ${LOCALES_DIR}/${UTIL_NAME}.pot .
-	sed -ri '2 s/[0-9]{4}/2024-2025/' ${LOCALES_DIR}/${UTIL_NAME}.pot
+	sed -ri '2 s/[0-9]{4}/2024-2026/' ${LOCALES_DIR}/${UTIL_NAME}.pot
 	sed -i -e '4d;10d;$$ d' ${LOCALES_DIR}/${UTIL_NAME}.pot
 
 .PHONY: translate-update

@@ -217,7 +217,10 @@ def deserialize_compare_result_from_dict(result: dict) -> FullCompareInfo:
 
 
 def _deserialize_head_nodes(head_nodes: str) -> list[str]:
-    return [head[1:-1] for head in head_nodes[1:-1].split(", ")]
+    head_nodes_without_brackets = head_nodes[1:-1]
+    if not head_nodes_without_brackets:
+        return []
+    return [head[1:-1] for head in head_nodes_without_brackets.split(", ")]
 
 
 def _deserialize_path(path: str) -> str | Path:
