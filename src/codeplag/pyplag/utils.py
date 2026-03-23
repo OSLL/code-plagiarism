@@ -12,8 +12,7 @@ from codeplag.getfeatures import (
     get_files_path_from_directory,
     set_sha256,
 )
-from codeplag.logger import codeplag_logger as logger
-from codeplag.logger import log_err
+from codeplag.logger import codeplag_logger as logger, log_err
 from codeplag.pyplag.astwalkers import ASTWalker
 from codeplag.types import ASTFeatures
 from webparsers.types import WorkInfo
@@ -119,6 +118,9 @@ def _get_works_from_filepaths(
                 continue
 
             features = get_features_from_ast(tree, filename)
+            if features.count_of_nodes == 0:
+                logger.debug("Skipping the file '{work_info.link}' due it contains no code.", filename)
+                continue
             if features_cache is not None:
                 features_cache.save_features(features)
         works.append(features)
@@ -152,6 +154,9 @@ class PyFeaturesGetter(AbstractGetter):
             tree = get_ast_from_content(work_info.code, work_info.link)
             if tree is not None:
                 features = get_features_from_ast(tree, work_info.link)
+                if features.count_of_nodes == 0:
+                    self.logger.debug(f"Skipping the file '{work_info.link}' due it contains no code.")
+                    return None
                 features.modify_date = work_info.commit.date
                 if self.features_cache is not None:
                     self.features_cache.save_features(features)

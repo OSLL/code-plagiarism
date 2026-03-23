@@ -62,3 +62,4 @@ def __add_node_to_structure(features: ASTFeatures, node_name: str, curr_depth: i
         features.from_num[features.count_unodes] = node_name
         features.count_unodes += 1
     features.structure.append(NodeStructurePlace(curr_depth, features.unodes[node_name]))
+    features.count_of_nodes += 1

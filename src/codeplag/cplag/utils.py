@@ -75,6 +75,9 @@ def _get_works_from_filepaths(
                 continue
 
             features = get_features(cursor, filepath)
+            if features.count_of_nodes == 0:
+                codeplag_logger.debug(f"Skipping the file '{filepath}' due it contains no code.")
+                continue
             if features_cache is not None:
                 features_cache.save_features(features)
         works.append(features)
@@ -118,6 +121,9 @@ class CFeaturesGetter(AbstractGetter):
             # hook for correct filtering info while parsing source code
             features = get_features(cursor, tf_path)
             tf_path.unlink()
+            if features.count_of_nodes == 0:
+                self.logger.debug(f"Skipping the file '{work_info.link}' due it contains no code.")
+                return None
             features.filepath = work_info.link
             features.modify_date = work_info.commit.date
             if self.features_cache is not None:

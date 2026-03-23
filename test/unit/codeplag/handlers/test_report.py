@@ -19,6 +19,8 @@ from codeplag.handlers.report import (
 from codeplag.reporters import serialize_compare_result
 from codeplag.types import FullCompareInfo, SameHead
 
+from numpy.typing import NDArray
+
 
 @pytest.mark.parametrize(
     ("same_percentages", "pattern", "expected"),
@@ -268,7 +270,20 @@ def test__get_resulting_same_percentages(
     assert _get_resulting_same_percentages(same_parts_of_all, cnt_head_nodes) == expected
 
 
-def test__convert_similarity_matrix_to_percent_matrix():
+@pytest.mark.parametrize(
+    ("matrix", "result"),
+    [
+        (
+            np.array([[[1, 2], [1, 3], [3, 4]], [[1, 8], [1, 4], [3, 5]]]),
+            [[50.0, 33.33, 75.0], [12.5, 25.0, 60.0]]
+        ),
+        (
+            np.array([]),
+            [],
+        )
+    ]
+)
+def test__convert_similarity_matrix_to_percent_matrix(matrix: NDArray, result: NDArray) -> None:
     assert _convert_similarity_matrix_to_percent_matrix(
-        np.array([[[1, 2], [1, 3], [3, 4]], [[1, 8], [1, 4], [3, 5]]])
-    ).tolist() == [[50.0, 33.33, 75.0], [12.5, 25.0, 60.0]]
+        matrix,
+    ).tolist() == result

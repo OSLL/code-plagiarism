@@ -1,12 +1,12 @@
 # English translations for codeplag.
-# Copyright (C) 2024-2025 Codeplag Development Team
+# Copyright (C) 2024-2026 Codeplag Development Team
 # This file is distributed under the same license as the codeplag project.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: codeplag 0.6.1\n"
 "POT-Creation-Date: 2024-05-21 09:28+0300\n"
-"PO-Revision-Date: 2025-03-28 12:05+0300\n"
+"PO-Revision-Date: 2026-03-23 19:21+0300\n"
 "Last-Translator: Artyom Semidolin\n"
 "Language: en\n"
 "Language-Team: en <LL@li.org>\n"
@@ -286,11 +286,11 @@ msgstr ""
 "The'path-regexp' option requires the provided 'directories', 'github-"
 "user', or 'github-urls' options."
 
-#: src/codeplag/codeplagcli.py:460 src/codeplag/handlers/report.py:440
+#: src/codeplag/codeplagcli.py:460 src/codeplag/handlers/report.py:444
 msgid "All paths must be provided."
 msgstr "All or none of the root paths must be specified."
 
-#: src/codeplag/handlers/report.py:437
+#: src/codeplag/handlers/report.py:441
 msgid "Invalid report type."
 msgstr "Invalid report type."
 

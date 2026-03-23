@@ -1,5 +1,5 @@
 # Russian translations for codeplag.
-# Copyright (C) 2024-2025 Codeplag Development Team
+# Copyright (C) 2024-2026 Codeplag Development Team
 # This file is distributed under the same license as the codeplag project.
 #
 msgid ""
@@ -299,11 +299,11 @@ msgstr ""
 "Аргумент 'path-regexp' требует заданного параметра 'directories', "
 "'github-user' или 'github-urls'."
 
-#: src/codeplag/codeplagcli.py:460 src/codeplag/handlers/report.py:440
+#: src/codeplag/codeplagcli.py:460 src/codeplag/handlers/report.py:444
 msgid "All paths must be provided."
 msgstr "Необходимо указать все корневые пути или не указывать ни одного."
 
-#: src/codeplag/handlers/report.py:437
+#: src/codeplag/handlers/report.py:441
 msgid "Invalid report type."
 msgstr "Некорректный тип отчёта."
 
