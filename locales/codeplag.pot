@@ -5,8 +5,8 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: codeplag 0.6.2\n"
-"POT-Creation-Date: 2026-03-23 19:20+0300\n"
+"Project-Id-Version: codeplag 0.6.3\n"
+"POT-Creation-Date: 2026-07-05 11:17+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Artyom Semidolin\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -251,140 +251,140 @@ msgid ""
 "user', or 'github-urls' options."
 msgstr ""
 
-#: src/codeplag/codeplagcli.py:460 src/codeplag/handlers/report.py:444
+#: src/codeplag/codeplagcli.py:460 src/codeplag/handlers/report.py:441
 msgid "All paths must be provided."
 msgstr ""
 
-#: src/codeplag/handlers/report.py:441
+#: src/codeplag/handlers/report.py:438
 msgid "Invalid report type."
 msgstr ""
 
-#: src/templates/general.templ:5 src/templates/sources.templ:5
+#: src/templates/general.j2:5 src/templates/sources.j2:5
 msgid "Comparative report"
 msgstr ""
 
-#: src/templates/general.templ:40
+#: src/templates/general.j2:40
 msgid "Check results"
 msgstr ""
 
-#: src/templates/general.templ:44 src/templates/sources.templ:46
+#: src/templates/general.j2:44 src/templates/sources.j2:46
 msgid "Summary information"
 msgstr ""
 
-#: src/templates/general.templ:46 src/templates/general.templ:65
-#: src/templates/sources.templ:48
+#: src/templates/general.j2:46 src/templates/general.j2:65
+#: src/templates/sources.j2:48
 msgid "Path"
 msgstr ""
 
-#: src/templates/general.templ:47 src/templates/sources.templ:49
+#: src/templates/general.j2:47 src/templates/sources.j2:49
 msgid "Total similarity"
 msgstr ""
 
-#: src/templates/general.templ:63 src/templates/sources.templ:65
+#: src/templates/general.j2:63 src/templates/sources.j2:65
 msgid "General information"
 msgstr ""
 
-#: src/templates/general.templ:66
+#: src/templates/general.j2:66
 msgid "Last modification date"
 msgstr ""
 
-#: src/templates/general.templ:67
+#: src/templates/general.j2:67
 msgid "Check date"
 msgstr ""
 
-#: src/templates/general.templ:80
+#: src/templates/general.j2:80
 msgid "Metrics information"
 msgstr ""
 
-#: src/templates/general.templ:82
+#: src/templates/general.j2:82
 msgid "Type of compare"
 msgstr ""
 
-#: src/templates/general.templ:83
+#: src/templates/general.j2:83
 msgid "Metric"
 msgstr ""
 
-#: src/templates/general.templ:84
+#: src/templates/general.j2:84
 msgid "Value"
 msgstr ""
 
-#: src/templates/general.templ:87
+#: src/templates/general.j2:87
 msgid "Fast"
 msgstr ""
 
-#: src/templates/general.templ:88
+#: src/templates/general.j2:88
 msgid "Jaccard Coefficient"
 msgstr ""
 
-#: src/templates/general.templ:92
+#: src/templates/general.j2:92
 msgid "Similarity of operators"
 msgstr ""
 
-#: src/templates/general.templ:96
+#: src/templates/general.j2:96
 msgid "Similarity of keywords"
 msgstr ""
 
-#: src/templates/general.templ:100
+#: src/templates/general.j2:100
 msgid "Similarity of literals"
 msgstr ""
 
-#: src/templates/general.templ:103
+#: src/templates/general.j2:103
 msgid "Weighted average by fast metrics"
 msgstr ""
 
-#: src/templates/general.templ:106
+#: src/templates/general.j2:106
 msgid "Structure"
 msgstr ""
 
-#: src/templates/general.templ:107
+#: src/templates/general.j2:107
 msgid "Similarity of structures"
 msgstr ""
 
-#: src/templates/general.templ:113
+#: src/templates/general.j2:113
 msgid "Similar parts of the second program relative to the first"
 msgstr ""
 
-#: src/templates/general.templ:115 src/templates/general.templ:149
+#: src/templates/general.j2:115 src/templates/general.j2:149
 msgid "Part of the first program"
 msgstr ""
 
-#: src/templates/general.templ:116 src/templates/general.templ:148
+#: src/templates/general.j2:116 src/templates/general.j2:148
 msgid "Part of the second program"
 msgstr ""
 
-#: src/templates/general.templ:117 src/templates/general.templ:150
-#: src/templates/sources.templ:88
+#: src/templates/general.j2:117 src/templates/general.j2:150
+#: src/templates/sources.j2:88
 msgid "Similarity"
 msgstr ""
 
-#: src/templates/general.templ:146
+#: src/templates/general.j2:146
 msgid "Similar parts of the first program relative to the second"
 msgstr ""
 
-#: src/templates/sources.templ:42
+#: src/templates/sources.j2:42
 msgid "Verification results"
 msgstr ""
 
-#: src/templates/sources.templ:67
+#: src/templates/sources.j2:67
 msgid "The path to the file being checked"
 msgstr ""
 
-#: src/templates/sources.templ:68
+#: src/templates/sources.j2:68
 msgid "Total maximum compliance, %"
 msgstr ""
 
-#: src/templates/sources.templ:83
+#: src/templates/sources.j2:83
 msgid "Similar parts of the programs"
 msgstr ""
 
-#: src/templates/sources.templ:85
+#: src/templates/sources.j2:85
 msgid "The name of a similar file"
 msgstr ""
 
-#: src/templates/sources.templ:86
+#: src/templates/sources.j2:86
 msgid "Part of the file that is being checked"
 msgstr ""
 
-#: src/templates/sources.templ:87
+#: src/templates/sources.j2:87
 msgid "Part of a similar file"
 msgstr ""

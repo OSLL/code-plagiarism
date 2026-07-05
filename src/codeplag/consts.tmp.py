@@ -23,8 +23,8 @@ UTIL_VERSION: Final[str] = "@UTIL_VERSION@"
 CONFIG_PATH: Final[Path] = Path("@CONFIG_PATH@")
 LOG_PATH: Final[Path] = Path("@CODEPLAG_LOG_PATH@")
 LIB_PATH: Final[Path] = Path("@LIB_PATH@")
-GENERAL_TEMPLATE_PATH: Final[Path] = LIB_PATH / "general.templ"
-SOURCES_TEMPLATE_PATH: Final[Path] = LIB_PATH / "sources.templ"
+GENERAL_TEMPLATE_PATH: Final[Path] = LIB_PATH / "general.j2"
+SOURCES_TEMPLATE_PATH: Final[Path] = LIB_PATH / "sources.j2"
 TRANSLATIONS_PATH: Final[Path] = LIB_PATH / "translations"
 # =====
 
