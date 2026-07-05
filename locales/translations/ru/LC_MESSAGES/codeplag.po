@@ -4,7 +4,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: codeplag 0.6.2\n"
+"Project-Id-Version: codeplag 0.6.3\n"
 "POT-Creation-Date: 2024-05-21 09:28+0300\n"
 "PO-Revision-Date: 2025-03-28 12:05+0300\n"
 "Last-Translator: Artyom Semidolin\n"
@@ -299,140 +299,140 @@ msgstr ""
 "Аргумент 'path-regexp' требует заданного параметра 'directories', "
 "'github-user' или 'github-urls'."
 
-#: src/codeplag/codeplagcli.py:460 src/codeplag/handlers/report.py:444
+#: src/codeplag/codeplagcli.py:460 src/codeplag/handlers/report.py:441
 msgid "All paths must be provided."
 msgstr "Необходимо указать все корневые пути или не указывать ни одного."
 
-#: src/codeplag/handlers/report.py:441
+#: src/codeplag/handlers/report.py:438
 msgid "Invalid report type."
 msgstr "Некорректный тип отчёта."
 
-#: src/templates/general.templ:5 src/templates/sources.templ:5
+#: src/templates/general.j2:5 src/templates/sources.j2:5
 msgid "Comparative report"
 msgstr "Сравнительный отчёт"
 
-#: src/templates/general.templ:40
+#: src/templates/general.j2:40
 msgid "Check results"
 msgstr "Результаты проверки"
 
-#: src/templates/general.templ:44 src/templates/sources.templ:46
+#: src/templates/general.j2:44 src/templates/sources.j2:46
 msgid "Summary information"
 msgstr "Сводка по работам"
 
-#: src/templates/general.templ:46 src/templates/general.templ:65
-#: src/templates/sources.templ:48
+#: src/templates/general.j2:46 src/templates/general.j2:65
+#: src/templates/sources.j2:48
 msgid "Path"
 msgstr "Путь"
 
-#: src/templates/general.templ:47 src/templates/sources.templ:49
+#: src/templates/general.j2:47 src/templates/sources.j2:49
 msgid "Total similarity"
 msgstr "Общая схожесть, %"
 
-#: src/templates/general.templ:63 src/templates/sources.templ:65
+#: src/templates/general.j2:63 src/templates/sources.j2:65
 msgid "General information"
 msgstr "Общая информация"
 
-#: src/templates/general.templ:66
+#: src/templates/general.j2:66
 msgid "Last modification date"
 msgstr "Дата последней модификации"
 
-#: src/templates/general.templ:67
+#: src/templates/general.j2:67
 msgid "Check date"
 msgstr "Дата проверки"
 
-#: src/templates/general.templ:80
+#: src/templates/general.j2:80
 msgid "Metrics information"
 msgstr "Информация по метрикам"
 
-#: src/templates/general.templ:82
+#: src/templates/general.j2:82
 msgid "Type of compare"
 msgstr "Тип сравнения"
 
-#: src/templates/general.templ:83
+#: src/templates/general.j2:83
 msgid "Metric"
 msgstr "Метрика"
 
-#: src/templates/general.templ:84
+#: src/templates/general.j2:84
 msgid "Value"
 msgstr "Значение"
 
-#: src/templates/general.templ:87
+#: src/templates/general.j2:87
 msgid "Fast"
 msgstr "Быстрый"
 
-#: src/templates/general.templ:88
+#: src/templates/general.j2:88
 msgid "Jaccard Coefficient"
 msgstr "Коэффициент Жаккара"
 
-#: src/templates/general.templ:92
+#: src/templates/general.j2:92
 msgid "Similarity of operators"
 msgstr "Схожесть операторов"
 
-#: src/templates/general.templ:96
+#: src/templates/general.j2:96
 msgid "Similarity of keywords"
 msgstr "Схожесть ключевых слов"
 
-#: src/templates/general.templ:100
+#: src/templates/general.j2:100
 msgid "Similarity of literals"
 msgstr "Схожеcть литералов"
 
-#: src/templates/general.templ:103
+#: src/templates/general.j2:103
 msgid "Weighted average by fast metrics"
 msgstr "Средневзвешенное по быстрым метрикам"
 
-#: src/templates/general.templ:106
+#: src/templates/general.j2:106
 msgid "Structure"
 msgstr "Структурный"
 
-#: src/templates/general.templ:107
+#: src/templates/general.j2:107
 msgid "Similarity of structures"
 msgstr "Схожесть структур"
 
-#: src/templates/general.templ:113
+#: src/templates/general.j2:113
 msgid "Similar parts of the second program relative to the first"
 msgstr "Схожие части второй программы относительно первой"
 
-#: src/templates/general.templ:115 src/templates/general.templ:149
+#: src/templates/general.j2:115 src/templates/general.j2:149
 msgid "Part of the first program"
 msgstr "Часть первой программ"
 
-#: src/templates/general.templ:116 src/templates/general.templ:148
+#: src/templates/general.j2:116 src/templates/general.j2:148
 msgid "Part of the second program"
 msgstr "Часть второй программы"
 
-#: src/templates/general.templ:117 src/templates/general.templ:150
-#: src/templates/sources.templ:88
+#: src/templates/general.j2:117 src/templates/general.j2:150
+#: src/templates/sources.j2:88
 msgid "Similarity"
 msgstr "Схожесть"
 
-#: src/templates/general.templ:146
+#: src/templates/general.j2:146
 msgid "Similar parts of the first program relative to the second"
 msgstr "Схожие части первой программы относительно второй"
 
-#: src/templates/sources.templ:42
+#: src/templates/sources.j2:42
 msgid "Verification results"
 msgstr "Результаты проверки"
 
-#: src/templates/sources.templ:67
+#: src/templates/sources.j2:67
 msgid "The path to the file being checked"
 msgstr "Путь до проверяемого файла"
 
-#: src/templates/sources.templ:68
+#: src/templates/sources.j2:68
 msgid "Total maximum compliance, %"
 msgstr "Суммарное максимальное соответствие, %"
 
-#: src/templates/sources.templ:83
+#: src/templates/sources.j2:83
 msgid "Similar parts of the programs"
 msgstr "Схожие части программ"
 
-#: src/templates/sources.templ:85
+#: src/templates/sources.j2:85
 msgid "The name of a similar file"
 msgstr "Имя схожего файла"
 
-#: src/templates/sources.templ:86
+#: src/templates/sources.j2:86
 msgid "Part of the file that is being checked"
 msgstr "Часть проверяемого файла"
 
-#: src/templates/sources.templ:87
+#: src/templates/sources.j2:87
 msgid "Part of a similar file"
 msgstr "Часть схожего файла"

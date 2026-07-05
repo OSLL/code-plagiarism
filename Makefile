@@ -96,8 +96,8 @@ install: substitute-sources man translate-compile
 	install -D -m 0666 /dev/null $(DESTDIR)/$(CODEPLAG_LOG_PATH)
 	install -D -d -m 0755 $(DESTDIR)/$(LIB_PATH)
 
-	install -D -m 0666 src/templates/general.templ $(DESTDIR)/$(LIB_PATH)/general.templ
-	install -D -m 0666 src/templates/sources.templ $(DESTDIR)/$(LIB_PATH)/sources.templ
+	install -D -m 0666 src/templates/general.j2 $(DESTDIR)/$(LIB_PATH)/general.j2
+	install -D -m 0666 src/templates/sources.j2 $(DESTDIR)/$(LIB_PATH)/sources.j2
 
 	cp --recursive locales/translations/ $(DESTDIR)/$(LIB_PATH)/
 	find "$(DESTDIR)/$(LIB_PATH)/translations/" -type f -name '*.po' -exec rm --force '{}' +
