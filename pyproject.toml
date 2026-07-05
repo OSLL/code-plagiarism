@@ -1,6 +1,6 @@
 [project]
 name = "codeplag"
-version = "0.6.3"
+version = "0.6.4"
 description = "Code plagiarism searching package."
 authors = [
     { name = "Artyom Semidolin, Dmitry Nikolaev, Alexander Evsikov" }
