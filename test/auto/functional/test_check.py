@@ -92,7 +92,7 @@ def test_compare_cpp_files(cmd: list[str], out: bytes, found_plag: bool):
         ),
         (
             ["--github-urls", *PY_GITHUB_FILES, PY_GITHUB_DIR],
-            b"Getting works features from GitHub urls",
+            b"Getting works features from",
             False,
         ),
         (

@@ -304,9 +304,6 @@ class GitHubParser:
     ) -> Iterator[WorkInfo]:
         for node in node_list:
             current_path = f"/{node['path']}"
-            full_link = (
-                f"{_GH_URL}{dir_url.owner}/{dir_url.repo}/tree/{dir_url.branch}/{current_path[2:]}"
-            )
             node_type = node["type"]
             if node_type == "dir":
                 commit_info = self._get_commit_info(
@@ -320,6 +317,9 @@ class GitHubParser:
                     path=current_path,
                     path_regexp=path_regexp,
                 )
+            full_link = (
+                f"{_GH_URL}{dir_url.owner}/{dir_url.repo}/blob/{dir_url.branch}{current_path}"
+            )
             if (
                 node_type != "file"
                 or not self._is_accepted_extension(node["name"])
