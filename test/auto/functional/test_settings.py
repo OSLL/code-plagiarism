@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 from typing_extensions import Self
-from utils import MaxDepth, NgramsLength, modify_settings
+from utils import MaxDepth, NgramsLength, modify_settings, show_settings
 
 from codeplag.consts import CONFIG_PATH, NGRAMS_LENGTH_CHOICE, UTIL_NAME
 from codeplag.types import Flag, Language, LogLevel, ReportsExtension, ShortOutput, Threshold
@@ -202,3 +202,10 @@ class TestSettingsModify:
 
     def test_modify_settings_with_no_arguments_failed(self: Self) -> None:
         modify_settings().assert_failed()
+
+    def test_reset_reports_path(self: Self) -> None:
+        modify_settings(reports="reports").assert_success()
+        assert b"reports " in show_settings().cmd_res.stdout
+
+        modify_settings(reports="").assert_success()
+        assert b"reports " not in show_settings().cmd_res.stdout
