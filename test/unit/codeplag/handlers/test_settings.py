@@ -19,13 +19,6 @@ def mock_write_settings_conf(mocker: MockerFixture) -> MagicMock:
     return mocker.patch("codeplag.handlers.settings.write_settings_conf")
 
 
-@pytest.fixture
-def mock_path_resolve(mocker: MockerFixture) -> MagicMock:
-    mock_path = mocker.MagicMock(spec=Path)
-    mock_path.resolve.return_value = Path("/resolved/path")
-    return mock_path
-
-
 class TestSettingsModify:
     def test_settings_modify_with_none_args(
         self, mock_read_settings_conf: MagicMock, mock_write_settings_conf: MagicMock
