@@ -124,10 +124,11 @@ class CodeplagCLI(argparse.ArgumentParser):
             help=_(
                 "If defined, then saves reports about suspect works into provided file or "
                 "directory. If directory by provided path doesn't exists than saves reports "
-                "as a file."
+                "as a file. Used only when set '--reports_extension' to 'csv'. "
+                "To reset provide empty string."
             ),
             metavar="PATH",
-            type=Path,
+            type=str,
         )
         settings_modify.add_argument(
             "-re",
