@@ -205,6 +205,7 @@ class TestSettingsModify:
 
     def test_reset_reports_path(self: Self) -> None:
         modify_settings(reports="reports").assert_success()
-        modify_settings(reports="").assert_success()
+        assert b"reports " in show_settings().cmd_res.stdout
 
-        assert b"reports" not in show_settings().cmd_res.stdout
+        modify_settings(reports="").assert_success()
+        assert b"reports " not in show_settings().cmd_res.stdout
